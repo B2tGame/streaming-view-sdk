@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import EmulatorScreen from './src/components/emulator_screen';
 import { EmulatorControllerService } from './src/components/emulator/net/emulator_web_client';
 import RoundTripTimeMonitor from './src/components/round_trip_time_monitor';
 
-const qs = require('qs');
 const rp = require('request-promise');
 
 /**
@@ -14,10 +14,10 @@ const rp = require('request-promise');
  */
 export default class StreamingView extends Component {
   static propTypes = {
-    apiEndpoint: String,
-    edgeNodeId: String,
-    enableControl: Boolean,
-    enableFullScreen: Boolean,
+    apiEndpoint: PropTypes.string.isRequired,
+    edgeNodeId: PropTypes.string.isRequired,
+    enableControl: PropTypes.bool,
+    enableFullScreen: PropTypes.bool,
   };
 
   constructor(props) {
@@ -25,24 +25,16 @@ export default class StreamingView extends Component {
 
     this.state = {
       isReadyStream: undefined,
-      loadTimeLimit: 120,
-      retryCount: 0,
+      maxRetryCount: 120,
     };
-    console.log('PROPS:', props);
 
     const { apiEndpoint, edgeNodeId } = props;
-    const grpc = `${apiEndpoint}/${edgeNodeId}`;
-    console.log('grpc:', grpc);
-    this.emulator = new EmulatorControllerService(grpc);
-
-    this.pollStreamStatus(apiEndpoint, edgeNodeId, this.state.loadTimeLimit);
+    this.emulator = new EmulatorControllerService(`${apiEndpoint}/${edgeNodeId}`);
+    this.pollStreamStatus(apiEndpoint, edgeNodeId, this.state.maxRetryCount);
   }
 
   pollStreamStatus(apiEndpoint, edgeNodeId, maxRetry) {
-    this.setState({ retryCount: this.state.retryCount + 1 });
-    console.log('getting stream status...');
-    rp({
-      method: 'GET',
+    rp.get({
       uri: `${apiEndpoint}/api/streaming-games/status/${edgeNodeId}`,
       json: true,
     })
@@ -82,8 +74,6 @@ export default class StreamingView extends Component {
   }
 
   render() {
-    console.log('StreamingView::render()');
-    console.log(`Polling EdgeNode Stream; elapsed time: ${this.state.retryCount} seconds`);
     return (
       <div>
         <RoundTripTimeMonitor />

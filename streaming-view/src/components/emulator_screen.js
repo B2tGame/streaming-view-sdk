@@ -8,8 +8,8 @@ import React from 'react';
 class EmulatorScreen extends React.Component {
   static propTypes = {
     emulator: PropTypes.object, // emulator service
-    enableControl: Boolean,
-    enableFullScreen: Boolean,
+    enableControl: PropTypes.bool,
+    enableFullScreen: PropTypes.bool,
   };
 
   render() {

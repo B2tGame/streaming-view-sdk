@@ -32,8 +32,8 @@ export default class Emulator extends Component {
     width: PropTypes.number,
     height: PropTypes.number,
     scale: PropTypes.number,
-    enableControl: Boolean,
-    enableFullScreen: Boolean,
+    enableControl: PropTypes.bool,
+    enableFullScreen: PropTypes.bool,
   };
 
   static defaultProps = {

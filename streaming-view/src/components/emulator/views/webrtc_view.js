@@ -30,8 +30,8 @@ var qs = require('qs');
 export default class EmulatorWebrtcView extends Component {
   static propTypes = {
     emulator: PropTypes.object, // emulator service
-    enableControl: Boolean,
-    enableFullScreen: Boolean,
+    enableControl: PropTypes.bool,
+    enableFullScreen: PropTypes.bool,
   };
 
   state = {
