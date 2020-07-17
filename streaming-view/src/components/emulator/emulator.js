@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import EmulatorWebrtcView from "./views/webrtc_view.js";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import EmulatorWebrtcView from './views/webrtc_view.js';
 
 /**
  * An emulator object that displays the screen and sends mouse events via gRPC.
@@ -43,18 +43,11 @@ export default class Emulator extends Component {
   };
 
   render() {
-    const {
-      width,
-      height,
-      scale,
-      emulator,
-      enableControl,
-      enableFullScreen,
-    } = this.props;
-    const styled = { outline: "none", maxWidth: width * scale };
+    const { width, height, scale, emulator, enableControl, enableFullScreen } = this.props;
+    const styled = { outline: 'none', maxWidth: width * scale };
 
     return (
-      <div tabIndex="1" style={styled}>
+      <div tabIndex='1' style={styled}>
         <EmulatorWebrtcView
           width={width * scale}
           height={height * scale}

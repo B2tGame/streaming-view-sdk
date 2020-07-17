@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Empty} from "google-protobuf/google/protobuf/empty_pb";
+import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 
 /**
  * Gets the status of the emulator, parsing the hardware config into something
@@ -23,45 +23,45 @@ import {Empty} from "google-protobuf/google/protobuf/empty_pb";
  * @class EmulatorStatus
  */
 export default class EmulatorStatus {
-	constructor(emulator) {
-		this.emulator = emulator;
-		this.status = null;
-	}
+  constructor(emulator) {
+    this.emulator = emulator;
+    this.status = null;
+  }
 
-	getStatus = () => {
-		return this.status;
-	};
+  getStatus = () => {
+    return this.status;
+  };
 
-	/**
-	 * Update the status of the emulator
-	 *
-	 * @param  {Callback} fnNotify when the status is available, returns the retrieved status.
-	 * @memberof EmulatorStatus
-	 */
-	updateStatus = fnNotify => {
-		const request = new Empty();
-		this.emulator.getStatus(request).on("data", response => {
-			var hwConfig = {};
-			const entryList = response.getHardwareconfig().getEntryList();
-			for (var i = 0; i < entryList.length; i++) {
-				const key = entryList[i].getKey();
-				const val = entryList[i].getValue();
-				hwConfig[key] = val;
-			}
+  /**
+   * Update the status of the emulator
+   *
+   * @param  {Callback} fnNotify when the status is available, returns the retrieved status.
+   * @memberof EmulatorStatus
+   */
+  updateStatus = (fnNotify) => {
+    const request = new Empty();
+    this.emulator.getStatus(request).on('data', (response) => {
+      var hwConfig = {};
+      const entryList = response.getHardwareconfig().getEntryList();
+      for (var i = 0; i < entryList.length; i++) {
+        const key = entryList[i].getKey();
+        const val = entryList[i].getValue();
+        hwConfig[key] = val;
+      }
 
-			const vmConfig = response.getVmconfig();
-			this.status = {
-				version: response.getVersion(),
-				uptime: response.getUptime(),
-				booted: response.getBooted(),
-				hardwareConfig: hwConfig,
-				vmConfig: {
-					hypervisorType: vmConfig.getHypervisortype(),
-					numberOfCpuCores: vmConfig.getNumberofcpucores(),
-					ramSizeBytes: vmConfig.getRamsizebytes()
-				}
-			};
-			fnNotify(this.status);
-		});
-	};
+      const vmConfig = response.getVmconfig();
+      this.status = {
+        version: response.getVersion(),
+        uptime: response.getUptime(),
+        booted: response.getBooted(),
+        hardwareConfig: hwConfig,
+        vmConfig: {
+          hypervisorType: vmConfig.getHypervisortype(),
+          numberOfCpuCores: vmConfig.getNumberofcpucores(),
+          ramSizeBytes: vmConfig.getRamsizebytes(),
+        },
+      };
+      fnNotify(this.status);
+    });
+  };
 }

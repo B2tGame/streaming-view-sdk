@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {EmulatorControllerClient} from "../../../android_emulation_control/emulator_controller_grpc_web_pb.js";
-import {GrpcWebClientBase} from "grpc-web";
-import {EventEmitter} from "events";
-
+import { EmulatorControllerClient } from '../../../android_emulation_control/emulator_controller_grpc_web_pb.js';
+import { GrpcWebClientBase } from 'grpc-web';
+import { EventEmitter } from 'events';
 
 /**
  * A GrcpWebClientBase that inject authentication headers and intercepts
@@ -27,38 +26,38 @@ import {EventEmitter} from "events";
  * @extends {GrpcWebClientBase}
  */
 class EmulatorWebClient extends GrpcWebClientBase {
-	constructor(options) {
-		super(options);
-		this.events = new EventEmitter();
-		this.events.on('error', () => {});
-	}
+  constructor(options) {
+    super(options);
+    this.events = new EventEmitter();
+    this.events.on('error', () => {});
+  }
 
-	on = (name, fn) => {
-		this.events.on(name, fn);
-	};
+  on = (name, fn) => {
+    this.events.on(name, fn);
+  };
 
-	rpcCall = (method, request, metadata, methodinfo, callback) => {
-		const meta = {...metadata};
-		return super.rpcCall(method, request, meta, methodinfo, (err, res) => {
-			if (err) {
-				this.events.emit("error", err);
-			}
-			if (callback) {
-				callback(err, res);
-			}
-		});
-	};
+  rpcCall = (method, request, metadata, methodinfo, callback) => {
+    const meta = { ...metadata };
+    return super.rpcCall(method, request, meta, methodinfo, (err, res) => {
+      if (err) {
+        this.events.emit('error', err);
+      }
+      if (callback) {
+        callback(err, res);
+      }
+    });
+  };
 
-	serverStreaming = (method, request, metadata, methodInfo) => {
-		const meta = {...metadata};
-		const stream = super.serverStreaming(method, request, meta, methodInfo);
+  serverStreaming = (method, request, metadata, methodInfo) => {
+    const meta = { ...metadata };
+    const stream = super.serverStreaming(method, request, meta, methodInfo);
 
-		// Intercept errors.
-		stream.on("error", e => {
-			this.events.emit("error", e);
-		});
-		return stream;
-	};
+    // Intercept errors.
+    stream.on('error', (e) => {
+      this.events.emit('error', e);
+    });
+    return stream;
+  };
 }
 
 /**
@@ -78,19 +77,19 @@ class EmulatorWebClient extends GrpcWebClientBase {
  * @extends {EmulatorControllerClient}
  */
 export class EmulatorControllerService extends EmulatorControllerClient {
-	/**
-	 *Creates an instance of EmulatorControllerService.
-	 * @param {string} uri of the emulator controller endpoint.
-	 * @param onError callback that will be invoked when a low level gRPC error arises.
-	 * @memberof EmulatorControllerService
-	 */
-	constructor(uri, onError) {
-		super(uri);
-		this.client_ = new EmulatorWebClient({});
-		if (onError) {
-			this.client_.on('error', e => {
-				onError(e);
-			});
-		}
-	}
+  /**
+   *Creates an instance of EmulatorControllerService.
+   * @param {string} uri of the emulator controller endpoint.
+   * @param onError callback that will be invoked when a low level gRPC error arises.
+   * @memberof EmulatorControllerService
+   */
+  constructor(uri, onError) {
+    super(uri);
+    this.client_ = new EmulatorWebClient({});
+    if (onError) {
+      this.client_.on('error', (e) => {
+        onError(e);
+      });
+    }
+  }
 }

@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import JsepProtocolDriver from "../net/jsep_protocol_driver.js";
-import * as Proto from "../../../android_emulation_control/emulator_controller_pb.js";
-import EmulatorStatus from "../net/emulator_status";
-import { isMobile, isIOS } from "react-device-detect";
-import screenfull from "screenfull";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import JsepProtocolDriver from '../net/jsep_protocol_driver.js';
+import * as Proto from '../../../android_emulation_control/emulator_controller_pb.js';
+import EmulatorStatus from '../net/emulator_status';
+import { isMobile, isIOS } from 'react-device-detect';
+import screenfull from 'screenfull';
 
-var qs = require("qs");
+var qs = require('qs');
 
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
@@ -43,7 +43,7 @@ export default class EmulatorWebrtcView extends Component {
       // In proto, 0 is "no button", 1 is left, and 2 is right.
       mouseButton: 0,
     },
-    screenOrientation: "portrait",
+    screenOrientation: 'portrait',
   };
 
   constructor(props) {
@@ -60,19 +60,18 @@ export default class EmulatorWebrtcView extends Component {
     this.jsep = new JsepProtocolDriver(this.props.emulator, this.onConnect);
     this.jsep.startStream();
     this.updateScales();
-    window.addEventListener("resize", this.updateScales);
+    window.addEventListener('resize', this.updateScales);
   };
 
   componentWillUnmount() {
-    window.removeEventListener("resize", this.updateScales);
+    window.removeEventListener('resize', this.updateScales);
   }
 
   saveQueryParamsToState() {
-    const queryParams =
-      qs.parse(window.location.search, { ignoreQueryPrefix: true }) || {};
-    const screenOrientation = ["portrait", "landscape"].includes(queryParams.so)
+    const queryParams = qs.parse(window.location.search, { ignoreQueryPrefix: true }) || {};
+    const screenOrientation = ['portrait', 'landscape'].includes(queryParams.so)
       ? queryParams.screenOrientation
-      : "portrait";
+      : 'portrait';
     const fps = queryParams.fps;
 
     this.setState({
@@ -103,8 +102,7 @@ export default class EmulatorWebrtcView extends Component {
     const innerRatio = innerHeight / innerWidth;
 
     // the ratios are off when we have black spots around the stream
-    const isOffRatio =
-      Math.round(innerRatio * 100) !== Math.round(deviceRatio * 100);
+    const isOffRatio = Math.round(innerRatio * 100) !== Math.round(deviceRatio * 100);
 
     // we need to recalculate the scales when we are in off ration mode
     const emulatorWith = innerHeight / deviceRatio;
@@ -141,7 +139,7 @@ export default class EmulatorWebrtcView extends Component {
   getEmulatorStatus() {
     const emulatorStatus = new EmulatorStatus(this.props.emulator);
     emulatorStatus.updateStatus((state) => {
-      console.log("Emulator State:", state);
+      console.log('Emulator State:', state);
       this.setState({});
     });
   }
@@ -151,18 +149,14 @@ export default class EmulatorWebrtcView extends Component {
     const state = new EmulatorStatus(emulator);
     state.updateStatus((state) => {
       this.setState({
-        deviceWidth:
-          parseInt(state.hardwareConfig["hw.lcd.width"]) || this.props.width,
-        deviceHeight:
-          parseInt(state.hardwareConfig["hw.lcd.height"]) || this.props.height,
+        deviceWidth: parseInt(state.hardwareConfig['hw.lcd.width']) || this.props.width,
+        deviceHeight: parseInt(state.hardwareConfig['hw.lcd.height']) || this.props.height,
       });
     });
   }
 
   onConnect = (stream) => {
-    console.log(
-      "Connecting video stream: " + this.video + ":" + this.video.readyState
-    );
+    console.log('Connecting video stream: ' + this.video + ':' + this.video.readyState);
     this.video.srcObject = stream;
     // Kick off playing in case we already have enough data available.
     this.video.play();
@@ -170,7 +164,7 @@ export default class EmulatorWebrtcView extends Component {
 
   onCanPlay = (event) => {
     if (!this.containerRef.current) {
-      console.log("Container was unmounted!");
+      console.log('Container was unmounted!');
       return;
     }
 
@@ -179,7 +173,7 @@ export default class EmulatorWebrtcView extends Component {
         return this.video.play();
       })
       .then(() => {
-        console.log("Automatic playback started!");
+        console.log('Automatic playback started!');
       })
       .catch((error) => {
         // Autoplay is likely disabled in chrome
@@ -187,14 +181,7 @@ export default class EmulatorWebrtcView extends Component {
         // so we should probably show something useful here.
         // We explicitly set the video stream to muted, so this shouldn't happen,
         // but is something you will have to fix once enabling audio.
-        alert(
-          "code: " +
-            error.code +
-            ", msg: " +
-            error.message +
-            ", name: " +
-            error.nane
-        );
+        alert('code: ' + error.code + ', msg: ' + error.message + ', name: ' + error.nane);
       });
   };
 
@@ -282,7 +269,7 @@ export default class EmulatorWebrtcView extends Component {
     request.setX(xp);
     request.setY(yp);
     request.setButtons(mouseDown ? mouseButton : 0);
-    this.sendJsepEvent("mouse", request);
+    this.sendJsepEvent('mouse', request);
   };
 
   setTouchCoordinates = (touches) => {
@@ -302,11 +289,7 @@ export default class EmulatorWebrtcView extends Component {
         let yp = clientY;
 
         let isOffScreen = false;
-        ({ xp, yp, isOffScreen } = this.handleOffScreenCase(
-          xp,
-          yp,
-          isOffScreen
-        ));
+        ({ xp, yp, isOffScreen } = this.handleOffScreenCase(xp, yp, isOffScreen));
 
         if (isOffScreen) {
           return undefined;
@@ -318,9 +301,7 @@ export default class EmulatorWebrtcView extends Component {
         protoTouch.setIdentifier(identifier);
         protoTouch.setPressure(1);
 
-        const touchMinor = Math.round(
-          Math.max(2, Math.min(2 * radiusX, 2 * radiusY))
-        );
+        const touchMinor = Math.round(Math.max(2, Math.min(2 * radiusX, 2 * radiusY)));
         protoTouch.setTouchMinor(touchMinor);
 
         const touchMajor = Math.round(Math.max(2 * radiusX, 2 * radiusY, 10));
@@ -334,23 +315,21 @@ export default class EmulatorWebrtcView extends Component {
     const requestTouchEvent = new Proto.TouchEvent();
     requestTouchEvent.setTouchesList(touchesToSend);
 
-    this.sendJsepEvent("touch", requestTouchEvent);
+    this.sendJsepEvent('touch', requestTouchEvent);
   };
 
   handleKey = (eventType) => {
     return (event) => {
       var request = new Proto.KeyboardEvent();
-      if (eventType === "KEYDOWN") {
+      if (eventType === 'KEYDOWN') {
         request.setEventtype(Proto.KeyboardEvent.KeyEventType.KEYDOWN);
       } else {
         request.setEventtype(
-          eventType === "KEYUP"
-            ? Proto.KeyboardEvent.KeyEventType.KEYUP
-            : Proto.KeyboardEvent.KeyEventType.KEYPRESS
+          eventType === 'KEYUP' ? Proto.KeyboardEvent.KeyEventType.KEYUP : Proto.KeyboardEvent.KeyEventType.KEYPRESS
         );
       }
       request.setKey(event.key);
-      this.sendJsepEvent("keyboard", request);
+      this.sendJsepEvent('keyboard', request);
     };
   };
 
@@ -435,7 +414,7 @@ export default class EmulatorWebrtcView extends Component {
     // Make the grpc call.
     const requestTouchEvent = new Proto.TouchEvent();
     requestTouchEvent.setTouchesList([protoTouch]);
-    this.sendJsepEvent("touch", requestTouchEvent);
+    this.sendJsepEvent('touch', requestTouchEvent);
   };
 
   enterFullScreen = () => {
@@ -443,14 +422,12 @@ export default class EmulatorWebrtcView extends Component {
       screenfull
         .request()
         .then(() => {
-          window.screen.orientation
-            .lock(this.state.screenOrientation)
-            .catch((error) => {
-              console.log("Failed to lock screen orientation to:", error);
-            });
+          window.screen.orientation.lock(this.state.screenOrientation).catch((error) => {
+            console.log('Failed to lock screen orientation to:', error);
+          });
         })
         .catch((error) => {
-          console.log("Failed to request fullscreen:", error);
+          console.log('Failed to request fullscreen:', error);
         });
     }
   };
@@ -459,7 +436,7 @@ export default class EmulatorWebrtcView extends Component {
     return (
       <div>
         <div
-          id="container"
+          id='container'
           ref={this.containerRef}
           // Handle mouse interaction
           onMouseDown={this.handleMouseDown}
@@ -467,8 +444,8 @@ export default class EmulatorWebrtcView extends Component {
           onMouseUp={this.handleMouseUp}
           onMouseOut={this.handleMouseUp}
           // Handle key interaction
-          onKeyDown={this.handleKey("KEYDOWN")}
-          onKeyUp={this.handleKey("KEYUP")}
+          onKeyDown={this.handleKey('KEYDOWN')}
+          onKeyUp={this.handleKey('KEYUP')}
           // Handle touch interaction
           onTouchStart={this.handleTouchStart}
           onTouchEnd={this.handleTouchEnd}
@@ -480,13 +457,13 @@ export default class EmulatorWebrtcView extends Component {
           // onTouchCancelCapture={this.handleTouch}
 
           onDragStart={this.preventDragHandler}
-          tabIndex="0"
+          tabIndex='0'
         >
           <video
             ref={(node) => (this.video = node)}
             width={this.state.innerWidth}
             height={this.state.innerHeight}
-            muted="muted"
+            muted='muted'
             onContextMenu={this.onContextMenu}
             onCanPlay={this.onCanPlay}
             playsInline
