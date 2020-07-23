@@ -1,6 +1,6 @@
 'use strict';
 
-import StreamingView from './streaming-view';
+import StreamingView from './src/StreamingView';
 
 /**
  * Streaming View SDK
