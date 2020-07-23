@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import EmulatorScreen from './src/components/emulator_screen';
-import { EmulatorControllerService } from './src/components/emulator/net/emulator_web_client';
-import RoundTripTimeMonitor from './src/components/round_trip_time_monitor';
+import EmulatorScreen from './components/emulator_screen';
+import { EmulatorControllerService } from './components/emulator/net/emulator_web_client';
+import RoundTripTimeMonitor from './components/round_trip_time_monitor';
 
 const rp = require('request-promise');
 
