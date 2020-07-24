@@ -17,7 +17,7 @@
   "dependencies": {
     "eventemitter3": "^4.0.0",
     "google-protobuf": "^3.11.4",
-    "grpc-web": "^1.0.7",
+    "grpc-web": "1.0.7",
     "react": "^16.13.1",
     "react-device-detect": "^1.12.1",
     "react-dom": "^16.13.1",
