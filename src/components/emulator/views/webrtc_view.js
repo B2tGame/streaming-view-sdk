@@ -54,6 +54,7 @@ export default class EmulatorWebrtcView extends Component {
   }
 
   componentDidMount = () => {
+    console.log('EmulatorWebrtcView !!! --> componentDidMount');
     this.saveQueryParamsToState();
     this.getEmulatorStatus();
     this.getScreenSize();

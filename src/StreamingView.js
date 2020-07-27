@@ -74,6 +74,8 @@ export default class StreamingView extends Component {
   }
 
   render() {
+    console.log('RENDERING !!!!!!!!!! xxxxx');
+    
     return (
       <div>
         <RoundTripTimeMonitor />
