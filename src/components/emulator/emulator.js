@@ -46,8 +46,6 @@ export default class Emulator extends Component {
     const { width, height, scale, emulator, enableControl, enableFullScreen } = this.props;
     const styled = { outline: 'none', maxWidth: width * scale };
 
-    console.log('Rendering Emulator --> emulator.js');
-    
     return (
       <div tabIndex='1' style={styled}>
         <EmulatorWebrtcView

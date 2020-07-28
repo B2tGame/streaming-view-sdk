@@ -10,7 +10,7 @@ module.exports = {
     libraryTarget: 'umd',
   },
   optimization: {
-    // Set this to false during debuging time..
+    // Set this to false during debugging time..
     minimize: true,
     usedExports: true,
   },
@@ -18,7 +18,7 @@ module.exports = {
     rules: [
       {
         test: /\.jsx?$/,
-        // exclude: [/(node_modules)/],
+        exclude: [/(node_modules)/],
         loader: 'babel-loader',
         options: {
           configFile: './babel.config.js',
