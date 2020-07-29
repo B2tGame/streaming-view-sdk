@@ -49,6 +49,7 @@ export default class JsepProtocol {
    */
   constructor(emulator, onConnect, onDisconnect) {
     this.emulator = emulator;
+    console.log('EMULATOR:', this.emulator);
     this.events = new EventEmitter();
     /* eslint-disable */
     this.guid = new proto.android.emulation.control.RtcId();
