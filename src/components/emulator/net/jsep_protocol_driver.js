@@ -45,11 +45,11 @@ export default class JsepProtocol {
    * @param {EmulatorControllerService} emulator Service used to make the gRPC calls
    * @param {callback} onConnect optional callback that is invoked when a stream is available
    * @param {callback} onDisconnect optional callback that is invoked when the stream is closed.
+   * @param {string} turnHost The turn server host name
    * @memberof JsepProtocol
    */
-  constructor(emulator, onConnect, onDisconnect) {
+  constructor(emulator, onConnect, onDisconnect, turnHost) {
     this.emulator = emulator;
-    console.log('EMULATOR:', this.emulator);
     this.events = new EventEmitter();
     /* eslint-disable */
     this.guid = new proto.android.emulation.control.RtcId();
@@ -57,6 +57,8 @@ export default class JsepProtocol {
 
     if (onConnect) this.events.on('connected', onConnect);
     if (onDisconnect) this.events.on('disconnected', onDisconnect);
+
+    this.turnHost = turnHost;
   }
 
   on = (name, fn) => {
@@ -169,10 +171,7 @@ export default class JsepProtocol {
       ? configuration
       : [
           {
-            urls: [
-              'turn:' + window.location.hostname + ':3478?transport=udp',
-              'turn:' + window.location.hostname + ':3478?transport=tcp',
-            ],
+            urls: [`turn:${this.turnHost}:3478?transport=udp`, `turn:${this.turnHost}:3478?transport=tcp`],
             username: 'webclient',
             credential: 'webclient',
           },

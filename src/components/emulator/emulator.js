@@ -34,6 +34,7 @@ export default class Emulator extends Component {
     scale: PropTypes.number,
     enableControl: PropTypes.bool,
     enableFullScreen: PropTypes.bool,
+    turnHost: PropTypes.string,
   };
 
   static defaultProps = {
@@ -43,7 +44,7 @@ export default class Emulator extends Component {
   };
 
   render() {
-    const { width, height, scale, emulator, enableControl, enableFullScreen } = this.props;
+    const { width, height, scale, emulator, enableControl, enableFullScreen, turnHost } = this.props;
     const styled = { outline: 'none', maxWidth: width * scale };
 
     return (
@@ -54,6 +55,7 @@ export default class Emulator extends Component {
           emulator={emulator}
           enableControl={enableControl}
           enableFullScreen={enableFullScreen}
+          turnHost={turnHost}
         />
       </div>
     );

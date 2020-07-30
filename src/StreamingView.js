@@ -5,6 +5,7 @@ import { EmulatorControllerService } from './components/emulator/net/emulator_we
 import RoundTripTimeMonitor from './components/round_trip_time_monitor';
 
 const rp = require('request-promise');
+const url = require('url');
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
@@ -30,6 +31,7 @@ export default class StreamingView extends Component {
 
     const { apiEndpoint, edgeNodeId } = props;
     this.emulator = new EmulatorControllerService(`${apiEndpoint}/${edgeNodeId}`);
+    this.turnHost = url.parse(apiEndpoint).hostname || window.location.hostname;
     this.pollStreamStatus(apiEndpoint, edgeNodeId, this.state.maxRetryCount);
   }
 
@@ -64,7 +66,12 @@ export default class StreamingView extends Component {
       case true:
         const { enableControl, enableFullScreen } = this.props;
         return (
-          <EmulatorScreen emulator={this.emulator} enableControl={enableControl} enableFullScreen={enableFullScreen} />
+          <EmulatorScreen
+            emulator={this.emulator}
+            enableControl={enableControl}
+            enableFullScreen={enableFullScreen}
+            turnHost={this.turnHost}
+          />
         );
       case false:
         return <p>EdgeNode Stream is unreachable</p>;

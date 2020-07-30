@@ -10,11 +10,19 @@ class EmulatorScreen extends React.Component {
     emulator: PropTypes.object, // emulator service
     enableControl: PropTypes.bool,
     enableFullScreen: PropTypes.bool,
+    turnHost: PropTypes.string,
   };
 
   render() {
-    const { emulator, enableControl, enableFullScreen } = this.props;
-    return <Emulator emulator={emulator} enableControl={enableControl} enableFullScreen={enableFullScreen} />;
+    const { emulator, enableControl, enableFullScreen, turnHost } = this.props;
+    return (
+      <Emulator
+        emulator={emulator}
+        enableControl={enableControl}
+        enableFullScreen={enableFullScreen}
+        turnHost={turnHost}
+      />
+    );
   }
 }
 
