@@ -32,6 +32,7 @@ export default class EmulatorWebrtcView extends Component {
     emulator: PropTypes.object, // emulator service
     enableControl: PropTypes.bool,
     enableFullScreen: PropTypes.bool,
+    turnHost: PropTypes.string,
   };
 
   state = {
@@ -57,7 +58,7 @@ export default class EmulatorWebrtcView extends Component {
     this.saveQueryParamsToState();
     this.getEmulatorStatus();
     this.getScreenSize();
-    this.jsep = new JsepProtocolDriver(this.props.emulator, this.onConnect);
+    this.jsep = new JsepProtocolDriver(this.props.emulator, this.onConnect, undefined, this.props.turnHost);
     this.jsep.startStream();
     this.updateScales();
     window.addEventListener('resize', this.updateScales);
