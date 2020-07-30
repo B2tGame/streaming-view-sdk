@@ -44,6 +44,7 @@ export default class StreamingView extends Component {
         console.log('Request promise result:', result);
         if (result.state === 'ready') {
           console.log("Edge Node Stream is 'ready'!");
+          console.log('Latest update: 2020-07-30 16:20');
 
           this.setState({
             isReadyStream: true,
