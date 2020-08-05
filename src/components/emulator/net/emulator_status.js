@@ -23,7 +23,7 @@ import { EmulatorControllerService } from "../../../proto/emulator_web_client";
  * @export
  * @class EmulatorStatus
  */
-class EmulatorStatus {
+export default class EmulatorStatus {
   /**
    * Creates an EmulatorStatus object that can retrieve the status of the running emulator.
    *
@@ -65,7 +65,7 @@ class EmulatorStatus {
       fnNotify(this.status);
       return this.status;
     }
-    this.emulator.getStatus(request, {}, (err, response) => {
+    this.emulator.getStatus(request).on("data", response => {
       var hwConfig = {};
       const entryList = response.getHardwareconfig().getEntryList();
       for (var i = 0; i < entryList.length; i++) {
@@ -90,5 +90,3 @@ class EmulatorStatus {
     });
   };
 }
-
-export default EmulatorStatus;

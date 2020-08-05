@@ -61,6 +61,7 @@ export default class EmulatorWebrtcView extends Component {
 
   componentWillUnmount() {
     this.props.jsep.disconnect();
+    document.removeEventListener("click", this.closeMenu);
   }
 
   componentDidMount() {
