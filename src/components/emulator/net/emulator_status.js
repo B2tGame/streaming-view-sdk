@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Empty } from "google-protobuf/google/protobuf/empty_pb";
-import { EmulatorControllerService } from "../../../proto/emulator_web_client";
+import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
+import { EmulatorControllerService } from '../../../proto/emulator_web_client';
 
 /**
  * Gets the status of the emulator, parsing the hardware config into something
@@ -83,8 +83,8 @@ class EmulatorStatus {
         vmConfig: {
           hypervisorType: vmConfig.getHypervisortype(),
           numberOfCpuCores: vmConfig.getNumberofcpucores(),
-          ramSizeBytes: vmConfig.getRamsizebytes()
-        }
+          ramSizeBytes: vmConfig.getRamsizebytes(),
+        },
       };
       fnNotify(this.status);
     });

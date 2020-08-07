@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EventEmitter } from "events";
-import "../../../proto/emulator_controller_pb";
-import { EmulatorControllerService } from "../../../proto/emulator_web_client";
+import { EventEmitter } from 'events';
+import '../../../proto/emulator_controller_pb';
+import { EmulatorControllerService } from '../../../proto/emulator_web_client';
 
 /**
  * Observe the logcat stream from the emulator.
@@ -47,7 +47,7 @@ class Logcat {
       this.emulator = new EmulatorControllerService(uriOrEmulator, auth);
     }
     this.offset = 0;
-    this.lastline = "";
+    this.lastline = '';
     this.stream = null;
     this.events = new EventEmitter();
     this.refreshRate = 1000;
@@ -89,7 +89,7 @@ class Logcat {
       clearInterval(this.timerID);
       this.timerID = null;
     }
-    this.events.emit("end");
+    this.events.emit('end');
   };
 
   pollStream = () => {
@@ -105,7 +105,7 @@ class Logcat {
         const nextOffset = response.getNext();
         if (nextOffset > self.offset) {
           self.offset = response.getNext();
-          self.events.emit("data", response.getContents());
+          self.events.emit('data', response.getContents());
         }
       }
     });
@@ -118,12 +118,12 @@ class Logcat {
     const request = new proto.android.emulation.control.LogMessage();
     request.setStart(this.offset);
     this.stream = this.emulator.streamLogcat(request);
-    this.stream.on("data", (response) => {
+    this.stream.on('data', (response) => {
       self.offset = response.getNext();
       const contents = response.getContents();
-      self.events.emit("data", contents);
+      self.events.emit('data', contents);
     });
-    this.stream.on("error", (error) => {
+    this.stream.on('error', (error) => {
       if ((error.code = 1)) {
         // Ignore we got cancelled.
       }
@@ -140,7 +140,7 @@ class Logcat {
    * @memberof Logcat
    */
   start = (fnNotify, refreshRate = 1000) => {
-    if (fnNotify) this.on("data", fnNotify);
+    if (fnNotify) this.on('data', fnNotify);
 
     this.refreshRate = refreshRate;
     if (this.refreshRate > 0) {
@@ -148,7 +148,7 @@ class Logcat {
     } else {
       this.stream();
     }
-    this.events.emit("start");
+    this.events.emit('start');
   };
 }
 
