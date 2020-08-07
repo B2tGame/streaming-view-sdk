@@ -57,6 +57,7 @@ export default class JsepProtocol {
     this.poll = poll;
     this.guid = null;
     this.event_forwarders = {};
+
     if (typeof this.rtc.receiveJsepMessages !== "function") this.poll = true;
     if (onConnect) this.events.on("connected", onConnect);
     if (onDisconnect) this.events.on("disconnected", onDisconnect);
@@ -90,7 +91,15 @@ export default class JsepProtocol {
     this.active = true;
 
     var request = new Empty();
-    this.rtc.requestRtcStream(request).on("data", (response) => {
+    this.rtc.requestRtcStream(request, {}, (err, response) => {
+      // this.rtc.requestRtcStream(request).on("data", (response) => {
+
+      if (err) {
+        console.error("Failed to configure rtc stream: " + JSON.stringify(err));
+        this.disconnect();
+        return;
+      }
+
       // Configure
       self.guid = response;
       self.connected = true;
@@ -105,6 +114,38 @@ export default class JsepProtocol {
       }
     });
   };
+
+  /**
+   * Initiates the JSEP protocol.
+   *
+   * @memberof JsepProtocol
+   */
+    // startStream = () => {
+    //   const self = this;
+    //   this.connected = false;
+    //   this.peerConnection = null;
+    //   this.active = true;
+    //
+    //   var request = new Empty();
+    //   console.log('Before: requestRtcStream');
+    //   let x = this.rtc.requestRtcStream(request).on("data", (response) => {
+    //     // Configure
+    //     console.log('FFFFF');
+    //     self.guid = response;
+    //     self.connected = true;
+    //
+    //
+    //     console.log('Ehmmm ????');
+    //     if (!this.poll) {
+    //       // Streaming envoy based.
+    //       self._streamJsepMessage();
+    //     } else {
+    //       // Poll pump messages, go/envoy based proxy.
+    //       console.info("Polling jsep messages.");
+    //       self._receiveJsepMessage();
+    //     }
+    //   });
+    // };
 
   cleanup = () => {
     this.disconnect();
@@ -181,8 +222,10 @@ export default class JsepProtocol {
     return [
       {
         urls: [
-          "turn:" + window.location.hostname + ":3478?transport=udp",
-          "turn:" + window.location.hostname + ":3478?transport=tcp",
+          // "turn:" + window.location.hostname + ":3478?transport=udp",
+          "turn:18.156.171.182:3478?transport=udp",
+          // "turn:" + window.location.hostname + ":3478?transport=tcp",
+          "turn:18.156.171.182:3478?transport=tcp",
         ],
         username: "webclient",
         credential: "webclient",

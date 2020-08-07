@@ -161,6 +161,7 @@ export default function withMouseKeyHandler(WrappedComponent) {
       //   this.updateScales();
       // }
 
+      /* TODO: Matej comment UNCOMMENT IT
       if (isOffRatio) {
         if (innerRatio < deviceRatio) {
           // we have a wide screen with empty space next to the emulator stream
@@ -175,7 +176,7 @@ export default function withMouseKeyHandler(WrappedComponent) {
           isOffScreen = yp < emulatorStarY || yp > emulatorEndY;
           yp -= emulatorStarY;
         }
-      }
+      } */
 
       return {
         xp: Math.round(xp / scaleX),
@@ -217,51 +218,51 @@ export default function withMouseKeyHandler(WrappedComponent) {
     setTouchCoordinates = (touches) => {
       let identifierForSafari = 0;
       const touchesToSend = Object.keys(touches)
-          .map((index) => {
-            const touch = touches[index];
-            const { clientX, clientY, radiusX, radiusY } = touch;
-            let { identifier } = touch;
-            // Iphone Safari triggering touch events with negative identifiers like (-1074001159) and identifiers
-            // are different for every touch (same for touch move), what breaking execution of touch events
-            // if (isIOS) {
-            //   identifier = identifierForSafari++;
-            // }
+        .map((index) => {
+          const touch = touches[index];
+          const { clientX, clientY, radiusX, radiusY } = touch;
+          let { identifier } = touch;
+          // Iphone Safari triggering touch events with negative identifiers like (-1074001159) and identifiers
+          // are different for every touch (same for touch move), what breaking execution of touch events
+          // if (isIOS) {
+          //   identifier = identifierForSafari++;
+          // }
 
-            let xp = clientX;
-            let yp = clientY;
+          let xp = clientX;
+          let yp = clientY;
 
-            let isOffScreen = false;
-            ({ xp, yp, isOffScreen } = this.handleOffScreenCase(xp, yp, isOffScreen));
+          let isOffScreen = false;
+          ({ xp, yp, isOffScreen } = this.handleOffScreenCase(xp, yp, isOffScreen));
 
-            if (isOffScreen) {
-              return undefined;
-            }
+          if (isOffScreen) {
+            return undefined;
+          }
 
-            const protoTouch = new Proto.Touch();
-
-
-            protoTouch.setX(xp);
-            protoTouch.setY(yp);
-            protoTouch.setIdentifier(3);
-            protoTouch.setPressure(1);
-
-            const touchMinor = Math.round(Math.max(2, Math.min(2 * radiusX, 2 * radiusY)));
-            protoTouch.setTouchMinor(touchMinor);
-
-            const touchMajor = Math.round(Math.max(2 * radiusX, 2 * radiusY, 10));
-            protoTouch.setTouchMajor(touchMajor);
+          const protoTouch = new Proto.Touch();
 
 
-            console.log("meeeeeeeeeeeeeeeeeh " + "xp: " + xp + " " +
-                "yp: " + yp + " " +
-                "xp: " + xp + " " +
-                "identifier: " + identifier + " " +
-                "touchMinor: " + touchMinor + " " +
-                "touchMajor: " + touchMajor + " ");
+          protoTouch.setX(xp);
+          protoTouch.setY(yp);
+          protoTouch.setIdentifier(3);
+          protoTouch.setPressure(1);
 
-            return protoTouch;
-          })
-          .filter((value) => value !== undefined);
+          const touchMinor = Math.round(Math.max(2, Math.min(2 * radiusX, 2 * radiusY)));
+          protoTouch.setTouchMinor(touchMinor);
+
+          const touchMajor = Math.round(Math.max(2 * radiusX, 2 * radiusY, 10));
+          protoTouch.setTouchMajor(touchMajor);
+
+
+          console.log("meeeeeeeeeeeeeeeeeh " + "xp: " + xp + " " +
+            "yp: " + yp + " " +
+            "xp: " + xp + " " +
+            "identifier: " + identifier + " " +
+            "touchMinor: " + touchMinor + " " +
+            "touchMajor: " + touchMajor + " ");
+
+          return protoTouch;
+        })
+        .filter((value) => value !== undefined);
 
       // Make the grpc call.
       const requestTouchEvent = new Proto.TouchEvent();

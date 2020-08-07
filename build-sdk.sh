@@ -46,7 +46,7 @@ popd
 
 
 # Final cleanup of temporay files:
-rm -rf $WEBRTC/src/proto
+# rm -rf $WEBRTC/src/proto
 rm -f $PROTOC_PLUGIN/grpc_generator.o
 rm -f $PROTOC_PLUGIN/protoc-gen-grpc-web
 rm -rf $WEBRTC/node_modules
