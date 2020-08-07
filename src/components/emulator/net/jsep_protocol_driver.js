@@ -56,8 +56,8 @@ export default class JsepProtocol {
     this.events = new EventEmitter();
     this.poll = poll;
     this.guid = null;
+    this.stream = null;
     this.event_forwarders = {};
-
     if (typeof this.rtc.receiveJsepMessages !== "function") this.poll = true;
     if (onConnect) this.events.on("connected", onConnect);
     if (onDisconnect) this.events.on("disconnected", onDisconnect);
@@ -75,6 +75,10 @@ export default class JsepProtocol {
   disconnect = () => {
     this.connected = false;
     if (this.peerConnection) this.peerConnection.close();
+    if (this.stream) {
+      this.stream.cancel();
+      this.stream = null;
+    }
     this.active = false;
     this.events.emit("disconnected", this);
   };
@@ -92,8 +96,6 @@ export default class JsepProtocol {
 
     var request = new Empty();
     this.rtc.requestRtcStream(request, {}, (err, response) => {
-      // this.rtc.requestRtcStream(request).on("data", (response) => {
-
       if (err) {
         console.error("Failed to configure rtc stream: " + JSON.stringify(err));
         this.disconnect();
@@ -114,38 +116,6 @@ export default class JsepProtocol {
       }
     });
   };
-
-  /**
-   * Initiates the JSEP protocol.
-   *
-   * @memberof JsepProtocol
-   */
-    // startStream = () => {
-    //   const self = this;
-    //   this.connected = false;
-    //   this.peerConnection = null;
-    //   this.active = true;
-    //
-    //   var request = new Empty();
-    //   console.log('Before: requestRtcStream');
-    //   let x = this.rtc.requestRtcStream(request).on("data", (response) => {
-    //     // Configure
-    //     console.log('FFFFF');
-    //     self.guid = response;
-    //     self.connected = true;
-    //
-    //
-    //     console.log('Ehmmm ????');
-    //     if (!this.poll) {
-    //       // Streaming envoy based.
-    //       self._streamJsepMessage();
-    //     } else {
-    //       // Poll pump messages, go/envoy based proxy.
-    //       console.info("Polling jsep messages.");
-    //       self._receiveJsepMessage();
-    //     }
-    //   });
-    // };
 
   cleanup = () => {
     this.disconnect();
@@ -218,6 +188,7 @@ export default class JsepProtocol {
     this.event_forwarders[channel.label] = channel;
   };
 
+  // CUSTOM-CODE-BLOCK: Passing ICE configuration
   getIceConfiguration() {
     return [
       {
@@ -232,13 +203,15 @@ export default class JsepProtocol {
       },
     ];
   }
+  // END-CUSTOM-CODE-BLOCK
 
   _handleStart = (signal) => {
+    // CUSTOM-CODE-BLOCK: Passing ICE configuration
     signal.start = {
       iceServers: this.getIceConfiguration(),
       iceTransportPolicy: "relay",
     };
-
+    // END-CUSTOM-CODE-BLOCK
     this.peerConnection = new RTCPeerConnection(signal.start);
     this.peerConnection.addEventListener(
       "track",
@@ -284,7 +257,10 @@ export default class JsepProtocol {
       if (signal.candidate) this._handleCandidate(signal);
     } catch (e) {
       console.error(
-        "Failed to handle message: [" + message + "], due to: " + e
+        "Failed to handle message: [" +
+        message +
+        "], due to: " +
+        JSON.stringify(e)
       );
     }
   };
@@ -307,19 +283,17 @@ export default class JsepProtocol {
     if (!this.connected) return;
     var self = this;
 
-    const stream = this.rtc.receiveJsepMessages(this.guid, {});
-    stream.on("data", (response) => {
+    this.stream = this.rtc.receiveJsepMessages(this.guid, {});
+    this.stream.on("data", (response) => {
       const msg = response.getMessage();
       self._handleJsepMessage(msg);
     });
-    stream.on("error", (e) => {
-      self.cleanup();
+    this.stream.on("error", (e) => {
+      self.disconnect();
     });
-    stream.on("end", (e) => {
-      self.cleanup();
+    this.stream.on("end", (e) => {
+      self.disconnect();
     });
-
-    this.receive = stream;
   };
 
   // This function is a fallback for v1 (go based proxy), that does not support streaming.
@@ -330,7 +304,14 @@ export default class JsepProtocol {
 
     // This is a blocking call, that will return as soon as a series
     // of messages have been made available, or if we reach a timeout
-    this.rtc.receiveJsepMessage(this.guid, {}).on("data", (response) => {
+    this.rtc.receiveJsepMessage(this.guid, {}, (err, response) => {
+      if (err) {
+        console.error(
+          "Failed to receive jsep message, disconnecting: " +
+          JSON.stringify(err)
+        );
+        this.disconnect();
+      }
       const msg = response.getMessage();
       // Handle only if we received a useful message.
       // it is possible to get nothing if the server decides
