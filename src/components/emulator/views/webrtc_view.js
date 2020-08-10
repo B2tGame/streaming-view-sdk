@@ -164,6 +164,7 @@ export default class EmulatorWebrtcView extends Component {
         muted={muted}
         onContextMenu={this.onContextMenu}
         onCanPlay={this.onCanPlay}
+        playsInline
       />
     );
   }

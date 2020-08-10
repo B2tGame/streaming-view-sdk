@@ -112,8 +112,10 @@ export default function withMouseKeyHandler(WrappedComponent) {
       const { clientWidth, clientHeight } = event.target;
 
       // Touched are not reporting offsets
-      const xEmulatorCoordinate = ((clientX - ((this.browser.width - clientWidth) / 2)) / clientWidth) * this.state.deviceWidth;
-      const yEmulatorCoordinate = ((clientY - ((this.browser.height - clientHeight) / 2)) / clientHeight) * this.state.deviceHeight;
+      const xEmulatorCoordinate =
+        ((clientX - (this.browser.width - clientWidth) / 2) / clientWidth) * this.state.deviceWidth;
+      const yEmulatorCoordinate =
+        ((clientY - (this.browser.height - clientHeight) / 2) / clientHeight) * this.state.deviceHeight;
 
       return {
         x: Math.round(xEmulatorCoordinate),
@@ -134,7 +136,8 @@ export default function withMouseKeyHandler(WrappedComponent) {
     sendTouch = (coors, mouseButton) => {
       const request = new Proto.MouseEvent();
       request.setX(coors.x);
-      request.setY(coors.y);
+      // Temp "fix" until real touch events will be supported
+      request.setY(coors.y - 20);
       request.setButtons(mouseButton === 0 ? 1 : 0);
 
       this.props.jsep.send('mouse', request);
@@ -187,9 +190,10 @@ export default function withMouseKeyHandler(WrappedComponent) {
     handleKey = (eventType) => {
       return (event) => {
         const request = new Proto.KeyboardEvent();
-        const eventType = eventType === 'KEYDOWN'
-          ? Proto.KeyboardEvent.KeyEventType.KEYDOWN
-          : eventType === 'KEYUP'
+        const eventType =
+          eventType === 'KEYDOWN'
+            ? Proto.KeyboardEvent.KeyEventType.KEYDOWN
+            : eventType === 'KEYUP'
             ? Proto.KeyboardEvent.KeyEventType.KEYUP
             : Proto.KeyboardEvent.KeyEventType.KEYPRESS;
 
@@ -205,13 +209,13 @@ export default function withMouseKeyHandler(WrappedComponent) {
     };
 
     enterFullScreen = () => {
-      if (!screenfull.isFullscreen) {
+      if (this.props.enableFullScreen && screenfull.isEnabled && !screenfull.isFullscreen) {
         screenfull
           .request()
           .then(() => {
-            // window.screen.orientation.lock(this.state.screenOrientation).catch((error) => {
-            //   console.log('Failed to lock screen orientation to:', error);
-            // });
+            window.screen.orientation.lock(this.props.screenOrientation).catch((error) => {
+              console.log('Failed to lock screen orientation to:', error);
+            });
           })
           .catch((error) => {
             console.log('Failed to request fullscreen:', error);
