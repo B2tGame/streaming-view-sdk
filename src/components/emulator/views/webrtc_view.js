@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import PropTypes from "prop-types";
-import React, { Component } from "react";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
@@ -34,6 +34,10 @@ export default class EmulatorWebrtcView extends Component {
     volume: PropTypes.number,
     /** Function called when an error arises, like play failures due to muting */
     onError: PropTypes.func,
+    /** The width of the emulator device */
+    deviceWidth: PropTypes.number,
+    /** The height of the emulator device */
+    deviceHeight: PropTypes.number,
   };
 
   state = {
@@ -43,12 +47,13 @@ export default class EmulatorWebrtcView extends Component {
   static defaultProps = {
     muted: false,
     volume: 1.0,
-    onError: (e) => console.error("WebRTC error: " + e),
-    onAudioStateChange: (e) => console.log("Webrtc audio became available: " + e),
+    onError: (e) => console.error('WebRTC error: ' + e),
+    onAudioStateChange: (e) => console.log('Webrtc audio became available: ' + e),
   };
 
   constructor(props) {
     super(props);
+
     this.video = React.createRef();
   }
 
@@ -61,23 +66,22 @@ export default class EmulatorWebrtcView extends Component {
 
   componentWillUnmount() {
     this.props.jsep.disconnect();
-    document.removeEventListener("click", this.closeMenu);
   }
 
   componentDidMount() {
-    this.props.jsep.on("connected", this.onConnect);
-    this.props.jsep.on("disconnected", this.onDisconnect);
-    this.setState({ connect: "connecting" }, this.broadcastState);
+    this.props.jsep.on('connected', this.onConnect);
+    this.props.jsep.on('disconnected', this.onDisconnect);
+    this.setState({ connect: 'connecting' }, this.broadcastState);
     this.props.jsep.startStream();
   }
 
   onDisconnect = () => {
-    this.setState({ connect: "disconnected" }, this.broadcastState);
+    this.setState({ connect: 'disconnected' }, this.broadcastState);
     this.setState({ audio: false }, this.props.onAudioStateChange(false));
   };
 
   onConnect = (track) => {
-    this.setState({ connect: "connected" }, this.broadcastState);
+    this.setState({ connect: 'connected' }, this.broadcastState);
     const video = this.video.current;
     if (!video) {
       // Component was unmounted.
@@ -88,7 +92,7 @@ export default class EmulatorWebrtcView extends Component {
       video.srcObject = new MediaStream();
     }
     video.srcObject.addTrack(track);
-    if (track.kind === "audio") {
+    if (track.kind === 'audio') {
       this.setState({ audio: true }, this.props.onAudioStateChange(true));
     }
   };
@@ -105,7 +109,7 @@ export default class EmulatorWebrtcView extends Component {
     video
       .play()
       .then((_) => {
-        console.info("Automatic playback started!");
+        console.info('Automatic playback started!');
       })
       .catch((error) => {
         // Notify listeners that we cannot start.
@@ -122,17 +126,39 @@ export default class EmulatorWebrtcView extends Component {
   };
 
   render() {
-    const { muted, volume } = this.props;
+    const { muted, volume, deviceWidth, deviceHeight } = this.props;
+    /*
+     * User Screen (Desktop eg. 16:9) - optimized for full-height
+     * ┌─────────┬────────┬─────────┐
+     * │         │        │         |
+     * │ "BLACK" │ STREAM │ "BLACK" │
+     * │         │        │         │
+     * └─────────┴────────┴─────────┘
+     *
+     * User Screen (Phone eg. IPHONE X - 9:19.5) - optimized for full-width
+     * ┌────────────┐
+     * │   "BLACK"  │
+     * ├────────────┤
+     * │            │
+     * │            │
+     * │   STREAM   │
+     * │            │
+     * │            │
+     * ├────────────┤
+     * │   "BLACK"  │
+     * └────────────┘
+     */
     return (
       <video
         ref={this.video}
+        // Optimize video size by comparing aspect ratios of the emulator device and browser window eg. (16/9 > 9/16)
+        className={window.innerHeight / window.innerWidth > deviceHeight / deviceWidth ? 'full-width' : 'full-height'}
         style={{
-          display: "block",
-          position: "relative",
-          width: "100%",
-          height: "100%",
-          objectFit: "contain",
-          objectPosition: "center",
+          // display: "block",
+          // position: "relative",
+          margin: '0 auto',
+          // objectFit: "contain",
+          // objectPosition: "center",
         }}
         volume={volume}
         muted={muted}

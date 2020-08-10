@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from "react";
-import * as Proto from "../../../proto/emulator_controller_pb";
-import EmulatorStatus from "../net/emulator_status";
+import React from 'react';
+import * as Proto from '../../../proto/emulator_controller_pb';
+import EmulatorStatus from '../net/emulator_status';
+import { isMobile, isIOS } from 'react-device-detect';
+import screenfull from 'screenfull';
 
 /**
  * A handler that extends a view to send key/mouse events to the emulator.
@@ -34,13 +36,15 @@ export default function withMouseKeyHandler(WrappedComponent) {
       this.state = {
         deviceHeight: 768,
         deviceWidth: 432,
-        windowOffsetX: 8,
-        windowOffsetY: 155,
         mouseDown: false,
       };
       this.handler = React.createRef();
       const { emulator } = this.props;
       this.status = new EmulatorStatus(emulator);
+      this.browser = {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      };
     }
 
     componentDidMount() {
@@ -48,16 +52,15 @@ export default function withMouseKeyHandler(WrappedComponent) {
     }
 
     getScreenSize() {
-      console.log(this.state.hardwareConfig)
-      this.status.updateStatus(state => {
+      this.status.updateStatus((state) => {
         this.setState({
-          deviceWidth: 768,
-          deviceHeight: 432
+          deviceWidth: parseInt(state.hardwareConfig['hw.lcd.width']) || this.state.deviceWidth,
+          deviceHeight: parseInt(state.hardwareConfig['hw.lcd.height']) || this.state.deviceHeight,
         });
       });
     }
 
-    onContextMenu = e => {
+    onContextMenu = (e) => {
       e.preventDefault();
     };
 
@@ -69,7 +72,7 @@ export default function withMouseKeyHandler(WrappedComponent) {
           const { clientX, clientY, radiusX, radiusY } = touch;
           const { offsetTop, offsetLeft } = this.handler.current;
           let { identifier } = touch;
-          const cords = { x: clientX - offsetLeft, y: clientY - offsetTop }
+          const cords = { x: clientX - offsetLeft, y: clientY - offsetTop };
           // Iphone Safari triggering touch events with negative identifiers like (-1074001159) and identifiers
           // are different for every touch (same for touch move), what breaking execution of touch events
           // if (isIOS) {
@@ -81,111 +84,171 @@ export default function withMouseKeyHandler(WrappedComponent) {
       return touchCordinates;
     };
 
-    converToEmulatorCordinates = (cords) => {
-      const { deviceWidth, deviceHeight } = this.state;
-      const { clientHeight, clientWidth } = this.handler.current;
-      const scaleX = deviceWidth / clientWidth;
-      const scaleY = deviceHeight / clientHeight;
-      const x = Math.round(cords.x * scaleX);
-      const y = Math.round(cords.y * scaleY);
+    /**
+     * @param event Native event
+     * @returns {{x: number, y: number}}
+     */
+    calculateEmulatorCoordinates = (event) => {
+      const { offsetX, offsetY } = event;
+      const { clientWidth, clientHeight } = event.target;
 
-      return { x, y };
-    }
-    isEmulatorCordinatesValid = (cords) => {
-      const { deviceWidth, deviceHeight } = this.state;
-      if (cords.x > deviceWidth || cords.x < 0)
-        return false;
-      if (cords.y > deviceHeight || cords.y < 0)
-        return false;
-      return true;
+      const xEmulatorCoordinate = (offsetX / clientWidth) * this.state.deviceWidth;
+      const yEmulatorCoordinate = (offsetY / clientHeight) * this.state.deviceHeight;
 
-    }
-    sendMouse = (cords, mouse) => {
-      if (this.isEmulatorCordinatesValid(cords)) {
-        var request = new Proto.MouseEvent();
-        request.setX(cords.x);
-        request.setY(cords.y);
-        request.setButtons(mouse);
-        const { jsep } = this.props;
-        jsep.send("mouse", request);
-      } else {
-        console.log("None valid cordinates", cords)
-      }
-    }
-
-
-    handleTouchStart = e => {
-      const screenCords = this.convertTouchCoordinates(e.nativeEvent.touches);
-      const emulatorCords = this.converToEmulatorCordinates(screenCords);
-      this.sendMouse(emulatorCords, 1);
+      return {
+        x: Math.round(xEmulatorCoordinate),
+        y: Math.round(yEmulatorCoordinate),
+      };
     };
 
+    /**
+     * @param event Native event
+     * @returns {{x: number, y: number}}
+     */
+    calculateEmulatorCoordinatesForTouch = (event) => {
+      // Coordinates are not with offset, different to click mouse event
+      const { clientX, clientY } = event;
+      console.log('event', event);
+      const { clientWidth, clientHeight } = event.target;
 
-    handleTouchEnd = e => {
-      this.sendMouse({ x: 1, y: 1 }, 0);
+      // Touched are not reporting offsets
+      const xEmulatorCoordinate = ((clientX - ((this.browser.width - clientWidth) / 2)) / clientWidth) * this.state.deviceWidth;
+      const yEmulatorCoordinate = ((clientY - ((this.browser.height - clientHeight) / 2)) / clientHeight) * this.state.deviceHeight;
+
+      return {
+        x: Math.round(xEmulatorCoordinate),
+        y: Math.round(yEmulatorCoordinate),
+      };
     };
 
+    sendMouse = (event, mouseButton) => {
+      const emulatorCords = this.calculateEmulatorCoordinates(event.nativeEvent);
+      const request = new Proto.MouseEvent();
+      request.setX(emulatorCords.x);
+      request.setY(emulatorCords.y);
+      request.setButtons(mouseButton === 0 ? 1 : 0);
 
-    handleTouchMove = e => {
-      const screenCords = this.convertTouchCoordinates(e.nativeEvent.touches);
-      const emulatorCords = this.converToEmulatorCordinates(screenCords);
-      this.sendMouse(emulatorCords, 1);
+      this.props.jsep.send('mouse', request);
+    };
+
+    sendTouch = (coors, mouseButton) => {
+      const request = new Proto.MouseEvent();
+      request.setX(coors.x);
+      request.setY(coors.y);
+      request.setButtons(mouseButton === 0 ? 1 : 0);
+
+      this.props.jsep.send('mouse', request);
+    };
+
+    handleTouchStart = (event) => {
+      this.enterFullScreen();
+      const emulatorCords = this.calculateEmulatorCoordinatesForTouch(event.nativeEvent.touches[0]);
+      this.sendTouch(emulatorCords, 0);
+    };
+
+    handleTouchEnd = (event) => {
+      this.enterFullScreen();
+      const emulatorCords = this.calculateEmulatorCoordinatesForTouch(event.nativeEvent.changedTouches[0]);
+      this.sendTouch(emulatorCords);
+    };
+
+    handleTouchMove = (event) => {
+      this.enterFullScreen();
+      const cords = this.calculateEmulatorCoordinatesForTouch(event.nativeEvent.touches[0]);
+      this.sendTouch(cords, 0);
     };
 
     // Properly handle the mouse events.
-    handleMouseDown = e => {
-      this.setState({ mouseDown: true })
-      const { offsetX, offsetY } = e.nativeEvent;
-      const emulatorCords = this.converToEmulatorCordinates({ x: offsetX, y: offsetY });
-      this.sendMouse(emulatorCords, 1)
-    };
-    handleMouseUp = e => {
-      this.setState({ mouseDown: false })
-      const { offsetX, offsetY } = e.nativeEvent;
-      const emulatorCords = this.converToEmulatorCordinates({ x: offsetX, y: offsetY });
-      this.sendMouse(emulatorCords, 0);
+    handleMouseDown = (event) => {
+      if (!isMobile) {
+        this.enterFullScreen();
+        this.setState({ mouseDown: true });
+        this.sendMouse(event, event.button);
+      }
     };
 
-
-
-    handleMouseMove = e => {
-      // Let's not overload the endpoint with useless events.
-      if (!this.state.mouseDown)
-        return;
-      const { offsetX, offsetY } = e.nativeEvent;
-      const emulatorCords = this.converToEmulatorCordinates({ x: offsetX, y: offsetY });
-      this.sendMouse(emulatorCords, 1);
-
+    handleMouseUp = (event) => {
+      // Don't release mouse when not pressed
+      if (!isMobile && this.state.mouseDown) {
+        this.enterFullScreen();
+        this.setState({ mouseDown: false });
+        this.sendMouse(event);
+      }
     };
 
-    preventDragHandler = e => {
-      e.preventDefault();
+    handleMouseMove = (event) => {
+      // Mouse button needs to be pressed before triggering move
+      if (!isMobile && this.state.mouseDown) {
+        this.enterFullScreen();
+        this.sendMouse(event, event.button);
+      }
+    };
+
+    handleKey = (eventType) => {
+      return (event) => {
+        const request = new Proto.KeyboardEvent();
+        const eventType = eventType === 'KEYDOWN'
+          ? Proto.KeyboardEvent.KeyEventType.KEYDOWN
+          : eventType === 'KEYUP'
+            ? Proto.KeyboardEvent.KeyEventType.KEYUP
+            : Proto.KeyboardEvent.KeyEventType.KEYPRESS;
+
+        request.setEventtype(eventType);
+        request.setKey(event.key);
+
+        this.props.jsep.send('keyboard', request);
+      };
+    };
+
+    preventDragHandler = (event) => {
+      event.preventDefault();
+    };
+
+    enterFullScreen = () => {
+      if (!screenfull.isFullscreen) {
+        screenfull
+          .request()
+          .then(() => {
+            // window.screen.orientation.lock(this.state.screenOrientation).catch((error) => {
+            //   console.log('Failed to lock screen orientation to:', error);
+            // });
+          })
+          .catch((error) => {
+            console.log('Failed to request fullscreen:', error);
+          });
+      }
     };
 
     render() {
       return (
-        <div /* handle interaction */
+        <div
           onMouseDown={this.handleMouseDown}
           onMouseMove={this.handleMouseMove}
           onMouseUp={this.handleMouseUp}
           onMouseOut={this.handleMouseUp}
+          onKeyDown={this.handleKey('KEYDOWN')}
+          onKeyUp={this.handleKey('KEYUP')}
           onTouchStart={this.handleTouchStart}
           onTouchEnd={this.handleTouchEnd}
           onTouchMove={this.handleTouchMove}
           onDragStart={this.preventDragHandler}
-          tabIndex="0"
+          tabIndex='0'
           ref={this.handler}
           style={{
-            pointerEvents: "all",
-            outline: "none",
-            margin: "0",
-            padding: "0",
-            border: "0",
-            display: "inline-block",
-            width: "100%"
+            pointerEvents: 'all',
+            outline: 'none',
+            margin: '0',
+            padding: '0',
+            border: '0',
+            display: 'inline-block',
+            width: '100%',
           }}
         >
-          <WrappedComponent {...this.props} />
+          <WrappedComponent
+            {...this.props}
+            deviceHeight={this.state.deviceHeight}
+            deviceWidth={this.state.deviceWidth}
+          />
         </div>
       );
     }

@@ -19,10 +19,12 @@ import EmulatorPngView from "./views/simple_png_view.js";
 import EmulatorWebrtcView from "./views/webrtc_view.js";
 import withMouseKeyHandler from "./views/event_handler";
 import JsepProtocol from "./net/jsep_protocol_driver.js";
+import * as Proto from "../../proto/emulator_controller_pb";
 import {
   RtcService,
   EmulatorControllerService,
 } from "../../proto/emulator_web_client";
+import qs from 'qs';
 
 const PngView = withMouseKeyHandler(EmulatorPngView);
 const RtcView = withMouseKeyHandler(EmulatorWebrtcView);
@@ -49,8 +51,21 @@ const RtcView = withMouseKeyHandler(EmulatorWebrtcView);
  *
  * Note that chrome will not autoplay the video if it is not muted and no interaction
  * with the page has taken place. See https://developers.google.com/web/updates/2017/09/autoplay-policy-changes.
+ *
+ * #### Pressing hardware buttons
+ *
+ * This component has a method `sendKey` to sends a key to the emulator.
+ * You can use this to send physical hardwar events to the emulator for example:
+ *
+ * "AudioVolumeDown" - 	Decreases the audio volume.
+ * "AudioVolumeUp"   -	Increases the audio volume.
+ * "Power"	         -  The Power button or key, turn off the device.
+ * "AppSwitch"       -  Should bring up the application switcher dialog.
+ * "GoHome"          -  Go to the home screen.
+ * "GoBack"          -  Open the previous screen you were looking at.
  */
-export default class Emulator extends Component {
+
+class Emulator extends Component {
   static propTypes = {
     /** gRPC Endpoint where we can reach the emulator. */
     uri: PropTypes.string.isRequired,
@@ -90,7 +105,7 @@ export default class Emulator extends Component {
     },
     onStateChange: (s) => {
       console.log("emulator state: " + s);
-    }
+    },
   };
 
   components = {
@@ -131,16 +146,34 @@ export default class Emulator extends Component {
     return prevState;
   }
 
-  onAudioStateChange = (s) => {
+  /**
+   * Sends the given key to the emulator.
+   *
+   * You can use this to send physical hardware events to the emulator for example:
+   *
+   * "AudioVolumeDown" - 	Decreases the audio volume.
+   * "AudioVolumeUp"   -	Increases the audio volume.
+   * "Power"	         -  The Power button or key, turn off the device.
+   * "AppSwitch"       -  Should bring up the application switcher dialog.
+   * "GoHome"          -  Go to the home screen.
+   * "GoBack"          -  Open the previous screen you were looking at.
+   *
+   * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values for
+   * a list of valid values.
+   */
+  sendKey = (key) => {
+    var request = new Proto.KeyboardEvent();
+    request.setEventtype(Proto.KeyboardEvent.KeyEventType.KEYPRESS);
+    request.setKey(key);
+    this.jsep.send("keyboard", request);
+  };
+
+  _onAudioStateChange = (s) => {
     const { onAudioStateChange } = this.props;
     this.setState({ audio: s }, onAudioStateChange(s));
-  }
+  };
 
   render() {
-    if (this.state.lostConnection) {
-      return (<div>Re-connecting</div>);
-    }
-
     const {
       width,
       height,
@@ -152,7 +185,10 @@ export default class Emulator extends Component {
       onError,
       volume,
     } = this.props;
-    const SpecificView = this.components[view] || RtcView;
+
+    const queryView = (qs.parse(window.location.search, { ignoreQueryPrefix: true }) || {}).view;
+    const SpecificView = this.components[queryView] || this.components[view] || RtcView;
+
     return (
       <SpecificView
         ref={this.view}
@@ -165,8 +201,10 @@ export default class Emulator extends Component {
         muted={muted}
         volume={volume}
         onError={onError}
-        onAudioStateChange={this.onAudioStateChange}
+        onAudioStateChange={this._onAudioStateChange}
       />
     );
   }
 }
+
+export default Emulator;

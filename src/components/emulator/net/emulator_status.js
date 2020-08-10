@@ -67,6 +67,11 @@ class EmulatorStatus {
     }
     this.emulator.getStatus(request, {}, (err, response) => {
       var hwConfig = {};
+      // Don't get configuration if emulator is unreachable
+      if (!response) {
+        return;
+      }
+
       const entryList = response.getHardwareconfig().getEntryList();
       for (var i = 0; i < entryList.length; i++) {
         const key = entryList[i].getKey();
