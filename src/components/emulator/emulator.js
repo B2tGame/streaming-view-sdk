@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import EmulatorPngView from "./views/simple_png_view.js";
-import EmulatorWebrtcView from "./views/webrtc_view.js";
-import withMouseKeyHandler from "./views/event_handler";
-import JsepProtocol from "./net/jsep_protocol_driver.js";
-import * as Proto from "../../proto/emulator_controller_pb";
-import {
-  RtcService,
-  EmulatorControllerService,
-} from "../../proto/emulator_web_client";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import EmulatorPngView from './views/simple_png_view.js';
+import EmulatorWebrtcView from './views/webrtc_view.js';
+import withMouseKeyHandler from './views/event_handler';
+import JsepProtocol from './net/jsep_protocol_driver.js';
+import * as Proto from '../../proto/emulator_controller_pb';
+import { RtcService, EmulatorControllerService } from '../../proto/emulator_web_client';
 import qs from 'qs';
 
 const PngView = withMouseKeyHandler(EmulatorPngView);
@@ -57,9 +54,9 @@ const RtcView = withMouseKeyHandler(EmulatorWebrtcView);
  * This component has a method `sendKey` to sends a key to the emulator.
  * You can use this to send physical hardwar events to the emulator for example:
  *
- * "AudioVolumeDown" - 	Decreases the audio volume.
- * "AudioVolumeUp"   -	Increases the audio volume.
- * "Power"	         -  The Power button or key, turn off the device.
+ * "AudioVolumeDown" -  Decreases the audio volume.
+ * "AudioVolumeUp"   -  Increases the audio volume.
+ * "Power"           -  The Power button or key, turn off the device.
  * "AppSwitch"       -  Should bring up the application switcher dialog.
  * "GoHome"          -  Go to the home screen.
  * "GoBack"          -  Open the previous screen you were looking at.
@@ -84,15 +81,19 @@ class Emulator extends Component {
     /** The height of the component */
     height: PropTypes.number,
     /** The underlying view used to display the emulator, one of ["webrtc", "png"] */
-    view: PropTypes.oneOf(["webrtc", "png"]).isRequired,
+    view: PropTypes.oneOf(['webrtc', 'png']),
     /** True if polling should be used, only set this to true if you are using the go webgrpc proxy. */
     poll: PropTypes.bool,
     /** Callback that will be invoked in case of gRPC errors. */
     onError: PropTypes.func,
+    /** True if the fullscreen should be enabled. */
+    enableFullScreen: PropTypes.bool,
+    /** The screen orientation for fullscreen lock */
+    screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
   };
 
   static defaultProps = {
-    view: "webrtc",
+    view: 'webrtc',
     auth: null,
     poll: false,
     muted: true,
@@ -101,11 +102,13 @@ class Emulator extends Component {
       console.error(e);
     },
     onAudioStateChange: (s) => {
-      console.log("emulator audio: " + s);
+      console.log('emulator audio: ' + s);
     },
     onStateChange: (s) => {
-      console.log("emulator state: " + s);
+      console.log('emulator state: ' + s);
     },
+    enableFullScreen: true,
+    screenOrientation: 'portrait'
   };
 
   components = {
@@ -123,22 +126,26 @@ class Emulator extends Component {
     const { uri, auth, poll, onError } = props;
     this.emulator = new EmulatorControllerService(uri, auth, onError);
     this.rtc = new RtcService(uri, auth, onError);
-    this.jsep = new JsepProtocol(this.emulator, this.rtc, poll,
-      ((succ) => {
+    this.jsep = new JsepProtocol(
+      this.emulator,
+      this.rtc,
+      poll,
+      (succ) => {
         console.log('JsepProtol success - connect');
         console.log('Success: ', succ);
-      }),
-      ((err) => {
+      },
+      (err) => {
         console.log('JsepProtocol error - disconnect');
         console.log('Error: ', err);
-        this.setState({lostConnection: true});
-        this.setState({lostConnection: false});
-      }));
+        this.setState({ lostConnection: true });
+        this.setState({ lostConnection: false });
+      }
+    );
     this.view = React.createRef();
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    if (nextProps.view === "png")
+    if (nextProps.view === 'png')
       return {
         audio: false,
       };
@@ -151,9 +158,9 @@ class Emulator extends Component {
    *
    * You can use this to send physical hardware events to the emulator for example:
    *
-   * "AudioVolumeDown" - 	Decreases the audio volume.
-   * "AudioVolumeUp"   -	Increases the audio volume.
-   * "Power"	         -  The Power button or key, turn off the device.
+   * "AudioVolumeDown" -  Decreases the audio volume.
+   * "AudioVolumeUp"   -  Increases the audio volume.
+   * "Power"           -  The Power button or key, turn off the device.
    * "AppSwitch"       -  Should bring up the application switcher dialog.
    * "GoHome"          -  Go to the home screen.
    * "GoBack"          -  Open the previous screen you were looking at.
@@ -165,7 +172,7 @@ class Emulator extends Component {
     var request = new Proto.KeyboardEvent();
     request.setEventtype(Proto.KeyboardEvent.KeyEventType.KEYPRESS);
     request.setKey(key);
-    this.jsep.send("keyboard", request);
+    this.jsep.send('keyboard', request);
   };
 
   _onAudioStateChange = (s) => {
@@ -184,6 +191,8 @@ class Emulator extends Component {
       onAudioStateChange,
       onError,
       volume,
+      enableFullScreen,
+      screenOrientation,
     } = this.props;
 
     const queryView = (qs.parse(window.location.search, { ignoreQueryPrefix: true }) || {}).view;
@@ -202,6 +211,8 @@ class Emulator extends Component {
         volume={volume}
         onError={onError}
         onAudioStateChange={this._onAudioStateChange}
+        enableFullScreen={enableFullScreen}
+        screenOrientation={screenOrientation}
       />
     );
   }
