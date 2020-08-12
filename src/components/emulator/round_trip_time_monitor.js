@@ -1,36 +1,18 @@
 import io from 'socket.io-client';
 import React, { Component } from 'react';
-import qs from 'qs';
 import url from 'url';
 import MessageEmitter from './MessageEmitter';
 
-const DEFAULT_ROUND_TRIP_TIME_SERVER =
-  window.location.protocol +
-  '//' +
-  window.location.hostname +
-  ':' +
-  window.location.port +
-  window.location.pathname.replace(/\/$/, '') +
-  '/rtt-websocket';
-
 class RoundTripTimeMonitor extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+
     this.state = {};
   }
-
-  static getRTTServiceEndpoint() {
-    const endpoint = (qs.parse(window.location.search, { ignoreQueryPrefix: true }) || {}).rtt;
-    return endpoint ? endpoint : DEFAULT_ROUND_TRIP_TIME_SERVER;
-  }
-
   componentDidMount() {
-    console.log('Round Trip Time Monitor: ', RoundTripTimeMonitor.getRTTServiceEndpoint());
+    console.log(this.props.endpoint)
 
-    const uri = url.parse(RoundTripTimeMonitor.getRTTServiceEndpoint());
-    const socket = io(uri.protocol + '//' + uri.host, {
-      path: (uri.pathname !== '/' ? uri.pathname : '') + '/socket.io',
-    });
+    const socket = io(this.props.endpoint, {path: '/'+ this.props.edgeNodeId  + '/socket.io/rtt-websocket'});
 
     socket.on('error', (err) => {
       console.log('Round Trip Time Monitor: ', err);
