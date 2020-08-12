@@ -18,16 +18,6 @@ import React, { Component } from 'react';
 
 let hidden = null;
 let visibilityChange = null;
-if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
-  hidden = 'hidden';
-  visibilityChange = 'visibilitychange';
-} else if (typeof document.msHidden !== 'undefined') {
-  hidden = 'msHidden';
-  visibilityChange = 'msvisibilitychange';
-} else if (typeof document.webkitHidden !== 'undefined') {
-  hidden = 'webkitHidden';
-  visibilityChange = 'webkitvisibilitychange';
-}
 
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
@@ -97,10 +87,21 @@ export default class EmulatorWebrtcView extends Component {
   componentDidMount() {
     this.props.jsep.on('connected', this.onConnect);
     this.props.jsep.on('disconnected', this.onDisconnect);
-    this.setState({ connect: "connecting" }, () => {
+    this.setState({ connect: 'connecting' }, () => {
       this.props.jsep.startStream();
       this.broadcastState();
     });
+
+    if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
+      hidden = 'hidden';
+      visibilityChange = 'visibilitychange';
+    } else if (typeof document.msHidden !== 'undefined') {
+      hidden = 'msHidden';
+      visibilityChange = 'msvisibilitychange';
+    } else if (typeof document.webkitHidden !== 'undefined') {
+      hidden = 'webkitHidden';
+      visibilityChange = 'webkitvisibilitychange';
+    }
 
     document.addEventListener(visibilityChange, this.handleVisibilityChange, false);
   }
@@ -144,13 +145,13 @@ export default class EmulatorWebrtcView extends Component {
     const possiblePromise = video.play();
     if (possiblePromise) {
       possiblePromise
-          .then((_) => {
-            console.info("Automatic playback started!");
-          })
-          .catch((error) => {
-            // Notify listeners that we cannot start.
-            this.onError(error);
-          });
+        .then((_) => {
+          console.info('Automatic playback started!');
+        })
+        .catch((error) => {
+          // Notify listeners that we cannot start.
+          this.onError(error);
+        });
     }
   };
 
