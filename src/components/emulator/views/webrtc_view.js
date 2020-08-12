@@ -16,6 +16,9 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
+let hidden = null;
+let visibilityChange = null;
+
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
  * establish the video streams.
@@ -66,18 +69,48 @@ export default class EmulatorWebrtcView extends Component {
 
   componentWillUnmount() {
     this.props.jsep.disconnect();
+    this.setState();
   }
+
+  handleVisibilityChange = () => {
+    if (document[hidden]) {
+      this.setState({ connect: 'disconnected' }, this.broadcastState);
+      this.setState({ audio: false }, () => {
+        this.props.onAudioStateChange(false);
+      });
+    } else {
+      this.props.jsep.startStream();
+      this.broadcastState();
+    }
+  };
 
   componentDidMount() {
     this.props.jsep.on('connected', this.onConnect);
     this.props.jsep.on('disconnected', this.onDisconnect);
-    this.setState({ connect: 'connecting' }, this.broadcastState);
-    this.props.jsep.startStream();
+    this.setState({ connect: 'connecting' }, () => {
+      this.props.jsep.startStream();
+      this.broadcastState();
+    });
+
+    if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
+      hidden = 'hidden';
+      visibilityChange = 'visibilitychange';
+    } else if (typeof document.msHidden !== 'undefined') {
+      hidden = 'msHidden';
+      visibilityChange = 'msvisibilitychange';
+    } else if (typeof document.webkitHidden !== 'undefined') {
+      hidden = 'webkitHidden';
+      visibilityChange = 'webkitvisibilitychange';
+    }
+
+    document.addEventListener(visibilityChange, this.handleVisibilityChange, false);
   }
 
   onDisconnect = () => {
     this.setState({ connect: 'disconnected' }, this.broadcastState);
-    this.setState({ audio: false }, this.props.onAudioStateChange(false));
+    this.setState({ audio: false }, () => {
+      this.props.onAudioStateChange(false);
+    });
   };
 
   onConnect = (track) => {
@@ -93,7 +126,9 @@ export default class EmulatorWebrtcView extends Component {
     }
     video.srcObject.addTrack(track);
     if (track.kind === 'audio') {
-      this.setState({ audio: true }, this.props.onAudioStateChange(true));
+      this.setState({ audio: true }, () => {
+        this.props.onAudioStateChange(true);
+      });
     }
   };
 
@@ -106,15 +141,18 @@ export default class EmulatorWebrtcView extends Component {
       return;
     }
 
-    video
-      .play()
-      .then((_) => {
-        console.info('Automatic playback started!');
-      })
-      .catch((error) => {
-        // Notify listeners that we cannot start.
-        this.onError(error);
-      });
+    // See https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
+    const possiblePromise = video.play();
+    if (possiblePromise) {
+      possiblePromise
+        .then((_) => {
+          console.info('Automatic playback started!');
+        })
+        .catch((error) => {
+          // Notify listeners that we cannot start.
+          this.onError(error);
+        });
+    }
   };
 
   onCanPlay = (e) => {
