@@ -1,16 +1,20 @@
 import io from 'socket.io-client';
-import React, { Component } from 'react';
-import url from 'url';
+import PropTypes from 'prop-types';
+import { Component } from 'react';
 import MessageEmitter from './MessageEmitter';
 
 class RoundTripTimeMonitor extends Component {
+  static propTypes = {
+    /** gRPC Endpoint where we can reach the emulator. */
+    endpoint: PropTypes.string.isRequired,
+    edgeNodeId: PropTypes.string.isRequired
+  }
+
   constructor(props) {
     super(props);
-
     this.state = {};
   }
   componentDidMount() {
-    console.log(this.props.endpoint)
 
     const socket = io(this.props.endpoint, {path: '/'+ this.props.edgeNodeId  + '/socket.io/rtt-websocket'});
 
@@ -41,10 +45,7 @@ class RoundTripTimeMonitor extends Component {
   }
 
   render() {
-    const cssStyle = {
-      display: 'none',
-    };
-    return <span style={cssStyle}></span>;
+    return null;
   }
 }
 
