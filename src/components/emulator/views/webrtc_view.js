@@ -16,9 +16,6 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
-let hidden = null;
-let visibilityChange = null;
-
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
  * establish the video streams.
@@ -72,18 +69,6 @@ export default class EmulatorWebrtcView extends Component {
     this.setState();
   }
 
-  handleVisibilityChange = () => {
-    if (document[hidden]) {
-      this.setState({ connect: 'disconnected' }, this.broadcastState);
-      this.setState({ audio: false }, () => {
-        this.props.onAudioStateChange(false);
-      });
-    } else {
-      this.props.jsep.startStream();
-      this.broadcastState();
-    }
-  };
-
   componentDidMount() {
     this.props.jsep.on('connected', this.onConnect);
     this.props.jsep.on('disconnected', this.onDisconnect);
@@ -91,19 +76,6 @@ export default class EmulatorWebrtcView extends Component {
       this.props.jsep.startStream();
       this.broadcastState();
     });
-
-    if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
-      hidden = 'hidden';
-      visibilityChange = 'visibilitychange';
-    } else if (typeof document.msHidden !== 'undefined') {
-      hidden = 'msHidden';
-      visibilityChange = 'msvisibilitychange';
-    } else if (typeof document.webkitHidden !== 'undefined') {
-      hidden = 'webkitHidden';
-      visibilityChange = 'webkitvisibilitychange';
-    }
-
-    document.addEventListener(visibilityChange, this.handleVisibilityChange, false);
   }
 
   onDisconnect = () => {
