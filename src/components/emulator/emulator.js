@@ -21,7 +21,6 @@ import withMouseKeyHandler from './views/event_handler';
 import JsepProtocol from './net/jsep_protocol_driver.js';
 import * as Proto from '../../proto/emulator_controller_pb';
 import { RtcService, EmulatorControllerService } from '../../proto/emulator_web_client';
-import qs from 'qs';
 
 const PngView = withMouseKeyHandler(EmulatorPngView);
 const RtcView = withMouseKeyHandler(EmulatorWebrtcView);
@@ -195,8 +194,7 @@ class Emulator extends Component {
       screenOrientation,
     } = this.props;
 
-    const queryView = (qs.parse(window.location.search, { ignoreQueryPrefix: true }) || {}).view;
-    const SpecificView = this.components[queryView] || this.components[view] || RtcView;
+    const SpecificView = this.components[view] || RtcView;
 
     return (
       <SpecificView

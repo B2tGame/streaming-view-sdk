@@ -16,7 +16,6 @@
 import { EventEmitter } from 'events';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import url from 'url';
-import qs from 'qs';
 
 /**
  * This drives the jsep protocol with the emulator, and can be used to
@@ -186,22 +185,17 @@ export default class JsepProtocol {
   };
 
   /**
-   * Get Ice configuration from query string parameters or emulator hostname
+   * Get Ice configuration from emulator hostname
    * @returns {any|{urls: string[], credential: string, username: string}}
    */
   getIceConfiguration() {
-    const jsonIceConfiguration = (qs.parse(window.location.search, { ignoreQueryPrefix: true }) || {}).ice;
-    const iceConfiguration = jsonIceConfiguration ? JSON.parse(jsonIceConfiguration) : null;
-
     const hostname = url.parse(this.emulator.hostname_).hostname;
 
-    return iceConfiguration
-      ? iceConfiguration
-      : {
-          urls: [`turn:${hostname}:3478?transport=udp`, `turn:${hostname}:3478?transport=tcp`],
-          username: 'webclient',
-          credential: 'webclient',
-        };
+    return {
+      urls: [`turn:${hostname}:3478?transport=udp`, `turn:${hostname}:3478?transport=tcp`],
+      username: 'webclient',
+      credential: 'webclient',
+    };
   }
 
   _handleStart = (signal) => {
