@@ -1,7 +1,7 @@
 import Emulator from './components/emulator/emulator';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import RoundTripTimeMonitor from './components/emulator/round_trip_time_monitor'
+import RoundTripTimeMonitor from './components/emulator/round_trip_time_monitor';
 import rp from 'request-promise';
 
 /**
@@ -84,7 +84,7 @@ export default class StreamingView extends Component {
   render() {
     return (
       <div>
-        <RoundTripTimeMonitor endpoint={this.props.apiEndpoint} edgeNodeId={`${this.props.edgeNodeId}`}/>
+        <RoundTripTimeMonitor endpoint={this.props.apiEndpoint} edgeNodeId={this.props.edgeNodeId} />
         {this.renderEmulatorBlock()}
       </div>
     );
