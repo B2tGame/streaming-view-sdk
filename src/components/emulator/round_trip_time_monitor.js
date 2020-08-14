@@ -5,22 +5,23 @@ import MessageEmitter from './MessageEmitter';
 
 class RoundTripTimeMonitor extends Component {
   static propTypes = {
-    /** gRPC Endpoint where we can reach the emulator. */
+    /** endpoint Endpoint where we can reach the emulator. */
     endpoint: PropTypes.string.isRequired,
-    edgeNodeId: PropTypes.string.isRequired
-  }
+    edgeNodeId: PropTypes.string.isRequired,
+  };
 
   constructor(props) {
     super(props);
     this.state = {};
   }
-  componentDidMount() {
 
-    const socket = io(this.props.endpoint, {path: '/'+ this.props.edgeNodeId  + '/rtt-websocket/socket.io'});
+  componentDidMount() {
+    const socket = io(this.props.endpoint, { path: '/' + this.props.edgeNodeId + '/rtt-websocket/socket.io' });
 
     socket.on('error', (err) => {
       console.log('Round Trip Time Monitor: ', err);
     });
+
     socket.on('pong', (networkRoundTripTime) => {
       socket.emit(
         'message',

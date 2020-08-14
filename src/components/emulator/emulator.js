@@ -89,6 +89,8 @@ class Emulator extends Component {
     enableFullScreen: PropTypes.bool,
     /** The screen orientation for fullscreen lock */
     screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
+    /** Enable or disable user interactions with the game */
+    enableControl: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -107,7 +109,8 @@ class Emulator extends Component {
       console.log('emulator state: ' + s);
     },
     enableFullScreen: true,
-    screenOrientation: 'portrait'
+    screenOrientation: 'portrait',
+    enableControl: true,
   };
 
   components = {
@@ -192,6 +195,7 @@ class Emulator extends Component {
       volume,
       enableFullScreen,
       screenOrientation,
+      enableControl,
     } = this.props;
 
     const SpecificView = this.components[view] || RtcView;
@@ -211,6 +215,7 @@ class Emulator extends Component {
         onAudioStateChange={this._onAudioStateChange}
         enableFullScreen={enableFullScreen}
         screenOrientation={screenOrientation}
+        enableControl={enableControl}
       />
     );
   }
