@@ -1,5 +1,3 @@
-'use strict';
-
 import StreamingView from './src/StreamingView';
 
 /**

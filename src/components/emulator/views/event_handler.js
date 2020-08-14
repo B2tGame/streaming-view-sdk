@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import * as Proto from '../../../proto/emulator_controller_pb';
 import EmulatorStatus from '../net/emulator_status';
-import { isMobile, isIOS } from 'react-device-detect';
+import { isMobile } from 'react-device-detect';
 import screenfull from 'screenfull';
 
 /**
@@ -30,7 +31,15 @@ import screenfull from 'screenfull';
  * You usually want to wrap a EmulatorRtcview, or EmulatorPngView in it.
  */
 export default function withMouseKeyHandler(WrappedComponent) {
-  return class extends React.Component {
+  return class extends Component {
+    static propTypes = {
+      emulator: PropTypes.object.isRequired,
+      jsep: PropTypes.object.isRequired,
+      enableControl: PropTypes.bool,
+      enableFullScreen: PropTypes.bool,
+      screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
+    };
+
     constructor(props) {
       super(props);
       this.state = {
@@ -64,34 +73,42 @@ export default function withMouseKeyHandler(WrappedComponent) {
       e.preventDefault();
     };
 
-    convertTouchCoordinates = (touches) => {
-      let identifierForSafari = 0;
-      const touchCordinates = Object.keys(touches)
-        .map((index) => {
-          const touch = touches[index];
-          const { clientX, clientY, radiusX, radiusY } = touch;
-          const { offsetTop, offsetLeft } = this.handler.current;
-          let { identifier } = touch;
-          const cords = { x: clientX - offsetLeft, y: clientY - offsetTop };
-          // Iphone Safari triggering touch events with negative identifiers like (-1074001159) and identifiers
-          // are different for every touch (same for touch move), what breaking execution of touch events
-          // if (isIOS) {
-          //   identifier = identifierForSafari++;
-          return cords;
-        })
-        .filter((value) => value !== undefined)
-        .shift();
-      return touchCordinates;
-    };
-
     /**
-     * @param event Native event
+     *
+     * @param event
      * @returns {{x: number, y: number}}
      */
-    calculateEmulatorCoordinates = (event) => {
+    calculateMouseEmulatorCoordinates = (event) => {
       const { offsetX, offsetY } = event;
       const { clientWidth, clientHeight } = event.target;
 
+      return this.calculateEmulatorCoordinates(offsetX, offsetY, clientWidth, clientHeight);
+    };
+
+    /**
+     *
+     * @param event
+     * @returns {{x: number, y: number}}
+     */
+    calculateTouchEmulatorCoordinates = (event) => {
+      const { clientX, clientY } = event;
+      const { clientWidth, clientHeight, offsetLeft, offsetTop } = event.target;
+
+      const offsetX = clientX - offsetLeft;
+      const offsetY = clientY - offsetTop;
+
+      return this.calculateEmulatorCoordinates(offsetX, offsetY, clientWidth, clientHeight);
+    };
+
+    /**
+     * Calculate coordinates for the emulator from client offset coordinates
+     * @param offsetX
+     * @param offsetY
+     * @param clientWidth
+     * @param clientHeight
+     * @returns {{x: number, y: number}}
+     */
+    calculateEmulatorCoordinates = (offsetX, offsetY, clientWidth, clientHeight) => {
       const xEmulatorCoordinate = (offsetX / clientWidth) * this.state.deviceWidth;
       const yEmulatorCoordinate = (offsetY / clientHeight) * this.state.deviceHeight;
 
@@ -102,88 +119,76 @@ export default function withMouseKeyHandler(WrappedComponent) {
     };
 
     /**
-     * @param event Native event
-     * @returns {{x: number, y: number}}
+     *
+     * @param event
+     * @param mouseButton
      */
-    calculateEmulatorCoordinatesForTouch = (event) => {
-      // Coordinates are not with offset, different to click mouse event
-      const { clientX, clientY } = event;
-      console.log('event', event);
-      const { clientWidth, clientHeight } = event.target;
-
-      // Touched are not reporting offsets
-      const xEmulatorCoordinate =
-        ((clientX - (this.browser.width - clientWidth) / 2) / clientWidth) * this.state.deviceWidth;
-      const yEmulatorCoordinate =
-        ((clientY - (this.browser.height - clientHeight) / 2) / clientHeight) * this.state.deviceHeight;
-
-      return {
-        x: Math.round(xEmulatorCoordinate),
-        y: Math.round(yEmulatorCoordinate),
-      };
-    };
-
     sendMouse = (event, mouseButton) => {
-      const emulatorCords = this.calculateEmulatorCoordinates(event.nativeEvent);
+      const emulatorCords = this.calculateMouseEmulatorCoordinates(event);
       const request = new Proto.MouseEvent();
       request.setX(emulatorCords.x);
       request.setY(emulatorCords.y);
       request.setButtons(mouseButton === 0 ? 1 : 0);
 
-      this.props.jsep.send('mouse', request);
+      this.sendInput('mouse', request);
     };
 
-    sendTouch = (coors, mouseButton) => {
+    sendTouch = (event, mouseButton) => {
+      const emulatorCords = this.calculateTouchEmulatorCoordinates(event);
       const request = new Proto.MouseEvent();
-      request.setX(coors.x);
+      request.setX(emulatorCords.x);
       // Temp "fix" until real touch events will be supported
-      request.setY(coors.y - 20);
+      request.setY(emulatorCords.y - 20);
       request.setButtons(mouseButton === 0 ? 1 : 0);
 
-      this.props.jsep.send('mouse', request);
+      this.sendInput('mouse', request);
     };
 
-    handleTouchStart = (event) => {
+    /**
+     * Send input if input control was enabled
+     * @param label Input type can be [mouse|keyboard/touch]
+     * @param request
+     */
+    sendInput(label, request) {
       this.enterFullScreen();
-      const emulatorCords = this.calculateEmulatorCoordinatesForTouch(event.nativeEvent.touches[0]);
-      this.sendTouch(emulatorCords, 0);
+
+      if (this.props.enableControl) {
+        this.props.jsep.send(label, request);
+      }
+    }
+
+    handleTouchStart = (event) => {
+      this.sendTouch(event.nativeEvent.touches[0], 0);
     };
 
     handleTouchEnd = (event) => {
-      this.enterFullScreen();
-      const emulatorCords = this.calculateEmulatorCoordinatesForTouch(event.nativeEvent.changedTouches[0]);
-      this.sendTouch(emulatorCords);
+      this.sendTouch(event.nativeEvent.changedTouches[0]);
     };
 
     handleTouchMove = (event) => {
-      this.enterFullScreen();
-      const cords = this.calculateEmulatorCoordinatesForTouch(event.nativeEvent.touches[0]);
-      this.sendTouch(cords, 0);
+      this.sendTouch(event.nativeEvent.touches[0], 0);
     };
 
     // Properly handle the mouse events.
     handleMouseDown = (event) => {
       if (!isMobile) {
-        this.enterFullScreen();
         this.setState({ mouseDown: true });
-        this.sendMouse(event, event.button);
+        this.sendMouse(event.nativeEvent, event.button);
       }
     };
 
     handleMouseUp = (event) => {
       // Don't release mouse when not pressed
       if (!isMobile && this.state.mouseDown) {
-        this.enterFullScreen();
         this.setState({ mouseDown: false });
-        this.sendMouse(event);
+        this.sendMouse(event.nativeEvent);
       }
     };
 
     handleMouseMove = (event) => {
       // Mouse button needs to be pressed before triggering move
       if (!isMobile && this.state.mouseDown) {
-        this.enterFullScreen();
-        this.sendMouse(event, event.button);
+        this.sendMouse(event.nativeEvent, event.button);
       }
     };
 
@@ -200,7 +205,7 @@ export default function withMouseKeyHandler(WrappedComponent) {
         request.setEventtype(eventType);
         request.setKey(event.key);
 
-        this.props.jsep.send('keyboard', request);
+        this.sendInput('keyboard', request);
       };
     };
 
