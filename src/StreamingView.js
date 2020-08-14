@@ -18,6 +18,8 @@ export default class StreamingView extends Component {
     enableFullScreen: PropTypes.bool,
     screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
     view: PropTypes.oneOf(['webrtc', 'png']),
+    /** Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100% */
+    volume: PropTypes.number,
   };
 
   constructor(props) {
@@ -26,10 +28,15 @@ export default class StreamingView extends Component {
     this.state = {
       isReadyStream: undefined,
       maxRetryCount: 120,
+      muted: true,
     };
 
     const { apiEndpoint, edgeNodeId } = props;
     this.pollStreamStatus(apiEndpoint, edgeNodeId, this.state.maxRetryCount);
+  }
+
+  handleUserInteraction = () => {
+    this.setState({ muted: false });
   }
 
   pollStreamStatus(apiEndpoint, edgeNodeId, maxRetry) {
@@ -61,7 +68,15 @@ export default class StreamingView extends Component {
   }
 
   renderEmulatorBlock() {
-    const { apiEndpoint, edgeNodeId, enableControl, enableFullScreen, screenOrientation, view } = this.props;
+    const {
+      apiEndpoint,
+      edgeNodeId,
+      enableControl,
+      enableFullScreen,
+      screenOrientation,
+      view,
+      volume,
+    } = this.props;
 
     switch (this.state.isReadyStream) {
       case true:
@@ -72,6 +87,9 @@ export default class StreamingView extends Component {
             enableFullScreen={enableFullScreen}
             screenOrientation={screenOrientation}
             view={view}
+            muted={this.state.muted}
+            volume={volume}
+            onUserInteraction={this.handleUserInteraction}
           />
         );
       case false:
