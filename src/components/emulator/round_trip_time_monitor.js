@@ -16,7 +16,7 @@ class RoundTripTimeMonitor extends Component {
   }
 
   componentDidMount() {
-    const socket = io(this.props.endpoint, { path: '/' + this.props.edgeNodeId + '/rtt-websocket/socket.io' });
+    const socket = io(this.props.endpoint, {path: '/'+ this.props.edgeNodeId  + '/emulator-commands/socket.io'});
 
     socket.on('error', (err) => {
       console.log('Round Trip Time Monitor: ', err);
