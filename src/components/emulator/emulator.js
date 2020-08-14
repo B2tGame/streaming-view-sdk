@@ -188,6 +188,18 @@ class Emulator extends Component {
     this.setState({ lostConnection: true });
     setTimeout( () => {
       this.setState({ lostConnection: false });
+
+      setTimeout( () => {
+        const { connect } = this.state;
+
+        if (connect !== 'connected') {
+          this.jsep.startStream();
+          console.log("asdfasdf");
+          this.state = this.initialState;
+          this.forceUpdate();
+        }
+      }, 500);
+
     }, 500);
   }
 
@@ -201,11 +213,11 @@ class Emulator extends Component {
   };
 
   render() {
-    window.addEventListener('online',
-      () => {
-        this.reconnect();
-      },
-    );
+    // window.addEventListener('online',
+    //   () => {
+    //     this.reconnect();
+    //   },
+    // );
 
     if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
       hidden = 'hidden';
