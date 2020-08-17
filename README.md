@@ -29,10 +29,10 @@ class App extends React.Component {
 ```
 ## Full Reference
 
-## Streaming View
+### Streaming View
 A React component that displays and controls a remote stream from the android emulator.
 
-### Supported properties
+#### Supported properties
 | prop                   |          type           |                      default                      |      required      | description                                                                                              |
 | ---------------------- | :---------------------: | :-----------------------------------------------: | :----------------: | -------------------------------------------------------------------------------------------------------- |
 | **apiEndpoint**        |        `String`         |                                                   | :white_check_mark: | API endpoint the component should use to connect to the Streaming Service API.                           |
@@ -40,7 +40,6 @@ A React component that displays and controls a remote stream from the android em
 | **enableControl**      |        `Boolean`        |                      `true`                       |        :x:         | Enable/disable user interactions with the game, can be dynamically changed during runtime.               |
 | **enableFullScreen**   |        `Boolean`        |                      `true`                       |        :x:         | The app will put the stream in full-screen mode after the first user interaction.                        |
 
-# StreamingView
 
 ### How Sync protobuf definitions
 For the update of protobuf definition, that define the shared API
