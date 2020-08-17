@@ -2,6 +2,7 @@
 This contains a set of React components that can be used to interact with a stream of the android emulator from the browser.
 
 [Full reference](#full-reference)
+
 ## Usage
 You can connect to the remote stream as follows:
 
@@ -27,6 +28,7 @@ class App extends React.Component {
 }
 ```
 ## Full Reference
+
 ## Streaming View
 A React component that displays and controls a remote stream from the android emulator.
 
