@@ -185,17 +185,16 @@ class Emulator extends Component {
   };
 
   reconnect() {
-    this.setState({ lostConnection: true });
     setTimeout( () => {
-      this.setState({ lostConnection: false });
-
-      setTimeout( () => {
-        const { connect } = this.state;
-        if (connect !== 'connected') {
-          window.location.reload();
-        }
-      }, 500);
-
+      const xmlHttpRequest = new XMLHttpRequest();
+      xmlHttpRequest.onload = () => {
+        window.location.reload();
+      };
+      xmlHttpRequest.onerror = () => {
+        this.reconnect();
+      };
+      xmlHttpRequest.open('HEAD', window.location.href, true);
+      xmlHttpRequest.send();
     }, 500);
   }
 
