@@ -191,12 +191,8 @@ class Emulator extends Component {
 
       setTimeout( () => {
         const { connect } = this.state;
-
         if (connect !== 'connected') {
-          this.jsep.startStream();
-          console.log("asdfasdf");
-          this.state = this.initialState;
-          this.forceUpdate();
+          window.location.reload();
         }
       }, 500);
 
@@ -213,11 +209,11 @@ class Emulator extends Component {
   };
 
   render() {
-    // window.addEventListener('online',
-    //   () => {
-    //     this.reconnect();
-    //   },
-    // );
+    window.addEventListener('online',
+      () => {
+        this.reconnect();
+      },
+    );
 
     if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
       hidden = 'hidden';
