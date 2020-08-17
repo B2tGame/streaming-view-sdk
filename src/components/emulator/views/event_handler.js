@@ -38,6 +38,7 @@ export default function withMouseKeyHandler(WrappedComponent) {
       enableControl: PropTypes.bool,
       enableFullScreen: PropTypes.bool,
       screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
+      onUserInteraction: PropTypes.func,
     };
 
     constructor(props) {
@@ -67,6 +68,12 @@ export default function withMouseKeyHandler(WrappedComponent) {
           deviceHeight: parseInt(state.hardwareConfig['hw.lcd.height']) || this.state.deviceHeight,
         });
       });
+    }
+
+    handleUserInteraction = () => {
+      // Trigger passed hook onUserInteraction
+      this.props.onUserInteraction();
+      this.enterFullScreen();
     }
 
     onContextMenu = (e) => {
@@ -150,7 +157,7 @@ export default function withMouseKeyHandler(WrappedComponent) {
      * @param request
      */
     sendInput(label, request) {
-      this.enterFullScreen();
+      this.handleUserInteraction();
 
       if (this.props.enableControl) {
         this.props.jsep.send(label, request);

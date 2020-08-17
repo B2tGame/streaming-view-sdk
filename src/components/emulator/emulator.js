@@ -91,6 +91,8 @@ class Emulator extends Component {
     screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
     /** Enable or disable user interactions with the game */
     enableControl: PropTypes.bool,
+    /** Callback that will be invoked on user interaction */
+    onUserInteraction: PropTypes.func,
   };
 
   static defaultProps = {
@@ -196,6 +198,7 @@ class Emulator extends Component {
       enableFullScreen,
       screenOrientation,
       enableControl,
+      onUserInteraction,
     } = this.props;
 
     const SpecificView = this.components[view] || RtcView;
@@ -216,6 +219,7 @@ class Emulator extends Component {
         enableFullScreen={enableFullScreen}
         screenOrientation={screenOrientation}
         enableControl={enableControl}
+        onUserInteraction={onUserInteraction}
       />
     );
   }

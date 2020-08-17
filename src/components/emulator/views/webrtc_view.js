@@ -150,7 +150,7 @@ export default class EmulatorWebrtcView extends Component {
         })
         .catch((error) => {
           // Notify listeners that we cannot start.
-          this.onError(error);
+          this.props.onError(error);
         });
     }
   };
