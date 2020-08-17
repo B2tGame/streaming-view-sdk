@@ -37,8 +37,8 @@ A React component that displays and controls a remote stream from the android em
 | ---------------------- | :---------------------: | :-----------------------------------------------: | :----------------: | -------------------------------------------------------------------------------------------------------- |
 | **apiEndpoint**        |        `String`         |                                                   | :white_check_mark: | API endpoint the component should use to connect to the Streaming Service API.                           |
 | **edgeNodeId**         |        `String`         |                                                   | :white_check_mark: | Edge Node Id received from GET: Create API endpoint, and can't be dynamically changed during runtime.    |
-| **enableControl**      |        `Boolean`        |                      `true`                       |        :x:         | Called when the audio becomes (un)available. True if audio is available, false otherwise.                |
-| **enableFullScreen**   |        `Boolean`        |                      `true`                       |        :x:         | By default, the app will put the stream in full-screen mode for the first user interaction.              |
+| **enableControl**      |        `Boolean`        |                      `true`                       |        :x:         | Enable/disable user interactions with the game, can be dynamically changed during runtime.               |
+| **enableFullScreen**   |        `Boolean`        |                      `true`                       |        :x:         | The app will put the stream in full-screen mode after the first user interaction.                        |
 
 # StreamingView
 
