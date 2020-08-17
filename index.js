@@ -1,6 +1,9 @@
+'use strict';
+
 import StreamingView from './src/StreamingView';
 
 /**
  * Streaming View SDK
+ * @type {module.StreamingViewSDK}
  */
-export default StreamingView;
+export { StreamingView };
