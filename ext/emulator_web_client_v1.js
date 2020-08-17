@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-
- // This class is a stub for V1 compatibility.
- import { EmulatorControllerClient } from "../proto/emulator_controller_grpc_web_pb";
- import { GrpcWebClientBase } from "grpc-web";
- import { EventEmitter } from "events";
+// This class is a stub for V1 compatibility.
+import { EmulatorControllerClient } from '../proto/emulator_controller_grpc_web_pb';
+import { GrpcWebClientBase } from 'grpc-web';
+import { EventEmitter } from 'events';
 
 class NopAuthenticator {
   authHeader = () => {
     return {};
   };
 
-  unauthorized = () => { };
+  unauthorized = () => {};
 }
 
 /**
@@ -54,8 +53,7 @@ class EmulatorWebClient extends GrpcWebClientBase {
     return super.rpcCall(method, request, meta, methodinfo, (err, res) => {
       if (err) {
         if (err.code === 401) self.auth.unauthorized();
-        if (self.events)
-          self.events.emit("error", err);
+        if (self.events) self.events.emit('error', err);
       }
       if (callback) callback(err, res);
     });
@@ -68,11 +66,11 @@ class EmulatorWebClient extends GrpcWebClientBase {
     const self = this;
 
     // Intercept errors.
-    stream.on("error", e => {
+    stream.on('error', (e) => {
       if (e.code === 401) {
         self.auth.unauthorized();
       }
-      self.events.emit("error", e);
+      self.events.emit('error', e);
     });
     return stream;
   };
@@ -106,10 +104,12 @@ export class EmulatorControllerService extends EmulatorControllerClient {
     super(uri);
     if (!authenticator) authenticator = new NopAuthenticator();
     this.client_ = new EmulatorWebClient({}, authenticator);
-    if (onError) this.client_.on('error', e => { onError(e); });
+    if (onError)
+      this.client_.on('error', (e) => {
+        onError(e);
+      });
   }
 }
-
 
 /**
  * An RtcService is an EmulatorControllerClient that inject authentication headers.
@@ -135,6 +135,9 @@ export class RtcService extends EmulatorControllerClient {
     super(uri);
     if (!authenticator) authenticator = new NopAuthenticator();
     this.client_ = new EmulatorWebClient({}, authenticator);
-    if (onError) this.client_.on('error', e => { onError(e); });
+    if (onError)
+      this.client_.on('error', (e) => {
+        onError(e);
+      });
   }
 }

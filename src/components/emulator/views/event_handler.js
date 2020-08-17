@@ -74,7 +74,7 @@ export default function withMouseKeyHandler(WrappedComponent) {
       // Trigger passed hook onUserInteraction
       this.props.onUserInteraction();
       this.enterFullScreen();
-    }
+    };
 
     onContextMenu = (e) => {
       e.preventDefault();
