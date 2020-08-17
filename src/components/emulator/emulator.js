@@ -61,6 +61,9 @@ const RtcView = withMouseKeyHandler(EmulatorWebrtcView);
  * "GoBack"          -  Open the previous screen you were looking at.
  */
 
+let hidden = null;
+let visibilityChange = null;
+
 class Emulator extends Component {
   static propTypes = {
     /** gRPC Endpoint where we can reach the emulator. */
@@ -141,9 +144,8 @@ class Emulator extends Component {
       (err) => {
         console.log('JsepProtocol error - disconnect');
         console.log('Error: ', err);
-        this.setState({ lostConnection: true });
-        this.setState({ lostConnection: false });
-      }
+        this.reconnect();
+      },
     );
     this.view = React.createRef();
   }
@@ -184,7 +186,49 @@ class Emulator extends Component {
     this.setState({ audio: s }, onAudioStateChange(s));
   };
 
+  reconnect() {
+    setTimeout( () => {
+      const xmlHttpRequest = new XMLHttpRequest();
+      xmlHttpRequest.onload = () => {
+        window.location.reload();
+      };
+      xmlHttpRequest.onerror = () => {
+        this.reconnect();
+      };
+      xmlHttpRequest.open('HEAD', window.location.href, true);
+      xmlHttpRequest.send();
+    }, 500);
+  }
+
+
+  handleVisibilityChange = () => {
+    if (document[hidden]) {
+      this.setState({ lostConnection: true });
+    } else {
+      this.reconnect()
+    }
+  };
+
   render() {
+    window.addEventListener('online',
+      () => {
+        this.reconnect();
+      },
+    );
+
+    if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
+      hidden = 'hidden';
+      visibilityChange = 'visibilitychange';
+    } else if (typeof document.msHidden !== 'undefined') {
+      hidden = 'msHidden';
+      visibilityChange = 'msvisibilitychange';
+    } else if (typeof document.webkitHidden !== 'undefined') {
+      hidden = 'webkitHidden';
+      visibilityChange = 'webkitvisibilitychange';
+    }
+
+    document.addEventListener(visibilityChange, this.handleVisibilityChange, false);
+
     const {
       width,
       height,
