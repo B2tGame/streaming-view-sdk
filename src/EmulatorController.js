@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import rp from 'request-promise';
+import axios from 'axios';
 export default class EmulatorController {
   static propTypes = {
     apiEndpoint: PropTypes.string.isRequired,
@@ -11,10 +11,6 @@ export default class EmulatorController {
   }
 
   terminate = () => {
-    console.log('emulatorController', this.apiEndpoint, this.edgeNodeId);
-    return rp.get({
-      uri: `${this.apiEndpoint}/${this.edgeNodeId}/emulator-commands/terminate`,
-      json: true,
-    });
+    return axios.get( `${this.apiEndpoint}/${this.edgeNodeId}/emulator-commands/terminate`);
   };
 }
