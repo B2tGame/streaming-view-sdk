@@ -66,9 +66,9 @@ A React component that displays and controls a remote stream from the android em
 | **enableFullScreen** | `Boolean` | `true`  |        :x:         | The app will put the stream in full-screen mode after the first user interaction.                     |
 
 
-### Emulator controller
+### Streaming controller
 
-A class that controlls the emulator
+A class that controlls the stream
 
 #### Supported properties
 
