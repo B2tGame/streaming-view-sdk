@@ -13,17 +13,18 @@ class RoundTripTimeMonitor extends Component {
   constructor(props) {
     super(props);
     this.state = {};
+    this.socket = null;
   }
 
   componentDidMount() {
-    const socket = io(this.props.endpoint, { path: '/' + this.props.edgeNodeId + '/emulator-commands/socket.io' });
+    this.socket = io(this.props.endpoint, { path: '/' + this.props.edgeNodeId + '/emulator-commands/socket.io' });
 
-    socket.on('error', (err) => {
+    this.socket.on('error', (err) => {
       console.log('Round Trip Time Monitor: ', err);
     });
 
-    socket.on('pong', (networkRoundTripTime) => {
-      socket.emit(
+    this.socket.on('pong', (networkRoundTripTime) => {
+      this.socket.emit(
         'message',
         JSON.stringify({
           type: 'report',
@@ -43,7 +44,9 @@ class RoundTripTimeMonitor extends Component {
       clearInterval(this.state.timer);
       this.setState({ timer: undefined });
     }
-    socket.close()
+    if (this.socket) {
+      this.socket.close();
+    }
   }
 
   render() {
