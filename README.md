@@ -30,21 +30,23 @@ class App extends React.Component {
 }
 ```
 
-## Usage EmulatorController
+## Usage StreamingController
 
-You can shut down an edge node with the EmulatorController
+You can shut down an edge node with the StreamingController
 
 ```js
 
-import { EmulatorController } from 'streaming-view-sdk';
+import { StreamingController } from 'streaming-view-sdk';
 
-const emulatorController = new EmulatorController({
+StreamingController({
   apiEndpoint:'https://exampe.com/api/streaming-service',
   edgeNodeId: 'a8a363c7-7104-4a40-9908-c4122d15f902'
-});
-    emulatorController.terminate()
-    .then(console.log)
-    .catch(console.error)
+})
+  .then(streamingController => {
+  streamingController.terminate()
+  })
+  .then(console.log)
+  .catch(console.error)
 
 ```
 
