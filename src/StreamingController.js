@@ -1,4 +1,11 @@
 import axios from 'axios';
+
+/**
+ * Streamingcontroller is responsible for controlling the edge node for example terminate it.
+ *
+ * @class StreamingController
+ */
+
 class StreamingController {
   constructor(props) {
     this.apiEndpoint = props.apiEndpoint;
