@@ -37,7 +37,7 @@ export default class StreamingView extends Component {
 
   handleUserInteraction = () => {
     this.setState({ muted: false });
-  }
+  };
 
   pollStreamStatus(apiEndpoint, edgeNodeId, maxRetry) {
     console.log('Fetching from:', `${apiEndpoint}/api/streaming-games/status/${edgeNodeId}`);
@@ -68,15 +68,7 @@ export default class StreamingView extends Component {
   }
 
   renderEmulatorBlock() {
-    const {
-      apiEndpoint,
-      edgeNodeId,
-      enableControl,
-      enableFullScreen,
-      screenOrientation,
-      view,
-      volume,
-    } = this.props;
+    const { apiEndpoint, edgeNodeId, enableControl, enableFullScreen, screenOrientation, view, volume } = this.props;
 
     switch (this.state.isReadyStream) {
       case true:

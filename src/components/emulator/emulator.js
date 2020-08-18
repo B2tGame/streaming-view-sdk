@@ -145,7 +145,7 @@ class Emulator extends Component {
         console.log('JsepProtocol error - disconnect');
         console.log('Error: ', err);
         this.reconnect();
-      },
+      }
     );
     this.view = React.createRef();
   }
@@ -187,7 +187,7 @@ class Emulator extends Component {
   };
 
   reconnect() {
-    setTimeout( () => {
+    setTimeout(() => {
       const xmlHttpRequest = new XMLHttpRequest();
       xmlHttpRequest.onload = () => {
         window.location.reload();
@@ -200,23 +200,21 @@ class Emulator extends Component {
     }, 500);
   }
 
-
   handleVisibilityChange = () => {
     if (document[hidden]) {
       this.setState({ lostConnection: true });
     } else {
-      this.reconnect()
+      this.reconnect();
     }
   };
 
   render() {
-    window.addEventListener('online',
-      () => {
-        this.reconnect();
-      },
-    );
+    window.addEventListener('online', () => {
+      this.reconnect();
+    });
 
-    if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
+    if (typeof document.hidden !== 'undefined') {
+      // Opera 12.10 and Firefox 18 and later support
       hidden = 'hidden';
       visibilityChange = 'visibilitychange';
     } else if (typeof document.msHidden !== 'undefined') {
