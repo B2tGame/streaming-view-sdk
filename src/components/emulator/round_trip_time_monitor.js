@@ -43,6 +43,7 @@ class RoundTripTimeMonitor extends Component {
       clearInterval(this.state.timer);
       this.setState({ timer: undefined });
     }
+    socket.close()
   }
 
   render() {
