@@ -1,11 +1,8 @@
+import Emulator from './components/emulator/emulator';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import EmulatorScreen from './components/emulator_screen';
-import { EmulatorControllerService } from './components/emulator/net/emulator_web_client';
-import RoundTripTimeMonitor from './components/round_trip_time_monitor';
-
-const rp = require('request-promise');
-const url = require('url');
+import RoundTripTimeMonitor from './components/emulator/round_trip_time_monitor';
+import rp from 'request-promise';
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
@@ -19,6 +16,10 @@ export default class StreamingView extends Component {
     edgeNodeId: PropTypes.string.isRequired,
     enableControl: PropTypes.bool,
     enableFullScreen: PropTypes.bool,
+    screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
+    view: PropTypes.oneOf(['webrtc', 'png']),
+    /** Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100% */
+    volume: PropTypes.number,
   };
 
   constructor(props) {
@@ -27,15 +28,19 @@ export default class StreamingView extends Component {
     this.state = {
       isReadyStream: undefined,
       maxRetryCount: 120,
+      muted: true,
     };
 
     const { apiEndpoint, edgeNodeId } = props;
-    this.emulator = new EmulatorControllerService(`${apiEndpoint}/${edgeNodeId}`);
-    this.turnHost = url.parse(apiEndpoint).hostname || window.location.hostname;
     this.pollStreamStatus(apiEndpoint, edgeNodeId, this.state.maxRetryCount);
   }
 
+  handleUserInteraction = () => {
+    this.setState({ muted: false });
+  };
+
   pollStreamStatus(apiEndpoint, edgeNodeId, maxRetry) {
+    console.log('Fetching from:', `${apiEndpoint}/api/streaming-games/status/${edgeNodeId}`);
     rp.get({
       uri: `${apiEndpoint}/api/streaming-games/status/${edgeNodeId}`,
       json: true,
@@ -63,15 +68,20 @@ export default class StreamingView extends Component {
   }
 
   renderEmulatorBlock() {
+    const { apiEndpoint, edgeNodeId, enableControl, enableFullScreen, screenOrientation, view, volume } = this.props;
+
     switch (this.state.isReadyStream) {
       case true:
-        const { enableControl, enableFullScreen } = this.props;
         return (
-          <EmulatorScreen
-            emulator={this.emulator}
+          <Emulator
+            uri={`${apiEndpoint}/${edgeNodeId}`}
             enableControl={enableControl}
             enableFullScreen={enableFullScreen}
-            turnHost={this.turnHost}
+            screenOrientation={screenOrientation}
+            view={view}
+            muted={this.state.muted}
+            volume={volume}
+            onUserInteraction={this.handleUserInteraction}
           />
         );
       case false:
@@ -84,7 +94,7 @@ export default class StreamingView extends Component {
   render() {
     return (
       <div>
-        <RoundTripTimeMonitor />
+        <RoundTripTimeMonitor endpoint={this.props.apiEndpoint} edgeNodeId={this.props.edgeNodeId} />
         {this.renderEmulatorBlock()}
       </div>
     );

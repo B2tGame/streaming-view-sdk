@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 import { EventEmitter } from 'events';
-import '../../../android_emulation_control/emulator_controller_pb';
-import MessageEmitter from '../../../service/MessageEmitter';
-
-const qs = require('qs');
+import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
+import url from 'url';
 
 /**
- * This drives the jsep protocol with the emulator. The jsep protocol is described here:
- * https://rtcweb-wg.github.io/jsep/. Note that we use a message pump to the grpc endpoint
- * to receive jsep messages that must remain active for the duration of the connection.
+ * This drives the jsep protocol with the emulator, and can be used to
+ * send key/mouse/touch events to the emulator. Events will be send
+ * over the data channel if open, otherwise they will be send via the
+ * grpc endpoint.
+ *
+ *  The jsep protocol is described here:
+ * https://rtcweb-wg.github.io/jsep/.
  *
  *  This class can fire two events:
  *
@@ -31,6 +33,7 @@ const qs = require('qs');
  *
  * You usually want to start the stream after instantiating this object. Do not forget to
  * disconnect once you are finished to terminate the message pump.
+ *
  *
  * @example
  *  jsep = new JsepProtocolDriver(emulator, s => { video.srcObject = s; video.play() });
@@ -42,23 +45,24 @@ const qs = require('qs');
 export default class JsepProtocol {
   /**
    * Creates an instance of JsepProtocol.
-   * @param {EmulatorControllerService} emulator Service used to make the gRPC calls
+   * @param {EmulatorService} emulator Service used to make the gRPC calls
+   * @param {RtcService} rtc Service used to open up the rtc calls.
+   * @param {boolean} poll True if we should use polling
    * @param {callback} onConnect optional callback that is invoked when a stream is available
    * @param {callback} onDisconnect optional callback that is invoked when the stream is closed.
-   * @param {string} turnHost The turn server host name
    * @memberof JsepProtocol
    */
-  constructor(emulator, onConnect, onDisconnect, turnHost) {
+  constructor(emulator, rtc, poll, onConnect, onDisconnect) {
     this.emulator = emulator;
+    this.rtc = rtc;
     this.events = new EventEmitter();
-    /* eslint-disable */
-    this.guid = new proto.android.emulation.control.RtcId();
+    this.poll = poll;
+    this.guid = null;
+    this.stream = null;
     this.event_forwarders = {};
-
+    if (typeof this.rtc.receiveJsepMessages !== 'function') this.poll = true;
     if (onConnect) this.events.on('connected', onConnect);
     if (onDisconnect) this.events.on('disconnected', onDisconnect);
-
-    this.turnHost = turnHost;
   }
 
   on = (name, fn) => {
@@ -73,6 +77,10 @@ export default class JsepProtocol {
   disconnect = () => {
     this.connected = false;
     if (this.peerConnection) this.peerConnection.close();
+    if (this.stream) {
+      this.stream.cancel();
+      this.stream = null;
+    }
     this.active = false;
     this.events.emit('disconnected', this);
   };
@@ -88,14 +96,26 @@ export default class JsepProtocol {
     this.peerConnection = null;
     this.active = true;
 
-    var request = new proto.google.protobuf.Empty();
-    this.emulator.requestRtcStream(request).on('data', (response) => {
+    var request = new Empty();
+    this.rtc.requestRtcStream(request, {}, (err, response) => {
+      if (err) {
+        console.error('Failed to configure rtc stream: ' + JSON.stringify(err));
+        this.disconnect();
+        return;
+      }
+
       // Configure
-      self.guid.setGuid(response.getGuid());
+      self.guid = response;
       self.connected = true;
 
-      // And pump messages
-      self._receiveJsepMessage();
+      if (!this.poll) {
+        // Streaming envoy based.
+        self._streamJsepMessage();
+      } else {
+        // Poll pump messages, go/envoy based proxy.
+        console.info('Polling jsep messages.');
+        self._receiveJsepMessage();
+      }
     });
   };
 
@@ -106,10 +126,11 @@ export default class JsepProtocol {
       this.peerConnection.removeEventListener('icecandidate', this._handlePeerIceCandidate);
       this.peerConnection = null;
     }
+    this.event_forwarders = {};
   };
 
   _handlePeerConnectionTrack = (e) => {
-    this.events.emit('connected', e.streams[0]);
+    this.events.emit('connected', e.track);
   };
 
   _handlePeerConnectionStateChange = (e) => {
@@ -133,9 +154,9 @@ export default class JsepProtocol {
   send(label, msg) {
     let bytes = msg.serializeBinary();
     let forwarder = this.event_forwarders[label];
-
+    console.log('Send ' + label + ' ' + JSON.stringify(msg.toObject()));
     // Send via data channel/gRPC bridge.
-    if (forwarder && forwarder.readyState == 'open') {
+    if (this.connected && forwarder && forwarder.readyState == 'open') {
       this.event_forwarders[label].send(bytes);
     } else {
       // Fallback to using the gRPC protocol
@@ -163,77 +184,32 @@ export default class JsepProtocol {
     this.event_forwarders[channel.label] = channel;
   };
 
+  /**
+   * Get Ice configuration from emulator hostname
+   * @returns {any|{urls: string[], credential: string, username: string}}
+   */
   getIceConfiguration() {
-    const jsonConfiguration = (qs.parse(window.location.search, { ignoreQueryPrefix: true }) || {}).ice || '';
+    const hostname = url.parse(this.emulator.hostname_).hostname;
 
-    const configuration = jsonConfiguration ? JSON.parse(jsonConfiguration) : null;
-    return configuration
-      ? configuration
-      : [
-          {
-            urls: [`turn:${this.turnHost}:3478?transport=udp`, `turn:${this.turnHost}:3478?transport=tcp`],
-            username: 'webclient',
-            credential: 'webclient',
-          },
-        ];
+    return {
+      urls: [`turn:${hostname}:3478?transport=udp`, `turn:${hostname}:3478?transport=tcp`],
+      username: 'webclient',
+      credential: 'webclient',
+    };
   }
 
   _handleStart = (signal) => {
     signal.start = {
-      iceServers: this.getIceConfiguration(),
+      iceServers: [this.getIceConfiguration()],
       iceTransportPolicy: 'relay',
     };
-
     this.peerConnection = new RTCPeerConnection(signal.start);
-    this._startMonitor(this.peerConnection);
-
     this.peerConnection.addEventListener('track', this._handlePeerConnectionTrack, false);
     this.peerConnection.addEventListener('icecandidate', this._handlePeerIceCandidate, false);
     this.peerConnection.addEventListener('connectionstatechange', this._handlePeerConnectionStateChange, false);
     this.peerConnection.ondatachannel = (e) => {
       this._handleDataChannel(e);
     };
-  };
-
-  _startMonitor = (peerConnection) => {
-    let prevTimestamp = 0;
-    let prevBytesReceived = 0;
-    let prevFramesDecoded = 0;
-    let prevTotalDecodeTime = 0;
-
-    setInterval(() => {
-      peerConnection
-        .getStats()
-        .then((stats) => {
-          // console.log(stats);
-          stats.forEach((report) => {
-            if (report.type === 'inbound-rtp' && report.kind === 'video') {
-              const timeSinceLast = (Date.now() - prevTimestamp) / 1000.0;
-              const framesPerSecond = (report.framesDecoded - prevFramesDecoded) / timeSinceLast;
-              const bytePerSecond = (report.bytesReceived - prevBytesReceived) / timeSinceLast;
-              const videoProcessing = ((report.totalDecodeTime || 0) - prevTotalDecodeTime) / framesPerSecond;
-
-              if (prevTimestamp !== 0) {
-                MessageEmitter.emit('WEB_RTC_STATS', {
-                  measureAt: Date.now(),
-                  measureDuration: timeSinceLast,
-                  framesPerSecond: framesPerSecond,
-                  bytePerSecond: bytePerSecond,
-                  videoProcessing: report.totalDecodeTime ? videoProcessing : undefined,
-                });
-              }
-
-              prevTimestamp = Date.now();
-              prevBytesReceived = report.bytesReceived;
-              prevFramesDecoded = report.framesDecoded;
-              prevTotalDecodeTime = report.totalDecodeTime;
-            }
-          });
-        })
-        .catch((err) => {
-          MessageEmitter.emit('WEB_RTC_STATS_ERROR', err);
-        });
-    }, 5000);
   };
 
   _handleSDP = async (signal) => {
@@ -259,7 +235,7 @@ export default class JsepProtocol {
       if (signal.bye) this._handleBye();
       if (signal.candidate) this._handleCandidate(signal);
     } catch (e) {
-      console.log('Failed to handle message: [' + message + '], due to: ' + e);
+      console.error('Failed to handle message: [' + message + '], due to: ' + JSON.stringify(e));
     }
   };
 
@@ -274,9 +250,27 @@ export default class JsepProtocol {
     var request = new proto.android.emulation.control.JsepMsg();
     request.setId(this.guid);
     request.setMessage(JSON.stringify(jsonObject));
-    this.emulator.sendJsepMessage(request);
+    this.rtc.sendJsepMessage(request);
   };
 
+  _streamJsepMessage = () => {
+    if (!this.connected) return;
+    var self = this;
+
+    this.stream = this.rtc.receiveJsepMessages(this.guid, {});
+    this.stream.on('data', (response) => {
+      const msg = response.getMessage();
+      self._handleJsepMessage(msg);
+    });
+    this.stream.on('error', (e) => {
+      self.disconnect();
+    });
+    this.stream.on('end', (e) => {
+      self.disconnect();
+    });
+  };
+
+  // This function is a fallback for v1 (go based proxy), that does not support streaming.
   _receiveJsepMessage = () => {
     if (!this.connected) return;
 
@@ -284,7 +278,11 @@ export default class JsepProtocol {
 
     // This is a blocking call, that will return as soon as a series
     // of messages have been made available, or if we reach a timeout
-    this.emulator.receiveJsepMessage(this.guid, {}).on('data', (response) => {
+    this.rtc.receiveJsepMessage(this.guid, {}, (err, response) => {
+      if (err) {
+        console.error('Failed to receive jsep message, disconnecting: ' + JSON.stringify(err));
+        this.disconnect();
+      }
       const msg = response.getMessage();
       // Handle only if we received a useful message.
       // it is possible to get nothing if the server decides
