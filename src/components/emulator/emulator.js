@@ -61,9 +61,6 @@ const RtcView = withMouseKeyHandler(EmulatorWebrtcView);
  * "GoBack"          -  Open the previous screen you were looking at.
  */
 
-let hidden = null;
-let visibilityChange = null;
-
 class Emulator extends Component {
   static propTypes = {
     /** gRPC Endpoint where we can reach the emulator. */
@@ -191,33 +188,7 @@ class Emulator extends Component {
     }, 500);
   }
 
-  handleVisibilityChange = () => {
-    if (document[hidden]) {
-      this.setState({ lostConnection: true });
-    } else {
-      this.reconnect();
-    }
-  };
-
   render() {
-    window.addEventListener('online', () => {
-      this.reconnect();
-    });
-
-    if (typeof document.hidden !== 'undefined') {
-      // Opera 12.10 and Firefox 18 and later support
-      hidden = 'hidden';
-      visibilityChange = 'visibilitychange';
-    } else if (typeof document.msHidden !== 'undefined') {
-      hidden = 'msHidden';
-      visibilityChange = 'msvisibilitychange';
-    } else if (typeof document.webkitHidden !== 'undefined') {
-      hidden = 'webkitHidden';
-      visibilityChange = 'webkitvisibilitychange';
-    }
-
-    document.addEventListener(visibilityChange, this.handleVisibilityChange, false);
-
     const {
       width,
       height,
