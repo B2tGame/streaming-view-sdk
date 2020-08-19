@@ -144,8 +144,7 @@ export default function withMouseKeyHandler(WrappedComponent) {
       const emulatorCords = this.calculateTouchEmulatorCoordinates(event);
       const request = new Proto.MouseEvent();
       request.setX(emulatorCords.x);
-      // Temp "fix" until real touch events will be supported
-      request.setY(emulatorCords.y - 20);
+      request.setY(emulatorCords.y);
       request.setButtons(mouseButton === 0 ? 1 : 0);
 
       this.sendInput('mouse', request);
