@@ -45,7 +45,7 @@ export default class EmulatorWebrtcView extends Component {
   };
 
   static defaultProps = {
-    muted: false,
+    muted: true,
     volume: 1.0,
     onError: (e) => console.error('WebRTC error: ' + e),
     onAudioStateChange: (e) => console.log('Webrtc audio became available: ' + e),
@@ -78,10 +78,8 @@ export default class EmulatorWebrtcView extends Component {
     });
   }
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.volume !== this.props.volume) {
-      this.video.current.volume = this.props.volume;
-    }
+  componentDidUpdate() {
+    this.video.current.volume = this.props.volume;
   }
 
   onDisconnect = () => {

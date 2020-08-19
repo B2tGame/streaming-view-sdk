@@ -156,7 +156,7 @@ export default function withMouseKeyHandler(WrappedComponent) {
      * @param label Input type can be [mouse|keyboard/touch]
      * @param request
      */
-    sendInput(label, request) {
+    sendInput = (label, request) => {
       this.handleUserInteraction();
 
       if (this.props.enableControl) {
