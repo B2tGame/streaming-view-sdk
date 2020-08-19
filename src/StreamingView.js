@@ -27,6 +27,7 @@ export default class StreamingView extends Component {
 
     this.state = {
       isReadyStream: undefined,
+      streamEndpoint: undefined,
       maxRetryCount: 120,
       muted: true,
     };
@@ -52,6 +53,7 @@ export default class StreamingView extends Component {
 
           this.setState({
             isReadyStream: true,
+            streamEndpoint: result.endpoint,
           });
         } else if (maxRetry) {
           setTimeout(() => this.pollStreamStatus(apiEndpoint, edgeNodeId, maxRetry - 1), 1000);
@@ -66,36 +68,30 @@ export default class StreamingView extends Component {
       });
   }
 
-  renderEmulatorBlock() {
-    const { apiEndpoint, edgeNodeId, enableControl, enableFullScreen, screenOrientation, view, volume } = this.props;
+  render() {
+    const { enableControl, enableFullScreen, screenOrientation, view, volume } = this.props;
 
     switch (this.state.isReadyStream) {
       case true:
         return (
-          <Emulator
-            uri={`${apiEndpoint}/${edgeNodeId}`}
-            enableControl={enableControl}
-            enableFullScreen={enableFullScreen}
-            screenOrientation={screenOrientation}
-            view={view}
-            muted={this.state.muted}
-            volume={volume}
-            onUserInteraction={this.handleUserInteraction}
-          />
+          <div>
+            <RoundTripTimeMonitor endpoint={this.state.streamEndpoint} />
+            <Emulator
+              uri={this.state.streamEndpoint}
+              enableControl={enableControl}
+              enableFullScreen={enableFullScreen}
+              screenOrientation={screenOrientation}
+              view={view}
+              muted={this.state.muted}
+              volume={volume}
+              onUserInteraction={this.handleUserInteraction}
+            />
+          </div>
         );
       case false:
         return <p>EdgeNode Stream is unreachable</p>;
       default:
         return this.props.children;
     }
-  }
-
-  render() {
-    return (
-      <div>
-        <RoundTripTimeMonitor endpoint={this.props.apiEndpoint} edgeNodeId={this.props.edgeNodeId} />
-        {this.renderEmulatorBlock()}
-      </div>
-    );
   }
 }
