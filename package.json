@@ -15,6 +15,7 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/appland/streaming-view-sdk#readme",
   "dependencies": {
+    "axios": "^0.19.2",
     "eventemitter3": "^4.0.0",
     "google-protobuf": "^3.11.4",
     "grpc-web": "^1.0.7",

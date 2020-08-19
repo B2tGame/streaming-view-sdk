@@ -45,7 +45,7 @@ export default class EmulatorWebrtcView extends Component {
   };
 
   static defaultProps = {
-    muted: false,
+    muted: true,
     volume: 1.0,
     onError: (e) => console.error('WebRTC error: ' + e),
     onAudioStateChange: (e) => console.log('Webrtc audio became available: ' + e),
@@ -76,6 +76,10 @@ export default class EmulatorWebrtcView extends Component {
       this.props.jsep.startStream();
       this.broadcastState();
     });
+  }
+
+  componentDidUpdate() {
+    this.video.current.volume = this.props.volume;
   }
 
   onDisconnect = () => {
@@ -117,9 +121,7 @@ export default class EmulatorWebrtcView extends Component {
     const possiblePromise = video.play();
     if (possiblePromise) {
       possiblePromise
-        .then((_) => {
-          console.info('Automatic playback started!');
-        })
+        .then(() => {})
         .catch((error) => {
           // Notify listeners that we cannot start.
           this.props.onError(error);
@@ -136,7 +138,8 @@ export default class EmulatorWebrtcView extends Component {
   };
 
   render() {
-    const { muted, volume, deviceWidth, deviceHeight } = this.props;
+    const { muted, deviceWidth, deviceHeight } = this.props;
+
     /*
      * User Screen (Desktop eg. 16:9) - optimized for full-height
      * ┌─────────┬────────┬─────────┐
@@ -170,7 +173,6 @@ export default class EmulatorWebrtcView extends Component {
           // objectFit: "contain",
           // objectPosition: "center",
         }}
-        volume={volume}
         muted={muted}
         onContextMenu={this.onContextMenu}
         onCanPlay={this.onCanPlay}

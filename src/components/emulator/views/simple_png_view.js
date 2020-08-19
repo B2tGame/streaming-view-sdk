@@ -123,7 +123,7 @@ export default class EmulatorPngView extends Component {
             self.setState({ width: rect.width, height: rect.height }, self.startStream);
           }}
         />
-        <img src={this.state.png} width='100%' />
+        <img src={this.state.png} width='100%' alt={'png-view'}/>
       </div>
     );
   }

@@ -107,12 +107,8 @@ class Emulator extends Component {
     onError: (e) => {
       console.error(e);
     },
-    onAudioStateChange: (s) => {
-      console.log('emulator audio: ' + s);
-    },
-    onStateChange: (s) => {
-      console.log('emulator state: ' + s);
-    },
+    onAudioStateChange: () => {},
+    onStateChange: () => {},
     enableFullScreen: true,
     screenOrientation: 'portrait',
     enableControl: true,
@@ -137,13 +133,8 @@ class Emulator extends Component {
       this.emulator,
       this.rtc,
       poll,
-      (succ) => {
-        console.log('JsepProtol success - connect');
-        console.log('Success: ', succ);
-      },
-      (err) => {
-        console.log('JsepProtocol error - disconnect');
-        console.log('Error: ', err);
+      () => {},
+      () => {
         this.reconnect();
       }
     );
@@ -233,8 +224,6 @@ class Emulator extends Component {
       view,
       poll,
       muted,
-      onStateChange,
-      onAudioStateChange,
       onError,
       volume,
       enableFullScreen,
@@ -252,7 +241,6 @@ class Emulator extends Component {
         height={height}
         emulator={this.emulator}
         jsep={this.jsep}
-        onStateChange={this.onStateChange}
         poll={poll}
         muted={muted}
         volume={volume}

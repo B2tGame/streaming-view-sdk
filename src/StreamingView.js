@@ -33,6 +33,8 @@ export default class StreamingView extends Component {
 
     const { apiEndpoint, edgeNodeId } = props;
     this.pollStreamStatus(apiEndpoint, edgeNodeId, this.state.maxRetryCount);
+
+    console.log('Latest update: 2020-08-19 12:20');
   }
 
   handleUserInteraction = () => {
@@ -40,16 +42,13 @@ export default class StreamingView extends Component {
   };
 
   pollStreamStatus(apiEndpoint, edgeNodeId, maxRetry) {
-    console.log('Fetching from:', `${apiEndpoint}/api/streaming-games/status/${edgeNodeId}`);
     rp.get({
       uri: `${apiEndpoint}/api/streaming-games/status/${edgeNodeId}`,
       json: true,
     })
       .then((result) => {
-        console.log('Request promise result:', result);
         if (result.state === 'ready') {
           console.log("Edge Node Stream is 'ready'!");
-          console.log('Latest update: 2020-07-30 16:20');
 
           this.setState({
             isReadyStream: true,
