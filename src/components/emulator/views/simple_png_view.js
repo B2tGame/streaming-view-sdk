@@ -44,6 +44,10 @@ export default class EmulatorPngView extends Component {
      * Note: Deprecated, setting this to true results in poor performance.
      */
     poll: PropTypes.bool,
+    /** The width of the emulator device */
+    deviceWidth: PropTypes.number,
+    /** The height of the emulator device */
+    deviceHeight: PropTypes.number,
   };
 
   state = {
@@ -105,17 +109,17 @@ export default class EmulatorPngView extends Component {
   }
 
   render() {
-    const { width } = this.props;
+    const { deviceWidth, deviceHeight } = this.props;
     const self = this;
     return (
       <div
-        width={width}
         style={{
           display: 'block',
           position: 'relative',
-          height: '100%',
           objectFit: 'contain',
           objectPosition: 'center',
+          width: deviceWidth,
+          height: deviceHeight,
         }}
       >
         <ResizeObserver
@@ -123,7 +127,7 @@ export default class EmulatorPngView extends Component {
             self.setState({ width: rect.width, height: rect.height }, self.startStream);
           }}
         />
-        <img src={this.state.png} width='100%' alt={'png-view'}/>
+        <img src={this.state.png} width='100%' alt={'png-view'} />
       </div>
     );
   }
