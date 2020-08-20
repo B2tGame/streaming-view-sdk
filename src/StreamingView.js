@@ -2,8 +2,7 @@ import Emulator from './components/emulator/emulator';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import RoundTripTimeMonitor from './components/emulator/round_trip_time_monitor';
-import rp from 'request-promise';
-
+import StreamingController from './StreamingController';
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
  *
@@ -18,13 +17,11 @@ export default class StreamingView extends Component {
     enableFullScreen: PropTypes.bool,
     screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
     view: PropTypes.oneOf(['webrtc', 'png']),
-    /** Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100% */
-    volume: PropTypes.number,
+    volume: PropTypes.number, // Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
   };
 
   constructor(props) {
     super(props);
-
     this.state = {
       isReadyStream: undefined,
       streamEndpoint: undefined,
@@ -32,8 +29,20 @@ export default class StreamingView extends Component {
       muted: true,
     };
 
-    const { apiEndpoint, edgeNodeId } = props;
-    this.pollStreamStatus(apiEndpoint, edgeNodeId, this.state.maxRetryCount);
+    StreamingController({
+      apiEndpoint: props.apiEndpoint,
+      edgeNodeId: props.edgeNodeId,
+      maxRetryCount: this.state.maxRetryCount,
+    }).then((controller) => {
+      this.setState({
+        isReadyStream: true,
+        streamEndpoint: controller.getStreamEndpoint(),
+      });
+    }).catch((err) => {
+      this.setState({
+        isReadyStream: false,
+      });
+    })
 
     console.log('Latest update: 2020-08-19 12:20');
   }
@@ -42,31 +51,6 @@ export default class StreamingView extends Component {
     this.setState({ muted: false });
   };
 
-  pollStreamStatus(apiEndpoint, edgeNodeId, maxRetry) {
-    rp.get({
-      uri: `${apiEndpoint}/api/streaming-games/status/${edgeNodeId}`,
-      json: true,
-    })
-      .then((result) => {
-        if (result.state === 'ready') {
-          console.log("Edge Node Stream is 'ready'!");
-
-          this.setState({
-            isReadyStream: true,
-            streamEndpoint: result.endpoint,
-          });
-        } else if (maxRetry) {
-          setTimeout(() => this.pollStreamStatus(apiEndpoint, edgeNodeId, maxRetry - 1), 1000);
-        } else {
-          this.setState({
-            isReadyStream: false,
-          });
-        }
-      })
-      .catch((err) => {
-        console.log('Request promise error:', err);
-      });
-  }
 
   render() {
     const { enableControl, enableFullScreen, screenOrientation, view, volume } = this.props;
