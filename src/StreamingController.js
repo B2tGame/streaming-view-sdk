@@ -40,6 +40,8 @@ const getStatus = (uri, timeout) => {
 };
 
 /**
+ * Retry will try to execute the promise that the callback function returns
+ * untill resolved or runs out of maxRetry
  * @param {function: Promise<*>} callback 
  * @param {number} maxRetry 
  * @param {number} holdOffTime 
