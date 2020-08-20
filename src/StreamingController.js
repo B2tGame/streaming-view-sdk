@@ -18,7 +18,7 @@ class StreamingController {
    */
   terminate() {
     return axios.get(`${this.streamEndpoint}/emulator-commands/terminate`);
-  };
+  }
 
   /**
    * Get the streaming endpoint
@@ -39,11 +39,21 @@ const getStatus = (uri, timeout) => {
   });
 };
 
+/**
+ * @param {function: Promise<*>} callback 
+ * @param {number} maxRetry 
+ * @param {number} holdOffTime 
+ */
 const retry = (callback, maxRetry, holdOffTime) => {
   return new Promise((resolve, reject) => {
     const fn = () => {
       callback().then(resolve, (err) => {
-        --maxRetry <= 0 ? reject(err) : setTimeout(fn, holdOffTime);
+        --maxRetry;
+        if (maxRetry <= 0) {
+          reject(err);
+        } else {
+          setTimeout(fn, holdOffTime);
+        }
       });
     };
     fn();
@@ -63,15 +73,15 @@ export default (props) => {
     window.streamingViewCache[cacheKey] = retry(
       () => getStatus(`${props.apiEndpoint}/api/streaming-games/status/${props.edgeNodeId}`, 2500),
       props.maxRetryCount || 120,
-      1000)
-      .then((result) => {
-        if (result.state === 'ready') {
-          window.streamingViewCache[cacheKey] = result.endpoint;
-          return new StreamingController({ streamEndpoint: result.endpoint, edgeNodeId: props.edgeNodeId });
-        } else {
-          throw new Error('Stream is not ready');
-        }
-      });
+      1000
+    ).then((result) => {
+      if (result.state === 'ready') {
+        window.streamingViewCache[cacheKey] = result.endpoint;
+        return new StreamingController({ streamEndpoint: result.endpoint, edgeNodeId: props.edgeNodeId });
+      } else {
+        throw new Error('Stream is not ready');
+      }
+    });
     return window.streamingViewCache[cacheKey];
   }
 };
