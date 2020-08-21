@@ -139,6 +139,16 @@ export default class EmulatorWebrtcView extends Component {
 
   render() {
     const { muted, deviceWidth, deviceHeight } = this.props;
+    const style = {
+      margin: '0 auto',
+    };
+
+    // Optimize video size by comparing aspect ratios of the emulator device and browser window eg. (16/9 > 9/16)
+    if (window.innerHeight / window.innerWidth > deviceHeight / deviceWidth) {
+      style.width = '100vw';
+    } else {
+      style.height = '100vh';
+    }
 
     /*
      * User Screen (Desktop eg. 16:9) - optimized for full-height
@@ -164,15 +174,7 @@ export default class EmulatorWebrtcView extends Component {
     return (
       <video
         ref={this.video}
-        // Optimize video size by comparing aspect ratios of the emulator device and browser window eg. (16/9 > 9/16)
-        className={window.innerHeight / window.innerWidth > deviceHeight / deviceWidth ? 'full-width' : 'full-height'}
-        style={{
-          // display: "block",
-          // position: "relative",
-          margin: '0 auto',
-          // objectFit: "contain",
-          // objectPosition: "center",
-        }}
+        style={style}
         muted={muted}
         onContextMenu={this.onContextMenu}
         onCanPlay={this.onCanPlay}
