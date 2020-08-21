@@ -69,6 +69,7 @@ export default class StreamingView extends Component {
               muted={this.state.muted}
               volume={volume}
               onUserInteraction={this.handleUserInteraction}
+              poll={true}
             />
           </div>
         );
