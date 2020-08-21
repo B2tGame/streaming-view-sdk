@@ -200,6 +200,11 @@ export default function withMouseKeyHandler(WrappedComponent) {
 
     handleKey = (eventType) => {
       return (event) => {
+        // Block sending Alt key, as it opens keyboard
+        if (event.key === 'Alt') {
+          return;
+        }
+
         const request = new Proto.KeyboardEvent();
         const eventType =
           eventType === 'KEYDOWN'
