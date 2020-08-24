@@ -132,11 +132,11 @@ export default class EmulatorWebrtcView extends Component {
     if (possiblePromise) {
       possiblePromise
         .then(() => {
-          this.log.message("Playing video track");
+          this.log.message('VideoStreamStateChange','Started');
         })
         .catch((error) => {
           // Notify listeners that we cannot start.
-          this.log.message("Failed to play video track", JSON.stringify(error));
+          this.log.message('VideoStreamStateChange', 'Error', error);
           this.props.onError(error);
         });
     }

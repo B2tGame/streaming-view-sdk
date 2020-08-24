@@ -133,11 +133,11 @@ class Emulator extends Component {
       this.rtc,
       poll,
       () => {
-        this.log.message("Jsep connected");
+        this.log.message('JsepStateChange', 'Connected');
       },
       () => {
         this.reconnect();
-        this.log.message("Jsep disconnected");
+        this.log.message('JsepStateChange', 'Disconnected');
       }
     );
     this.view = React.createRef();
@@ -178,7 +178,7 @@ class Emulator extends Component {
     const { onAudioStateChange } = this.props;
     this.setState({ audio: s }, onAudioStateChange(s));
 
-    this.log.message("AudioStateChange", JSON.stringify(s));
+    this.log.message("AudioStateChange", (s ? 'Connected' : 'Disconnected'));
   };
 
   reconnect() {
