@@ -2,6 +2,10 @@ import io from 'socket.io-client';
 import url from 'url';
 
 class Log {
+    /**
+     * Log
+     * @param {string} endpoint
+     */
     constructor(endpoint) {
         const endpointPart = url.parse(endpoint);
         this.socket = io(`${endpointPart.protocol}//${endpointPart.host}`, { path: `${endpointPart.path}/emulator-commands/socket.io` });
@@ -18,6 +22,12 @@ class Log {
         }
     }
 
+    /**
+     *
+     * @param {string} name
+     * @param {string} message
+     * @param extra
+     */
     message(name, message, extra = undefined) {
         this.socket.emit(
             'message',
