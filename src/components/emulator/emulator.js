@@ -127,16 +127,17 @@ class Emulator extends Component {
     const { uri, auth, poll, onError } = props;
     this.emulator = new EmulatorControllerService(uri, auth, onError);
     this.rtc = new RtcService(uri, auth, onError);
+    this.log = new Log(uri);
     this.jsep = new JsepProtocol(
       this.emulator,
       this.rtc,
       poll,
       () => {
-        new Log(uri).message("Jsep connected");
+        this.log.message("Jsep connected");
       },
       () => {
         this.reconnect();
-        new Log(uri).message("Jsep disconnected");
+        this.log.message("Jsep disconnected");
       }
     );
     this.view = React.createRef();
@@ -174,10 +175,10 @@ class Emulator extends Component {
   };
 
   _onAudioStateChange = (s) => {
-    const { uri, onAudioStateChange } = this.props;
+    const { onAudioStateChange } = this.props;
     this.setState({ audio: s }, onAudioStateChange(s));
 
-    new Log(uri).message("AudioStateChange", JSON.stringify(s));
+    this.log.message("AudioStateChange", JSON.stringify(s));
   };
 
   reconnect() {
@@ -192,6 +193,10 @@ class Emulator extends Component {
       xmlHttpRequest.open('HEAD', window.location.href, true);
       xmlHttpRequest.send();
     }, 500);
+  }
+
+  componentWillUnmount() {
+    this.log.close();
   }
 
   render() {

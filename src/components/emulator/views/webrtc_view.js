@@ -57,6 +57,9 @@ export default class EmulatorWebrtcView extends Component {
   constructor(props) {
     super(props);
 
+    const { uri } = props;
+    this.log = new Log(uri);
+
     this.video = React.createRef();
   }
 
@@ -69,6 +72,7 @@ export default class EmulatorWebrtcView extends Component {
 
   componentWillUnmount() {
     this.props.jsep.disconnect();
+    this.log.close();
     this.setState();
   }
 
@@ -128,11 +132,11 @@ export default class EmulatorWebrtcView extends Component {
     if (possiblePromise) {
       possiblePromise
         .then(() => {
-          new Log(uri).message("Playing video track");
+          this.log.message("Playing video track");
         })
         .catch((error) => {
           // Notify listeners that we cannot start.
-          new Log(uri).message("Failed to play video track", JSON.stringify(error));
+          this.log.message("Failed to play video track", JSON.stringify(error));
           this.props.onError(error);
         });
     }

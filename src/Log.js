@@ -16,7 +16,8 @@ class Log {
         });
     }
 
-    destructor() {
+    close() {
+        console.log('Close socket');
         if (this.socket) {
             this.socket.close();
         }
