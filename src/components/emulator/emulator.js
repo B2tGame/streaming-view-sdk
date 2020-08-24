@@ -207,6 +207,7 @@ class Emulator extends Component {
       screenOrientation,
       enableControl,
       onUserInteraction,
+      uri
     } = this.props;
 
     const SpecificView = this.components[view] || RtcView;
@@ -216,6 +217,7 @@ class Emulator extends Component {
         ref={this.view}
         width={width}
         height={height}
+        uri={uri}
         emulator={this.emulator}
         jsep={this.jsep}
         poll={poll}
