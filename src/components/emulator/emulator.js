@@ -131,15 +131,15 @@ class Emulator extends Component {
       this.emulator,
       this.rtc,
       poll,
-      () => {},
+      () => {
+        new Log(uri).message("Jsep connected");
+      },
       () => {
         this.reconnect();
+        new Log(uri).message("Jsep disconnected");
       }
     );
     this.view = React.createRef();
-    this.log = new Log(uri);
-    console.log('Supervisor: ' + uri);
-    this.log.message('Initialized emulator');
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -174,8 +174,10 @@ class Emulator extends Component {
   };
 
   _onAudioStateChange = (s) => {
-    const { onAudioStateChange } = this.props;
+    const { uri, onAudioStateChange } = this.props;
     this.setState({ audio: s }, onAudioStateChange(s));
+
+    new Log(uri).message("AudioStateChange", JSON.stringify(s));
   };
 
   reconnect() {

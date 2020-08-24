@@ -18,13 +18,14 @@ class Log {
         }
     }
 
-    message(message, extra = undefined) {
+    message(name, message, extra = undefined) {
         this.socket.emit(
             'message',
             JSON.stringify({
                 type: 'log',
-                timestamp: Date.now(),
+                name: name,
                 message: message,
+                timestamp: Date.now(),
                 extra: extra,
             })
         );
