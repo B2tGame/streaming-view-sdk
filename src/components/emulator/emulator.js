@@ -135,11 +135,11 @@ class Emulator extends Component {
       this.rtc,
       poll,
       () => {
-        this.log.message('UserInteractionStateChange', 'Connected');
+        this.log.message('user-interaction-state-change', 'connected');
       },
       () => {
         this.reconnect();
-        this.log.message('UserInteractionStateChange', 'Disconnected');
+        this.log.message('user-interaction-state-change', 'disconnected');
       }
     );
     this.view = React.createRef();
@@ -180,7 +180,7 @@ class Emulator extends Component {
     const { onAudioStateChange } = this.props;
     this.setState({ audio: state }, onAudioStateChange(state));
 
-    this.log.message("AudioStateChange", (state ? 'Connected' : 'Disconnected'));
+    this.log.message("audio-state-change", (state ? 'connected' : 'disconnected'));
   };
 
   reconnect() {
