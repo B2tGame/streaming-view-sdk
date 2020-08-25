@@ -27,6 +27,8 @@ export default class EmulatorPngView extends Component {
   static propTypes = {
     /** Emulator service used to retrieve screenshots. */
     emulator: PropTypes.object,
+    /** Event Logger */
+    log: PropTypes.object.isRequired,
     /** The width of the component */
     width: PropTypes.number,
     /** Function called when the state of the emulator changes,
@@ -58,6 +60,11 @@ export default class EmulatorPngView extends Component {
     connect: 'disconnected',
   };
 
+  constructor(props) {
+    super(props);
+    this.log = this.props.log;
+  }
+
   broadcastState() {
     const { onStateChange } = this.props;
     if (onStateChange) {
@@ -66,12 +73,14 @@ export default class EmulatorPngView extends Component {
   }
 
   componentDidMount() {
+    this.log.state('png-broadcast-state-change', 'connecting');
     this.setState({ connect: 'connecting' }, this.broadcastState);
     this.startStream();
   }
 
   componentWillUnmount() {
     if (this.screen) {
+      this.log.state('png-broadcast-state-change', 'disconnected');
       this.setState({ connect: 'disconnected' }, this.broadcastState);
       this.screen.cancel();
     }
@@ -97,6 +106,7 @@ export default class EmulatorPngView extends Component {
       this.screen = emulator.streamScreenshot(request);
     }
     this.screen.on('data', (response) => {
+      this.log.state('png-broadcast-state-change', 'connected');
       this.setState({ connect: 'connected' }, this.broadcastState);
       // Update the image with the one we just received.
       self.setState({

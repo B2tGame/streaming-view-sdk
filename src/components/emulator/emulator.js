@@ -93,6 +93,8 @@ class Emulator extends Component {
     enableControl: PropTypes.bool,
     /** Callback that will be invoked on user interaction */
     onUserInteraction: PropTypes.func,
+    /** Event Logger */
+    log: PropTypes.object.isRequired,
   };
 
   static defaultProps = {
@@ -126,13 +128,17 @@ class Emulator extends Component {
     const { uri, auth, poll, onError } = props;
     this.emulator = new EmulatorControllerService(uri, auth, onError);
     this.rtc = new RtcService(uri, auth, onError);
+    this.log = this.props.log;
     this.jsep = new JsepProtocol(
       this.emulator,
       this.rtc,
       poll,
-      () => {},
+      () => {
+        this.log.state('user-interaction-state-change', 'connected');
+      },
       () => {
         this.reConnect();
+        this.log.state('user-interaction-state-change', 'disconnected');
       }
     );
     this.view = React.createRef();
@@ -169,9 +175,11 @@ class Emulator extends Component {
     this.jsep.send('keyboard', request);
   };
 
-  _onAudioStateChange = (s) => {
+  _onAudioStateChange = (state) => {
     const { onAudioStateChange } = this.props;
-    this.setState({ audio: s }, onAudioStateChange(s));
+    this.setState({ audio: state }, onAudioStateChange(state));
+
+    this.log.state('audio-state-change', state ? 'connected' : 'disconnected');
   };
 
   reConnect() {
@@ -194,6 +202,7 @@ class Emulator extends Component {
       screenOrientation,
       enableControl,
       onUserInteraction,
+      uri,
     } = this.props;
 
     const SpecificView = this.components[view] || RtcView;
@@ -203,6 +212,7 @@ class Emulator extends Component {
         ref={this.view}
         width={width}
         height={height}
+        uri={uri}
         emulator={this.emulator}
         jsep={this.jsep}
         poll={poll}
@@ -214,6 +224,7 @@ class Emulator extends Component {
         screenOrientation={screenOrientation}
         enableControl={enableControl}
         onUserInteraction={onUserInteraction}
+        log={this.log}
       />
     );
   }

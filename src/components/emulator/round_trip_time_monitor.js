@@ -1,31 +1,24 @@
-import io from 'socket.io-client';
 import PropTypes from 'prop-types';
 import { Component } from 'react';
 import MessageEmitter from './MessageEmitter';
-import url from 'url';
 
 class RoundTripTimeMonitor extends Component {
   static propTypes = {
-    /** endpoint Endpoint where we can reach the emulator. */
-    endpoint: PropTypes.string.isRequired,
+    streamSocket: PropTypes.object.isRequired, // socket connection to emulator.
   };
 
   constructor(props) {
     super(props);
     this.state = {};
-    this.socket = null;
   }
 
   componentDidMount() {
-    const endpoint = url.parse(this.props.endpoint);
-    this.socket = io(`${endpoint.protocol}//${endpoint.host}`, { path: `${endpoint.path}/emulator-commands/socket.io` });
-
-    this.socket.on('error', (err) => {
+    this.props.streamSocket.on('error', (err) => {
       console.log('Round Trip Time Monitor: ', err);
     });
 
-    this.socket.on('pong', (networkRoundTripTime) => {
-      this.socket.emit(
+    this.props.streamSocket.on('pong', (networkRoundTripTime) => {
+      this.props.streamSocket.emit(
         'message',
         JSON.stringify({
           type: 'report',
@@ -44,9 +37,6 @@ class RoundTripTimeMonitor extends Component {
       console.log('Unsubscribe from Round Trip Time Monitor');
       clearInterval(this.state.timer);
       this.setState({ timer: undefined });
-    }
-    if (this.socket) {
-      this.socket.close();
     }
   }
 

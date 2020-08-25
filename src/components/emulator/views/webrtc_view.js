@@ -15,6 +15,7 @@
  */
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import Log from '../../../Log';
 
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
@@ -22,6 +23,10 @@ import React, { Component } from 'react';
  */
 export default class EmulatorWebrtcView extends Component {
   static propTypes = {
+    /** gRPC Endpoint where we can reach the emulator. */
+    uri: PropTypes.string.isRequired,
+    /** Event Logger */
+    log: PropTypes.object.isRequired,
     /** Jsep protocol driver, used to establish the video stream. */
     jsep: PropTypes.object,
     /** Function called when the connection state of the emulator changes */
@@ -53,6 +58,9 @@ export default class EmulatorWebrtcView extends Component {
 
   constructor(props) {
     super(props);
+
+    const { uri } = props;
+    this.log = this.props.log;
 
     this.video = React.createRef();
   }
@@ -119,11 +127,15 @@ export default class EmulatorWebrtcView extends Component {
 
     // See https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
     const possiblePromise = video.play();
+
     if (possiblePromise) {
       possiblePromise
-        .then(() => {})
+        .then(() => {
+          this.log.state('video-stream-state-change', 'connected');
+        })
         .catch((error) => {
           // Notify listeners that we cannot start.
+          this.log.state('video-stream-state-change', 'error', error);
           this.props.onError(error);
         });
     }
