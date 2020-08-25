@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import RoundTripTimeMonitor from './components/emulator/round_trip_time_monitor';
 import StreamingController from './StreamingController';
+
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
  *
@@ -33,25 +34,26 @@ export default class StreamingView extends Component {
       apiEndpoint: props.apiEndpoint,
       edgeNodeId: props.edgeNodeId,
       maxRetryCount: this.state.maxRetryCount,
-    }).then((controller) => {
-      this.setState({
-        isReadyStream: true,
-        streamEndpoint: controller.getStreamEndpoint(),
-      });
-    }).catch((err) => {
-      console.log('Error: ', err);
-      this.setState({
-        isReadyStream: false,
-      });
     })
+      .then((controller) => {
+        this.setState({
+          isReadyStream: true,
+          streamEndpoint: controller.getStreamEndpoint(),
+        });
+      })
+      .catch((err) => {
+        console.error('Streaming View SDK - Errors: ', err);
+        this.setState({
+          isReadyStream: false,
+        });
+      });
 
-    console.log('Latest update: 2020-08-19 12:20');
+    console.log('Streaming View SDK - Latest update: 2020-08-25 14:10');
   }
 
   handleUserInteraction = () => {
     this.setState({ muted: false });
   };
-
 
   render() {
     const { enableControl, enableFullScreen, screenOrientation, view, volume } = this.props;
