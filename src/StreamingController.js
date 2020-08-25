@@ -63,10 +63,29 @@ const retry = (callback, maxRetry, holdOffTime) => {
 };
 
 /**
- * Instanciating the StreamingController
+ * @param props
+ */
+const validateProperties = (props) => {
+  if (!props.apiEndpoint) {
+    throw new Error('Missing apiEndpoint');
+  }
+
+  if (!props.edgeNodeId) {
+    throw new Error('Missing edgeNodeId');
+  }
+}
+
+/**
+ * Instantiating the StreamingController
  * @returns {Promise<StreamingController>}
  */
 export default (props) => {
+  try {
+    validateProperties(props);
+  } catch (err) {
+    return Promise.reject(err.message);
+  }
+
   window.streamingViewCache = window.streamingViewCache || {};
   const cacheKey = props.apiEndpoint + '=>' + props.edgeNodeId;
   if (window.streamingViewCache[cacheKey] !== undefined) {

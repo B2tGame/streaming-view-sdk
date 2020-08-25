@@ -39,6 +39,7 @@ export default class StreamingView extends Component {
         streamEndpoint: controller.getStreamEndpoint(),
       });
     }).catch((err) => {
+      console.log('Error: ', err);
       this.setState({
         isReadyStream: false,
       });
