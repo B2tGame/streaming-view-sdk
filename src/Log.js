@@ -11,16 +11,16 @@ class Log {
 
     /**
      *
-     * @param {string} name
+     * @param {string} type
      * @param {string} message
      * @param extra
      */
-    message(name, message, extra = undefined) {
+    message(type, message, extra = undefined) {
         this.socket.emit(
             'message',
             JSON.stringify({
-                type: 'log',
-                name: name,
+                type: type,
+                name: 'client-log',
                 message: message,
                 timestamp: Date.now(),
                 extra: extra,
