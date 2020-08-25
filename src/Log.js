@@ -1,26 +1,12 @@
-import io from 'socket.io-client';
-import url from 'url';
+
 
 class Log {
     /**
      * Log
-     * @param {string} endpoint
+     * @param socket
      */
-    constructor(endpoint) {
-        const endpointPart = url.parse(endpoint);
-        this.socket = io(`${endpointPart.protocol}//${endpointPart.host}`, { path: `${endpointPart.path}/emulator-commands/socket.io` });
-        this.state = {};
-
-        this.socket.on('error', (err) => {
-            console.log('Log: ', err);
-        });
-    }
-
-    close() {
-        console.log('Close socket');
-        if (this.socket) {
-            this.socket.close();
-        }
+    constructor(socket) {
+        this.socket = socket;
     }
 
     /**

@@ -3,6 +3,10 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import RoundTripTimeMonitor from './components/emulator/round_trip_time_monitor';
 import StreamingController from './StreamingController';
+import url from "url";
+import io from "socket.io-client";
+import MessageEmitter from "./components/emulator/MessageEmitter";
+import Log from "./Log";
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
  *
@@ -26,19 +30,25 @@ export default class StreamingView extends Component {
       isReadyStream: undefined,
       streamEndpoint: undefined,
       maxRetryCount: 120,
-      muted: true,
+      isMuted: true,
     };
+
 
     StreamingController({
       apiEndpoint: props.apiEndpoint,
       edgeNodeId: props.edgeNodeId,
       maxRetryCount: this.state.maxRetryCount,
     }).then((controller) => {
+      const streamEndpoint =  controller.getStreamEndpoint();
+      const endpoint = url.parse(streamEndpoint);
+      this.streamSocket = io(`${endpoint.protocol}//${endpoint.host}`, { path: `${endpoint.path}/emulator-commands/socket.io` });
+      this.log = new Log(this.streamSocket);
+
       this.setState({
         isReadyStream: true,
-        streamEndpoint: controller.getStreamEndpoint(),
+        streamEndpoint: streamEndpoint,
       });
-    }).catch((err) => {
+    }).catch(() => {
       this.setState({
         isReadyStream: false,
       });
@@ -48,9 +58,17 @@ export default class StreamingView extends Component {
   }
 
   handleUserInteraction = () => {
-    this.setState({ muted: false });
+    if(this.state.isReadyStream && this.state.isMuted) {
+      this.log('AudioStateChange', 'Unmuted');
+    }
+    this.setState({ isMuted: false });
   };
 
+  componentWillUnmount() {
+    if (this.streamSocket) {
+      this.streamSocket.close();
+    }
+  }
 
   render() {
     const { enableControl, enableFullScreen, screenOrientation, view, volume } = this.props;
@@ -59,14 +77,15 @@ export default class StreamingView extends Component {
       case true:
         return (
           <div>
-            <RoundTripTimeMonitor endpoint={this.state.streamEndpoint} />
+            <RoundTripTimeMonitor streamSocket={this.streamSocket} />
             <Emulator
               uri={this.state.streamEndpoint}
+              log={this.log}
               enableControl={enableControl}
               enableFullScreen={enableFullScreen}
               screenOrientation={screenOrientation}
               view={view}
-              muted={this.state.muted}
+              muted={this.state.isMuted}
               volume={volume}
               onUserInteraction={this.handleUserInteraction}
               poll={true}

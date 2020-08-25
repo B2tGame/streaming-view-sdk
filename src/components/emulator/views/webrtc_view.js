@@ -25,6 +25,8 @@ export default class EmulatorWebrtcView extends Component {
   static propTypes = {
     /** gRPC Endpoint where we can reach the emulator. */
     uri: PropTypes.string.isRequired,
+    /** Event Logger */
+    log: PropTypes.object.isRequired,
     /** Jsep protocol driver, used to establish the video stream. */
     jsep: PropTypes.object,
     /** Function called when the connection state of the emulator changes */
@@ -58,7 +60,7 @@ export default class EmulatorWebrtcView extends Component {
     super(props);
 
     const { uri } = props;
-    this.log = new Log(uri);
+    this.log = this.props.log;
 
     this.video = React.createRef();
   }
@@ -72,7 +74,6 @@ export default class EmulatorWebrtcView extends Component {
 
   componentWillUnmount() {
     this.props.jsep.disconnect();
-    this.log.close();
     this.setState();
   }
 
@@ -127,16 +128,14 @@ export default class EmulatorWebrtcView extends Component {
     // See https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
     const possiblePromise = video.play();
 
-    const { uri } = this.props;
-
     if (possiblePromise) {
       possiblePromise
         .then(() => {
-          this.log.message('VideoStreamStateChange','Started');
+          this.log.message('RtcVideoStreamStateChange','Started');
         })
         .catch((error) => {
           // Notify listeners that we cannot start.
-          this.log.message('VideoStreamStateChange', 'Error', error);
+          this.log.message('RtcVideoStreamStateChange', 'Error', error);
           this.props.onError(error);
         });
     }

@@ -94,6 +94,8 @@ class Emulator extends Component {
     enableControl: PropTypes.bool,
     /** Callback that will be invoked on user interaction */
     onUserInteraction: PropTypes.func,
+    /** Event Logger */
+    log: PropTypes.object.isRequired,
   };
 
   static defaultProps = {
@@ -127,7 +129,7 @@ class Emulator extends Component {
     const { uri, auth, poll, onError } = props;
     this.emulator = new EmulatorControllerService(uri, auth, onError);
     this.rtc = new RtcService(uri, auth, onError);
-    this.log = new Log(uri);
+    this.log = this.props.log;
     this.jsep = new JsepProtocol(
       this.emulator,
       this.rtc,
@@ -195,10 +197,6 @@ class Emulator extends Component {
     }, 500);
   }
 
-  componentWillUnmount() {
-    this.log.close();
-  }
-
   render() {
     const {
       width,
@@ -234,6 +232,7 @@ class Emulator extends Component {
         screenOrientation={screenOrientation}
         enableControl={enableControl}
         onUserInteraction={onUserInteraction}
+        log={this.log}
       />
     );
   }
