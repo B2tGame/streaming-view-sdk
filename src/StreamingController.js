@@ -42,9 +42,9 @@ const getStatus = (uri, timeout) => {
 /**
  * Retry will try to execute the promise that the callback function returns
  * untill resolved or runs out of maxRetry
- * @param {function: Promise<*>} callback 
- * @param {number} maxRetry 
- * @param {number} holdOffTime 
+ * @param {function: Promise<*>} callback
+ * @param {number} maxRetry
+ * @param {number} holdOffTime
  */
 const retry = (callback, maxRetry, holdOffTime) => {
   return new Promise((resolve, reject) => {
@@ -63,27 +63,48 @@ const retry = (callback, maxRetry, holdOffTime) => {
 };
 
 /**
- * Instanciating the StreamingController
+ *
+ * @param props
+ * @returns {{edgeNodeId}|{apiEndpoint}|*}
+ */
+const validateProperties = (props) => {
+  if (!props.apiEndpoint) {
+    throw new Error('Missing apiEndpoint');
+  }
+
+  if (!props.edgeNodeId) {
+    throw new Error('Missing edgeNodeId');
+  }
+
+  return props;
+};
+
+/**
+ * Instantiating the StreamingController
  * @returns {Promise<StreamingController>}
  */
 export default (props) => {
-  window.streamingViewCache = window.streamingViewCache || {};
-  const cacheKey = props.apiEndpoint + '=>' + props.edgeNodeId;
-  if (window.streamingViewCache[cacheKey] !== undefined) {
-    return window.streamingViewCache[cacheKey];
-  } else {
-    window.streamingViewCache[cacheKey] = retry(
-      () => getStatus(`${props.apiEndpoint}/api/streaming-games/status/${props.edgeNodeId}`, 2500),
-      props.maxRetryCount || 120,
-      1000
-    ).then((result) => {
-      if (result.state === 'ready') {
-        window.streamingViewCache[cacheKey] = result.endpoint;
-        return new StreamingController({ streamEndpoint: result.endpoint, edgeNodeId: props.edgeNodeId });
+  return Promise.resolve(props)
+    .then((props) => validateProperties(props))
+    .then((props) => {
+      window.streamingViewCache = window.streamingViewCache || {};
+      const cacheKey = props.apiEndpoint + '=>' + props.edgeNodeId;
+      if (window.streamingViewCache[cacheKey] !== undefined) {
+        return window.streamingViewCache[cacheKey];
       } else {
-        throw new Error('Stream is not ready');
+        window.streamingViewCache[cacheKey] = retry(
+          () => getStatus(`${props.apiEndpoint}/api/streaming-games/status/${props.edgeNodeId}`, 2500),
+          props.maxRetryCount || 120,
+          1000
+        ).then((result) => {
+          if (result.state === 'ready') {
+            window.streamingViewCache[cacheKey] = result.endpoint;
+            return new StreamingController({ streamEndpoint: result.endpoint, edgeNodeId: props.edgeNodeId });
+          } else {
+            throw new Error('Stream is not ready');
+          }
+        });
+        return window.streamingViewCache[cacheKey];
       }
     });
-    return window.streamingViewCache[cacheKey];
-  }
 };

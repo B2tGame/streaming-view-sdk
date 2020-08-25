@@ -50,13 +50,14 @@ export default class StreamingView extends Component {
           streamEndpoint: streamEndpoint,
         });
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Streaming View SDK - Errors: ', err);
         this.setState({
           isReadyStream: false,
         });
       });
 
-    console.log('Latest update: 2020-08-19 12:20');
+    console.log('Streaming View SDK - Latest update: 2020-08-25 14:10');
   }
 
   handleUserInteraction = () => {
@@ -95,7 +96,7 @@ export default class StreamingView extends Component {
           </div>
         );
       case false:
-        return <p>EdgeNode Stream is unreachable</p>;
+        return <p style={{ color: 'white' }}>EdgeNode Stream is unreachable</p>;
       default:
         return this.props.children;
     }

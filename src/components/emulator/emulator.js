@@ -138,7 +138,7 @@ class Emulator extends Component {
         this.log.state('user-interaction-state-change', 'connected');
       },
       () => {
-        this.reconnect();
+        this.reConnect();
         this.log.state('user-interaction-state-change', 'disconnected');
       }
     );
@@ -183,17 +183,10 @@ class Emulator extends Component {
     this.log.state('audio-state-change', state ? 'connected' : 'disconnected');
   };
 
-  reconnect() {
+  reConnect() {
+    this.setState({ lostConnection: true });
     setTimeout(() => {
-      const xmlHttpRequest = new XMLHttpRequest();
-      xmlHttpRequest.onload = () => {
-        window.location.reload();
-      };
-      xmlHttpRequest.onerror = () => {
-        this.reconnect();
-      };
-      xmlHttpRequest.open('HEAD', window.location.href, true);
-      xmlHttpRequest.send();
+      this.setState({ lostConnection: false });
     }, 500);
   }
 
@@ -215,7 +208,7 @@ class Emulator extends Component {
 
     const SpecificView = this.components[view] || RtcView;
 
-    return (
+    return this.state.lostConnection ? null : (
       <SpecificView
         ref={this.view}
         width={width}
