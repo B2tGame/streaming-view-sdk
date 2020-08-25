@@ -135,11 +135,11 @@ class Emulator extends Component {
       this.rtc,
       poll,
       () => {
-        this.log.message('JsepStateChange', 'Connected');
+        this.log.message('UserInteractionStateChange', 'Connected');
       },
       () => {
         this.reconnect();
-        this.log.message('JsepStateChange', 'Disconnected');
+        this.log.message('UserInteractionStateChange', 'Disconnected');
       }
     );
     this.view = React.createRef();
