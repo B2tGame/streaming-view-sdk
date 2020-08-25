@@ -174,11 +174,11 @@ class Emulator extends Component {
     this.jsep.send('keyboard', request);
   };
 
-  _onAudioStateChange = (s) => {
+  _onAudioStateChange = (state) => {
     const { onAudioStateChange } = this.props;
-    this.setState({ audio: s }, onAudioStateChange(s));
+    this.setState({ audio: state }, onAudioStateChange(state));
 
-    this.log.message("AudioStateChange", (s ? 'Connected' : 'Disconnected'));
+    this.log.message("AudioStateChange", (state ? 'Connected' : 'Disconnected'));
   };
 
   reconnect() {
