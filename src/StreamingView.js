@@ -3,10 +3,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import RoundTripTimeMonitor from './components/emulator/round_trip_time_monitor';
 import StreamingController from './StreamingController';
-import url from "url";
-import io from "socket.io-client";
-import MessageEmitter from "./components/emulator/MessageEmitter";
-import Log from "./Log";
+import url from 'url';
+import io from 'socket.io-client';
+import Log from './Log';
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
  *
@@ -33,33 +32,36 @@ export default class StreamingView extends Component {
       isMuted: true,
     };
 
-
     StreamingController({
       apiEndpoint: props.apiEndpoint,
       edgeNodeId: props.edgeNodeId,
       maxRetryCount: this.state.maxRetryCount,
-    }).then((controller) => {
-      const streamEndpoint =  controller.getStreamEndpoint();
-      const endpoint = url.parse(streamEndpoint);
-      this.streamSocket = io(`${endpoint.protocol}//${endpoint.host}`, { path: `${endpoint.path}/emulator-commands/socket.io` });
-      this.log = new Log(this.streamSocket);
-
-      this.setState({
-        isReadyStream: true,
-        streamEndpoint: streamEndpoint,
-      });
-    }).catch(() => {
-      this.setState({
-        isReadyStream: false,
-      });
     })
+      .then((controller) => {
+        const streamEndpoint = controller.getStreamEndpoint();
+        const endpoint = url.parse(streamEndpoint);
+        this.streamSocket = io(`${endpoint.protocol}//${endpoint.host}`, {
+          path: `${endpoint.path}/emulator-commands/socket.io`,
+        });
+        this.log = new Log(this.streamSocket);
+
+        this.setState({
+          isReadyStream: true,
+          streamEndpoint: streamEndpoint,
+        });
+      })
+      .catch(() => {
+        this.setState({
+          isReadyStream: false,
+        });
+      });
 
     console.log('Latest update: 2020-08-19 12:20');
   }
 
   handleUserInteraction = () => {
-    if(this.state.isReadyStream && this.state.isMuted) {
-      this.log('AudioStateChange', 'Unmuted');
+    if (this.state.isReadyStream && this.state.isMuted) {
+      this.log.message('AudioStateChange', 'Unmuted');
     }
     this.setState({ isMuted: false });
   };
