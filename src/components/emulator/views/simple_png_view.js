@@ -73,14 +73,14 @@ export default class EmulatorPngView extends Component {
   }
 
   componentDidMount() {
-    this.log.message('png-broadcast-state-change', 'connecting');
+    this.log.state('png-broadcast-state-change', 'connecting');
     this.setState({ connect: 'connecting' }, this.broadcastState);
     this.startStream();
   }
 
   componentWillUnmount() {
     if (this.screen) {
-      this.log.message('png-broadcast-state-change', 'disconnected');
+      this.log.state('png-broadcast-state-change', 'disconnected');
       this.setState({ connect: 'disconnected' }, this.broadcastState);
       this.screen.cancel();
     }
@@ -106,7 +106,7 @@ export default class EmulatorPngView extends Component {
       this.screen = emulator.streamScreenshot(request);
     }
     this.screen.on('data', (response) => {
-      this.log.message('png-broadcast-state-change', 'connected');
+      this.log.state('png-broadcast-state-change', 'connected');
       this.setState({ connect: 'connected' }, this.broadcastState);
       // Update the image with the one we just received.
       self.setState({

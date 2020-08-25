@@ -61,7 +61,7 @@ export default class StreamingView extends Component {
 
   handleUserInteraction = () => {
     if (this.state.isReadyStream && this.state.isMuted) {
-      this.log.message('audio-state-change', 'unmuted');
+      this.log.state('audio-state-change', 'unmuted');
     }
     this.setState({ isMuted: false });
   };
