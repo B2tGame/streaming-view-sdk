@@ -77,7 +77,7 @@ export default class StreamingView extends Component {
           </div>
         );
       case false:
-        return <p>EdgeNode Stream is unreachable</p>;
+        return <p style={{ color: 'white' }}>EdgeNode Stream is unreachable</p>;
       default:
         return this.props.children;
     }
