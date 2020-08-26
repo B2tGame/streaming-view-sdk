@@ -98,8 +98,8 @@ export default (props) => {
           1000
         ).then((result) => {
           if (result.state === 'ready') {
-            window.streamingViewCache[cacheKey] = result.endpoint;
-            return new StreamingController({ streamEndpoint: result.endpoint, edgeNodeId: props.edgeNodeId });
+            window.streamingViewCache[cacheKey] = new StreamingController({ streamEndpoint: result.endpoint, edgeNodeId: props.edgeNodeId });
+            return window.streamingViewCache[cacheKey];
           } else {
             throw new Error('Stream is not ready');
           }
