@@ -15,7 +15,6 @@
  */
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import Log from '../../../Log';
 
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to

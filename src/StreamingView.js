@@ -16,6 +16,7 @@ export default class StreamingView extends Component {
   static propTypes = {
     apiEndpoint: PropTypes.string.isRequired,
     edgeNodeId: PropTypes.string.isRequired,
+    userId: PropTypes.string,
     enableControl: PropTypes.bool,
     enableFullScreen: PropTypes.bool,
     screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
@@ -42,6 +43,7 @@ export default class StreamingView extends Component {
         const endpoint = url.parse(streamEndpoint);
         this.streamSocket = io(`${endpoint.protocol}//${endpoint.host}`, {
           path: `${endpoint.path}/emulator-commands/socket.io`,
+          query: `userId=${this.props.userId}`,
         });
         this.log = new Log(this.streamSocket);
 
@@ -49,6 +51,7 @@ export default class StreamingView extends Component {
           isReadyStream: true,
           streamEndpoint: streamEndpoint,
         });
+        this.logEnableControlState();
       })
       .catch((err) => {
         console.error('Streaming View SDK - Errors: ', err);
@@ -70,6 +73,16 @@ export default class StreamingView extends Component {
   componentWillUnmount() {
     if (this.streamSocket) {
       this.streamSocket.close();
+    }
+  }
+
+  logEnableControlState() {
+    this.log && this.log.state('user-control-state-change', this.props.enableControl ? 'player' : 'watcher');
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.enableControl !== prevProps.enableControl) {
+      this.logEnableControlState();
     }
   }
 

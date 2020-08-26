@@ -1,7 +1,7 @@
 class Log {
   /**
    * Log
-   * @param socket
+   * @param {{}} socket
    */
   constructor(socket) {
     this.socket = socket;
