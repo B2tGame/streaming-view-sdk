@@ -11,7 +11,7 @@ class Log {
    * Logs state changes from the front-end
    * @param {string} type
    * @param {string} state
-   * @param extra
+   * @param {{}} extra
    */
   state(type, state, extra = undefined) {
     this.socket.emit(
@@ -20,6 +20,22 @@ class Log {
         type: type,
         name: 'client-log',
         state: state,
+        timestamp: Date.now(),
+        extra: extra,
+      })
+    );
+  }
+
+  /**
+   * Logs error message with details from the front-end
+   * @param {{}} extra
+   */
+  error(extra = undefined) {
+    this.socket.emit(
+      'message',
+      JSON.stringify({
+        type: 'error',
+        name: 'client-error',
         timestamp: Date.now(),
         extra: extra,
       })

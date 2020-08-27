@@ -58,9 +58,7 @@ export default class EmulatorWebrtcView extends Component {
   constructor(props) {
     super(props);
 
-    const { uri } = props;
     this.log = this.props.log;
-
     this.video = React.createRef();
   }
 
