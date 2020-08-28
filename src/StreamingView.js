@@ -33,9 +33,10 @@ export default class StreamingView extends Component {
       isMuted: true,
     };
 
+    const { apiEndpoint, edgeNodeId, userId } = this.props;
     StreamingController({
-      apiEndpoint: props.apiEndpoint,
-      edgeNodeId: props.edgeNodeId,
+      apiEndpoint: apiEndpoint,
+      edgeNodeId: edgeNodeId,
       maxRetryCount: this.state.maxRetryCount,
     })
       .then((controller) => {
@@ -43,7 +44,7 @@ export default class StreamingView extends Component {
         const endpoint = url.parse(streamEndpoint);
         this.streamSocket = io(`${endpoint.protocol}//${endpoint.host}`, {
           path: `${endpoint.path}/emulator-commands/socket.io`,
-          query: `userId=${this.props.userId}`,
+          query: `userId=${userId}`,
         });
         this.log = new Log(this.streamSocket);
 
@@ -54,13 +55,15 @@ export default class StreamingView extends Component {
         this.logEnableControlState();
       })
       .catch((err) => {
-        console.error('Streaming View SDK - Errors: ', err);
+        this.log && this.log.error(err);
+        console.error('Streaming View SDK - StreamingController Errors: ', err);
+
         this.setState({
           isReadyStream: false,
         });
       });
 
-    console.log('Streaming View SDK - Latest update: 2020-08-25 14:10');
+    console.log('Streaming View SDK - Latest update: 2020-08-28 11:10');
   }
 
   handleUserInteraction = () => {

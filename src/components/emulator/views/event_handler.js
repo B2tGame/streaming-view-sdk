@@ -161,7 +161,7 @@ export default function withMouseKeyHandler(WrappedComponent) {
       if (this.props.enableControl) {
         this.props.jsep.send(label, request);
       }
-    }
+    };
 
     handleTouchStart = (event) => {
       this.sendTouch(event.nativeEvent.touches[0], 0);
@@ -198,25 +198,25 @@ export default function withMouseKeyHandler(WrappedComponent) {
       }
     };
 
-    handleKey = (eventType) => {
+    handleKey = (key) => {
       return (event) => {
         // Block sending Alt key, as it opens keyboard
         if (event.key === 'Alt') {
           return;
         }
 
-        const request = new Proto.KeyboardEvent();
-        const eventType =
-          eventType === 'KEYDOWN'
-            ? Proto.KeyboardEvent.KeyEventType.KEYDOWN
-            : eventType === 'KEYUP'
-            ? Proto.KeyboardEvent.KeyEventType.KEYUP
-            : Proto.KeyboardEvent.KeyEventType.KEYPRESS;
-
-        request.setEventtype(eventType);
-        request.setKey(event.key);
-
-        this.sendInput('keyboard', request);
+        this.sendInput(
+          'keyboard',
+          new Proto.KeyboardEvent()
+            .setEventtype(
+              key === 'KEYDOWN'
+                ? Proto.KeyboardEvent.KeyEventType.KEYDOWN
+                : key === 'KEYUP'
+                ? Proto.KeyboardEvent.KeyEventType.KEYUP
+                : Proto.KeyboardEvent.KeyEventType.KEYPRESS
+            )
+            .setKey(event.key)
+        );
       };
     };
 

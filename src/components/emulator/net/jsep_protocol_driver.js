@@ -282,12 +282,17 @@ export default class JsepProtocol {
         console.error('Failed to receive jsep message, disconnecting: ' + JSON.stringify(err));
         this.disconnect();
       }
-      const msg = response.getMessage();
-      // Handle only if we received a useful message.
-      // it is possible to get nothing if the server decides
-      // to kick us out.
-      if (msg) {
-        self._handleJsepMessage(response.getMessage());
+
+      try {
+        const msg = response.getMessage();
+        // Handle only if we received a useful message.
+        // it is possible to get nothing if the server decides
+        // to kick us out.
+        if (msg) {
+          self._handleJsepMessage(response.getMessage());
+        }
+      } catch (err) {
+        console.error('Failed to get jsep message, disconnecting: ' + JSON.stringify(err));
       }
 
       // And pump messages. Note we must continue the message pump as we
