@@ -205,18 +205,16 @@ export default function withMouseKeyHandler(WrappedComponent) {
           return;
         }
 
-        this.sendInput(
-          'keyboard',
-          new Proto.KeyboardEvent()
-            .setEventtype(
-              key === 'KEYDOWN'
-                ? Proto.KeyboardEvent.KeyEventType.KEYDOWN
-                : key === 'KEYUP'
-                ? Proto.KeyboardEvent.KeyEventType.KEYUP
-                : Proto.KeyboardEvent.KeyEventType.KEYPRESS
-            )
-            .setKey(event.key)
-        );
+        const request = new Proto.KeyboardEvent();
+        const eventType =
+          key === 'KEYDOWN'
+            ? Proto.KeyboardEvent.KeyEventType.KEYDOWN
+            : key === 'KEYUP'
+            ? Proto.KeyboardEvent.KeyEventType.KEYUP
+            : Proto.KeyboardEvent.KeyEventType.KEYPRESS;
+        request.setEventtype(eventType);
+        request.setKey(event.key);
+        this.sendInput('keyboard', request);
       };
     };
 
