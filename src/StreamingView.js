@@ -63,7 +63,7 @@ export default class StreamingView extends Component {
         });
       });
 
-    console.log('Streaming View SDK - Latest update: 2020-08-25 18:10');
+    console.log('Streaming View SDK - Latest update: 2020-08-28 11:10');
   }
 
   handleUserInteraction = () => {
