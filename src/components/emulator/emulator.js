@@ -144,6 +144,22 @@ class Emulator extends Component {
     this.view = React.createRef();
   }
 
+  componentDidMount() {
+    window.addEventListener("visibilitychange", this.onTabChange)
+  }
+
+  componentWilUnmount() {
+    window.removeEventListener("visibilitychange", this.onTabChange)
+  }
+  
+  onTabChange = () => {
+    if (document.visibilityState === 'visible') {
+      this.setState({ lostConnection: false }); // The user returns back to the tab, lets reconnect to the stream.
+    } else {
+      this.setState({ lostConnection: true }); // The user left the tab, lets drop the connection to save bandwith and reconnect later.
+    }
+  }
+
   static getDerivedStateFromProps(nextProps, prevState) {
     if (nextProps.view === 'png')
       return {
