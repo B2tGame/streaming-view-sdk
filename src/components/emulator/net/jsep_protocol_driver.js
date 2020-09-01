@@ -226,9 +226,9 @@ export default class JsepProtocol {
             stats.forEach(report => {
               if (report.type === 'inbound-rtp' && report.kind === 'video') {
                 const timeSinceLast = Math.trunc((Date.now() - prevTimestamp) / 1000.0);
-                const framesPerSecond = Math.trunc((report.framesDecoded - prevFramesDecoded) / timeSinceLast);
-                const bytePerSecond = Math.trunc((report.bytesReceived - prevBytesReceived) / timeSinceLast);
-                const videoProcessing = Math.trunc(((report.totalDecodeTime || 0) - prevTotalDecodeTime) / framesPerSecond);
+                const framesPerSecond =(report.framesDecoded - prevFramesDecoded) / timeSinceLast;
+                const bytePerSecond = (report.bytesReceived - prevBytesReceived) / timeSinceLast;
+                const videoProcessing = ((report.totalDecodeTime || 0) - prevTotalDecodeTime) / framesPerSecond;
 
                 if (prevTimestamp !== 0) {
                   MessageEmitter.emit('WEB_RTC_STATS', {
