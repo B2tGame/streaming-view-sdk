@@ -16,6 +16,7 @@
 import { EventEmitter } from 'events';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import url from 'url';
+import MessageEmitter from '../MessageEmitter';
 
 /**
  * This drives the jsep protocol with the emulator, and can be used to
@@ -203,12 +204,53 @@ export default class JsepProtocol {
       iceTransportPolicy: 'relay',
     };
     this.peerConnection = new RTCPeerConnection(signal.start);
+    this._startMonitor(this.peerConnection);
     this.peerConnection.addEventListener('track', this._handlePeerConnectionTrack, false);
     this.peerConnection.addEventListener('icecandidate', this._handlePeerIceCandidate, false);
     this.peerConnection.addEventListener('connectionstatechange', this._handlePeerConnectionStateChange, false);
     this.peerConnection.ondatachannel = (e) => {
       this._handleDataChannel(e);
     };
+  };
+
+  _startMonitor = (peerConnection) => {
+    let prevTimestamp = 0;
+    let prevBytesReceived = 0;
+    let prevFramesDecoded = 0;
+    let prevTotalDecodeTime = 0;
+
+    setInterval(() => {
+      peerConnection
+          .getStats()
+          .then((stats) => {
+            stats.forEach(report => {
+              if (report.type === 'inbound-rtp' && report.kind === 'video') {
+                const timeSinceLast = Math.trunc((Date.now() - prevTimestamp) / 1000.0);
+                const framesPerSecond = (report.framesDecoded - prevFramesDecoded) / timeSinceLast;
+                const bytePerSecond = (report.bytesReceived - prevBytesReceived) / timeSinceLast;
+                const videoProcessing = ((report.totalDecodeTime || 0) - prevTotalDecodeTime) / framesPerSecond;
+
+                if (prevTimestamp !== 0) {
+                  MessageEmitter.emit('WEB_RTC_STATS', {
+                    measureAt: Date.now(),
+                    measureDuration: timeSinceLast,
+                    framesPerSecond: framesPerSecond,
+                    bytePerSecond: bytePerSecond,
+                    videoProcessing: report.totalDecodeTime ? videoProcessing : undefined,
+                  });
+                }
+
+                prevTimestamp = Date.now();
+                prevBytesReceived = report.bytesReceived;
+                prevFramesDecoded = report.framesDecoded;
+                prevTotalDecodeTime = report.totalDecodeTime;
+              }
+            });
+          })
+          .catch((err) => {
+            MessageEmitter.emit('WEB_RTC_STATS_ERROR', err);
+          });
+    }, 5000);
   };
 
   _handleSDP = async (signal) => {
