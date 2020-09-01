@@ -223,14 +223,12 @@ export default class JsepProtocol {
       peerConnection
           .getStats()
           .then((stats) => {
-            // console.log(stats);
             stats.forEach(report => {
-              if (report.type === "inbound-rtp" && report.kind === "video") {
-
-                const timeSinceLast = (Date.now() - prevTimestamp) / 1000.0;
-                const framesPerSecond = (report.framesDecoded - prevFramesDecoded) / timeSinceLast;
-                const bytePerSecond = (report.bytesReceived - prevBytesReceived) / timeSinceLast;
-                const videoProcessing = ((report.totalDecodeTime || 0) - prevTotalDecodeTime) / framesPerSecond;
+              if (report.type === 'inbound-rtp' && report.kind === 'video') {
+                const timeSinceLast = Math.trunc((Date.now() - prevTimestamp) / 1000.0);
+                const framesPerSecond = Math.trunc((report.framesDecoded - prevFramesDecoded) / timeSinceLast);
+                const bytePerSecond = Math.trunc((report.bytesReceived - prevBytesReceived) / timeSinceLast);
+                const videoProcessing = Math.trunc(((report.totalDecodeTime || 0) - prevTotalDecodeTime) / framesPerSecond);
 
                 if (prevTimestamp !== 0) {
                   MessageEmitter.emit('WEB_RTC_STATS', {
@@ -238,21 +236,21 @@ export default class JsepProtocol {
                     measureDuration: timeSinceLast,
                     framesPerSecond: framesPerSecond,
                     bytePerSecond: bytePerSecond,
-                    videoProcessing: report.totalDecodeTime ? videoProcessing : undefined
+                    videoProcessing: report.totalDecodeTime ? videoProcessing : undefined,
                   });
                 }
 
                 prevTimestamp = Date.now();
                 prevBytesReceived = report.bytesReceived;
                 prevFramesDecoded = report.framesDecoded;
-                prevTotalDecodeTime = report.totalDecodeTime
+                prevTotalDecodeTime = report.totalDecodeTime;
               }
             });
           })
           .catch((err) => {
             MessageEmitter.emit('WEB_RTC_STATS_ERROR', err);
-          })
-    }, 5000)
+          });
+    }, 5000);
   };
 
   _handleSDP = async (signal) => {
