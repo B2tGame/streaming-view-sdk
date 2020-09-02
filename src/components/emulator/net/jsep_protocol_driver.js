@@ -225,18 +225,19 @@ export default class JsepProtocol {
           .then((stats) => {
             stats.forEach(report => {
               if (report.type === 'inbound-rtp' && report.kind === 'video') {
-                const timeSinceLast = Math.trunc((Date.now() - prevTimestamp) / 1000.0);
-                const framesPerSecond = (report.framesDecoded - prevFramesDecoded) / timeSinceLast;
-                const bytePerSecond = (report.bytesReceived - prevBytesReceived) / timeSinceLast;
-                const videoProcessing = ((report.totalDecodeTime || 0) - prevTotalDecodeTime) / framesPerSecond;
+                const timeSinceLast = (Date.now() - prevTimestamp) / 1000.0;
 
-                if (prevTimestamp !== 0) {
+                if (prevTimestamp !== 0 && timeSinceLast !== 0) {
+                  const framesPerSecond = (report.framesDecoded - prevFramesDecoded) / timeSinceLast;
+                  const bytePerSecond = (report.bytesReceived - prevBytesReceived) / timeSinceLast;
+                  const videoProcessing = framesPerSecond !== 0 ? (((report.totalDecodeTime || 0) - prevTotalDecodeTime) / framesPerSecond) : 0;
+
                   MessageEmitter.emit('WEB_RTC_STATS', {
                     measureAt: Date.now(),
-                    measureDuration: timeSinceLast,
-                    framesPerSecond: framesPerSecond,
-                    bytePerSecond: bytePerSecond,
-                    videoProcessing: report.totalDecodeTime ? videoProcessing : undefined,
+                    measureDuration: Math.trunc(timeSinceLast),
+                    framesPerSecond: Math.trunc(framesPerSecond),
+                    bytePerSecond: Math.trunc(bytePerSecond),
+                    videoProcessing: report.totalDecodeTime ? Math.trunc(videoProcessing) : undefined,
                   });
                 }
 
