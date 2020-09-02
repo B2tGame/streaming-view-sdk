@@ -227,7 +227,7 @@ export default class JsepProtocol {
               if (report.type === 'inbound-rtp' && report.kind === 'video') {
                 const timeSinceLast = (Date.now() - prevTimestamp) / 1000.0;
 
-                if (prevTimestamp !== 0 && timeSinceLast !== 0) {
+                if (prevTimestamp !== 0) {
                   const framesPerSecond = (report.framesDecoded - prevFramesDecoded) / timeSinceLast;
                   const bytePerSecond = (report.bytesReceived - prevBytesReceived) / timeSinceLast;
                   const videoProcessing = framesPerSecond !== 0 ? (((report.totalDecodeTime || 0) - prevTotalDecodeTime) / framesPerSecond) : 0;
