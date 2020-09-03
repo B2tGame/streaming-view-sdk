@@ -230,7 +230,7 @@ export default class JsepProtocol {
                 if (prevTimestamp !== 0) {
                   const framesPerSecond = (report.framesDecoded - prevFramesDecoded) / timeSinceLast;
                   const bytePerSecond = (report.bytesReceived - prevBytesReceived) / timeSinceLast;
-                  const videoProcessing = (report.framesDecoded - prevFramesDecoded) !== 0 ? (((report.totalDecodeTime || 0) - prevTotalDecodeTime) / framesPerSecond) : 0;
+                  const videoProcessing = (report.framesDecoded - prevFramesDecoded) !== 0 ? (((report.totalDecodeTime || 0) - prevTotalDecodeTime)*1000 / framesPerSecond) : 0;
 
                   MessageEmitter.emit('WEB_RTC_STATS', {
                     measureAt: Date.now(),
