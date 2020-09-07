@@ -6,6 +6,7 @@ import StreamingController from './StreamingController';
 import url from 'url';
 import io from 'socket.io-client';
 import Log from './Log';
+
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
  *
@@ -39,19 +40,15 @@ export default class StreamingView extends Component {
       edgeNodeId: edgeNodeId,
       maxRetryCount: this.state.maxRetryCount,
     })
-      .then((controller) => {
-        const streamEndpoint = controller.getStreamEndpoint();
+      .then((controller) => controller.getStreamEndpoint())
+      .then((streamEndpoint) => {
         const endpoint = url.parse(streamEndpoint);
         this.streamSocket = io(`${endpoint.protocol}//${endpoint.host}`, {
           path: `${endpoint.path}/emulator-commands/socket.io`,
           query: `userId=${userId}`,
         });
         this.log = new Log(this.streamSocket);
-
-        this.setState({
-          isReadyStream: true,
-          streamEndpoint: streamEndpoint,
-        });
+        this.setState({ isReadyStream: true, streamEndpoint: streamEndpoint });
         this.logEnableControlState();
       })
       .catch((err) => {
@@ -96,7 +93,7 @@ export default class StreamingView extends Component {
       case true:
         return (
           <div>
-            <RoundTripTimeMonitor streamSocket={this.streamSocket} />
+            <RoundTripTimeMonitor streamSocket={this.streamSocket}/>
             <Emulator
               uri={this.state.streamEndpoint}
               log={this.log}
