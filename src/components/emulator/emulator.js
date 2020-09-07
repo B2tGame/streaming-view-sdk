@@ -121,7 +121,6 @@ class Emulator extends Component {
   state = {
     audio: false,
     lostConnection: false,
-    pageIsVisible: true,
   };
 
   constructor(props) {
@@ -138,38 +137,12 @@ class Emulator extends Component {
         this.log.state('user-interaction-state-change', 'connected');
       },
       () => {
-        if (this.state.pageIsVisible) {
-          this.reConnect();
-          this.log.state('user-interaction-state-change', 'disconnected');
-        }
+        this.reConnect();
+        this.log.state('user-interaction-state-change', 'disconnected');
       }
     );
     this.view = React.createRef();
   }
-
-  componentDidMount() {
-    window.addEventListener('visibilitychange', this.onDocumentVisibilityChange);
-  }
-
-  componentWilUnmount() {
-    window.removeEventListener('visibilitychange', this.onDocumentVisibilityChange);
-  }
-
-  onDocumentVisibilityChange = () => {
-    if (document.visibilityState === 'visible') {
-      // The user returns back to the tab, lets reconnect to the stream.
-      this.setState({
-        lostConnection: false,
-        pageIsVisible: true,
-      });
-    } else {
-      // The user left the tab, lets drop the connection to save bandwith and reconnect later.
-      this.setState({
-        lostConnection: true,
-        pageIsVisible: false,
-      });
-    }
-  };
 
   static getDerivedStateFromProps(nextProps, prevState) {
     if (nextProps.view === 'png')
