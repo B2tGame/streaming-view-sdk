@@ -2,7 +2,7 @@ import Emulator from './components/emulator/emulator';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import RoundTripTimeMonitor from './components/emulator/round_trip_time_monitor';
-import StreamingController from './StreamingController';
+import StreamingController  from './StreamingController';
 import url from 'url';
 import io from 'socket.io-client';
 import Log from './Log';
@@ -23,6 +23,7 @@ export default class StreamingView extends Component {
     screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
     view: PropTypes.oneOf(['webrtc', 'png']),
     volume: PropTypes.number, // Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
+    onEvent: PropTypes.func, // report events during the streaming view.
   };
 
   constructor(props) {
@@ -30,7 +31,6 @@ export default class StreamingView extends Component {
     this.state = {
       isReadyStream: undefined,
       streamEndpoint: undefined,
-      maxRetryCount: 120,
       isMuted: true,
     };
 
@@ -38,7 +38,7 @@ export default class StreamingView extends Component {
     StreamingController({
       apiEndpoint: apiEndpoint,
       edgeNodeId: edgeNodeId,
-      maxRetryCount: this.state.maxRetryCount,
+      onEvent: this.props.onEvent,
     })
       .then((controller) => controller.getStreamEndpoint())
       .then((streamEndpoint) => {
@@ -80,9 +80,13 @@ export default class StreamingView extends Component {
     this.log && this.log.state('user-control-state-change', this.props.enableControl ? 'player' : 'watcher');
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     if (this.props.enableControl !== prevProps.enableControl) {
       this.logEnableControlState();
+    }
+
+    if (this.state.isReadyStream && !prevState.isReadyStream && this.props.onEvent) {
+      this.props.onEvent(StreamingController.EVENT_STREAM_CONNECTED, {});
     }
   }
 
@@ -93,7 +97,7 @@ export default class StreamingView extends Component {
       case true:
         return (
           <div>
-            <RoundTripTimeMonitor streamSocket={this.streamSocket}/>
+            <RoundTripTimeMonitor streamSocket={this.streamSocket} />
             <Emulator
               uri={this.state.streamEndpoint}
               log={this.log}

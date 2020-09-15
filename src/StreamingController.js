@@ -8,7 +8,26 @@ import axios from 'axios';
 class StreamingController {
 
   static get DEFAULT_TIMEOUT() {
-    return 60 * 1000; // 1 minute
+    return 30 * 60 * 1000; // 30 minute
+  }
+
+  /**
+   * Event that is fire when the current location/data center has no
+   * free allocations for this edge node and result in the edge node is queued until required capacity in the datacenter exists.
+   * @returns {string}
+   * @constructor
+   */
+  static get EVENT_SERVER_OUT_OF_CAPACITY() {
+    return 'server-out-of-capacity';
+  }
+
+  /**
+   * Event that is fire when the stream are connected to the backend and the consumer receiving a video stream.
+   * @returns {string}
+   * @constructor
+   */
+  static get EVENT_STREAM_CONNECTED() {
+    return 'stream-connected';
   }
 
   /**
@@ -16,6 +35,7 @@ class StreamingController {
    * @param {object} props
    * @param {string} props.apiEndpoint
    * @param {string} props.edgeNodeId Optional parameters, require for some of the API.
+   * @param {callback} props.onEvent Optional parameters, callback function to receiving events from the controller.
    */
   constructor(props) {
     if (!props.apiEndpoint) {
@@ -23,6 +43,8 @@ class StreamingController {
     }
     this.apiEndpoint = props.apiEndpoint;
     this.edgeNodeId = props.edgeNodeId || undefined;
+    this.onEvent = props.onEvent || (() => {
+    });
   }
 
   /**
@@ -68,6 +90,7 @@ class StreamingController {
    * @returns {Promise<{status: string, endpoint: string}>}
    */
   waitFor(timeout = StreamingController.DEFAULT_TIMEOUT) {
+    let isQueuedEventFire = false;
     /**
      * Get the status of the edge node.
      * @param {string} uri
@@ -77,6 +100,10 @@ class StreamingController {
     const getStatus = (uri, timeout) => {
       return axios.get(uri, { timeout: timeout }).then((result) => {
         if (result.data.state === 'pending') {
+          if (result.data.queued && !isQueuedEventFire) {
+            isQueuedEventFire = true;
+            this.onEvent(StreamingController.EVENT_SERVER_OUT_OF_CAPACITY);
+          }
           throw new Error('pending');
         } else {
           return result.data;
@@ -136,6 +163,12 @@ class StreamingController {
  * Instantiating the StreamingController
  * @returns {Promise<StreamingController>}
  */
-export default (props) => {
+
+const factory = (props) => {
   return Promise.resolve(props).then((props) => new StreamingController(props));
-}
+};
+
+factory.EVENT_STREAM_CONNECTED = StreamingController.EVENT_STREAM_CONNECTED;
+factory.EVENT_SERVER_OUT_OF_CAPACITY = StreamingController.EVENT_SERVER_OUT_OF_CAPACITY;
+
+export default factory;
