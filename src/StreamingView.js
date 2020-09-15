@@ -2,7 +2,7 @@ import Emulator from './components/emulator/emulator';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import RoundTripTimeMonitor from './components/emulator/round_trip_time_monitor';
-import StreamingController, { EVENT_STREAM_CONNECTED } from './StreamingController';
+import StreamingController  from './StreamingController';
 import url from 'url';
 import io from 'socket.io-client';
 import Log from './Log';
@@ -86,7 +86,7 @@ export default class StreamingView extends Component {
     }
 
     if (this.state.isReadyStream && !prevState.isReadyStream && this.props.onEvent) {
-      this.props.onEvent(EVENT_STREAM_CONNECTED, {});
+      this.props.onEvent(StreamingController.EVENT_STREAM_CONNECTED, {});
     }
   }
 
