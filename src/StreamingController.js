@@ -147,7 +147,7 @@ class StreamingController {
       .then((result) => result.data || {})
       .then((deviceInfo) => {
         const DPI = window.devicePixelRatio || 1;
-        deviceInfo.sreenScale = DPI;
+        deviceInfo.screenScale = DPI;
         deviceInfo.screenWidth = Math.round(DPI * window.screen.width);
         deviceInfo.screenHeight = Math.round(DPI * window.screen.height);
         deviceInfo.viewportWidth = Math.round(DPI * Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0));
