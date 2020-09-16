@@ -214,43 +214,92 @@ export default class JsepProtocol {
   };
 
   _startMonitor = (peerConnection) => {
-    let prevTimestamp = 0;
-    let prevBytesReceived = 0;
-    let prevFramesDecoded = 0;
-    let prevTotalDecodeTime = 0;
+    const prev = {
+      timestamp: 0,
+      bytesReceived: 0,
+      framesDecoded: 0,
+      totalDecodeTime: 0,
+      framesReceived: 0,
+      framesDropped: 0,
+      freezeCount: 0,
+      messagesSentMouse: 0,
+      messagesSentTouch: 0,
+    };
+    let logState;
+    const setLogState = (params) => {
+      logState = { ...logState, ...params };
+    };
+    const setPrevAttributes = (source, attributes) => {
+      attributes.map((attr) => (prev[attr] = source[attr]));
+    };
 
     setInterval(() => {
       peerConnection
-          .getStats()
-          .then((stats) => {
-            stats.forEach(report => {
-              if (report.type === 'inbound-rtp' && report.kind === 'video') {
-                const timeSinceLast = (Date.now() - prevTimestamp) / 1000.0;
+        .getStats()
+        .then((stats) => {
+          logState = {};
+          const timeSinceLast = (Date.now() - prev.timestamp) / 1000.0;
+          stats.forEach((report) => {
+            if (report.type === 'inbound-rtp' && report.kind === 'video') {
+              if (prev.timestamp !== 0) {
+                const framesDecodedPerSecond = (report.framesDecoded - prev.framesDecoded) / timeSinceLast;
+                const bytesReceivedPerSecond = (report.bytesReceived - prev.bytesReceived) / timeSinceLast;
+                const videoProcessing =
+                  report.framesDecoded - prev.framesDecoded !== 0
+                    ? (((report.totalDecodeTime || 0) - prev.totalDecodeTime) * 1000) / framesDecodedPerSecond
+                    : 0;
 
-                if (prevTimestamp !== 0) {
-                  const framesPerSecond = (report.framesDecoded - prevFramesDecoded) / timeSinceLast;
-                  const bytePerSecond = (report.bytesReceived - prevBytesReceived) / timeSinceLast;
-                  const videoProcessing = (report.framesDecoded - prevFramesDecoded) !== 0 ? (((report.totalDecodeTime || 0) - prevTotalDecodeTime) * 1000 / framesPerSecond) : 0;
-
-                  MessageEmitter.emit('WEB_RTC_STATS', {
-                    measureAt: Date.now(),
-                    measureDuration: Math.trunc(timeSinceLast),
-                    framesPerSecond: Math.trunc(framesPerSecond),
-                    bytePerSecond: Math.trunc(bytePerSecond),
-                    videoProcessing: report.totalDecodeTime ? Math.trunc(videoProcessing) : undefined,
-                  });
-                }
-
-                prevTimestamp = Date.now();
-                prevBytesReceived = report.bytesReceived;
-                prevFramesDecoded = report.framesDecoded;
-                prevTotalDecodeTime = report.totalDecodeTime;
+                setLogState({
+                  framesDecodedPerSecond: Math.trunc(framesDecodedPerSecond),
+                  bytesReceivedPerSecond: Math.trunc(bytesReceivedPerSecond),
+                  videoProcessing: report.totalDecodeTime ? Math.trunc(videoProcessing) : undefined,
+                });
               }
-            });
-          })
-          .catch((err) => {
-            MessageEmitter.emit('WEB_RTC_STATS_ERROR', err);
+
+              setPrevAttributes(report, ['bytesReceived', 'framesDecoded', 'totalDecodeTime']);
+            } else if (report.type === 'track' && report.kind === 'video') {
+              if (prev.timestamp !== 0) {
+                const framesReceivedPerSecond = (report.framesReceived - prev.framesReceived) / timeSinceLast;
+                const framesDroppedPerSecond = (report.framesDropped - prev.framesDropped) / timeSinceLast;
+                const freezeCountPerSecond = (report.freezeCount - prev.freezeCount) / timeSinceLast;
+
+                setLogState({
+                  framesReceivedPerSecond: Math.trunc(framesReceivedPerSecond),
+                  framesDroppedPerSecond: Math.trunc(framesDroppedPerSecond),
+                  freezeCountPerSecond: Math.trunc(freezeCountPerSecond),
+                });
+              }
+
+              setPrevAttributes(report, ['framesReceived', 'framesDropped', 'freezeCount']);
+            } else if (report.type === 'data-channel' && report.label === 'mouse') {
+              if (prev.timestamp !== 0) {
+                const messagesSentMousePerSecond = (report.messagesSent - prev.messagesSentMouse) / timeSinceLast;
+                setLogState({
+                  messagesSentMousePerSecond: Math.trunc(messagesSentMousePerSecond),
+                });
+              }
+              prev.messagesSentMouse = report.messagesSent;
+            } else if (report.type === 'data-channel' && report.label === 'touch') {
+              if (prev.timestamp !== 0) {
+                const messagesSentTouchPerSecond = (report.messagesSent - prev.messagesSentTouch) / timeSinceLast;
+                setLogState({
+                  messagesSentTouchPerSecond: Math.trunc(messagesSentTouchPerSecond),
+                });
+              }
+              prev.messagesSentTouch = report.messagesSent;
+            }
           });
+          prev.timestamp = Date.now();
+
+          MessageEmitter.emit('WEB_RTC_STATS', {
+            measureAt: Date.now(),
+            measureDuration: Math.trunc(timeSinceLast),
+            ...logState,
+          });
+        })
+        .catch((err) => {
+          MessageEmitter.emit('WEB_RTC_STATS_ERROR', err);
+        });
     }, 5000);
   };
 
