@@ -17,6 +17,7 @@ import { EventEmitter } from 'events';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import url from 'url';
 import MessageEmitter from '../MessageEmitter';
+import RtcReportHandler from './rtc_report_handler';
 
 /**
  * This drives the jsep protocol with the emulator, and can be used to
@@ -64,6 +65,7 @@ export default class JsepProtocol {
     if (typeof this.rtc.receiveJsepMessages !== 'function') this.poll = true;
     if (onConnect) this.events.on('connected', onConnect);
     if (onDisconnect) this.events.on('disconnected', onDisconnect);
+    this.rtcReportHandler = new RtcReportHandler();
   }
 
   on = (name, fn) => {
@@ -214,93 +216,7 @@ export default class JsepProtocol {
   };
 
   _startMonitor = (peerConnection) => {
-    const prev = {
-      timestamp: 0,
-      bytesReceived: 0,
-      framesDecoded: 0,
-      totalDecodeTime: 0,
-      framesReceived: 0,
-      framesDropped: 0,
-      freezeCount: 0,
-      messagesSentMouse: 0,
-      messagesSentTouch: 0,
-    };
-    let logState;
-    const setLogState = (params) => {
-      logState = { ...logState, ...params };
-    };
-    const setPrevAttributes = (source, attributes) => {
-      attributes.map((attr) => (prev[attr] = source[attr]));
-    };
-
-    setInterval(() => {
-      peerConnection
-        .getStats()
-        .then((stats) => {
-          logState = {};
-          const timeSinceLast = (Date.now() - prev.timestamp) / 1000.0;
-          stats.forEach((report) => {
-            if (report.type === 'inbound-rtp' && report.kind === 'video') {
-              if (prev.timestamp !== 0) {
-                const framesDecodedPerSecond = (report.framesDecoded - prev.framesDecoded) / timeSinceLast;
-                const bytesReceivedPerSecond = (report.bytesReceived - prev.bytesReceived) / timeSinceLast;
-                const videoProcessing =
-                  report.framesDecoded - prev.framesDecoded !== 0
-                    ? (((report.totalDecodeTime || 0) - prev.totalDecodeTime) * 1000) / framesDecodedPerSecond
-                    : 0;
-
-                setLogState({
-                  framesDecodedPerSecond: Math.trunc(framesDecodedPerSecond),
-                  bytesReceivedPerSecond: Math.trunc(bytesReceivedPerSecond),
-                  videoProcessing: report.totalDecodeTime ? Math.trunc(videoProcessing) : undefined,
-                });
-              }
-
-              setPrevAttributes(report, ['bytesReceived', 'framesDecoded', 'totalDecodeTime']);
-            } else if (report.type === 'track' && report.kind === 'video') {
-              if (prev.timestamp !== 0) {
-                const framesReceivedPerSecond = (report.framesReceived - prev.framesReceived) / timeSinceLast;
-                const framesDroppedPerSecond = (report.framesDropped - prev.framesDropped) / timeSinceLast;
-                const freezeCountPerSecond = (report.freezeCount - prev.freezeCount) / timeSinceLast;
-
-                setLogState({
-                  framesReceivedPerSecond: Math.trunc(framesReceivedPerSecond),
-                  framesDroppedPerSecond: Math.trunc(framesDroppedPerSecond),
-                  freezeCountPerSecond: Math.trunc(freezeCountPerSecond),
-                });
-              }
-
-              setPrevAttributes(report, ['framesReceived', 'framesDropped', 'freezeCount']);
-            } else if (report.type === 'data-channel' && report.label === 'mouse') {
-              if (prev.timestamp !== 0) {
-                const messagesSentMousePerSecond = (report.messagesSent - prev.messagesSentMouse) / timeSinceLast;
-                setLogState({
-                  messagesSentMousePerSecond: Math.trunc(messagesSentMousePerSecond),
-                });
-              }
-              prev.messagesSentMouse = report.messagesSent;
-            } else if (report.type === 'data-channel' && report.label === 'touch') {
-              if (prev.timestamp !== 0) {
-                const messagesSentTouchPerSecond = (report.messagesSent - prev.messagesSentTouch) / timeSinceLast;
-                setLogState({
-                  messagesSentTouchPerSecond: Math.trunc(messagesSentTouchPerSecond),
-                });
-              }
-              prev.messagesSentTouch = report.messagesSent;
-            }
-          });
-          prev.timestamp = Date.now();
-
-          MessageEmitter.emit('WEB_RTC_STATS', {
-            measureAt: Date.now(),
-            measureDuration: Math.trunc(timeSinceLast),
-            ...logState,
-          });
-        })
-        .catch((err) => {
-          MessageEmitter.emit('WEB_RTC_STATS_ERROR', err);
-        });
-    }, 5000);
+    setInterval(() => peerConnection.getStats().then((stats) => MessageEmitter.emit('EVENT_RTC_REPORT', stats)), 5000);
   };
 
   _handleSDP = async (signal) => {
