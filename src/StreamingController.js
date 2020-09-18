@@ -67,6 +67,16 @@ class StreamingController {
     });
   }
 
+  /**
+   * Creates a game snapshot
+   * @returns {Promise<*>}
+   */
+  createGameSnapshot() {
+    return this.getStreamEndpoint().then((streamEndpoint) => {
+      return axios.get(`${streamEndpoint}/emulator-commands/save`);
+    });
+  }
+
 
   /**
    * Get the streaming endpoint
