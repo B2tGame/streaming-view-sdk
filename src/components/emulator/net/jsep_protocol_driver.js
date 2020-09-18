@@ -16,8 +16,6 @@
 import { EventEmitter } from 'events';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import url from 'url';
-import MessageEmitter from '../MessageEmitter';
-import RtcReportHandler from './rtc_report_handler';
 
 /**
  * This drives the jsep protocol with the emulator, and can be used to
@@ -52,9 +50,10 @@ export default class JsepProtocol {
    * @param {boolean} poll True if we should use polling
    * @param {callback} onConnect optional callback that is invoked when a stream is available
    * @param {callback} onDisconnect optional callback that is invoked when the stream is closed.
+   * @param {RtcReportHandler} rtcReportHandler RTC report handler
    * @memberof JsepProtocol
    */
-  constructor(emulator, rtc, poll, onConnect, onDisconnect) {
+  constructor(emulator, rtc, poll, onConnect, onDisconnect, rtcReportHandler) {
     this.emulator = emulator;
     this.rtc = rtc;
     this.events = new EventEmitter();
@@ -65,7 +64,7 @@ export default class JsepProtocol {
     if (typeof this.rtc.receiveJsepMessages !== 'function') this.poll = true;
     if (onConnect) this.events.on('connected', onConnect);
     if (onDisconnect) this.events.on('disconnected', onDisconnect);
-    this.rtcReportHandler = new RtcReportHandler();
+    this.rtcReportHandler = rtcReportHandler;
   }
 
   on = (name, fn) => {
@@ -139,14 +138,20 @@ export default class JsepProtocol {
   _handlePeerConnectionStateChange = (e) => {
     switch (this.peerConnection.connectionState) {
       case 'disconnected':
-      // At least one of the ICE transports for the connection is in the "disconnected" state
-      // and none of the other transports are in the state "failed", "connecting",
-      // or "checking".
+        // At least one of the ICE transports for the connection is in the "disconnected" state
+        // and none of the other transports are in the state "failed", "connecting",
+        // or "checking".
+        this.disconnect();
+        break;
       case 'failed':
-      // One or more of the ICE transports on the connection is in the "failed" state.
+        // One or more of the ICE transports on the connection is in the "failed" state.
+        this.disconnect();
+        break;
       case 'closed':
         //The RTCPeerConnection is closed.
         this.disconnect();
+        break;
+      default:
     }
   };
 
@@ -158,7 +163,7 @@ export default class JsepProtocol {
     let bytes = msg.serializeBinary();
     let forwarder = this.event_forwarders[label];
     // Send via data channel/gRPC bridge.
-    if (this.connected && forwarder && forwarder.readyState == 'open') {
+    if (this.connected && forwarder && forwarder.readyState === 'open') {
       this.event_forwarders[label].send(bytes);
     } else {
       // Fallback to using the gRPC protocol
@@ -172,6 +177,7 @@ export default class JsepProtocol {
         case 'touch':
           this.emulator.sendTouch(msg);
           break;
+        default:
       }
     }
   }
@@ -216,7 +222,12 @@ export default class JsepProtocol {
   };
 
   _startMonitor = (peerConnection) => {
-    setInterval(() => peerConnection.getStats().then((stats) => MessageEmitter.emit('EVENT_RTC_REPORT', stats)), 5000);
+    if (this.rtcReportHandler) {
+      setInterval(
+        () => peerConnection.getStats().then((stats) => this.rtcReportHandler.emit('EVENT_RTC_REPORT', stats)),
+        5000
+      );
+    }
   };
 
   _handleSDP = async (signal) => {
