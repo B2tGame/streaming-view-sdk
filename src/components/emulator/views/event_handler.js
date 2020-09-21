@@ -32,6 +32,12 @@ import screenfull from 'screenfull';
  */
 export default function withMouseKeyHandler(WrappedComponent) {
   return class extends Component {
+    state = {
+      deviceHeight: 768,
+      deviceWidth: 432,
+      mouseDown: false,
+    };
+
     static propTypes = {
       emulator: PropTypes.object.isRequired,
       jsep: PropTypes.object.isRequired,
@@ -42,14 +48,10 @@ export default function withMouseKeyHandler(WrappedComponent) {
     };
 
     constructor(props) {
-      super(props);
-      this.state = {
-        deviceHeight: 768,
-        deviceWidth: 432,
-        mouseDown: false,
-      };
+      super();
+
       this.handler = React.createRef();
-      const { emulator } = this.props;
+      const { emulator } = props;
       this.status = new EmulatorStatus(emulator);
       this.browser = {
         width: window.innerWidth,

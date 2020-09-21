@@ -2,7 +2,8 @@ import Emulator from './components/emulator/emulator';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import RoundTripTimeMonitor from './components/emulator/round_trip_time_monitor';
-import StreamingController  from './StreamingController';
+import RtcReportHandler from './components/emulator/net/rtc_report_handler';
+import StreamingController from './StreamingController';
 import url from 'url';
 import io from 'socket.io-client';
 import Log from './Log';
@@ -14,6 +15,12 @@ import Log from './Log';
  * @extends {Component}
  */
 export default class StreamingView extends Component {
+  state = {
+    isReadyStream: undefined,
+    streamEndpoint: undefined,
+    isMuted: true,
+  };
+
   static propTypes = {
     apiEndpoint: PropTypes.string.isRequired,
     edgeNodeId: PropTypes.string.isRequired,
@@ -28,13 +35,10 @@ export default class StreamingView extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      isReadyStream: undefined,
-      streamEndpoint: undefined,
-      isMuted: true,
-    };
 
+    this.rtcReportHandler = new RtcReportHandler();
     const { apiEndpoint, edgeNodeId, userId } = this.props;
+
     StreamingController({
       apiEndpoint: apiEndpoint,
       edgeNodeId: edgeNodeId,
@@ -60,7 +64,7 @@ export default class StreamingView extends Component {
         });
       });
 
-    console.log('Streaming View SDK - Latest update: 2020-09-04 14:56');
+    console.log('Streaming View SDK - Latest update: 2020-09-21 11:32');
   }
 
   handleUserInteraction = () => {
@@ -97,7 +101,7 @@ export default class StreamingView extends Component {
       case true:
         return (
           <div>
-            <RoundTripTimeMonitor streamSocket={this.streamSocket} />
+            <RoundTripTimeMonitor streamSocket={this.streamSocket} rtcReportHandler={this.rtcReportHandler} />
             <Emulator
               uri={this.state.streamEndpoint}
               log={this.log}
@@ -109,6 +113,7 @@ export default class StreamingView extends Component {
               volume={volume}
               onUserInteraction={this.handleUserInteraction}
               poll={true}
+              rtcReportHandler={this.rtcReportHandler}
             />
           </div>
         );
