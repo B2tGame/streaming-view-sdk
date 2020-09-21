@@ -1,16 +1,12 @@
 import PropTypes from 'prop-types';
 import { Component } from 'react';
-import MessageEmitter from './MessageEmitter';
 
 class RoundTripTimeMonitor extends Component {
-  static propTypes = {
-    streamSocket: PropTypes.object.isRequired, // socket connection to emulator.
-  };
+  state = {};
 
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
+  static propTypes = {
+    streamSocket: PropTypes.object.isRequired, // socket connection to emulator
+  };
 
   componentDidMount() {
     this.props.streamSocket.on('error', (err) => {
@@ -28,11 +24,13 @@ class RoundTripTimeMonitor extends Component {
         })
       );
     });
-    MessageEmitter.on('WEB_RTC_STATS', (newValue) => this.setState({ webrtcStats: newValue }));
+
+    this.props.rtcReportHandler &&
+      this.props.rtcReportHandler.on('WEB_RTC_STATS', (newValue) => this.setState({ webrtcStats: newValue }));
   }
 
   componentWillUnmount() {
-    MessageEmitter.off('WEB_RTC_STATS');
+    this.props.rtcReportHandler && this.props.rtcReportHandler.off('WEB_RTC_STATS');
     if (this.state.timer) {
       console.log('Unsubscribe from Round Trip Time Monitor');
       clearInterval(this.state.timer);

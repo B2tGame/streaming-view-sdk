@@ -139,7 +139,8 @@ class Emulator extends Component {
       () => {
         this.reConnect();
         this.log.state('user-interaction-state-change', 'disconnected');
-      }
+      },
+      this.props.rtcReportHandler
     );
     this.view = React.createRef();
   }
