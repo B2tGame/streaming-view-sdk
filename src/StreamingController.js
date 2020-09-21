@@ -68,6 +68,23 @@ class StreamingController {
   }
 
   /**
+   * Creates a game snapshot
+   * @returns {Promise<string>}
+   */
+  createGameSnapshot() {
+    return this.getStreamEndpoint().then((streamEndpoint) => {
+      return axios.get(`${streamEndpoint}/emulator-commands/create-snapshot`);
+    }).then((resp) => {
+      if (resp.data.toString().startsWith("FAIL")) {
+        throw new Error(resp.data.toString());
+      } else {
+        return resp.data;
+      }
+    });
+  }
+
+
+  /**
    * Get the streaming endpoint
    * @return {Promise<string>}
    */
