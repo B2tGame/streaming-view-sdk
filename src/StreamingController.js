@@ -6,7 +6,6 @@ import axios from 'axios';
  * @class StreamingController
  */
 class StreamingController {
-
   static get DEFAULT_TIMEOUT() {
     return 30 * 60 * 1000; // 30 minute
   }
@@ -43,8 +42,7 @@ class StreamingController {
     }
     this.apiEndpoint = props.apiEndpoint;
     this.edgeNodeId = props.edgeNodeId || undefined;
-    this.onEvent = props.onEvent || (() => {
-    });
+    this.onEvent = props.onEvent || (() => {});
   }
 
   /**
@@ -52,9 +50,11 @@ class StreamingController {
    * @returns {Promise<string>} Resolve Edge Node ID or reject with an error if no edge node ID was provided.
    */
   getEdgeNodeId() {
-    return this.edgeNodeId !== undefined ?
-      Promise.resolve(this.edgeNodeId) :
-      Promise.reject(new Error('StreamingController: Missing edgeNodeId, API endpoint unsupported without Edge Node ID.'));
+    return this.edgeNodeId !== undefined
+      ? Promise.resolve(this.edgeNodeId)
+      : Promise.reject(
+          new Error('StreamingController: Missing edgeNodeId, API endpoint unsupported without Edge Node ID.')
+        );
   }
 
   /**
@@ -66,7 +66,6 @@ class StreamingController {
       return axios.get(`${streamEndpoint}/emulator-commands/terminate`);
     });
   }
-
 
   /**
    * Get the streaming endpoint
@@ -143,21 +142,24 @@ class StreamingController {
    * @returns {Promise<object>}
    */
   getDeviceInfo() {
-    return axios.get(`${this.getApiEndpoint()}/api/streaming-games/edge-node/device-info`, { timeout: 2500 })
+    return axios
+      .get(`${this.getApiEndpoint()}/api/streaming-games/edge-node/device-info`, { timeout: 2500 })
       .then((result) => result.data || {})
       .then((deviceInfo) => {
         const DPI = window.devicePixelRatio || 1;
         deviceInfo.screenScale = DPI;
         deviceInfo.screenWidth = Math.round(DPI * window.screen.width);
         deviceInfo.screenHeight = Math.round(DPI * window.screen.height);
-        deviceInfo.viewportWidth = Math.round(DPI * Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0));
-        deviceInfo.viewportHeight = Math.round(DPI * Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0));
+        deviceInfo.viewportWidth = Math.round(
+          DPI * Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+        );
+        deviceInfo.viewportHeight = Math.round(
+          DPI * Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+        );
         return deviceInfo;
       });
   }
-
 }
-
 
 /**
  * Instantiating the StreamingController
