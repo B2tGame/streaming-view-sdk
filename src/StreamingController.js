@@ -72,17 +72,18 @@ class StreamingController {
    * @returns {Promise<string>}
    */
   createGameSnapshot() {
-    return this.getStreamEndpoint().then((streamEndpoint) => {
-      return axios.get(`${streamEndpoint}/emulator-commands/create-snapshot`);
-    }).then((resp) => {
-      if (resp.data.toString().startsWith("FAIL")) {
-        throw new Error(resp.data.toString());
-      } else {
-        return resp.data;
-      }
-    });
+    return this.getStreamEndpoint()
+      .then((streamEndpoint) => {
+        return axios.get(`${streamEndpoint}/emulator-commands/create-snapshot`);
+      })
+      .then((resp) => {
+        if (resp.data.toString().startsWith('FAIL')) {
+          throw new Error(resp.data.toString());
+        } else {
+          return resp.data;
+        }
+      });
   }
-
 
   /**
    * Get the streaming endpoint
@@ -173,6 +174,8 @@ class StreamingController {
         deviceInfo.viewportHeight = Math.round(
           DPI * Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
         );
+        deviceInfo.connectionType = ((navigator || {}).connection || {}).type;
+        deviceInfo.connectionEffectiveType = ((navigator || {}).connection || {}).effectiveType;
         return deviceInfo;
       });
   }
