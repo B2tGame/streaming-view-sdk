@@ -16,6 +16,7 @@
 import { EventEmitter } from 'events';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import url from 'url';
+import MessageEmitter from '../MessageEmitter';
 
 /**
  * This drives the jsep protocol with the emulator, and can be used to
@@ -203,12 +204,54 @@ export default class JsepProtocol {
       iceTransportPolicy: 'relay',
     };
     this.peerConnection = new RTCPeerConnection(signal.start);
+    this._startMonitor(this.peerConnection);
     this.peerConnection.addEventListener('track', this._handlePeerConnectionTrack, false);
     this.peerConnection.addEventListener('icecandidate', this._handlePeerIceCandidate, false);
     this.peerConnection.addEventListener('connectionstatechange', this._handlePeerConnectionStateChange, false);
     this.peerConnection.ondatachannel = (e) => {
       this._handleDataChannel(e);
     };
+  };
+
+  _startMonitor = (peerConnection) => {
+    let prevTimestamp = 0;
+    let prevBytesReceived = 0;
+    let prevFramesDecoded = 0;
+    let prevTotalDecodeTime = 0;
+
+    setInterval(() => {
+      peerConnection
+          .getStats()
+          .then((stats) => {
+            stats.forEach(report => {
+              if (report.type === 'inbound-rtp' && report.kind === 'video') {
+                const timeSinceLast = (Date.now() - prevTimestamp) / 1000.0;
+
+                if (prevTimestamp !== 0) {
+                  const framesPerSecond = (report.framesDecoded - prevFramesDecoded) / timeSinceLast;
+                  const bytePerSecond = (report.bytesReceived - prevBytesReceived) / timeSinceLast;
+                  const videoProcessing = (report.framesDecoded - prevFramesDecoded) !== 0 ? (((report.totalDecodeTime || 0) - prevTotalDecodeTime) * 1000 / framesPerSecond) : 0;
+
+                  MessageEmitter.emit('WEB_RTC_STATS', {
+                    measureAt: Date.now(),
+                    measureDuration: Math.trunc(timeSinceLast),
+                    framesPerSecond: Math.trunc(framesPerSecond),
+                    bytePerSecond: Math.trunc(bytePerSecond),
+                    videoProcessing: report.totalDecodeTime ? Math.trunc(videoProcessing) : undefined,
+                  });
+                }
+
+                prevTimestamp = Date.now();
+                prevBytesReceived = report.bytesReceived;
+                prevFramesDecoded = report.framesDecoded;
+                prevTotalDecodeTime = report.totalDecodeTime;
+              }
+            });
+          })
+          .catch((err) => {
+            MessageEmitter.emit('WEB_RTC_STATS_ERROR', err);
+          });
+    }, 5000);
   };
 
   _handleSDP = async (signal) => {
@@ -282,12 +325,17 @@ export default class JsepProtocol {
         console.error('Failed to receive jsep message, disconnecting: ' + JSON.stringify(err));
         this.disconnect();
       }
-      const msg = response.getMessage();
-      // Handle only if we received a useful message.
-      // it is possible to get nothing if the server decides
-      // to kick us out.
-      if (msg) {
-        self._handleJsepMessage(response.getMessage());
+
+      try {
+        const msg = response.getMessage();
+        // Handle only if we received a useful message.
+        // it is possible to get nothing if the server decides
+        // to kick us out.
+        if (msg) {
+          self._handleJsepMessage(response.getMessage());
+        }
+      } catch (err) {
+        console.error('Failed to get jsep message, disconnecting: ' + JSON.stringify(err));
       }
 
       // And pump messages. Note we must continue the message pump as we

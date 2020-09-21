@@ -2,10 +2,11 @@ import Emulator from './components/emulator/emulator';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import RoundTripTimeMonitor from './components/emulator/round_trip_time_monitor';
-import StreamingController from './StreamingController';
+import StreamingController  from './StreamingController';
 import url from 'url';
 import io from 'socket.io-client';
 import Log from './Log';
+
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
  *
@@ -22,6 +23,7 @@ export default class StreamingView extends Component {
     screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
     view: PropTypes.oneOf(['webrtc', 'png']),
     volume: PropTypes.number, // Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
+    onEvent: PropTypes.func, // report events during the streaming view.
   };
 
   constructor(props) {
@@ -29,38 +31,36 @@ export default class StreamingView extends Component {
     this.state = {
       isReadyStream: undefined,
       streamEndpoint: undefined,
-      maxRetryCount: 120,
       isMuted: true,
     };
 
+    const { apiEndpoint, edgeNodeId, userId } = this.props;
     StreamingController({
-      apiEndpoint: props.apiEndpoint,
-      edgeNodeId: props.edgeNodeId,
-      maxRetryCount: this.state.maxRetryCount,
+      apiEndpoint: apiEndpoint,
+      edgeNodeId: edgeNodeId,
+      onEvent: this.props.onEvent,
     })
-      .then((controller) => {
-        const streamEndpoint = controller.getStreamEndpoint();
+      .then((controller) => controller.getStreamEndpoint())
+      .then((streamEndpoint) => {
         const endpoint = url.parse(streamEndpoint);
         this.streamSocket = io(`${endpoint.protocol}//${endpoint.host}`, {
           path: `${endpoint.path}/emulator-commands/socket.io`,
-          query: `userId=${this.props.userId}`,
+          query: `userId=${userId}`,
         });
         this.log = new Log(this.streamSocket);
-
-        this.setState({
-          isReadyStream: true,
-          streamEndpoint: streamEndpoint,
-        });
+        this.setState({ isReadyStream: true, streamEndpoint: streamEndpoint });
         this.logEnableControlState();
       })
       .catch((err) => {
-        console.error('Streaming View SDK - Errors: ', err);
+        this.log && this.log.error(err);
+        console.error('Streaming View SDK - StreamingController Errors: ', err);
+
         this.setState({
           isReadyStream: false,
         });
       });
 
-    console.log('Streaming View SDK - Latest update: 2020-08-25 14:10');
+    console.log('Streaming View SDK - Latest update: 2020-09-04 14:56');
   }
 
   handleUserInteraction = () => {
@@ -80,9 +80,13 @@ export default class StreamingView extends Component {
     this.log && this.log.state('user-control-state-change', this.props.enableControl ? 'player' : 'watcher');
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     if (this.props.enableControl !== prevProps.enableControl) {
       this.logEnableControlState();
+    }
+
+    if (this.state.isReadyStream && !prevState.isReadyStream && this.props.onEvent) {
+      this.props.onEvent(StreamingController.EVENT_STREAM_CONNECTED, {});
     }
   }
 
