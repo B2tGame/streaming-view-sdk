@@ -2,14 +2,11 @@ import PropTypes from 'prop-types';
 import { Component } from 'react';
 
 class RoundTripTimeMonitor extends Component {
+  state = {};
+
   static propTypes = {
     streamSocket: PropTypes.object.isRequired, // socket connection to emulator
   };
-
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
 
   componentDidMount() {
     this.props.streamSocket.on('error', (err) => {

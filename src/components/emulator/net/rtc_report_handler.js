@@ -7,7 +7,7 @@ class RtcReportHandler extends EventEmitter {
   constructor() {
     super();
 
-    let prev = {
+    const prev = {
       timestamp: 0,
       bytesReceived: 0,
       framesDecoded: 0,
@@ -87,9 +87,9 @@ class RtcReportHandler extends EventEmitter {
       stats.forEach((report) => {
         if (report.type === 'data-channel' && report.label === 'mouse') {
           if (prev.timestamp !== 0) {
-            const messagesSentMousePerSecond = (report.messagesSent - prev.messagesSentMouse) / timeSinceLast;
+            const mouseMessagesSentPerSecond = (report.messagesSent - prev.messagesSentMouse) / timeSinceLast;
             setLogState({
-              messagesSentMousePerSecond: Math.trunc(messagesSentMousePerSecond),
+              mouseMessagesSentPerSecond: Math.trunc(mouseMessagesSentPerSecond),
             });
           }
           prev.messagesSentMouse = report.messagesSent;
@@ -102,9 +102,9 @@ class RtcReportHandler extends EventEmitter {
       stats.forEach((report) => {
         if (report.type === 'data-channel' && report.label === 'touch') {
           if (prev.timestamp !== 0) {
-            const messagesSentTouchPerSecond = (report.messagesSent - prev.messagesSentTouch) / timeSinceLast;
+            const touchMessagesSentPerSecond = (report.messagesSent - prev.messagesSentTouch) / timeSinceLast;
             setLogState({
-              messagesSentTouchPerSecond: Math.trunc(messagesSentTouchPerSecond),
+              touchMessagesSentPerSecond: Math.trunc(touchMessagesSentPerSecond),
             });
           }
           prev.messagesSentTouch = report.messagesSent;

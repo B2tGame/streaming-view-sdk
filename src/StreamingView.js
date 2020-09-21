@@ -15,6 +15,12 @@ import Log from './Log';
  * @extends {Component}
  */
 export default class StreamingView extends Component {
+  state = {
+    isReadyStream: undefined,
+    streamEndpoint: undefined,
+    isMuted: true,
+  };
+
   static propTypes = {
     apiEndpoint: PropTypes.string.isRequired,
     edgeNodeId: PropTypes.string.isRequired,
@@ -29,14 +35,10 @@ export default class StreamingView extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      isReadyStream: undefined,
-      streamEndpoint: undefined,
-      isMuted: true,
-    };
-    this.rtcReportHandler = new RtcReportHandler();
 
+    this.rtcReportHandler = new RtcReportHandler();
     const { apiEndpoint, edgeNodeId, userId } = this.props;
+
     StreamingController({
       apiEndpoint: apiEndpoint,
       edgeNodeId: edgeNodeId,
@@ -62,7 +64,7 @@ export default class StreamingView extends Component {
         });
       });
 
-    console.log('Streaming View SDK - Latest update: 2020-09-18 15:32');
+    console.log('Streaming View SDK - Latest update: 2020-09-21 11:32');
   }
 
   handleUserInteraction = () => {
