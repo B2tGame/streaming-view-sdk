@@ -139,7 +139,7 @@ class StreamingController {
         const fn = () => {
           callback().then(resolve, (err) => {
             if (endTimestamp > Date.now()) {
-              setTimeout(fn, 500);
+              setTimeout(fn, 10);
             } else {
               reject(err);
             }
