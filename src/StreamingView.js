@@ -46,6 +46,10 @@ export default class StreamingView extends Component {
     })
       .then((controller) => controller.getStreamEndpoint())
       .then((streamEndpoint) => {
+        if (!this.isMounted) {
+          console.log("Streaming View SDK: Cancel action due to view is not mounted.")
+          return; // Cancel any action if we not longer are mounted.
+        }
         const endpoint = url.parse(streamEndpoint);
         this.streamSocket = io(`${endpoint.protocol}//${endpoint.host}`, {
           path: `${endpoint.path}/emulator-commands/socket.io`,
@@ -54,16 +58,19 @@ export default class StreamingView extends Component {
         this.log = new Log(this.streamSocket);
         this.setState({ isReadyStream: true, streamEndpoint: streamEndpoint });
         this.logEnableControlState();
+
       })
       .catch((err) => {
+        if (!this.isMounted) {
+          console.log("Streaming View SDK: Cancel action due to view is not mounted.")
+          return; // Cancel any action if we not longer are mounted.
+        }
         this.log && this.log.error(err);
         console.error('Streaming View SDK - StreamingController Errors: ', err);
-
         this.setState({
           isReadyStream: false,
         });
       });
-
     console.log('Streaming View SDK - Latest update: 2020-09-21 11:32');
   }
 
@@ -75,9 +82,14 @@ export default class StreamingView extends Component {
   };
 
   componentWillUnmount() {
+    this.isMounted = false;
     if (this.streamSocket) {
       this.streamSocket.close();
     }
+  }
+
+  componentDidMount() {
+    this.isMounted = true;
   }
 
   logEnableControlState() {
