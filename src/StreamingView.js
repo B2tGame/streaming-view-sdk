@@ -46,7 +46,7 @@ export default class StreamingView extends Component {
     })
       .then((controller) => controller.getStreamEndpoint())
       .then((streamEndpoint) => {
-        if (!this.ismounted) {
+        if (!this.isMounted) {
           console.log("Streaming View SDK: Cancel action due to view is not mounted.")
           return; // Cancel any action if we not longer are mounted.
         }
@@ -61,7 +61,7 @@ export default class StreamingView extends Component {
 
       })
       .catch((err) => {
-        if (!this.ismounted) {
+        if (!this.isMounted) {
           console.log("Streaming View SDK: Cancel action due to view is not mounted.")
           return; // Cancel any action if we not longer are mounted.
         }
@@ -82,14 +82,14 @@ export default class StreamingView extends Component {
   };
 
   componentWillUnmount() {
-    this.ismounted = false;
+    this.isMounted = false;
     if (this.streamSocket) {
       this.streamSocket.close();
     }
   }
 
   componentDidMount() {
-    this.ismounted = true;
+    this.isMounted = true;
   }
 
   logEnableControlState() {
