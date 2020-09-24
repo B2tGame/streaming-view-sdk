@@ -50,9 +50,9 @@ class RtcReportHandler extends EventEmitter {
                 : 0;
 
             setLogState({
-              framesDecodedPerSecond: Math.trunc(framesDecodedPerSecond),
-              bytesReceivedPerSecond: Math.trunc(bytesReceivedPerSecond),
-              videoProcessing: report.totalDecodeTime ? Math.trunc(videoProcessing) : undefined,
+              framesDecodedPerSecond: framesDecodedPerSecond,
+              bytesReceivedPerSecond: bytesReceivedPerSecond,
+              videoProcessing: report.totalDecodeTime ? videoProcessing : undefined,
             });
           }
 
@@ -71,9 +71,9 @@ class RtcReportHandler extends EventEmitter {
             const freezeCountPerSecond = (report.freezeCount - prev.freezeCount) / timeSinceLast;
 
             setLogState({
-              framesReceivedPerSecond: Math.trunc(framesReceivedPerSecond),
-              framesDroppedPerSecond: Math.trunc(framesDroppedPerSecond),
-              freezeCountPerSecond: Math.trunc(freezeCountPerSecond),
+              framesReceivedPerSecond: framesReceivedPerSecond,
+              framesDroppedPerSecond: framesDroppedPerSecond,
+              freezeCountPerSecond: freezeCountPerSecond,
             });
           }
 
@@ -89,7 +89,7 @@ class RtcReportHandler extends EventEmitter {
           if (prev.timestamp !== 0) {
             const mouseMessagesSentPerSecond = (report.messagesSent - prev.messagesSentMouse) / timeSinceLast;
             setLogState({
-              mouseMessagesSentPerSecond: Math.trunc(mouseMessagesSentPerSecond),
+              mouseMessagesSentPerSecond: mouseMessagesSentPerSecond,
             });
           }
           prev.messagesSentMouse = report.messagesSent;
@@ -104,7 +104,7 @@ class RtcReportHandler extends EventEmitter {
           if (prev.timestamp !== 0) {
             const touchMessagesSentPerSecond = (report.messagesSent - prev.messagesSentTouch) / timeSinceLast;
             setLogState({
-              touchMessagesSentPerSecond: Math.trunc(touchMessagesSentPerSecond),
+              touchMessagesSentPerSecond: touchMessagesSentPerSecond,
             });
           }
           prev.messagesSentTouch = report.messagesSent;
