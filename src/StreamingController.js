@@ -72,17 +72,18 @@ class StreamingController {
    * @returns {Promise<string>}
    */
   createGameSnapshot() {
-    return this.getStreamEndpoint().then((streamEndpoint) => {
-      return axios.get(`${streamEndpoint}/emulator-commands/create-snapshot`);
-    }).then((resp) => {
-      if (resp.data.toString().startsWith("FAIL")) {
-        throw new Error(resp.data.toString());
-      } else {
-        return resp.data;
-      }
-    });
+    return this.getStreamEndpoint()
+      .then((streamEndpoint) => {
+        return axios.get(`${streamEndpoint}/emulator-commands/create-snapshot`);
+      })
+      .then((resp) => {
+        if (resp.data.toString().startsWith('FAIL')) {
+          throw new Error(resp.data.toString());
+        } else {
+          return resp.data;
+        }
+      });
   }
-
 
   /**
    * Get the streaming endpoint
@@ -175,6 +176,19 @@ class StreamingController {
         );
         return deviceInfo;
       });
+  }
+
+  /**
+   * Get connectivity info
+   * @returns {Promise<{measurementLevel: string, downloadSpeed: undefined, recommendedRegion: undefined, roundTripTime: undefined}>}
+   */
+  getConnectivityInfo() {
+    return Promise.resolve({
+      roundTripTime: undefined,
+      downloadSpeed: undefined,
+      recommendedRegion: undefined,
+      measurementLevel: 'browser-measurement',
+    });
   }
 }
 
