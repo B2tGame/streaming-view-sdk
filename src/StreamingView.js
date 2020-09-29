@@ -38,7 +38,7 @@ export default class StreamingView extends Component {
 
     this.rtcReportHandler = new RtcReportHandler();
     const { apiEndpoint, edgeNodeId, userId } = this.props;
-
+    this.isMountedInView = false;
     StreamingController({
       apiEndpoint: apiEndpoint,
       edgeNodeId: edgeNodeId,
@@ -46,7 +46,7 @@ export default class StreamingView extends Component {
     })
       .then((controller) => controller.getStreamEndpoint())
       .then((streamEndpoint) => {
-        if (!this.isMounted) {
+        if (!this.isMountedInView) {
           console.log("Streaming View SDK: Cancel action due to view is not mounted.")
           return; // Cancel any action if we not longer are mounted.
         }
@@ -61,7 +61,7 @@ export default class StreamingView extends Component {
 
       })
       .catch((err) => {
-        if (!this.isMounted) {
+        if (!this.isMountedInView) {
           console.log("Streaming View SDK: Cancel action due to view is not mounted.")
           return; // Cancel any action if we not longer are mounted.
         }
@@ -82,14 +82,14 @@ export default class StreamingView extends Component {
   };
 
   componentWillUnmount() {
-    this.isMounted = false;
+    this.isMountedInView = false;
     if (this.streamSocket) {
       this.streamSocket.close();
     }
   }
 
   componentDidMount() {
-    this.isMounted = true;
+    this.isMountedInView = true;
   }
 
   logEnableControlState() {
