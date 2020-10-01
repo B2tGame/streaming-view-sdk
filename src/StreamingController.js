@@ -140,7 +140,7 @@ class StreamingController {
         const fn = () => {
           callback().then(resolve, (err) => {
             if (endTimestamp > Date.now()) {
-              setTimeout(fn, 500);
+              setTimeout(fn, 10);
             } else {
               reject(err);
             }
@@ -178,6 +178,19 @@ class StreamingController {
         deviceInfo.connectionEffectiveType = ((navigator || {}).connection || {}).effectiveType;
         return deviceInfo;
       });
+  }
+
+  /**
+   * Get connectivity info
+   * @returns {Promise<{measurementLevel: string, downloadSpeed: undefined, recommendedRegion: undefined, roundTripTime: undefined}>}
+   */
+  getConnectivityInfo() {
+    return Promise.resolve({
+      roundTripTime: undefined,
+      downloadSpeed: undefined,
+      recommendedRegion: undefined,
+      measurementLevel: 'browser-measurement',
+    });
   }
 }
 
