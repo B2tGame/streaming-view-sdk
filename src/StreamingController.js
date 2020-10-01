@@ -174,6 +174,8 @@ class StreamingController {
         deviceInfo.viewportHeight = Math.round(
           DPI * Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
         );
+        deviceInfo.connectionType = ((navigator || {}).connection || {}).type;
+        deviceInfo.connectionEffectiveType = ((navigator || {}).connection || {}).effectiveType;
         return deviceInfo;
       });
   }
