@@ -31,7 +31,7 @@ export default class StreamingView extends Component {
     view: PropTypes.oneOf(['webrtc', 'png']),
     volume: PropTypes.number, // Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
     onEvent: PropTypes.func, // report events during the streaming view.
-    triggerRating: PropTypes.func,
+    bindRatingTrigger: PropTypes.func,
   };
 
   constructor(props) {
@@ -89,7 +89,7 @@ export default class StreamingView extends Component {
   }
 
   componentDidMount() {
-    this.props.triggerRating(this.addRatingToMetric);
+    this.props.bindRatingTrigger(this.addRatingToMetric);
     this.isMountedInView = true;
   }
 
