@@ -61,6 +61,16 @@ export default function withMouseKeyHandler(WrappedComponent) {
 
     componentDidMount() {
       this.getScreenSize();
+      // Disabling passive mode to be able to call 'event.preventDefault()' for disabling scroll, which causing
+      // laggy touch move performance on mobile phones, since some browsers changed default passive: true from false
+      // related issue: https://github.com/facebook/react/issues/9809
+      this.handler.current.addEventListener(
+        'touchmove',
+        (event) => {
+          event.preventDefault();
+        },
+        { passive: false }
+      );
     }
 
     getScreenSize() {
