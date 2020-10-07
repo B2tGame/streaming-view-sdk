@@ -31,7 +31,7 @@ export default class StreamingView extends Component {
     view: PropTypes.oneOf(['webrtc', 'png']),
     volume: PropTypes.number, // Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
     onEvent: PropTypes.func, // report events during the streaming view.
-    bindRatingTrigger: PropTypes.func,
+    streamQualityRating: PropTypes.number,
   };
 
   constructor(props) {
@@ -89,16 +89,16 @@ export default class StreamingView extends Component {
   }
 
   componentDidMount() {
-    this.props.bindRatingTrigger(this.addRatingToMetric);
     this.isMountedInView = true;
   }
 
-  addRatingToMetric = (streamQualityRating) => {
-    this.rtcReportHandler.emit('STREAM_QUALITY_RATING', { streamQualityRating: streamQualityRating });
-  };
+  shouldComponentUpdate(nextProps) {
+    if (this.props.streamQualityRating !== nextProps.streamQualityRating) {
+      this.addRatingToMetric(nextProps.streamQualityRating)
+    }
 
-  logEnableControlState() {
-    this.log && this.log.state('user-control-state-change', this.props.enableControl ? 'player' : 'watcher');
+    // Don't re-render component when rating was changed
+    return this.props.streamQualityRating === nextProps.streamQualityRating;
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -109,6 +109,14 @@ export default class StreamingView extends Component {
     if (this.state.isReadyStream && !prevState.isReadyStream && this.props.onEvent) {
       this.props.onEvent(StreamingController.EVENT_STREAM_CONNECTED, {});
     }
+  }
+
+  addRatingToMetric = (rating) => {
+    this.rtcReportHandler.emit('STREAM_QUALITY_RATING', { streamQualityRating: rating });
+  };
+
+  logEnableControlState() {
+    this.log && this.log.state('user-control-state-change', this.props.enableControl ? 'player' : 'watcher');
   }
 
   render() {
