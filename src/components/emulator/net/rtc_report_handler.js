@@ -117,7 +117,7 @@ class RtcReportHandler extends EventEmitter {
       prev.timestamp = Date.now();
       this.emit('WEB_RTC_STATS', {
         measureAt: Date.now(),
-        measureDuration: Math.trunc(timeSinceLast),
+        measureDuration: Math.round(timeSinceLast),
         ...logState,
       });
     });

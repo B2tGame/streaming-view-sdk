@@ -31,6 +31,7 @@ export default class StreamingView extends Component {
     view: PropTypes.oneOf(['webrtc', 'png']),
     volume: PropTypes.number, // Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
     onEvent: PropTypes.func, // report events during the streaming view.
+    streamQualityRating: PropTypes.number,
   };
 
   constructor(props) {
@@ -47,7 +48,7 @@ export default class StreamingView extends Component {
       .then((controller) => controller.getStreamEndpoint())
       .then((streamEndpoint) => {
         if (!this.isMountedInView) {
-          console.log("Streaming View SDK: Cancel action due to view is not mounted.")
+          console.log('Streaming View SDK: Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
         }
         const endpoint = url.parse(streamEndpoint);
@@ -58,11 +59,10 @@ export default class StreamingView extends Component {
         this.log = new Log(this.streamSocket);
         this.setState({ isReadyStream: true, streamEndpoint: streamEndpoint });
         this.logEnableControlState();
-
       })
       .catch((err) => {
         if (!this.isMountedInView) {
-          console.log("Streaming View SDK: Cancel action due to view is not mounted.")
+          console.log('Streaming View SDK: Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
         }
         this.log && this.log.error(err);
@@ -92,8 +92,13 @@ export default class StreamingView extends Component {
     this.isMountedInView = true;
   }
 
-  logEnableControlState() {
-    this.log && this.log.state('user-control-state-change', this.props.enableControl ? 'player' : 'watcher');
+  shouldComponentUpdate(nextProps) {
+    if (this.props.streamQualityRating !== nextProps.streamQualityRating) {
+      this.addRatingToMetric(nextProps.streamQualityRating)
+    }
+
+    // Don't re-render component when rating was changed
+    return this.props.streamQualityRating === nextProps.streamQualityRating;
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -104,6 +109,14 @@ export default class StreamingView extends Component {
     if (this.state.isReadyStream && !prevState.isReadyStream && this.props.onEvent) {
       this.props.onEvent(StreamingController.EVENT_STREAM_CONNECTED, {});
     }
+  }
+
+  addRatingToMetric = (rating) => {
+    this.rtcReportHandler.emit('STREAM_QUALITY_RATING', { streamQualityRating: rating });
+  };
+
+  logEnableControlState() {
+    this.log && this.log.state('user-control-state-change', this.props.enableControl ? 'player' : 'watcher');
   }
 
   render() {

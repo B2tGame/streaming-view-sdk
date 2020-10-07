@@ -6,6 +6,7 @@ class RoundTripTimeMonitor extends Component {
 
   static propTypes = {
     streamSocket: PropTypes.object.isRequired, // socket connection to emulator
+    rtcReportHandler: PropTypes.object,
   };
 
   componentDidMount() {
@@ -20,13 +21,20 @@ class RoundTripTimeMonitor extends Component {
           type: 'report',
           timestamp: Date.now(),
           networkRoundTripTime: networkRoundTripTime,
-          extra: this.state.webrtcStats,
+          extra: {...this.state.webrtcStats, ...this.state.streamQualityRating},
         })
       );
     });
 
-    this.props.rtcReportHandler &&
-      this.props.rtcReportHandler.on('WEB_RTC_STATS', (newValue) => this.setState({ webrtcStats: newValue }));
+    if (this.props.rtcReportHandler) {
+      this.props.rtcReportHandler.on('WEB_RTC_STATS', (newValue) => {
+        this.setState({ webrtcStats: newValue });
+      });
+
+      this.props.rtcReportHandler.on('STREAM_QUALITY_RATING', (streamQualityRating) => {
+        this.setState({ streamQualityRating: streamQualityRating })
+      });
+    }
   }
 
   componentWillUnmount() {
