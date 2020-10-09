@@ -185,7 +185,7 @@ class StreamingController {
    * @returns {Promise<{measurementLevel: string, downloadSpeed: undefined, recommendedRegion: undefined, roundTripTime: undefined}>}
    */
   getConnectivityInfo() {
-    let connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
     return Promise.resolve({
       roundTripTime: connection.rtt,
       downloadSpeed: connection.downlink,
