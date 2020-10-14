@@ -1,5 +1,7 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
+import { getNetworkConnectivity, resetNetworkConnectivity } from './stores/networkConnectivity';
+import { getDeviceInfo, resetDeviceInfo } from './stores/deviceInfo';
 
 /**
  * StreamingAgent class is responsible to running any nesureary background task for the Streaming Service
@@ -12,14 +14,40 @@ export default class StreamingAgent extends Component {
     apiEndpoint: PropTypes.string.isRequired,
   };
 
+  constructor(props) {
+    super(props);
+
+    this.connection = {};
+  }
+
   componentDidMount() {
-    // When needed we should implemented required logic that can be setup and running in the background of the users session.
-    // Example of use cases is to doing RTT measurement against multiple edge nodes for get average RTT and find the
-    // fasted region that should be used.
+    this.clearStoresCache();
+
+    this.connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
+    this.connection.onchange = () => {
+      getNetworkConnectivity(this.connection);
+      getDeviceInfo(this.props.apiEndpoint, this.connection);
+    };
+
+    getNetworkConnectivity(this.connection).then(() => {});
+    getDeviceInfo(this.props.apiEndpoint, this.connection).then(() => {});
   }
 
   componentWillUnmount() {
-    // Any background action that has been started should be stopped now.
+    this.connection.onchange = () => {};
+    this.clearStoresCache();
+  }
+
+  componentDidUpdate() {
+    this.clearStoresCache();
+
+    getNetworkConnectivity(this.connection).then(() => {});
+    getDeviceInfo(this.props.apiEndpoint, this.connection).then(() => {});
+  }
+
+  clearStoresCache() {
+    resetNetworkConnectivity();
+    resetDeviceInfo();
   }
 
   render() {

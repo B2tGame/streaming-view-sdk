@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { getNetworkConnectivity } from './stores/networkConnectivity';
+import { getDeviceInfo } from './stores/deviceInfo';
 
 /**
  * StreamingController is responsible to poll and terminate the edge node.
@@ -160,38 +162,15 @@ class StreamingController {
    * @returns {Promise<object>}
    */
   getDeviceInfo() {
-    return axios
-      .get(`${this.getApiEndpoint()}/api/streaming-games/edge-node/device-info`, { timeout: 2500 })
-      .then((result) => result.data || {})
-      .then((deviceInfo) => {
-        const DPI = window.devicePixelRatio || 1;
-        deviceInfo.screenScale = DPI;
-        deviceInfo.screenWidth = Math.round(DPI * window.screen.width);
-        deviceInfo.screenHeight = Math.round(DPI * window.screen.height);
-        deviceInfo.viewportWidth = Math.round(
-          DPI * Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
-        );
-        deviceInfo.viewportHeight = Math.round(
-          DPI * Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
-        );
-        deviceInfo.connectionType = ((navigator || {}).connection || {}).type;
-        deviceInfo.connectionEffectiveType = ((navigator || {}).connection || {}).effectiveType;
-        return deviceInfo;
-      });
+    return Promise.resolve(getDeviceInfo(this.getApiEndpoint()));
   }
 
   /**
    * Get connectivity info
-   * @returns {Promise<{measurementLevel: string, downloadSpeed: undefined, recommendedRegion: undefined, roundTripTime: undefined}>}
+   * @returns {Promise<{}>}
    */
   getConnectivityInfo() {
-    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
-    return Promise.resolve({
-      roundTripTime: connection.rtt,
-      downloadSpeed: connection.downlink,
-      recommendedRegion: undefined,
-      measurementLevel: 'browser-measurement',
-    });
+    return Promise.resolve(getNetworkConnectivity());
   }
 }
 
