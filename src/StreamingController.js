@@ -162,7 +162,7 @@ class StreamingController {
    * @returns {Promise<object>}
    */
   getDeviceInfo() {
-    return Promise.resolve(getDeviceInfo(this.getApiEndpoint()));
+    return getDeviceInfo(this.getApiEndpoint());
   }
 
   /**
@@ -170,7 +170,7 @@ class StreamingController {
    * @returns {Promise<{}>}
    */
   getConnectivityInfo() {
-    return Promise.resolve(getNetworkConnectivity());
+    return getNetworkConnectivity();
   }
 }
 

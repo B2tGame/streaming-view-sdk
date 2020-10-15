@@ -25,12 +25,22 @@ export default class StreamingAgent extends Component {
 
     this.connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
     this.connection.onchange = () => {
-      getNetworkConnectivity(this.connection);
-      getDeviceInfo(this.props.apiEndpoint, this.connection);
+      this.clearStoresCache();
+
+      getNetworkConnectivity(this.connection).catch((error) => {
+        console.log('Streaming Agent error: ', error);
+      });
+      getDeviceInfo(this.props.apiEndpoint, this.connection).catch((error) => {
+        console.log('Streaming Agent error: ', error);
+      });
     };
 
-    getNetworkConnectivity(this.connection).then(() => {});
-    getDeviceInfo(this.props.apiEndpoint, this.connection).then(() => {});
+    getNetworkConnectivity(this.connection).catch((error) => {
+      console.log('Streaming Agent error: ', error);
+    });
+    getDeviceInfo(this.props.apiEndpoint, this.connection).catch((error) => {
+      console.log('Streaming Agent error: ', error);
+    });
   }
 
   componentWillUnmount() {
@@ -41,8 +51,12 @@ export default class StreamingAgent extends Component {
   componentDidUpdate() {
     this.clearStoresCache();
 
-    getNetworkConnectivity(this.connection).then(() => {});
-    getDeviceInfo(this.props.apiEndpoint, this.connection).then(() => {});
+    getNetworkConnectivity(this.connection).catch((error) => {
+      console.log('Streaming Agent error: ', error);
+    });
+    getDeviceInfo(this.props.apiEndpoint, this.connection).catch((error) => {
+      console.log('Streaming Agent error: ', error);
+    });
   }
 
   clearStoresCache() {

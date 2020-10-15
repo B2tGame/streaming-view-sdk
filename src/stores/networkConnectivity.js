@@ -1,4 +1,4 @@
-const networkConnectivity = {};
+let networkConnectivity = {};
 
 const MEASUREMENT_LEVEL_BROWSER = 'browser-measurement';
 
@@ -18,10 +18,17 @@ function convertMbitToBytes(downloadSpeed) {
  *
  * @param browserConnection NetworkInformation from the browser
  */
-function performBrowserMeasurement(browserConnection) {
-  networkConnectivity.roundTripTime = browserConnection.rtt;
-  networkConnectivity.downloadSpeed = convertMbitToBytes(browserConnection.downlink);
-  networkConnectivity.measurementLevel = MEASUREMENT_LEVEL_BROWSER;
+function getBrowserMeasurement(browserConnection = undefined) {
+  const connection = browserConnection
+    ? browserConnection
+    : navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
+
+  return Promise.resolve({
+    roundTripTime: connection.rtt,
+    downloadSpeed: convertMbitToBytes(connection.downlink),
+    recommendedRegion: undefined,
+    measurementLevel: MEASUREMENT_LEVEL_BROWSER,
+  });
 }
 
 /**
@@ -34,10 +41,11 @@ function getNetworkConnectivity(browserConnection = undefined) {
     networkConnectivity.measurementLevel === undefined ||
     networkConnectivity.measurementLevel === MEASUREMENT_LEVEL_BROWSER
   ) {
-    const connection = browserConnection
-      ? browserConnection
-      : navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
-    performBrowserMeasurement(connection);
+    return getBrowserMeasurement(browserConnection)
+      .then((browserMeasurement) => {
+        networkConnectivity = browserMeasurement;
+        return networkConnectivity;
+      })
   }
 
   return Promise.resolve(networkConnectivity);
@@ -47,9 +55,7 @@ function getNetworkConnectivity(browserConnection = undefined) {
  * Reset all network connectivity data
  */
 function resetNetworkConnectivity() {
-  Object.keys(networkConnectivity).forEach((index) => {
-    delete networkConnectivity[index];
-  });
+  networkConnectivity = {};
 }
 
 export { getNetworkConnectivity, resetNetworkConnectivity };
