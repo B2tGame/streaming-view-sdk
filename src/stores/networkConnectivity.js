@@ -33,22 +33,24 @@ function getBrowserMeasurement(browserConnection = undefined) {
 
 /**
  *
- * @param browserConnection
+ * @param browserConnection NetworkInformation from the browser
  * @returns {Promise<{}>}
  */
 function getNetworkConnectivity(browserConnection = undefined) {
-  if (
-    networkConnectivity.measurementLevel === undefined ||
-    networkConnectivity.measurementLevel === MEASUREMENT_LEVEL_BROWSER
-  ) {
-    return getBrowserMeasurement(browserConnection)
-      .then((browserMeasurement) => {
-        networkConnectivity = browserMeasurement;
-        return networkConnectivity;
-      })
-  }
+  return Promise.resolve().then(() => {
+    if (
+      networkConnectivity.measurementLevel === undefined ||
+      networkConnectivity.measurementLevel === MEASUREMENT_LEVEL_BROWSER
+    ) {
+      return getBrowserMeasurement(browserConnection)
+        .then((browserMeasurement) => {
+          networkConnectivity = browserMeasurement;
+          return networkConnectivity;
+        })
+    }
 
-  return Promise.resolve(networkConnectivity);
+    return networkConnectivity;
+  });
 }
 
 /**

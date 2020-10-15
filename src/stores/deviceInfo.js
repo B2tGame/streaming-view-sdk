@@ -4,7 +4,7 @@ let deviceInfo = {};
 
 /**
  *
- * @param apiEndpoint
+ * @param {string} apiEndpoint
  * @returns {Promise<*>}
  */
 function getNetworkDeviceInfo(apiEndpoint) {
@@ -15,7 +15,7 @@ function getNetworkDeviceInfo(apiEndpoint) {
 
 /**
  *
- * @param browserConnection
+ * @param browserConnection NetworkInformation from the browser
  * @returns {Promise<{screenWidth: number, screenScale: (number), viewportWidth: number, screenHeight: number, viewportHeight: number, connectionEffectiveType: *, connectionType: *}>}
  */
 function getBrowserDeviceInfo(browserConnection = undefined) {
@@ -37,8 +37,8 @@ function getBrowserDeviceInfo(browserConnection = undefined) {
 
 /**
  *
- * @param apiEndpoint
- * @param browserConnection
+ * @param {string} apiEndpoint
+ * @param browserConnection NetworkInformation from the browser
  * @returns {Promise<{}>}
  */
 function getDeviceInfo(apiEndpoint, browserConnection = undefined) {
