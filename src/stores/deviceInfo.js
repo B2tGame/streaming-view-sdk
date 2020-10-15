@@ -49,12 +49,12 @@ function getDeviceInfo(apiEndpoint, browserConnection = undefined) {
         return { ...deviceInfo, ...browserDeviceInfo };
       }
     );
+  } else {
+    // Always get new browser device information but use cached networkDeviceInfo inside DeviceInfo
+    return getBrowserDeviceInfo().then((browserDeviceInfo) => {
+      return { ...deviceInfo, ...browserDeviceInfo };
+    });
   }
-
-  // Always get new browser device information
-  return getBrowserDeviceInfo().then((browserDeviceInfo) => {
-    return { ...deviceInfo, ...browserDeviceInfo };
-  });
 }
 
 /**

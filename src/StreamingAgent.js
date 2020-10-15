@@ -14,6 +14,10 @@ export default class StreamingAgent extends Component {
     apiEndpoint: PropTypes.string.isRequired,
   };
 
+  static logError(error) {
+    console.log('Streaming Agent error:', error);
+  }
+
   constructor(props) {
     super(props);
 
@@ -27,20 +31,12 @@ export default class StreamingAgent extends Component {
     this.connection.onchange = () => {
       this.clearStoresCache();
 
-      getNetworkConnectivity(this.connection).catch((error) => {
-        console.log('Streaming Agent error: ', error);
-      });
-      getDeviceInfo(this.props.apiEndpoint, this.connection).catch((error) => {
-        console.log('Streaming Agent error: ', error);
-      });
+      getNetworkConnectivity(this.connection).catch(StreamingAgent.logError);
+      getDeviceInfo(this.props.apiEndpoint, this.connection).catch(StreamingAgent.logError);
     };
 
-    getNetworkConnectivity(this.connection).catch((error) => {
-      console.log('Streaming Agent error: ', error);
-    });
-    getDeviceInfo(this.props.apiEndpoint, this.connection).catch((error) => {
-      console.log('Streaming Agent error: ', error);
-    });
+    getNetworkConnectivity(this.connection).catch(StreamingAgent.logError);
+    getDeviceInfo(this.props.apiEndpoint, this.connection).catch(StreamingAgent.logError);
   }
 
   componentWillUnmount() {
@@ -51,12 +47,8 @@ export default class StreamingAgent extends Component {
   componentDidUpdate() {
     this.clearStoresCache();
 
-    getNetworkConnectivity(this.connection).catch((error) => {
-      console.log('Streaming Agent error: ', error);
-    });
-    getDeviceInfo(this.props.apiEndpoint, this.connection).catch((error) => {
-      console.log('Streaming Agent error: ', error);
-    });
+    getNetworkConnectivity(this.connection).catch(StreamingAgent.logError);
+    getDeviceInfo(this.props.apiEndpoint, this.connection).catch(StreamingAgent.logError);
   }
 
   clearStoresCache() {
