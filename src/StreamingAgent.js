@@ -15,7 +15,7 @@ export default class StreamingAgent extends Component {
   };
 
   static logError(error) {
-    console.log('Streaming Agent error:', error);
+    logger.log('Streaming Agent error:', error);
   }
 
   constructor(props) {

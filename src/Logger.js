@@ -1,11 +1,11 @@
 export default class Logger {
 
-  constructor(isDebug) {
-    this.isDebug = isDebug;
+  constructor(enableDebug) {
+    this.enableDebug = enableDebug;
   }
 
   log(message) {
-    if (this.isDebug) {
+    if (this.enableDebug) {
       console.log(message);
     }
   }
