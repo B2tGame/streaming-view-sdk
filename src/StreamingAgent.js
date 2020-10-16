@@ -2,6 +2,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { getNetworkConnectivity, resetNetworkConnectivity } from './stores/networkConnectivity';
 import { getDeviceInfo, resetDeviceInfo } from './stores/deviceInfo';
+import Logger from './Logger';
 
 /**
  * StreamingAgent class is responsible to running any nesureary background task for the Streaming Service
@@ -12,9 +13,11 @@ import { getDeviceInfo, resetDeviceInfo } from './stores/deviceInfo';
 export default class StreamingAgent extends Component {
   static propTypes = {
     apiEndpoint: PropTypes.string.isRequired,
+    enableDebug: PropTypes.bool,
   };
 
-  static logError(error) {
+  logError(error) {
+    const logger = new Logger(this.props.enableDebug);
     logger.log('Streaming Agent error:', error);
   }
 
@@ -31,12 +34,12 @@ export default class StreamingAgent extends Component {
     this.connection.onchange = () => {
       this.clearStoresCache();
 
-      getNetworkConnectivity(this.connection).catch(StreamingAgent.logError);
-      getDeviceInfo(this.props.apiEndpoint, this.connection).catch(StreamingAgent.logError);
+      getNetworkConnectivity(this.connection).catch(this.logError);
+      getDeviceInfo(this.props.apiEndpoint, this.connection).catch(this.logError);
     };
 
-    getNetworkConnectivity(this.connection).catch(StreamingAgent.logError);
-    getDeviceInfo(this.props.apiEndpoint, this.connection).catch(StreamingAgent.logError);
+    getNetworkConnectivity(this.connection).catch(this.logError);
+    getDeviceInfo(this.props.apiEndpoint, this.connection).catch(this.logError);
   }
 
   componentWillUnmount() {
@@ -47,8 +50,8 @@ export default class StreamingAgent extends Component {
   componentDidUpdate() {
     this.clearStoresCache();
 
-    getNetworkConnectivity(this.connection).catch(StreamingAgent.logError);
-    getDeviceInfo(this.props.apiEndpoint, this.connection).catch(StreamingAgent.logError);
+    getNetworkConnectivity(this.connection).catch(this.logError);
+    getDeviceInfo(this.props.apiEndpoint, this.connection).catch(this.logError);
   }
 
   clearStoresCache() {
