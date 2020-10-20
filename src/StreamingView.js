@@ -40,7 +40,7 @@ export default class StreamingView extends Component {
     super(props);
 
     this.rtcReportHandler = new RtcReportHandler();
-    const logger = new ConsoleLogger(props.enableDebug);
+    this.consoleLogger = new ConsoleLogger(props.enableDebug);
     const { apiEndpoint, edgeNodeId, userId } = this.props;
     this.isMountedInView = false;
     StreamingController({
@@ -51,7 +51,7 @@ export default class StreamingView extends Component {
       .then((controller) => controller.getStreamEndpoint())
       .then((streamEndpoint) => {
         if (!this.isMountedInView) {
-          logger.log('Streaming View SDK: Cancel action due to view is not mounted.');
+          this.consoleLogger.log('Streaming View SDK: Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
         }
         const endpoint = url.parse(streamEndpoint);
@@ -65,16 +65,16 @@ export default class StreamingView extends Component {
       })
       .catch((err) => {
         if (!this.isMountedInView) {
-          logger.log('Streaming View SDK: Cancel action due to view is not mounted.');
+          this.consoleLogger.log('Streaming View SDK: Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
         }
         this.log && this.log.error(err);
-        console.error('Streaming View SDK - StreamingController Errors: ', err);
+        this.consoleLogger.error('Streaming View SDK - StreamingController Errors: ', err);
         this.setState({
           isReadyStream: false,
         });
       });
-    logger.log('Streaming View SDK - Latest update: 2020-09-21 11:32');
+    this.consoleLogger.log('Streaming View SDK - Latest update: 2020-09-21 11:32');
   }
 
   handleUserInteraction = () => {
@@ -129,7 +129,7 @@ export default class StreamingView extends Component {
       case true:
         return (
           <div>
-            <RoundTripTimeMonitor streamSocket={this.streamSocket} rtcReportHandler={this.rtcReportHandler} />
+            <RoundTripTimeMonitor streamSocket={this.streamSocket} rtcReportHandler={this.rtcReportHandler} consoleLogger={this.consoleLogger}/>
             <Emulator
               uri={this.state.streamEndpoint}
               log={this.log}
@@ -142,6 +142,7 @@ export default class StreamingView extends Component {
               onUserInteraction={this.handleUserInteraction}
               poll={true}
               rtcReportHandler={this.rtcReportHandler}
+              consoleLogger={this.consoleLogger}
             />
           </div>
         );

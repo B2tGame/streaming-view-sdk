@@ -83,8 +83,6 @@ class Emulator extends Component {
     view: PropTypes.oneOf(['webrtc', 'png']),
     /** True if polling should be used, only set this to true if you are using the go webgrpc proxy. */
     poll: PropTypes.bool,
-    /** Callback that will be invoked in case of gRPC errors. */
-    onError: PropTypes.func,
     /** True if the fullscreen should be enabled. */
     enableFullScreen: PropTypes.bool,
     /** The screen orientation for fullscreen lock */
@@ -95,6 +93,8 @@ class Emulator extends Component {
     onUserInteraction: PropTypes.func,
     /** Event Logger */
     log: PropTypes.object.isRequired,
+    rtcReportHandler: PropTypes.object,
+    consoleLogger: PropTypes.object.isRequired,
   };
 
   static defaultProps = {
@@ -103,9 +103,6 @@ class Emulator extends Component {
     poll: false,
     muted: true,
     volume: 1.0,
-    onError: (e) => {
-      console.error(e);
-    },
     onAudioStateChange: () => {},
     onStateChange: () => {},
     enableFullScreen: true,
@@ -125,9 +122,9 @@ class Emulator extends Component {
 
   constructor(props) {
     super(props);
-    const { uri, auth, poll, onError } = props;
-    this.emulator = new EmulatorControllerService(uri, auth, onError);
-    this.rtc = new RtcService(uri, auth, onError);
+    const { uri, auth, poll } = props;
+    this.emulator = new EmulatorControllerService(uri, auth, this.onError);
+    this.rtc = new RtcService(uri, auth, this.onError);
     this.log = this.props.log;
     this.jsep = new JsepProtocol(
       this.emulator,
@@ -140,10 +137,15 @@ class Emulator extends Component {
         this.reConnect();
         this.log.state('user-interaction-state-change', 'disconnected');
       },
-      this.props.rtcReportHandler
+      this.props.rtcReportHandler,
+      this.props.consoleLogger
     );
     this.view = React.createRef();
   }
+
+  onError = (e) => {
+    this.props.consoleLogger.error(e);
+  };
 
   static getDerivedStateFromProps(nextProps, prevState) {
     if (nextProps.view === 'png')
@@ -197,7 +199,6 @@ class Emulator extends Component {
       view,
       poll,
       muted,
-      onError,
       volume,
       enableFullScreen,
       screenOrientation,
@@ -219,13 +220,14 @@ class Emulator extends Component {
         poll={poll}
         muted={muted}
         volume={volume}
-        onError={onError}
+        onError={this.onError}
         onAudioStateChange={this._onAudioStateChange}
         enableFullScreen={enableFullScreen}
         screenOrientation={screenOrientation}
         enableControl={enableControl}
         onUserInteraction={onUserInteraction}
         log={this.log}
+        consoleLogger={this.props.consoleLogger}
       />
     );
   }

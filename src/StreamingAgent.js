@@ -19,12 +19,12 @@ export default class StreamingAgent extends Component {
   constructor(props) {
     super(props);
 
+    this.consoleLogger = new ConsoleLogger(this.props.enableDebug);
     this.connection = {};
   }
 
   logError = (error) => {
-    const logger = new ConsoleLogger(this.props.enableDebug);
-    logger.log('Streaming Agent error:', error);
+    this.consoleLogger.log('Streaming Agent error:', error);
   };
 
   componentDidMount() {
