@@ -51,7 +51,7 @@ export default class StreamingView extends Component {
       .then((controller) => controller.getStreamEndpoint())
       .then((streamEndpoint) => {
         if (!this.isMountedInView) {
-          this.consoleLogger.log('Streaming View SDK: Cancel action due to view is not mounted.');
+          this.consoleLogger.log('Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
         }
         const endpoint = url.parse(streamEndpoint);
@@ -65,16 +65,16 @@ export default class StreamingView extends Component {
       })
       .catch((err) => {
         if (!this.isMountedInView) {
-          this.consoleLogger.log('Streaming View SDK: Cancel action due to view is not mounted.');
+          this.consoleLogger.log('Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
         }
         this.log && this.log.error(err);
-        this.consoleLogger.error('Streaming View SDK - StreamingController Errors: ', err);
+        this.consoleLogger.error('StreamingController Errors: ', err);
         this.setState({
           isReadyStream: false,
         });
       });
-    this.consoleLogger.log('Streaming View SDK - Latest update: 2020-09-21 11:32');
+    this.consoleLogger.log('Latest update: 2020-09-21 11:32');
   }
 
   handleUserInteraction = () => {

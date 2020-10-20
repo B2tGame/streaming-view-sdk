@@ -3,13 +3,9 @@ export default class ConsoleLogger {
     this.enableDebug = enableDebug;
   }
 
-  logOutput(type, message, ...args) {
+  logOutput(type, ...args) {
     if (this.enableDebug) {
-      if (args.length === 0) {
-        console[type](message);
-      } else {
-        console[type](message, ...args);
-      }
+      console[type]('Streaming SDK:', ...args);
     }
   }
 

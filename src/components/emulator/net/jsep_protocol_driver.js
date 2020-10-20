@@ -87,7 +87,7 @@ export default class JsepProtocol {
     }
     this.active = false;
     if (this.rtcEventTrigger) {
-      this.consoleLogger.log('Streaming View SDK: Unregister RTC event trigger:', this.rtcEventTrigger);
+      this.consoleLogger.log('Unregister RTC event trigger:', this.rtcEventTrigger);
       clearInterval(this.rtcEventTrigger);
       this.rtcEventTrigger = null;
     }
@@ -238,7 +238,7 @@ export default class JsepProtocol {
             .catch((err) => this.rtcReportHandler.emit('EVENT_RTC_REPORT_ERROR', err)),
         5000
       );
-      this.consoleLogger.log('Streaming View SDK: Registry RTC event trigger:', this.rtcEventTrigger);
+      this.consoleLogger.log('Registry RTC event trigger:', this.rtcEventTrigger);
     }
   };
 
@@ -312,7 +312,7 @@ export default class JsepProtocol {
     // of messages have been made available, or if we reach a timeout
     this.rtc.receiveJsepMessage(this.guid, {}, (err, response) => {
       if (err) {
-        this.consoleLogger.error('Streaming View SDK: Failed to receive jsep message, disconnecting: ' + JSON.stringify(err));
+        this.consoleLogger.error('Failed to receive jsep message, disconnecting: ' + JSON.stringify(err));
         this.disconnect();
       }
 
@@ -325,7 +325,7 @@ export default class JsepProtocol {
           self._handleJsepMessage(response.getMessage());
         }
       } catch (err) {
-        self.consoleLogger.error('Streaming View SDK: Failed to get jsep message, disconnecting: ' + JSON.stringify(err));
+        self.consoleLogger.error('Failed to get jsep message, disconnecting: ' + JSON.stringify(err));
       }
 
       // And pump messages. Note we must continue the message pump as we
