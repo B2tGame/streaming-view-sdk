@@ -45,6 +45,7 @@ export default function withMouseKeyHandler(WrappedComponent) {
       enableFullScreen: PropTypes.bool,
       screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
       onUserInteraction: PropTypes.func,
+      consoleLogger: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -240,11 +241,11 @@ export default function withMouseKeyHandler(WrappedComponent) {
           .request()
           .then(() => {
             window.screen.orientation.lock(this.props.screenOrientation).catch((error) => {
-              console.log('Failed to lock screen orientation to:', error);
+              this.props.consoleLogger.log('Failed to lock screen orientation to:', error);
             });
           })
           .catch((error) => {
-            console.log('Failed to request fullscreen:', error);
+            this.props.consoleLogger.log('Failed to request fullscreen:', error);
           });
       }
     };

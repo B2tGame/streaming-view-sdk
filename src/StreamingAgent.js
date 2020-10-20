@@ -2,6 +2,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { getNetworkConnectivity, resetNetworkConnectivity } from './stores/networkConnectivity';
 import { getDeviceInfo, resetDeviceInfo } from './stores/deviceInfo';
+import ConsoleLogger from './ConsoleLogger';
 
 /**
  * StreamingAgent class is responsible to running any nesureary background task for the Streaming Service
@@ -12,17 +13,19 @@ import { getDeviceInfo, resetDeviceInfo } from './stores/deviceInfo';
 export default class StreamingAgent extends Component {
   static propTypes = {
     apiEndpoint: PropTypes.string.isRequired,
+    enableDebug: PropTypes.bool,
   };
-
-  static logError(error) {
-    console.log('Streaming Agent error:', error);
-  }
 
   constructor(props) {
     super(props);
 
+    this.consoleLogger = new ConsoleLogger(this.props.enableDebug);
     this.connection = {};
   }
+
+  logError = (error) => {
+    this.consoleLogger.log('Streaming Agent error:', error);
+  };
 
   componentDidMount() {
     this.clearStoresCache();
@@ -31,12 +34,12 @@ export default class StreamingAgent extends Component {
     this.connection.onchange = () => {
       this.clearStoresCache();
 
-      getNetworkConnectivity(this.connection).catch(StreamingAgent.logError);
-      getDeviceInfo(this.props.apiEndpoint, this.connection).catch(StreamingAgent.logError);
+      getNetworkConnectivity(this.connection).catch(this.logError);
+      getDeviceInfo(this.props.apiEndpoint, this.connection).catch(this.logError);
     };
 
-    getNetworkConnectivity(this.connection).catch(StreamingAgent.logError);
-    getDeviceInfo(this.props.apiEndpoint, this.connection).catch(StreamingAgent.logError);
+    getNetworkConnectivity(this.connection).catch(this.logError);
+    getDeviceInfo(this.props.apiEndpoint, this.connection).catch(this.logError);
   }
 
   componentWillUnmount() {
@@ -47,8 +50,8 @@ export default class StreamingAgent extends Component {
   componentDidUpdate() {
     this.clearStoresCache();
 
-    getNetworkConnectivity(this.connection).catch(StreamingAgent.logError);
-    getDeviceInfo(this.props.apiEndpoint, this.connection).catch(StreamingAgent.logError);
+    getNetworkConnectivity(this.connection).catch(this.logError);
+    getDeviceInfo(this.props.apiEndpoint, this.connection).catch(this.logError);
   }
 
   clearStoresCache() {
