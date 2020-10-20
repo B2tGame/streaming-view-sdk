@@ -1,12 +1,12 @@
-export default class Logger {
+export default class ConsoleLogger {
 
   constructor(enableDebug) {
     this.enableDebug = enableDebug;
   }
 
-  log(message) {
+  log(message, ...args) {
     if (this.enableDebug) {
-      console.log(message);
+      console.log(message, args);
     }
   }
 }

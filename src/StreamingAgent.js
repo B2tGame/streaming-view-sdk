@@ -2,7 +2,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { getNetworkConnectivity, resetNetworkConnectivity } from './stores/networkConnectivity';
 import { getDeviceInfo, resetDeviceInfo } from './stores/deviceInfo';
-import Logger from './Logger';
+import ConsoleLogger from './ConsoleLogger';
 
 /**
  * StreamingAgent class is responsible to running any nesureary background task for the Streaming Service
@@ -16,16 +16,16 @@ export default class StreamingAgent extends Component {
     enableDebug: PropTypes.bool,
   };
 
-  logError(error) {
-    const logger = new Logger(this.props.enableDebug);
-    logger.log('Streaming Agent error:', error);
-  }
-
   constructor(props) {
     super(props);
 
     this.connection = {};
   }
+
+  logError = (error) => {
+    const logger = new ConsoleLogger(this.props.enableDebug);
+    logger.log('Streaming Agent error:', error);
+  };
 
   componentDidMount() {
     this.clearStoresCache();

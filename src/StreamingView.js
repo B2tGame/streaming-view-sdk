@@ -7,7 +7,7 @@ import StreamingController from './StreamingController';
 import url from 'url';
 import io from 'socket.io-client';
 import Log from './Log';
-import Logger from './Logger';
+import ConsoleLogger from './ConsoleLogger';
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
@@ -40,7 +40,7 @@ export default class StreamingView extends Component {
     super(props);
 
     this.rtcReportHandler = new RtcReportHandler();
-    const logger = new Logger(props.enableDebug);
+    const logger = new ConsoleLogger(props.enableDebug);
     const { apiEndpoint, edgeNodeId, userId } = this.props;
     this.isMountedInView = false;
     StreamingController({
