@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { getNetworkConnectivity } from './stores/networkConnectivity';
 import { getDeviceInfo } from './stores/deviceInfo';
+import ConsoleLogger from './ConsoleLogger';
 
 /**
  * StreamingController is responsible to poll and terminate the edge node.
@@ -54,6 +55,7 @@ class StreamingController {
     this.apiEndpoint = props.apiEndpoint;
     this.edgeNodeId = props.edgeNodeId || undefined;
     this.onEvent = props.onEvent || (() => {});
+    this.consoleLogger = new ConsoleLogger(props.enableDebug);
   }
 
   /**
