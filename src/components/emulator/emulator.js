@@ -21,7 +21,7 @@ import withMouseKeyHandler from './views/event_handler';
 import JsepProtocol from './net/jsep_protocol_driver.js';
 import * as Proto from '../../proto/emulator_controller_pb';
 import { RtcService, EmulatorControllerService } from '../../proto/emulator_web_client';
-import StreamingController from '../../StreamingController'
+import StreamingController from '../../StreamingController';
 
 const PngView = withMouseKeyHandler(EmulatorPngView);
 const RtcView = withMouseKeyHandler(EmulatorWebrtcView);
@@ -150,7 +150,10 @@ class Emulator extends Component {
    */
   onConfiguration = (configuration) => {
     const [width, height] = configuration.resolution.split('x');
-    this.props.onEvent(StreamingController.EVENT_EMULATOR_CONFIGURATION, configuration)
+    this.props.onEvent(StreamingController.EVENT_EMULATOR_CONFIGURATION, {
+      emulatorWidth: width,
+      emulatorHeight: height,
+    });
     this.setState({
       width: parseInt(width),
       height: parseInt(height),
