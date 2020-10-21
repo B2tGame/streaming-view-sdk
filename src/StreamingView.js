@@ -7,6 +7,7 @@ import StreamingController from './StreamingController';
 import url from 'url';
 import io from 'socket.io-client';
 import Log from './Log';
+import ConsoleLogger from './ConsoleLogger';
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
@@ -32,12 +33,14 @@ export default class StreamingView extends Component {
     volume: PropTypes.number, // Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
     onEvent: PropTypes.func, // report events during the streaming view.
     streamQualityRating: PropTypes.number,
+    enableDebug: PropTypes.bool,
   };
 
   constructor(props) {
     super(props);
 
     this.rtcReportHandler = new RtcReportHandler();
+    this.consoleLogger = new ConsoleLogger(props.enableDebug);
     const { apiEndpoint, edgeNodeId, userId } = this.props;
     this.isMountedInView = false;
     StreamingController({
@@ -48,7 +51,7 @@ export default class StreamingView extends Component {
       .then((controller) => controller.getStreamEndpoint())
       .then((streamEndpoint) => {
         if (!this.isMountedInView) {
-          console.log('Streaming View SDK: Cancel action due to view is not mounted.');
+          this.consoleLogger.log('Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
         }
         const endpoint = url.parse(streamEndpoint);
@@ -62,16 +65,16 @@ export default class StreamingView extends Component {
       })
       .catch((err) => {
         if (!this.isMountedInView) {
-          console.log('Streaming View SDK: Cancel action due to view is not mounted.');
+          this.consoleLogger.log('Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
         }
         this.log && this.log.error(err);
-        console.error('Streaming View SDK - StreamingController Errors: ', err);
+        this.consoleLogger.error('StreamingController Errors: ', err);
         this.setState({
           isReadyStream: false,
         });
       });
-    console.log('Streaming View SDK - Latest update: 2020-09-21 11:32');
+    this.consoleLogger.log('Latest update: 2020-10-21 15:50');
   }
 
   handleUserInteraction = () => {
@@ -94,7 +97,7 @@ export default class StreamingView extends Component {
 
   shouldComponentUpdate(nextProps) {
     if (this.props.streamQualityRating !== nextProps.streamQualityRating) {
-      this.addRatingToMetric(nextProps.streamQualityRating)
+      this.addRatingToMetric(nextProps.streamQualityRating);
     }
 
     // Don't re-render component when rating was changed
@@ -126,7 +129,7 @@ export default class StreamingView extends Component {
       case true:
         return (
           <div>
-            <RoundTripTimeMonitor streamSocket={this.streamSocket} rtcReportHandler={this.rtcReportHandler} />
+            <RoundTripTimeMonitor streamSocket={this.streamSocket} rtcReportHandler={this.rtcReportHandler} consoleLogger={this.consoleLogger}/>
             <Emulator
               uri={this.state.streamEndpoint}
               log={this.log}
@@ -139,6 +142,8 @@ export default class StreamingView extends Component {
               onUserInteraction={this.handleUserInteraction}
               poll={true}
               rtcReportHandler={this.rtcReportHandler}
+              consoleLogger={this.consoleLogger}
+              onEvent={this.props.onEvent}
             />
           </div>
         );

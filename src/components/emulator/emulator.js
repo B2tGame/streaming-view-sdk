@@ -21,6 +21,7 @@ import withMouseKeyHandler from './views/event_handler';
 import JsepProtocol from './net/jsep_protocol_driver.js';
 import * as Proto from '../../proto/emulator_controller_pb';
 import { RtcService, EmulatorControllerService } from '../../proto/emulator_web_client';
+import StreamingController from '../../StreamingController'
 
 const PngView = withMouseKeyHandler(EmulatorPngView);
 const RtcView = withMouseKeyHandler(EmulatorWebrtcView);
@@ -75,16 +76,10 @@ class Emulator extends Component {
     onStateChange: PropTypes.func,
     /** Called when the audio becomes (un)available. True if audio is available, false otherwise. */
     onAudioStateChange: PropTypes.func,
-    /** The width of the component */
-    width: PropTypes.number,
-    /** The height of the component */
-    height: PropTypes.number,
     /** The underlying view used to display the emulator, one of ["webrtc", "png"] */
     view: PropTypes.oneOf(['webrtc', 'png']),
     /** True if polling should be used, only set this to true if you are using the go webgrpc proxy. */
     poll: PropTypes.bool,
-    /** Callback that will be invoked in case of gRPC errors. */
-    onError: PropTypes.func,
     /** True if the fullscreen should be enabled. */
     enableFullScreen: PropTypes.bool,
     /** The screen orientation for fullscreen lock */
@@ -95,6 +90,9 @@ class Emulator extends Component {
     onUserInteraction: PropTypes.func,
     /** Event Logger */
     log: PropTypes.object.isRequired,
+    rtcReportHandler: PropTypes.object,
+    consoleLogger: PropTypes.object.isRequired,
+    onEvent: PropTypes.func, // report events during the streaming view.
   };
 
   static defaultProps = {
@@ -103,9 +101,6 @@ class Emulator extends Component {
     poll: false,
     muted: true,
     volume: 1.0,
-    onError: (e) => {
-      console.error(e);
-    },
     onAudioStateChange: () => {},
     onStateChange: () => {},
     enableFullScreen: true,
@@ -121,13 +116,15 @@ class Emulator extends Component {
   state = {
     audio: false,
     lostConnection: false,
+    width: undefined,
+    height: undefined,
   };
 
   constructor(props) {
     super(props);
-    const { uri, auth, poll, onError } = props;
-    this.emulator = new EmulatorControllerService(uri, auth, onError);
-    this.rtc = new RtcService(uri, auth, onError);
+    const { uri, auth, poll } = props;
+    this.emulator = new EmulatorControllerService(uri, auth, this.onError);
+    this.rtc = new RtcService(uri, auth, this.onError);
     this.log = this.props.log;
     this.jsep = new JsepProtocol(
       this.emulator,
@@ -140,10 +137,29 @@ class Emulator extends Component {
         this.reConnect();
         this.log.state('user-interaction-state-change', 'disconnected');
       },
-      this.props.rtcReportHandler
+      this.onConfiguration,
+      this.props.rtcReportHandler,
+      this.props.consoleLogger
     );
     this.view = React.createRef();
   }
+
+  /**
+   * Callback function triggered when emulator configuration is received
+   * @param configuration
+   */
+  onConfiguration = (configuration) => {
+    const [width, height] = configuration.resolution.split('x');
+    this.props.onEvent(StreamingController.EVENT_EMULATOR_CONFIGURATION, configuration)
+    this.setState({
+      width: parseInt(width),
+      height: parseInt(height),
+    });
+  };
+
+  onError = (e) => {
+    this.props.consoleLogger.error(e);
+  };
 
   static getDerivedStateFromProps(nextProps, prevState) {
     if (nextProps.view === 'png')
@@ -192,12 +208,9 @@ class Emulator extends Component {
 
   render() {
     const {
-      width,
-      height,
       view,
       poll,
       muted,
-      onError,
       volume,
       enableFullScreen,
       screenOrientation,
@@ -211,21 +224,22 @@ class Emulator extends Component {
     return this.state.lostConnection ? null : (
       <SpecificView
         ref={this.view}
-        width={width}
-        height={height}
+        emulatorWidth={this.state.width}
+        emulatorHeight={this.state.height}
         uri={uri}
         emulator={this.emulator}
         jsep={this.jsep}
         poll={poll}
         muted={muted}
         volume={volume}
-        onError={onError}
+        onError={this.onError}
         onAudioStateChange={this._onAudioStateChange}
         enableFullScreen={enableFullScreen}
         screenOrientation={screenOrientation}
         enableControl={enableControl}
         onUserInteraction={onUserInteraction}
         log={this.log}
+        consoleLogger={this.props.consoleLogger}
       />
     );
   }

@@ -32,6 +32,15 @@ class StreamingController {
   }
 
   /**
+   * Event that is fired after receiving emulator configuration during initialization of P2P connection
+   * @returns {string}
+   * @constructor
+   */
+  static get EVENT_EMULATOR_CONFIGURATION() {
+    return 'emulator-configuration'
+  }
+
+  /**
    *
    * @param {object} props
    * @param {string} props.apiEndpoint
