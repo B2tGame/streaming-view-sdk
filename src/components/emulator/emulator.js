@@ -149,14 +149,17 @@ class Emulator extends Component {
    * @param configuration
    */
   onConfiguration = (configuration) => {
-    const [width, height] = configuration.resolution.split('x');
+    const parsedResolution = configuration.resolution.split('x');
+    const width = parseInt(parsedResolution[0]);
+    const height = parseInt(parsedResolution[1]);
+
     this.props.onEvent(StreamingController.EVENT_EMULATOR_CONFIGURATION, {
       emulatorWidth: width,
       emulatorHeight: height,
     });
     this.setState({
-      width: parseInt(width),
-      height: parseInt(height),
+      width: width,
+      height: height,
     });
   };
 
