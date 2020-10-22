@@ -106,6 +106,7 @@ class Emulator extends Component {
     enableFullScreen: true,
     screenOrientation: 'portrait',
     enableControl: true,
+    onEvent: () => {},
   };
 
   components = {
