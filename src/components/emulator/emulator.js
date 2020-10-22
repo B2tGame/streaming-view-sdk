@@ -21,6 +21,7 @@ import withMouseKeyHandler from './views/event_handler';
 import JsepProtocol from './net/jsep_protocol_driver.js';
 import * as Proto from '../../proto/emulator_controller_pb';
 import { RtcService, EmulatorControllerService } from '../../proto/emulator_web_client';
+import StreamingController from '../../StreamingController';
 
 const PngView = withMouseKeyHandler(EmulatorPngView);
 const RtcView = withMouseKeyHandler(EmulatorWebrtcView);
@@ -75,10 +76,6 @@ class Emulator extends Component {
     onStateChange: PropTypes.func,
     /** Called when the audio becomes (un)available. True if audio is available, false otherwise. */
     onAudioStateChange: PropTypes.func,
-    /** The width of the component */
-    width: PropTypes.number,
-    /** The height of the component */
-    height: PropTypes.number,
     /** The underlying view used to display the emulator, one of ["webrtc", "png"] */
     view: PropTypes.oneOf(['webrtc', 'png']),
     /** True if polling should be used, only set this to true if you are using the go webgrpc proxy. */
@@ -95,6 +92,7 @@ class Emulator extends Component {
     log: PropTypes.object.isRequired,
     rtcReportHandler: PropTypes.object,
     consoleLogger: PropTypes.object.isRequired,
+    onEvent: PropTypes.func, // report events during the streaming view.
   };
 
   static defaultProps = {
@@ -108,6 +106,7 @@ class Emulator extends Component {
     enableFullScreen: true,
     screenOrientation: 'portrait',
     enableControl: true,
+    onEvent: () => {},
   };
 
   components = {
@@ -118,6 +117,8 @@ class Emulator extends Component {
   state = {
     audio: false,
     lostConnection: false,
+    width: undefined,
+    height: undefined,
   };
 
   constructor(props) {
@@ -137,11 +138,31 @@ class Emulator extends Component {
         this.reConnect();
         this.log.state('user-interaction-state-change', 'disconnected');
       },
+      this.onConfiguration,
       this.props.rtcReportHandler,
       this.props.consoleLogger
     );
     this.view = React.createRef();
   }
+
+  /**
+   * Callback function triggered when emulator configuration is received
+   * @param configuration
+   */
+  onConfiguration = (configuration) => {
+    const parsedResolution = configuration.resolution.split('x');
+    const width = parseInt(parsedResolution[0]);
+    const height = parseInt(parsedResolution[1]);
+
+    this.props.onEvent(StreamingController.EVENT_EMULATOR_CONFIGURATION, {
+      emulatorWidth: width,
+      emulatorHeight: height,
+    });
+    this.setState({
+      width: width,
+      height: height,
+    });
+  };
 
   onError = (e) => {
     this.props.consoleLogger.error(e);
@@ -194,8 +215,6 @@ class Emulator extends Component {
 
   render() {
     const {
-      width,
-      height,
       view,
       poll,
       muted,
@@ -212,8 +231,8 @@ class Emulator extends Component {
     return this.state.lostConnection ? null : (
       <SpecificView
         ref={this.view}
-        width={width}
-        height={height}
+        emulatorWidth={this.state.width}
+        emulatorHeight={this.state.height}
         uri={uri}
         emulator={this.emulator}
         jsep={this.jsep}

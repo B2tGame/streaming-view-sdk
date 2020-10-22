@@ -74,7 +74,7 @@ export default class StreamingView extends Component {
           isReadyStream: false,
         });
       });
-    this.consoleLogger.log('Latest update: 2020-09-21 11:32');
+    this.consoleLogger.log('Latest update: 2020-10-21 15:50');
   }
 
   handleUserInteraction = () => {
@@ -97,7 +97,7 @@ export default class StreamingView extends Component {
 
   shouldComponentUpdate(nextProps) {
     if (this.props.streamQualityRating !== nextProps.streamQualityRating) {
-      this.addRatingToMetric(nextProps.streamQualityRating)
+      this.addRatingToMetric(nextProps.streamQualityRating);
     }
 
     // Don't re-render component when rating was changed
@@ -143,6 +143,7 @@ export default class StreamingView extends Component {
               poll={true}
               rtcReportHandler={this.rtcReportHandler}
               consoleLogger={this.consoleLogger}
+              onEvent={this.props.onEvent}
             />
           </div>
         );

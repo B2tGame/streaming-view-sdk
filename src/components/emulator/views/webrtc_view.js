@@ -43,6 +43,8 @@ export default class EmulatorWebrtcView extends Component {
     /** The height of the emulator device */
     deviceHeight: PropTypes.number,
     consoleLogger: PropTypes.object.isRequired,
+    emulatorWidth: PropTypes.number,
+    emulatorHeight: PropTypes.number,
   };
 
   state = {
@@ -146,13 +148,13 @@ export default class EmulatorWebrtcView extends Component {
   };
 
   render() {
-    const { muted, deviceWidth, deviceHeight } = this.props;
+    const { muted, emulatorWidth, emulatorHeight } = this.props;
     const style = {
       margin: '0 auto',
     };
 
     // Optimize video size by comparing aspect ratios of the emulator device and browser window eg. (16/9 > 9/16)
-    if (window.innerHeight / window.innerWidth > deviceHeight / deviceWidth) {
+    if (window.innerHeight / window.innerWidth > emulatorHeight / emulatorWidth) {
       style.width = '100vw';
     } else {
       style.height = '100vh';

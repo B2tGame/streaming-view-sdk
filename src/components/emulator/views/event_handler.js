@@ -46,6 +46,8 @@ export default function withMouseKeyHandler(WrappedComponent) {
       screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
       onUserInteraction: PropTypes.func,
       consoleLogger: PropTypes.object.isRequired,
+      emulatorWidth: PropTypes.number,
+      emulatorHeight: PropTypes.number,
     };
 
     constructor(props) {
@@ -54,10 +56,6 @@ export default function withMouseKeyHandler(WrappedComponent) {
       this.handler = React.createRef();
       const { emulator } = props;
       this.status = new EmulatorStatus(emulator);
-      this.browser = {
-        width: window.innerWidth,
-        height: window.innerHeight,
-      };
     }
 
     componentDidMount() {
@@ -279,6 +277,8 @@ export default function withMouseKeyHandler(WrappedComponent) {
             {...this.props}
             deviceHeight={this.state.deviceHeight}
             deviceWidth={this.state.deviceWidth}
+            emulatorWidth={this.props.emulatorWidth}
+            emulatorHeight={this.props.emulatorHeight}
           />
         </div>
       );

@@ -50,11 +50,12 @@ export default class JsepProtocol {
    * @param {boolean} poll True if we should use polling
    * @param {callback} onConnect optional callback that is invoked when a stream is available
    * @param {callback} onDisconnect optional callback that is invoked when the stream is closed.
+   * @param {callback} onConfiguration callback that is invoked when the emulator configuration is received
    * @param {RtcReportHandler} rtcReportHandler RTC report handler
    * @param {ConsoleLogger} consoleLogger for console logs
    * @memberof JsepProtocol
    */
-  constructor(emulator, rtc, poll, onConnect, onDisconnect, rtcReportHandler, consoleLogger) {
+  constructor(emulator, rtc, poll, onConnect, onDisconnect, onConfiguration, rtcReportHandler, consoleLogger) {
     this.emulator = emulator;
     this.rtc = rtc;
     this.events = new EventEmitter();
@@ -65,6 +66,7 @@ export default class JsepProtocol {
     if (typeof this.rtc.receiveJsepMessages !== 'function') this.poll = true;
     if (onConnect) this.events.on('connected', onConnect);
     if (onDisconnect) this.events.on('disconnected', onDisconnect);
+    this.onConfiguration = onConfiguration;
     this.rtcReportHandler = rtcReportHandler;
     this.consoleLogger = consoleLogger;
   }
@@ -214,6 +216,8 @@ export default class JsepProtocol {
   }
 
   _handleStart = (signal) => {
+    // Emulator passing configuration via start signal
+    this.onConfiguration(signal.start.iceServers.configuration);
     signal.start = {
       iceServers: [this.getIceConfiguration()],
       iceTransportPolicy: 'relay',
