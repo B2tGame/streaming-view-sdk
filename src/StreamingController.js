@@ -196,5 +196,6 @@ const factory = (props) => {
 
 factory.EVENT_STREAM_CONNECTED = StreamingController.EVENT_STREAM_CONNECTED;
 factory.EVENT_SERVER_OUT_OF_CAPACITY = StreamingController.EVENT_SERVER_OUT_OF_CAPACITY;
+factory.EVENT_EMULATOR_CONFIGURATION = StreamingController.EVENT_EMULATOR_CONFIGURATION;
 
 export default factory;
