@@ -164,7 +164,7 @@ class StreamingController {
     };
 
     return this.getEdgeNodeId().then((edgeNodeId) => {
-      return retry(() => getStatus(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}`, 2500), timeout);
+      return retry(() => getStatus(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}?wait=1`, 17500), timeout);
     });
   }
 
