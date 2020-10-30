@@ -35,15 +35,22 @@ export default function withMouseKeyHandler(WrappedComponent) {
     state = {
       deviceHeight: 768,
       deviceWidth: 432,
-      mouseDown: false,
     };
+
+    static get ORIENTATION_PORTRAIT() {
+      return 'portrait';
+    }
+
+    static get ORIENTATION_LANDSCAPE() {
+      return 'landscape';
+    }
 
     static propTypes = {
       emulator: PropTypes.object.isRequired,
       jsep: PropTypes.object.isRequired,
       enableControl: PropTypes.bool,
       enableFullScreen: PropTypes.bool,
-      screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
+      screenOrientation: PropTypes.oneOf([withMouseKeyHandler.ORIENTATION_PORTRAIT, withMouseKeyHandler.ORIENTATION_LANDSCAPE]),
       onUserInteraction: PropTypes.func,
       consoleLogger: PropTypes.object.isRequired,
       emulatorWidth: PropTypes.number,
@@ -70,6 +77,10 @@ export default function withMouseKeyHandler(WrappedComponent) {
         },
         { passive: false }
       );
+
+      window.addEventListener('resize', () => {
+        this.setState(this.state); // Force re-render
+      });
     }
 
     getScreenSize() {
@@ -189,22 +200,22 @@ export default function withMouseKeyHandler(WrappedComponent) {
     // Properly handle the mouse events.
     handleMouseDown = (event) => {
       if (!isMobile) {
-        this.setState({ mouseDown: true });
+        this.mouseDown = true;
         this.sendMouse(event.nativeEvent, event.button);
       }
     };
 
     handleMouseUp = (event) => {
       // Don't release mouse when not pressed
-      if (!isMobile && this.state.mouseDown) {
-        this.setState({ mouseDown: false });
+      if (!isMobile && this.mouseDown) {
+        this.mouseDown = false;
         this.sendMouse(event.nativeEvent);
       }
     };
 
     handleMouseMove = (event) => {
       // Mouse button needs to be pressed before triggering move
-      if (!isMobile && this.state.mouseDown) {
+      if (!isMobile && this.mouseDown) {
         this.sendMouse(event.nativeEvent, event.button);
       }
     };
@@ -238,7 +249,12 @@ export default function withMouseKeyHandler(WrappedComponent) {
         screenfull
           .request()
           .then(() => {
-            window.screen.orientation.lock(this.props.screenOrientation).catch((error) => {
+            const orientation = this.props.screenOrientation
+              ? this.props.screenOrientation
+              : this.props.emulatorWidth > this.props.emulatorHeight
+              ? withMouseKeyHandler.ORIENTATION_PORTRAIT
+              : withMouseKeyHandler.ORIENTATION_LANDSCAPE;
+            window.screen.orientation.lock(orientation).catch((error) => {
               this.props.consoleLogger.log('Failed to lock screen orientation to:', error);
             });
           })

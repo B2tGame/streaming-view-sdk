@@ -81,7 +81,10 @@ export default class StreamingView extends Component {
     if (this.state.isReadyStream && this.state.isMuted) {
       this.log.state('audio-state-change', 'unmuted');
     }
-    this.setState({ isMuted: false });
+
+    if (this.state.isMuted) {
+      this.setState({ isMuted: false });
+    }
   };
 
   componentWillUnmount() {
