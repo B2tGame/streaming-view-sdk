@@ -71,6 +71,14 @@ class StreamingController {
    * Creates a game snapshot
    * @returns {Promise<string>}
    */
+  createGameSnapshot() {
+    return this.save();
+  }
+
+  /**
+   * Sends the save command to the supervisor
+   * @returns {Promise<string>}
+   */
   save() {
     return this.getStreamEndpoint()
       .then((streamEndpoint) => {
