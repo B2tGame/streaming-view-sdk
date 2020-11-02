@@ -141,7 +141,7 @@ export default class StreamingView extends Component {
               streamSocket={this.streamSocket}
               rtcReportHandler={this.rtcReportHandler}
               consoleLogger={this.consoleLogger}
-              internalSession={this.props.internalSession} />
+            />
             <Emulator
               uri={this.state.streamEndpoint}
               log={this.log}
