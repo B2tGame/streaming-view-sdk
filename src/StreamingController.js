@@ -89,7 +89,11 @@ class StreamingController {
   }
 
   /**
-   * Sends the save command to the supervisor
+   * Sends the save command to the supervisor.
+   * This is used to trigger different save behaviour depending on edgenode mode.
+   * Snapshot mode: saves a snapshot
+   * Apk-image mode: saves an apk image
+   * Base-image mode: saves a base image definition
    * @returns {Promise<string>}
    */
   save() {
