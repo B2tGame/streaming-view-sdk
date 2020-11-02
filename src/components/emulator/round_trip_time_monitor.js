@@ -8,7 +8,6 @@ class RoundTripTimeMonitor extends Component {
     streamSocket: PropTypes.object.isRequired, // socket connection to emulator
     rtcReportHandler: PropTypes.object,
     consoleLogger: PropTypes.object.isRequired,
-    internalSession: PropTypes.bool,
   };
 
   componentDidMount() {
@@ -17,22 +16,16 @@ class RoundTripTimeMonitor extends Component {
     });
 
     this.props.streamSocket.on('pong', (networkRoundTripTime) => {
-      if (!this.props.internalSession) {
-        this.props.streamSocket.emit(
-          'message',
-          JSON.stringify({
-            type: 'report',
-            timestamp: Date.now(),
-            networkRoundTripTime: networkRoundTripTime,
-            extra: { ...this.state.webrtcStats, ...this.state.streamQualityRating },
-          }),
-        );
-      }
+      this.props.streamSocket.emit(
+        'message',
+        JSON.stringify({
+          type: 'report',
+          timestamp: Date.now(),
+          networkRoundTripTime: networkRoundTripTime,
+          extra: { ...this.state.webrtcStats, ...this.state.streamQualityRating },
+        }),
+      );
     });
-
-    if (this.props.internalSession) {
-      this.props.consoleLogger.info('No metric event will be sent to the edge node, since internalSession=true');
-    }
 
     if (this.props.rtcReportHandler) {
       this.props.rtcReportHandler.on('WEB_RTC_STATS', (newValue) => {
