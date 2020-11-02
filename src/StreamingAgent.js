@@ -1,5 +1,8 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
+import { getNetworkConnectivity, resetNetworkConnectivity } from './stores/networkConnectivity';
+import { getDeviceInfo, resetDeviceInfo } from './stores/deviceInfo';
+import ConsoleLogger from './ConsoleLogger';
 
 /**
  * StreamingAgent class is responsible to running any nesureary background task for the Streaming Service
@@ -10,16 +13,54 @@ import PropTypes from 'prop-types';
 export default class StreamingAgent extends Component {
   static propTypes = {
     apiEndpoint: PropTypes.string.isRequired,
+    enableDebug: PropTypes.bool,
+    internalSession: PropTypes.bool,
+  };
+
+  constructor(props) {
+    super(props);
+
+    this.consoleLogger = new ConsoleLogger(this.props.enableDebug);
+    this.connection = {};
+  }
+
+  logError = (error) => {
+    this.consoleLogger.error('Streaming Agent', error);
   };
 
   componentDidMount() {
-    // When needed we should implemented required logic that can be setup and running in the background of the users session.
-    // Example of use cases is to doing RTT measurement against multiple edge nodes for get average RTT and find the
-    // fasted region that should be used.
+    this.clearStoresCache();
+    this.connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
+
+    this.connection.onchange = () => this.onConnectivityUpdate();
+    this.onConnectivityUpdate();
   }
 
   componentWillUnmount() {
-    // Any background action that has been started should be stopped now.
+    this.connection.onchange = () => {
+    };
+    this.clearStoresCache();
+  }
+
+  componentDidUpdate() {
+    this.onConnectivityUpdate();
+  }
+
+  clearStoresCache() {
+    resetNetworkConnectivity();
+    resetDeviceInfo();
+  }
+
+  /**
+   * Trigger all background activity needed for update the connectivity if the agent is not set to internalSession mode.
+   * This will also clear any existing data.
+   */
+  onConnectivityUpdate() {
+    this.clearStoresCache();
+    if (!this.props.internalSession) {
+      getNetworkConnectivity(this.connection).catch(this.logError);
+      getDeviceInfo(this.props.apiEndpoint, this.connection).catch(this.logError);
+    }
   }
 
   render() {

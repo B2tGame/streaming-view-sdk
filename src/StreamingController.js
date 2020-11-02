@@ -1,4 +1,7 @@
 import axios from 'axios';
+import { getNetworkConnectivity } from './stores/networkConnectivity';
+import { getDeviceInfo } from './stores/deviceInfo';
+import ConsoleLogger from './ConsoleLogger';
 
 /**
  * StreamingController is responsible to poll and terminate the edge node.
@@ -30,6 +33,15 @@ class StreamingController {
   }
 
   /**
+   * Event that is fired after receiving emulator configuration during initialization of P2P connection
+   * @returns {string}
+   * @constructor
+   */
+  static get EVENT_EMULATOR_CONFIGURATION() {
+    return 'emulator-configuration'
+  }
+
+  /**
    *
    * @param {object} props
    * @param {string} props.apiEndpoint
@@ -43,6 +55,7 @@ class StreamingController {
     this.apiEndpoint = props.apiEndpoint;
     this.edgeNodeId = props.edgeNodeId || undefined;
     this.onEvent = props.onEvent || (() => {});
+    this.consoleLogger = new ConsoleLogger(props.enableDebug);
   }
 
   /**
@@ -159,7 +172,7 @@ class StreamingController {
     };
 
     return this.getEdgeNodeId().then((edgeNodeId) => {
-      return retry(() => getStatus(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}`, 2500), timeout);
+      return retry(() => getStatus(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}?wait=1`, 17500), timeout);
     });
   }
 
@@ -168,37 +181,15 @@ class StreamingController {
    * @returns {Promise<object>}
    */
   getDeviceInfo() {
-    return axios
-      .get(`${this.getApiEndpoint()}/api/streaming-games/edge-node/device-info`, { timeout: 2500 })
-      .then((result) => result.data || {})
-      .then((deviceInfo) => {
-        const DPI = window.devicePixelRatio || 1;
-        deviceInfo.screenScale = DPI;
-        deviceInfo.screenWidth = Math.round(DPI * window.screen.width);
-        deviceInfo.screenHeight = Math.round(DPI * window.screen.height);
-        deviceInfo.viewportWidth = Math.round(
-          DPI * Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
-        );
-        deviceInfo.viewportHeight = Math.round(
-          DPI * Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
-        );
-        deviceInfo.connectionType = ((navigator || {}).connection || {}).type;
-        deviceInfo.connectionEffectiveType = ((navigator || {}).connection || {}).effectiveType;
-        return deviceInfo;
-      });
+    return getDeviceInfo(this.getApiEndpoint());
   }
 
   /**
    * Get connectivity info
-   * @returns {Promise<{measurementLevel: string, downloadSpeed: undefined, recommendedRegion: undefined, roundTripTime: undefined}>}
+   * @returns {Promise<{}>}
    */
   getConnectivityInfo() {
-    return Promise.resolve({
-      roundTripTime: undefined,
-      downloadSpeed: undefined,
-      recommendedRegion: undefined,
-      measurementLevel: 'browser-measurement',
-    });
+    return getNetworkConnectivity();
   }
 }
 
@@ -213,5 +204,6 @@ const factory = (props) => {
 
 factory.EVENT_STREAM_CONNECTED = StreamingController.EVENT_STREAM_CONNECTED;
 factory.EVENT_SERVER_OUT_OF_CAPACITY = StreamingController.EVENT_SERVER_OUT_OF_CAPACITY;
+factory.EVENT_EMULATOR_CONFIGURATION = StreamingController.EVENT_EMULATOR_CONFIGURATION;
 
 export default factory;

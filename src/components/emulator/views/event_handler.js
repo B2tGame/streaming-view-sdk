@@ -45,6 +45,9 @@ export default function withMouseKeyHandler(WrappedComponent) {
       enableFullScreen: PropTypes.bool,
       screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
       onUserInteraction: PropTypes.func,
+      consoleLogger: PropTypes.object.isRequired,
+      emulatorWidth: PropTypes.number,
+      emulatorHeight: PropTypes.number,
     };
 
     constructor(props) {
@@ -53,14 +56,20 @@ export default function withMouseKeyHandler(WrappedComponent) {
       this.handler = React.createRef();
       const { emulator } = props;
       this.status = new EmulatorStatus(emulator);
-      this.browser = {
-        width: window.innerWidth,
-        height: window.innerHeight,
-      };
     }
 
     componentDidMount() {
       this.getScreenSize();
+      // Disabling passive mode to be able to call 'event.preventDefault()' for disabling scroll, which causing
+      // laggy touch move performance on mobile phones, since some browsers changed default passive: true from false
+      // related issue: https://github.com/facebook/react/issues/9809
+      this.handler.current.addEventListener(
+        'touchmove',
+        (event) => {
+          event.preventDefault();
+        },
+        { passive: false }
+      );
     }
 
     getScreenSize() {
@@ -230,11 +239,11 @@ export default function withMouseKeyHandler(WrappedComponent) {
           .request()
           .then(() => {
             window.screen.orientation.lock(this.props.screenOrientation).catch((error) => {
-              console.log('Failed to lock screen orientation to:', error);
+              this.props.consoleLogger.log('Failed to lock screen orientation to:', error);
             });
           })
           .catch((error) => {
-            console.log('Failed to request fullscreen:', error);
+            this.props.consoleLogger.log('Failed to request fullscreen:', error);
           });
       }
     };
@@ -268,6 +277,8 @@ export default function withMouseKeyHandler(WrappedComponent) {
             {...this.props}
             deviceHeight={this.state.deviceHeight}
             deviceWidth={this.state.deviceWidth}
+            emulatorWidth={this.props.emulatorWidth}
+            emulatorHeight={this.props.emulatorHeight}
           />
         </div>
       );

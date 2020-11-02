@@ -31,17 +31,20 @@ export default class EmulatorWebrtcView extends Component {
     /** Function called when the connection state of the emulator changes */
     onStateChange: PropTypes.func,
     /** Function called when the audio track becomes available */
-    onAudioStateChange: PropTypes.func,
+    onAudioStateChange: PropTypes.func.isRequired,
     /** True if you wish to mute the audio */
     muted: PropTypes.bool,
     /** Volume of the video element, value between 0 and 1.  */
     volume: PropTypes.number,
     /** Function called when an error arises, like play failures due to muting */
-    onError: PropTypes.func,
+    onError: PropTypes.func.isRequired,
     /** The width of the emulator device */
     deviceWidth: PropTypes.number,
     /** The height of the emulator device */
     deviceHeight: PropTypes.number,
+    consoleLogger: PropTypes.object.isRequired,
+    emulatorWidth: PropTypes.number,
+    emulatorHeight: PropTypes.number,
   };
 
   state = {
@@ -51,8 +54,6 @@ export default class EmulatorWebrtcView extends Component {
   static defaultProps = {
     muted: true,
     volume: 1.0,
-    onError: (e) => console.error('WebRTC error: ' + e),
-    onAudioStateChange: (e) => console.log('Webrtc audio became available: ' + e),
   };
 
   constructor(props) {
@@ -147,13 +148,13 @@ export default class EmulatorWebrtcView extends Component {
   };
 
   render() {
-    const { muted, deviceWidth, deviceHeight } = this.props;
+    const { muted, emulatorWidth, emulatorHeight } = this.props;
     const style = {
       margin: '0 auto',
     };
 
     // Optimize video size by comparing aspect ratios of the emulator device and browser window eg. (16/9 > 9/16)
-    if (window.innerHeight / window.innerWidth > deviceHeight / deviceWidth) {
+    if (window.innerHeight / window.innerWidth > emulatorHeight / emulatorWidth) {
       style.width = '100vw';
     } else {
       style.height = '100vh';
