@@ -118,7 +118,7 @@ export default class StreamingView extends Component {
     }
 
     if (this.state.isReadyStream && !prevState.isReadyStream && this.props.onEvent) {
-      this.props.onEvent(StreamingController.EVENT_STREAM_CONNECTED, {});
+      //this.props.onEvent(StreamingController.EVENT_STREAM_CONNECTED, {});
     }
   }
 

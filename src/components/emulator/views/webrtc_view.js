@@ -15,6 +15,7 @@
  */
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import StreamingController from '../../../StreamingController';
 
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
@@ -125,6 +126,7 @@ export default class EmulatorWebrtcView extends Component {
 
     // See https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
     const possiblePromise = video.play();
+    this.props.onEvent(StreamingController.EVENT_STREAM_CONNECTED, {});
 
     if (possiblePromise) {
       possiblePromise

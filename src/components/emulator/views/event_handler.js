@@ -48,11 +48,11 @@ export default function withMouseKeyHandler(WrappedComponent) {
       consoleLogger: PropTypes.object.isRequired,
       emulatorWidth: PropTypes.number,
       emulatorHeight: PropTypes.number,
+      onEvent: PropTypes.func, // report events during the streaming view.
     };
 
     constructor(props) {
-      super();
-
+      super(props);
       this.handler = React.createRef();
       const { emulator } = props;
       this.status = new EmulatorStatus(emulator);
