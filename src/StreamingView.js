@@ -25,6 +25,7 @@ export default class StreamingView extends Component {
   static propTypes = {
     apiEndpoint: PropTypes.string.isRequired,
     edgeNodeId: PropTypes.string.isRequired,
+    edgeNodeEndpoint: PropTypes.string,
     userId: PropTypes.string,
     enableControl: PropTypes.bool,
     enableFullScreen: PropTypes.bool,
@@ -34,7 +35,9 @@ export default class StreamingView extends Component {
     onEvent: PropTypes.func, // report events during the streaming view.
     streamQualityRating: PropTypes.number,
     enableDebug: PropTypes.bool,
+    internalSession: PropTypes.bool,
   };
+
 
   constructor(props) {
     super(props);
@@ -50,6 +53,11 @@ export default class StreamingView extends Component {
     })
       .then((controller) => controller.getStreamEndpoint())
       .then((streamEndpoint) => {
+        // if the SDK are in internal session mode and a value has been pass to edge node endpoint use that value insted of the
+        // public endpoint received from Service Coordinator.
+        return this.props.internalSession && this.props.edgeNodeEndpoint ? this.props.edgeNodeEndpoint : streamEndpoint;
+      })
+      .then((streamEndpoint) => {
         if (!this.isMountedInView) {
           this.consoleLogger.log('Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
@@ -57,7 +65,7 @@ export default class StreamingView extends Component {
         const endpoint = url.parse(streamEndpoint);
         this.streamSocket = io(`${endpoint.protocol}//${endpoint.host}`, {
           path: `${endpoint.path}/emulator-commands/socket.io`,
-          query: `userId=${userId}`,
+          query: `userId=${userId}&internal=${this.props.internalSession ? '1' : '0'}`,
         });
         this.log = new Log(this.streamSocket);
         this.setState({ isReadyStream: true, streamEndpoint: streamEndpoint });
@@ -129,7 +137,11 @@ export default class StreamingView extends Component {
       case true:
         return (
           <div>
-            <RoundTripTimeMonitor streamSocket={this.streamSocket} rtcReportHandler={this.rtcReportHandler} consoleLogger={this.consoleLogger}/>
+            <RoundTripTimeMonitor
+              streamSocket={this.streamSocket}
+              rtcReportHandler={this.rtcReportHandler}
+              consoleLogger={this.consoleLogger}
+            />
             <Emulator
               uri={this.state.streamEndpoint}
               log={this.log}

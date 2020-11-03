@@ -22,8 +22,8 @@ class RoundTripTimeMonitor extends Component {
           type: 'report',
           timestamp: Date.now(),
           networkRoundTripTime: networkRoundTripTime,
-          extra: {...this.state.webrtcStats, ...this.state.streamQualityRating},
-        })
+          extra: { ...this.state.webrtcStats, ...this.state.streamQualityRating },
+        }),
       );
     });
 
@@ -33,7 +33,7 @@ class RoundTripTimeMonitor extends Component {
       });
 
       this.props.rtcReportHandler.on('STREAM_QUALITY_RATING', (streamQualityRating) => {
-        this.setState({ streamQualityRating: streamQualityRating })
+        this.setState({ streamQualityRating: streamQualityRating });
       });
     }
   }
