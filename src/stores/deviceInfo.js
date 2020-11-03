@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getNetworkConnectivity } from './networkConnectivity';
 
 let deviceInfo = {};
 
@@ -43,17 +44,21 @@ function getBrowserDeviceInfo(browserConnection = undefined) {
  */
 function getDeviceInfo(apiEndpoint, browserConnection = undefined) {
   if (Object.keys(deviceInfo).length === 0) {
-    return Promise.all([getNetworkDeviceInfo(apiEndpoint), getBrowserDeviceInfo(browserConnection)]).then(
-      ([networkDeviceInfo, browserDeviceInfo]) => {
-        deviceInfo = networkDeviceInfo;
-        return { ...deviceInfo, ...browserDeviceInfo };
-      }
-    );
+    return Promise.all([
+      getNetworkDeviceInfo(apiEndpoint),
+      getBrowserDeviceInfo(browserConnection),
+      getNetworkConnectivity(browserConnection),
+    ]).then(([networkDeviceInfo, browserDeviceInfo, networkConnectivity]) => {
+      deviceInfo = networkDeviceInfo;
+      return { ...deviceInfo, ...browserDeviceInfo, ...networkConnectivity };
+    });
   } else {
     // Always get new browser device information but use cached networkDeviceInfo inside DeviceInfo
-    return getBrowserDeviceInfo().then((browserDeviceInfo) => {
-      return { ...deviceInfo, ...browserDeviceInfo };
-    });
+    return Promise.all([getBrowserDeviceInfo(browserConnection), getNetworkConnectivity(browserConnection)]).then(
+      ([browserDeviceInfo, networkConnectivity]) => {
+        return { ...deviceInfo, ...browserDeviceInfo, ...networkConnectivity };
+      }
+    );
   }
 }
 
