@@ -14,6 +14,7 @@ export default class StreamingAgent extends Component {
   static propTypes = {
     apiEndpoint: PropTypes.string.isRequired,
     enableDebug: PropTypes.bool,
+    internalSession: PropTypes.bool,
   };
 
   constructor(props) {
@@ -24,39 +25,42 @@ export default class StreamingAgent extends Component {
   }
 
   logError = (error) => {
-    this.consoleLogger.log('Streaming Agent error:', error);
+    this.consoleLogger.error('Streaming Agent', error);
   };
 
   componentDidMount() {
     this.clearStoresCache();
-
     this.connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
-    this.connection.onchange = () => {
-      this.clearStoresCache();
 
-      getNetworkConnectivity(this.connection).catch(this.logError);
-      getDeviceInfo(this.props.apiEndpoint, this.connection).catch(this.logError);
-    };
-
-    getNetworkConnectivity(this.connection).catch(this.logError);
-    getDeviceInfo(this.props.apiEndpoint, this.connection).catch(this.logError);
+    this.connection.onchange = () => this.onConnectivityUpdate();
+    this.onConnectivityUpdate();
   }
 
   componentWillUnmount() {
-    this.connection.onchange = () => {};
+    this.connection.onchange = () => {
+    };
     this.clearStoresCache();
   }
 
   componentDidUpdate() {
-    this.clearStoresCache();
-
-    getNetworkConnectivity(this.connection).catch(this.logError);
-    getDeviceInfo(this.props.apiEndpoint, this.connection).catch(this.logError);
+    this.onConnectivityUpdate();
   }
 
   clearStoresCache() {
     resetNetworkConnectivity();
     resetDeviceInfo();
+  }
+
+  /**
+   * Trigger all background activity needed for update the connectivity if the agent is not set to internalSession mode.
+   * This will also clear any existing data.
+   */
+  onConnectivityUpdate() {
+    this.clearStoresCache();
+    if (!this.props.internalSession) {
+      getNetworkConnectivity(this.connection).catch(this.logError);
+      getDeviceInfo(this.props.apiEndpoint, this.connection).catch(this.logError);
+    }
   }
 
   render() {
