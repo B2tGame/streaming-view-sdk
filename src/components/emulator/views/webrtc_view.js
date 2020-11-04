@@ -144,6 +144,10 @@ export default class EmulatorWebrtcView extends Component {
     this.safePlay();
   };
 
+  onPlaying = (e) => {
+    this.props.onEvent(StreamingController.EVENT_STREAM_CONNECTED, {});
+  };
+
   onContextMenu = (e) => {
     e.preventDefault();
   };
@@ -189,7 +193,7 @@ export default class EmulatorWebrtcView extends Component {
         muted={muted}
         onContextMenu={this.onContextMenu}
         onCanPlay={this.onCanPlay}
-        onPlaying={() => this.props.onEvent(StreamingController.EVENT_STREAM_CONNECTED, {})}
+        onPlaying={this.onPlaying}
         playsInline
       />
     );
