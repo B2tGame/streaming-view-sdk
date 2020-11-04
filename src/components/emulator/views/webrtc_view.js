@@ -131,7 +131,6 @@ export default class EmulatorWebrtcView extends Component {
       possiblePromise
         .then(() => {
           this.log.state('video-stream-state-change', 'connected');
-          this.props.onEvent(StreamingController.EVENT_STREAM_CONNECTED, {});
         })
         .catch((error) => {
           // Notify listeners that we cannot start.
@@ -190,6 +189,7 @@ export default class EmulatorWebrtcView extends Component {
         muted={muted}
         onContextMenu={this.onContextMenu}
         onCanPlay={this.onCanPlay}
+        onPlaying={() => this.props.onEvent(StreamingController.EVENT_STREAM_CONNECTED, {})}
         playsInline
       />
     );
