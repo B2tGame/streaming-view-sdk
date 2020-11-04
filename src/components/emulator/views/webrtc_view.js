@@ -126,12 +126,12 @@ export default class EmulatorWebrtcView extends Component {
 
     // See https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
     const possiblePromise = video.play();
-    this.props.onEvent(StreamingController.EVENT_STREAM_CONNECTED, {});
 
     if (possiblePromise) {
       possiblePromise
         .then(() => {
           this.log.state('video-stream-state-change', 'connected');
+          this.props.onEvent(StreamingController.EVENT_STREAM_CONNECTED, {});
         })
         .catch((error) => {
           // Notify listeners that we cannot start.
