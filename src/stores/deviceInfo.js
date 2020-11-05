@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getNetworkConnectivity } from './networkConnectivity';
 
 let deviceInfo = {};
 
@@ -7,7 +8,7 @@ let deviceInfo = {};
  * @param {string} apiEndpoint
  * @returns {Promise<*>}
  */
-function getNetworkDeviceInfo(apiEndpoint) {
+function requestNetworkDeviceInfo(apiEndpoint) {
   return axios
     .get(`${apiEndpoint}/api/streaming-games/edge-node/device-info`, { timeout: 2500 })
     .then((result) => result.data);
@@ -37,24 +38,32 @@ function getBrowserDeviceInfo(browserConnection = undefined) {
 
 /**
  *
+ * @param apiEndpoint
+ * @return {Promise<*>|Promise<{}>}
+ */
+function getNetworkDeviceInfo(apiEndpoint) {
+  return Object.keys(deviceInfo).length === 0
+    ? requestNetworkDeviceInfo(apiEndpoint).then((networkDeviceInfo) => {
+        deviceInfo = networkDeviceInfo;
+        return networkDeviceInfo;
+      })
+    : Promise.resolve(deviceInfo);
+}
+
+/**
+ * Get device info, network device info is cached and browser/network connectivity information are fetched every time
  * @param {string} apiEndpoint
  * @param browserConnection NetworkInformation from the browser
  * @returns {Promise<{}>}
  */
 function getDeviceInfo(apiEndpoint, browserConnection = undefined) {
-  if (Object.keys(deviceInfo).length === 0) {
-    return Promise.all([getNetworkDeviceInfo(apiEndpoint), getBrowserDeviceInfo(browserConnection)]).then(
-      ([networkDeviceInfo, browserDeviceInfo]) => {
-        deviceInfo = networkDeviceInfo;
-        return { ...deviceInfo, ...browserDeviceInfo };
-      }
-    );
-  } else {
-    // Always get new browser device information but use cached networkDeviceInfo inside DeviceInfo
-    return getBrowserDeviceInfo().then((browserDeviceInfo) => {
-      return { ...deviceInfo, ...browserDeviceInfo };
-    });
-  }
+  return Promise.all([
+    getNetworkDeviceInfo(apiEndpoint),
+    getBrowserDeviceInfo(browserConnection),
+    getNetworkConnectivity(browserConnection),
+  ]).then(([networkDeviceInfo, browserDeviceInfo, networkConnectivity]) => {
+    return { ...networkDeviceInfo, ...browserDeviceInfo, ...networkConnectivity };
+  });
 }
 
 /**
