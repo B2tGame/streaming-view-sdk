@@ -82,8 +82,6 @@ class Emulator extends Component {
     poll: PropTypes.bool,
     /** True if the fullscreen should be enabled. */
     enableFullScreen: PropTypes.bool,
-    /** The screen orientation for fullscreen lock */
-    screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
     /** Enable or disable user interactions with the game */
     enableControl: PropTypes.bool,
     /** Callback that will be invoked on user interaction */
@@ -104,7 +102,6 @@ class Emulator extends Component {
     onAudioStateChange: () => {},
     onStateChange: () => {},
     enableFullScreen: true,
-    screenOrientation: 'portrait',
     enableControl: true,
     onEvent: () => {},
   };
@@ -220,7 +217,6 @@ class Emulator extends Component {
       muted,
       volume,
       enableFullScreen,
-      screenOrientation,
       enableControl,
       onUserInteraction,
       uri,
@@ -242,7 +238,6 @@ class Emulator extends Component {
         onError={this.onError}
         onAudioStateChange={this._onAudioStateChange}
         enableFullScreen={enableFullScreen}
-        screenOrientation={screenOrientation}
         enableControl={enableControl}
         onUserInteraction={onUserInteraction}
         log={this.log}

@@ -20,6 +20,9 @@ import EmulatorStatus from '../net/emulator_status';
 import { isMobile } from 'react-device-detect';
 import screenfull from 'screenfull';
 
+const ORIENTATION_PORTRAIT = 'portrait';
+const ORIENTATION_LANDSCAPE = 'landscape';
+
 /**
  * A handler that extends a view to send key/mouse events to the emulator.
  * It wraps the inner component in a div, and will use the jsep handler
@@ -37,20 +40,11 @@ export default function withMouseKeyHandler(WrappedComponent) {
       deviceWidth: 432,
     };
 
-    static get ORIENTATION_PORTRAIT() {
-      return 'portrait';
-    }
-
-    static get ORIENTATION_LANDSCAPE() {
-      return 'landscape';
-    }
-
     static propTypes = {
       emulator: PropTypes.object.isRequired,
       jsep: PropTypes.object.isRequired,
       enableControl: PropTypes.bool,
       enableFullScreen: PropTypes.bool,
-      screenOrientation: PropTypes.oneOf([withMouseKeyHandler.ORIENTATION_PORTRAIT, withMouseKeyHandler.ORIENTATION_LANDSCAPE]),
       onUserInteraction: PropTypes.func,
       consoleLogger: PropTypes.object.isRequired,
       emulatorWidth: PropTypes.number,
@@ -249,11 +243,8 @@ export default function withMouseKeyHandler(WrappedComponent) {
         screenfull
           .request()
           .then(() => {
-            const orientation = this.props.screenOrientation
-              ? this.props.screenOrientation
-              : this.props.emulatorWidth > this.props.emulatorHeight
-              ? withMouseKeyHandler.ORIENTATION_PORTRAIT
-              : withMouseKeyHandler.ORIENTATION_LANDSCAPE;
+            const orientation =
+              this.props.emulatorWidth > this.props.emulatorHeight ? ORIENTATION_LANDSCAPE : ORIENTATION_PORTRAIT;
             window.screen.orientation.lock(orientation).catch((error) => {
               this.props.consoleLogger.log('Failed to lock screen orientation to:', error);
             });
