@@ -110,7 +110,7 @@ class StreamingController {
       });
   }
 
-    /**
+  /**
    * Sends the pause command to the supervisor.
    * This is used to pause the emulator.
    */
@@ -121,7 +121,7 @@ class StreamingController {
       })
   }
 
-    /**
+  /**
    * Sends the pause command to the supervisor.
    * This is used to resume a paused emulator.
    */
