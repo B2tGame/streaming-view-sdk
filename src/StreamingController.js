@@ -113,6 +113,7 @@ class StreamingController {
     /**
    * Sends the pause command to the supervisor.
    * This is used to pause the emulator.
+   * @returns {Promise<*>}
    */
   pause() {
     return this.getStreamEndpoint()
@@ -124,6 +125,7 @@ class StreamingController {
     /**
    * Sends the pause command to the supervisor.
    * This is used to resume a paused emulator.
+   * @returns {Promise<*>}
    */
   resume() {
     return this.getStreamEndpoint()
