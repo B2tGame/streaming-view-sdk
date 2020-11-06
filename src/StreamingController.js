@@ -110,6 +110,28 @@ class StreamingController {
       });
   }
 
+    /**
+   * Sends the pause command to the supervisor.
+   * This is used to pause the emulator.
+   */
+  pause() {
+    return this.getStreamEndpoint()
+      .then((streamEndpoint) => {
+        return axios.get(`${streamEndpoint}/emulator-commands/pause`)
+      })
+  }
+
+    /**
+   * Sends the pause command to the supervisor.
+   * This is used to resume a paused emulator.
+   */
+  resume() {
+    return this.getStreamEndpoint()
+      .then((streamEndpoint) => {
+        return axios.get(`${streamEndpoint}/emulator-commands/resume`)
+      })
+  }
+
   /**
    * Get the streaming endpoint
    * @return {Promise<string>}
