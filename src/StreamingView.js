@@ -29,7 +29,6 @@ export default class StreamingView extends Component {
     userId: PropTypes.string,
     enableControl: PropTypes.bool,
     enableFullScreen: PropTypes.bool,
-    screenOrientation: PropTypes.oneOf(['portrait', 'landscape']),
     view: PropTypes.oneOf(['webrtc', 'png']),
     volume: PropTypes.number, // Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
     onEvent: PropTypes.func, // report events during the streaming view.
@@ -37,7 +36,6 @@ export default class StreamingView extends Component {
     enableDebug: PropTypes.bool,
     internalSession: PropTypes.bool,
   };
-
 
   constructor(props) {
     super(props);
@@ -89,7 +87,10 @@ export default class StreamingView extends Component {
     if (this.state.isReadyStream && this.state.isMuted) {
       this.log.state('audio-state-change', 'unmuted');
     }
-    this.setState({ isMuted: false });
+
+    if (this.state.isMuted) {
+      this.setState({ isMuted: false });
+    }
   };
 
   componentWillUnmount() {
@@ -131,7 +132,7 @@ export default class StreamingView extends Component {
   }
 
   render() {
-    const { enableControl, enableFullScreen, screenOrientation, view, volume } = this.props;
+    const { enableControl, enableFullScreen, view, volume } = this.props;
 
     switch (this.state.isReadyStream) {
       case true:
@@ -147,7 +148,6 @@ export default class StreamingView extends Component {
               log={this.log}
               enableControl={enableControl}
               enableFullScreen={enableFullScreen}
-              screenOrientation={screenOrientation}
               view={view}
               muted={this.state.isMuted}
               volume={volume}

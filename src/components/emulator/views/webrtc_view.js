@@ -155,9 +155,9 @@ export default class EmulatorWebrtcView extends Component {
 
     // Optimize video size by comparing aspect ratios of the emulator device and browser window eg. (16/9 > 9/16)
     if (window.innerHeight / window.innerWidth > emulatorHeight / emulatorWidth) {
-      style.width = '100vw';
+      style.width = window.innerWidth + 'px';
     } else {
-      style.height = '100vh';
+      style.height = window.innerHeight + 'px';
     }
 
     /*
