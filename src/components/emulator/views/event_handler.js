@@ -82,8 +82,6 @@ export default function withMouseKeyHandler(WrappedComponent) {
       event.preventDefault();
     };
 
-    handleNonPassiveTouchMove = () => {};
-
     getScreenSize() {
       this.status.updateStatus((state) => {
         this.setState({
