@@ -57,6 +57,7 @@ export default function withMouseKeyHandler(WrappedComponent) {
       this.handler = React.createRef();
       const { emulator } = props;
       this.status = new EmulatorStatus(emulator);
+      this.mouseDown = false;
     }
 
     componentDidMount() {
@@ -256,6 +257,7 @@ export default function withMouseKeyHandler(WrappedComponent) {
     };
 
     render() {
+      console.log('Render !!!!');
       return (
         <div
           onMouseDown={this.handleMouseDown}
