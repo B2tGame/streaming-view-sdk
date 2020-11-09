@@ -257,7 +257,6 @@ export default function withMouseKeyHandler(WrappedComponent) {
     };
 
     render() {
-      console.log('Render !!!!');
       return (
         <div
           onMouseDown={this.handleMouseDown}
