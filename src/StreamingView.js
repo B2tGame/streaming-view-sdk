@@ -8,6 +8,7 @@ import url from 'url';
 import io from 'socket.io-client';
 import Log from './Log';
 import ConsoleLogger from './ConsoleLogger';
+import buildInfo from './build-info.json';
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
@@ -80,7 +81,7 @@ export default class StreamingView extends Component {
           isReadyStream: false,
         });
       });
-    this.consoleLogger.log('Latest update: 2020-10-21 15:50');
+    this.consoleLogger.log(`Latest update: ${buildInfo.tag}`);
   }
 
   handleUserInteraction = () => {
