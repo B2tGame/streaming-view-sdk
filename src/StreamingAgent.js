@@ -43,7 +43,7 @@ export default class StreamingAgent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if(prevProps.apiEndpoint !== this.props.apiEndpoint) {
+    if (prevProps.apiEndpoint !== this.props.apiEndpoint) {
       this.onConnectivityUpdate();
     }
   }
