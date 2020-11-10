@@ -242,6 +242,7 @@ class Emulator extends Component {
         onUserInteraction={onUserInteraction}
         log={this.log}
         consoleLogger={this.props.consoleLogger}
+        onEvent={this.props.onEvent}
       />
     );
   }

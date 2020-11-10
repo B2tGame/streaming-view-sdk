@@ -15,6 +15,7 @@
  */
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import StreamingController from '../../../StreamingController';
 
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
@@ -143,6 +144,10 @@ export default class EmulatorWebrtcView extends Component {
     this.safePlay();
   };
 
+  onPlaying = (e) => {
+    this.props.onEvent(StreamingController.EVENT_STREAM_CONNECTED, {});
+  };
+
   onContextMenu = (e) => {
     e.preventDefault();
   };
@@ -188,6 +193,7 @@ export default class EmulatorWebrtcView extends Component {
         muted={muted}
         onContextMenu={this.onContextMenu}
         onCanPlay={this.onCanPlay}
+        onPlaying={this.onPlaying}
         playsInline
       />
     );
