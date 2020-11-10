@@ -91,6 +91,7 @@ class Emulator extends Component {
     rtcReportHandler: PropTypes.object,
     consoleLogger: PropTypes.object.isRequired,
     onEvent: PropTypes.func, // report events during the streaming view.
+    overrideIceConfiguration: PropTypes.object, // override options for the iceConfiguration
   };
 
   static defaultProps = {
@@ -104,6 +105,7 @@ class Emulator extends Component {
     enableFullScreen: true,
     enableControl: true,
     onEvent: () => {},
+    overrideIceConfiguration: undefined,
   };
 
   components = {
@@ -137,7 +139,8 @@ class Emulator extends Component {
       },
       this.onConfiguration,
       this.props.rtcReportHandler,
-      this.props.consoleLogger
+      this.props.consoleLogger,
+      this.props.overrideIceConfiguration
     );
     this.view = React.createRef();
   }
