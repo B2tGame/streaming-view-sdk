@@ -42,8 +42,10 @@ export default class StreamingAgent extends Component {
     this.clearStoresCache();
   }
 
-  componentDidUpdate() {
-    this.onConnectivityUpdate();
+  componentDidUpdate(prevProps) {
+    if (prevProps.apiEndpoint !== this.props.apiEndpoint) {
+      this.onConnectivityUpdate();
+    }
   }
 
   clearStoresCache() {
