@@ -19,7 +19,7 @@ export default class StreamingView extends Component {
   state = {
     isReadyStream: undefined,
     streamEndpoint: undefined,
-    overrideIceConfiguration: undefined,
+    turnEndpoint: undefined,
     isMuted: true,
   };
 
@@ -152,7 +152,7 @@ export default class StreamingView extends Component {
             />
             <Emulator
               uri={this.state.streamEndpoint}
-              overrideIceConfiguration={this.state.overrideIceConfiguration}
+              turnEndpoint={this.state.turnEndpoint}
               log={this.log}
               enableControl={enableControl}
               enableFullScreen={enableFullScreen}
