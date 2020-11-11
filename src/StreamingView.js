@@ -19,6 +19,7 @@ export default class StreamingView extends Component {
   state = {
     isReadyStream: undefined,
     streamEndpoint: undefined,
+    turnEndpoint: undefined,
     isMuted: true,
   };
 
@@ -26,6 +27,7 @@ export default class StreamingView extends Component {
     apiEndpoint: PropTypes.string.isRequired,
     edgeNodeId: PropTypes.string.isRequired,
     edgeNodeEndpoint: PropTypes.string,
+    turnEndpoint: PropTypes.string,
     userId: PropTypes.string,
     enableControl: PropTypes.bool,
     enableFullScreen: PropTypes.bool,
@@ -66,7 +68,11 @@ export default class StreamingView extends Component {
           query: `userId=${userId}&internal=${this.props.internalSession ? '1' : '0'}`,
         });
         this.log = new Log(this.streamSocket);
-        this.setState({ isReadyStream: true, streamEndpoint: streamEndpoint });
+        this.setState({
+          isReadyStream: true,
+          streamEndpoint: streamEndpoint,
+          turnEndpoint: this.props.internalSession && this.props.turnEndpoint ? this.props.turnEndpoint : undefined
+        });
         this.logEnableControlState();
       })
       .catch((err) => {
@@ -145,6 +151,7 @@ export default class StreamingView extends Component {
             />
             <Emulator
               uri={this.state.streamEndpoint}
+              turnEndpoint={this.state.turnEndpoint}
               log={this.log}
               enableControl={enableControl}
               enableFullScreen={enableFullScreen}
