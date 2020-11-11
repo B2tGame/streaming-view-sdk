@@ -212,7 +212,7 @@ export default class JsepProtocol {
     const endpoint = this.turnEndpoint ? this.turnEndpoint : `turn:${hostname}:3478`;
 
     return {
-      urls: [`${endpoint}?transport=udp`, `${hostname}?transport=tcp`],
+      urls: [`${endpoint}?transport=udp`, `${endpoint}?transport=tcp`],
       username: 'webclient',
       credential: 'webclient',
     };
