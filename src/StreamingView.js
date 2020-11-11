@@ -68,7 +68,6 @@ export default class StreamingView extends Component {
           query: `userId=${userId}&internal=${this.props.internalSession ? '1' : '0'}`,
         });
         this.log = new Log(this.streamSocket);
-
         this.setState({
           isReadyStream: true,
           streamEndpoint: streamEndpoint,
