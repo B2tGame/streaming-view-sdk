@@ -69,20 +69,10 @@ export default class StreamingView extends Component {
         });
         this.log = new Log(this.streamSocket);
 
-        const overrideIceConfiguration = this.props.internalSession && this.props.turnEndpoint ? {
-          iceServers: [
-            {
-              urls: [`${this.props.turnEndpoint}?transport=udp`, `${this.props.turnEndpoint}?transport=tcp`],
-              username: 'webclient',
-              credential: 'webclient',
-            },
-          ],
-        } : undefined;
-
         this.setState({
           isReadyStream: true,
           streamEndpoint: streamEndpoint,
-          overrideIceConfiguration: overrideIceConfiguration
+          turnEndpoint: this.props.internalSession && this.props.turnEndpoint ? this.props.turnEndpoint : undefined
         });
         this.logEnableControlState();
       })

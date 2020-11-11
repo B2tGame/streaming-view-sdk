@@ -53,17 +53,17 @@ export default class JsepProtocol {
    * @param {callback} onConfiguration callback that is invoked when the emulator configuration is received
    * @param {RtcReportHandler} rtcReportHandler RTC report handler
    * @param {ConsoleLogger} consoleLogger for console logs
-   * @param {*} overrideIceConfiguration override options for the iceConfiguration
+   * @param {string|undefined} turnEndpoint Override the default uri for turn servers
    * @memberof JsepProtocol
    */
-  constructor(emulator, rtc, poll, onConnect, onDisconnect, onConfiguration, rtcReportHandler, consoleLogger, overrideIceConfiguration = undefined) {
+  constructor(emulator, rtc, poll, onConnect, onDisconnect, onConfiguration, rtcReportHandler, consoleLogger, turnEndpoint = undefined) {
     this.emulator = emulator;
     this.rtc = rtc;
     this.events = new EventEmitter();
     this.poll = poll;
     this.guid = null;
     this.stream = null;
-    this.overrideIceConfiguration = overrideIceConfiguration;
+    this.turnEndpoint = turnEndpoint;
     this.event_forwarders = {};
     if (typeof this.rtc.receiveJsepMessages !== 'function') this.poll = true;
     if (onConnect) this.events.on('connected', onConnect);
@@ -209,9 +209,10 @@ export default class JsepProtocol {
    */
   getIceConfiguration() {
     const hostname = url.parse(this.emulator.hostname_).hostname;
+    const endpoint = this.turnEndpoint ? this.turnEndpoint : `turn:${hostname}:3478`;
 
     return {
-      urls: [`turn:${hostname}:3478?transport=udp`, `turn:${hostname}:3478?transport=tcp`],
+      urls: [`${endpoint}?transport=udp`, `${hostname}?transport=tcp`],
       username: 'webclient',
       credential: 'webclient',
     };
@@ -220,7 +221,7 @@ export default class JsepProtocol {
   _handleStart = (signal) => {
     // Emulator passing configuration via start signal
     this.onConfiguration(signal.start.iceServers.configuration);
-    signal.start = this.overrideIceConfiguration || {
+    signal.start = {
       iceServers: [this.getIceConfiguration()],
       iceTransportPolicy: 'relay',
     };
