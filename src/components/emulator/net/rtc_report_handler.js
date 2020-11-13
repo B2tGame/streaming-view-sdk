@@ -14,7 +14,6 @@ class RtcReportHandler extends EventEmitter {
       totalDecodeTime: 0,
       framesReceived: 0,
       framesDropped: 0,
-      freezeCount: 0,
       messagesSentMouse: 0,
       messagesSentTouch: 0,
     };
@@ -75,7 +74,7 @@ class RtcReportHandler extends EventEmitter {
             });
           }
 
-          setPrevAttributes(report, ['framesReceived', 'framesDropped', 'freezeCount']);
+          setPrevAttributes(report, ['framesReceived', 'framesDropped']);
         }
       });
     });
