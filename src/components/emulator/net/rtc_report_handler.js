@@ -14,7 +14,6 @@ class RtcReportHandler extends EventEmitter {
       totalDecodeTime: 0,
       framesReceived: 0,
       framesDropped: 0,
-      freezeCount: 0,
       messagesSentMouse: 0,
       messagesSentTouch: 0,
     };
@@ -68,16 +67,14 @@ class RtcReportHandler extends EventEmitter {
           if (prev.timestamp !== 0) {
             const framesReceivedPerSecond = (report.framesReceived - prev.framesReceived) / timeSinceLast;
             const framesDroppedPerSecond = (report.framesDropped - prev.framesDropped) / timeSinceLast;
-            const freezeCountPerSecond = (report.freezeCount - prev.freezeCount) / timeSinceLast;
 
             setLogState({
               framesReceivedPerSecond: framesReceivedPerSecond,
               framesDroppedPerSecond: framesDroppedPerSecond,
-              freezeCountPerSecond: freezeCountPerSecond,
             });
           }
 
-          setPrevAttributes(report, ['framesReceived', 'framesDropped', 'freezeCount']);
+          setPrevAttributes(report, ['framesReceived', 'framesDropped']);
         }
       });
     });
