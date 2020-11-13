@@ -68,12 +68,10 @@ class RtcReportHandler extends EventEmitter {
           if (prev.timestamp !== 0) {
             const framesReceivedPerSecond = (report.framesReceived - prev.framesReceived) / timeSinceLast;
             const framesDroppedPerSecond = (report.framesDropped - prev.framesDropped) / timeSinceLast;
-            const freezeCountPerSecond = (report.freezeCount - prev.freezeCount) / timeSinceLast;
 
             setLogState({
               framesReceivedPerSecond: framesReceivedPerSecond,
               framesDroppedPerSecond: framesDroppedPerSecond,
-              freezeCountPerSecond: freezeCountPerSecond,
             });
           }
 
