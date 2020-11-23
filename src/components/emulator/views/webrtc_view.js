@@ -26,8 +26,10 @@ export default class EmulatorWebrtcView extends Component {
   static propTypes = {
     /** gRPC Endpoint where we can reach the emulator. */
     uri: PropTypes.string.isRequired,
+    /** Streaming Edge node ID */
+    edgeNodeId: PropTypes.string.isRequired,
     /** Event Logger */
-    log: PropTypes.object.isRequired,
+    logger: PropTypes.object.isRequired,
     /** Jsep protocol driver, used to establish the video stream. */
     jsep: PropTypes.object,
     /** Function called when the connection state of the emulator changes */
@@ -44,7 +46,6 @@ export default class EmulatorWebrtcView extends Component {
     deviceWidth: PropTypes.number,
     /** The height of the emulator device */
     deviceHeight: PropTypes.number,
-    consoleLogger: PropTypes.object.isRequired,
     emulatorWidth: PropTypes.number,
     emulatorHeight: PropTypes.number,
   };

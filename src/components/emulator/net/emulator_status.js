@@ -55,7 +55,7 @@ class EmulatorStatus {
   /**
    * Retrieves the current status from the emulator.
    *
-   * @param  {Callback} fnNotify when the status is available, returns the retrieved status.
+   * @param  {callback} fnNotify when the status is available, returns the retrieved status.
    * @param  {boolean} cache True if the cache can be used.
    * @memberof EmulatorStatus
    */

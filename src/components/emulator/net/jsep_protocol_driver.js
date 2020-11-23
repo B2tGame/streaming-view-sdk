@@ -53,11 +53,11 @@ export default class JsepProtocol {
    * @param {callback} onDisconnect optional callback that is invoked when the stream is closed.
    * @param {callback} onConfiguration callback that is invoked when the emulator configuration is received
    * @param {RtcReportHandler} rtcReportHandler RTC report handler
-   * @param {ConsoleLogger} consoleLogger for console logs
+   * @param {Logger} logger for console logs
    * @param {string|undefined} turnEndpoint Override the default uri for turn servers
    * @memberof JsepProtocol
    */
-  constructor(emulator, rtc, poll, onConnect, onDisconnect, onConfiguration, rtcReportHandler, consoleLogger, turnEndpoint = undefined) {
+  constructor(emulator, rtc, poll, onConnect, onDisconnect, onConfiguration, logger, turnEndpoint = undefined) {
     this.emulator = emulator;
     this.rtc = rtc;
     this.events = new EventEmitter();
@@ -70,8 +70,8 @@ export default class JsepProtocol {
     if (onConnect) this.events.on('connected', onConnect);
     if (onDisconnect) this.events.on('disconnected', onDisconnect);
     this.onConfiguration = onConfiguration;
-    this.rtcReportHandler = rtcReportHandler;
-    this.consoleLogger = consoleLogger;
+    this.logger = logger;
+
   }
 
   on = (name, fn) => {
@@ -92,7 +92,7 @@ export default class JsepProtocol {
     }
     this.active = false;
     if (this.rtcEventTrigger) {
-      this.consoleLogger.log('Unregister RTC event trigger:', this.rtcEventTrigger);
+      this.logger.log('Unregister RTC event trigger:', this.rtcEventTrigger);
       clearInterval(this.rtcEventTrigger);
       this.rtcEventTrigger = null;
     }
@@ -113,7 +113,7 @@ export default class JsepProtocol {
     const request = new Empty();
     this.rtc.requestRtcStream(request, {}, (err, response) => {
       if (err) {
-        this.consoleLogger.error('Failed to configure rtc stream: ' + JSON.stringify(err));
+        this.logger.error('Failed to configure rtc stream: ' + JSON.stringify(err));
         this.disconnect();
         return;
       }
@@ -127,7 +127,7 @@ export default class JsepProtocol {
         self._streamJsepMessage();
       } else {
         // Poll pump messages, go/envoy based proxy.
-        self.consoleLogger.info('Polling jsep messages.');
+        self.logger.info('Polling jsep messages.');
         self._receiveJsepMessage();
       }
     });
@@ -168,7 +168,7 @@ export default class JsepProtocol {
   };
 
   _handleDataChannelStatusChange = (e) => {
-    this.consoleLogger.log('Data status change ' + e);
+    this.logger.log('Data status change ' + e);
   };
 
   send(label, msg) {
@@ -271,7 +271,7 @@ export default class JsepProtocol {
       if (signal.bye) this._handleBye();
       if (signal.candidate) this._handleCandidate(signal);
     } catch (e) {
-      this.consoleLogger.error(
+      this.logger.error(
         'Streaming View SDK: Failed to handle message: [' + message + '], due to: ' + JSON.stringify(e),
       );
     }
@@ -318,7 +318,7 @@ export default class JsepProtocol {
     // of messages have been made available, or if we reach a timeout
     this.rtc.receiveJsepMessage(this.guid, {}, (err, response) => {
       if (err) {
-        this.consoleLogger.error('Failed to receive jsep message, disconnecting: ' + JSON.stringify(err));
+        this.logger.error('Failed to receive jsep message, disconnecting: ' + JSON.stringify(err));
         this.disconnect();
       }
 
@@ -331,7 +331,7 @@ export default class JsepProtocol {
           self._handleJsepMessage(response.getMessage());
         }
       } catch (err) {
-        self.consoleLogger.error('Failed to get jsep message, disconnecting: ' + JSON.stringify(err));
+        this.logger.error('Failed to get jsep message, disconnecting: ' + JSON.stringify(err));
       }
 
       // And pump messages. Note we must continue the message pump as we

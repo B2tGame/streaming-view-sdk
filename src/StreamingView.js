@@ -18,6 +18,7 @@ export default class StreamingView extends Component {
   state = {
     isReadyStream: undefined,
     streamEndpoint: undefined,
+    turnEndpoint: undefined,
     isMuted: true,
   };
 
@@ -42,15 +43,6 @@ export default class StreamingView extends Component {
     this.isMountedInView = false;
   }
 
-  handleUserInteraction = () => {
-    if (this.state.isReadyStream && this.state.isMuted) {
-      this.log.state('audio-state-change', 'unmuted');
-    }
-
-    if (this.state.isMuted) {
-      this.setState({ isMuted: false });
-    }
-  };
 
   componentWillUnmount() {
     this.isMountedInView = false;
@@ -69,6 +61,17 @@ export default class StreamingView extends Component {
     StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.SERVER_OUT_OF_CAPACITY, (event) => onEvent(StreamingEvent.SERVER_OUT_OF_CAPACITY, event));
     StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_CONNECTED, (event) => onEvent(StreamingEvent.STREAM_CONNECTED, event));
     StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.EMULATOR_CONFIGURATION, (event) => onEvent(StreamingEvent.EMULATOR_CONFIGURATION, event));
+
+    StreamingEvent.edgeNode(edgeNodeId).once(StreamingEvent.ON_USER_INTERACTION, () => {
+      if (this.state.isMuted) {
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
+          type: 'audio-state-change',
+          state: 'unmuted',
+        });
+        this.setState({ isMuted: false });
+      }
+    });
+
 
     this.isMountedInView = true;
 
@@ -112,9 +115,8 @@ export default class StreamingView extends Component {
 
   shouldComponentUpdate(nextProps) {
     if (this.props.streamQualityRating !== nextProps.streamQualityRating) {
-      this.addRatingToMetric(nextProps.streamQualityRating);
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_QUALITY_RATING, { streamQualityRating: nextProps.streamQualityRating });
     }
-
     // Don't re-render component when rating was changed
     return this.props.streamQualityRating === nextProps.streamQualityRating;
   }
@@ -125,42 +127,30 @@ export default class StreamingView extends Component {
     }
   }
 
-  addRatingToMetric = (rating) => {
-    this.rtcReportHandler.emit('STREAM_QUALITY_RATING', { streamQualityRating: rating });
-  };
-
   logEnableControlState() {
-    this.log && this.log.state('user-control-state-change', this.props.enableControl ? 'player' : 'watcher');
+    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
+      type: 'user-control-state-change',
+      state: this.props.enableControl ? 'player' : 'watcher',
+    });
   }
 
   render() {
-    const { enableControl, enableFullScreen, view, volume } = this.props;
-
+    const { enableControl, enableFullScreen, view, volume, edgeNodeId } = this.props;
     switch (this.state.isReadyStream) {
       case true:
         return (
-          <div>
-            <RoundTripTimeMonitor
-              streamSocket={this.streamSocket}
-              rtcReportHandler={this.rtcReportHandler}
-              logger={this.logger}
-            />
-            <Emulator
-              uri={this.state.streamEndpoint}
-              turnEndpoint={this.props.turnEndpoint}
-              log={this.log}
-              enableControl={enableControl}
-              enableFullScreen={enableFullScreen}
-              view={view}
-              muted={this.state.isMuted}
-              volume={volume}
-              onUserInteraction={this.handleUserInteraction}
-              poll={true}
-              rtcReportHandler={this.rtcReportHandler}
-              logger={this.logger}
-              onEvent={this.props.onEvent}
-            />
-          </div>
+          <Emulator
+            uri={this.state.streamEndpoint}
+            turnEndpoint={this.state.turnEndpoint}
+            enableControl={enableControl}
+            enableFullScreen={enableFullScreen}
+            view={view}
+            muted={this.state.isMuted}
+            volume={volume}
+            poll={true}
+            logger={this.logger}
+            edgeNodeId={edgeNodeId}
+          />
         );
       case false:
         return <p style={{ color: 'white' }}>EdgeNode Stream is unreachable</p>;

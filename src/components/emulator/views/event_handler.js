@@ -34,7 +34,7 @@ const ORIENTATION_LANDSCAPE = 'landscape';
  * You usually want to wrap a EmulatorRtcview, or EmulatorPngView in it.
  */
 export default function withMouseKeyHandler(WrappedComponent) {
-  return class extends Component {
+  return class EventHandler extends Component {
     state = {
       deviceHeight: 768,
       deviceWidth: 432,
@@ -46,10 +46,10 @@ export default function withMouseKeyHandler(WrappedComponent) {
       enableControl: PropTypes.bool,
       enableFullScreen: PropTypes.bool,
       onUserInteraction: PropTypes.func,
-      consoleLogger: PropTypes.object.isRequired,
+      logger: PropTypes.object.isRequired,
       emulatorWidth: PropTypes.number,
       emulatorHeight: PropTypes.number,
-      onEvent: PropTypes.func, // report events during the streaming view.
+      edgeNodeId: PropTypes.string.isRequired, // report events during the streaming view.
     };
 
     constructor(props) {

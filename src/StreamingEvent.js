@@ -61,6 +61,16 @@ export default class StreamingEvent {
     return 'stream-connected';
   }
 
+
+  /**
+   * Event that is fire when the user interact with a running stream.
+   * @return {string}
+   * @constructor
+   */
+  static get ON_USER_INTERACTION() {
+    return 'on-user-interaction';
+  }
+
   /**
    * Event that is fired after receiving emulator configuration during initialization of P2P connection
    * @returns {string}
@@ -73,6 +83,10 @@ export default class StreamingEvent {
     return 'state-change';
   }
 
+
+  static get STREAM_QUALITY_RATING() {
+    return 'stream-quality-rating';
+  }
 
   /**
    *
@@ -104,7 +118,7 @@ export default class StreamingEvent {
    * @param {string} event
    * @param {function} callback
    */
-  on(event, callback) {
+  static on(event, callback) {
     globalEventEmitter.on(event, callback);
   }
 
@@ -113,7 +127,7 @@ export default class StreamingEvent {
    * @param {string} event
    * @param {function} callback
    */
-  once(event, callback) {
+  static once(event, callback) {
     globalEventEmitter.once(event, callback);
   }
 
@@ -122,7 +136,7 @@ export default class StreamingEvent {
    * @param {string} event
    * @param {function} callback
    */
-  off(event, callback) {
+  static off(event, callback) {
     globalEventEmitter.off(event, callback);
   }
 
@@ -131,10 +145,10 @@ export default class StreamingEvent {
    * @param {string} event
    * @param {*} data
    */
-  emit(event, data) {
+  static emit(event, data) {
     globalEventEmitter.emit(event, data);
-    for (let emitter of edgeNodeEventEmitter) {
-      emitter.emit(event, data);
+    for (let edgeNodeId in edgeNodeEventEmitter) {
+      edgeNodeEventEmitter[edgeNodeId].emit(event, data);
     }
   }
 }

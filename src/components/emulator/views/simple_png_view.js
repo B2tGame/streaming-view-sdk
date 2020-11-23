@@ -28,8 +28,10 @@ export default class EmulatorPngView extends Component {
   static propTypes = {
     /** Emulator service used to retrieve screenshots. */
     emulator: PropTypes.object,
+    /** Streaming Edge node ID */
+    edgeNodeId: PropTypes.string.isRequired,
     /** Event Logger */
-    log: PropTypes.object.isRequired,
+    logger: PropTypes.object.isRequired,
     /** The width of the component */
     width: PropTypes.number,
     /** Function called when the state of the emulator changes,

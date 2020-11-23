@@ -1,4 +1,4 @@
-const StreamingEvent = require('./StreamingEvent');
+import StreamingEvent from './StreamingEvent';
 
 /**
  * Logger class for logging to browser console.
