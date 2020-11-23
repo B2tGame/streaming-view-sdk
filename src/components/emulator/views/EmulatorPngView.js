@@ -64,8 +64,7 @@ export default class EmulatorPngView extends Component {
   };
 
   constructor(props) {
-    super(props);
-    this.log = this.props.log;
+    super(props);;
   }
 
   broadcastState() {
@@ -101,7 +100,6 @@ export default class EmulatorPngView extends Component {
     if (this.screen) {
       this.screen.cancel();
     }
-
     var request = new Proto.ImageFormat();
     if (!isNaN(width)) {
       request.setWidth(Math.floor(width));
@@ -110,11 +108,13 @@ export default class EmulatorPngView extends Component {
 
     var self = this;
     const { emulator, poll } = this.props;
-    if (poll) {
-      this.screen = emulator.getScreenshot(request);
-    } else {
-      this.screen = emulator.streamScreenshot(request);
-    }
+    // if (poll) {
+    //   this.screen = emulator.getScreenshot(request);
+    // } else {
+    //   this.screen = emulator.streamScreenshot(request);
+    // }
+    this.screen = emulator.streamScreenshot(request);
+
     this.screen.on('data', (response) => {
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
         type: 'png-broadcast-state-change',

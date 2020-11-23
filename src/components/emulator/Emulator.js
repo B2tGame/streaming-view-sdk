@@ -123,7 +123,7 @@ class Emulator extends Component {
       this.props.turnEndpoint,
     );
 
-    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_DISCONNECTED, () => this.reConnect())
+    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_DISCONNECTED, () => this.reConnect());
 
     StreamingEvent.edgeNode(this.props.edgeNodeId).once(StreamingEvent.EMULATOR_CONFIGURATION, (configuration) => {
       this.setState({
@@ -191,24 +191,24 @@ class Emulator extends Component {
     const { view, poll, muted, volume, enableFullScreen, enableControl, uri } = this.props;
 
     return this.state.lostConnection ? null : (
-        <EventHandler
-          ref={this.view}
-          emulatorWidth={this.state.width}
-          emulatorHeight={this.state.height}
-          uri={uri}
-          emulator={this.emulator}
-          jsep={this.jsep}
-          poll={poll}
-          muted={muted}
-          volume={volume}
-          onError={this.onError}
-          onAudioStateChange={this.onAudioStateChange}
-          enableFullScreen={enableFullScreen}
-          enableControl={enableControl}
-          logger={this.props.logger}
-          edgeNodeId={this.props.edgeNodeId}
-          view={this.components[view] || EmulatorWebrtcView}
-        />
+      <EventHandler
+        ref={this.view}
+        emulatorWidth={this.state.width}
+        emulatorHeight={this.state.height}
+        uri={uri}
+        emulator={this.emulator}
+        jsep={this.jsep}
+        poll={poll}
+        muted={muted}
+        volume={volume}
+        onError={this.onError}
+        onAudioStateChange={this.onAudioStateChange}
+        enableFullScreen={enableFullScreen}
+        enableControl={enableControl}
+        logger={this.props.logger}
+        edgeNodeId={this.props.edgeNodeId}
+        view={this.components[view] || EmulatorWebrtcView}
+      />
     );
   }
 }

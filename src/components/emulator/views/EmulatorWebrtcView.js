@@ -131,7 +131,6 @@ export default class EmulatorWebrtcView extends Component {
 
     // See https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
     const possiblePromise = video.play();
-
     if (possiblePromise) {
       possiblePromise
         .then(() => {

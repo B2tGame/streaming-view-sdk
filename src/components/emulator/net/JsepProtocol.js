@@ -52,9 +52,8 @@ export default class JsepProtocol {
    * @param {string} edgeNodeId
    * @param {Logger} logger for console logs
    * @param {string|undefined} turnEndpoint Override the default uri for turn servers
-   * @memberof JsepProtocol
    */
-  constructor(emulator, rtc, poll,  edgeNodeId, logger, turnEndpoint = undefined) {
+  constructor(emulator, rtc, poll, edgeNodeId, logger, turnEndpoint = undefined) {
     this.emulator = emulator;
     this.rtc = rtc;
     this.poll = poll;
@@ -63,15 +62,14 @@ export default class JsepProtocol {
     this.stream = null;
     this.turnEndpoint = turnEndpoint;
     this.event_forwarders = {};
-    if (typeof this.rtc.receiveJsepMessages !== 'function') this.poll = true;
+    if (typeof this.rtc.receiveJsepMessages !== 'function') {
+      this.poll = true;
+    }
     this.logger = logger;
-
   }
 
   /**
    * Disconnects the stream. This will stop the message pump as well.
-   *
-   * @memberof JsepProtocol
    */
   disconnect = () => {
     this.connected = false;
@@ -92,7 +90,6 @@ export default class JsepProtocol {
   /**
    * Initiates the JSEP protocol.
    *
-   * @memberof JsepProtocol
    */
   startStream = () => {
     const self = this;
