@@ -16,6 +16,7 @@
 import { EventEmitter } from 'events';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import url from 'url';
+import StreamingEvent from '../../../StreamingEvent';
 
 /**
  * This drives the jsep protocol with the emulator, and can be used to
@@ -236,17 +237,15 @@ export default class JsepProtocol {
   };
 
   _startMonitor = (peerConnection) => {
-    if (this.rtcReportHandler) {
-      this.rtcEventTrigger = setInterval(
-        () =>
-          peerConnection
-            .getStats()
-            .then((stats) => this.rtcReportHandler.emit('EVENT_RTC_REPORT', stats))
-            .catch((err) => this.rtcReportHandler.emit('EVENT_RTC_REPORT_ERROR', err)),
-        5000
-      );
-      this.consoleLogger.log('Registry RTC event trigger:', this.rtcEventTrigger);
-    }
+    this.rtcEventTrigger = setInterval(
+      () =>
+        peerConnection
+          .getStats()
+          .then((stats) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, stats))
+          .catch((err) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err)),
+      1000,
+    );
+    this.logger.log('Registry RTC event trigger:', this.rtcEventTrigger);
   };
 
   _handleSDP = async (signal) => {
@@ -273,7 +272,7 @@ export default class JsepProtocol {
       if (signal.candidate) this._handleCandidate(signal);
     } catch (e) {
       this.consoleLogger.error(
-        'Streaming View SDK: Failed to handle message: [' + message + '], due to: ' + JSON.stringify(e)
+        'Streaming View SDK: Failed to handle message: [' + message + '], due to: ' + JSON.stringify(e),
       );
     }
   };

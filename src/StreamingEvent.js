@@ -16,6 +16,33 @@ export default class StreamingEvent {
     return 'log';
   }
 
+  static get ERROR() {
+    return 'error';
+  }
+
+  static get WEB_RTC_MEASUREMENT() {
+    return 'web-rtc-measurement';
+  }
+
+  /**
+   * Event of network RTT with payload {number}
+   * @return {string}
+   */
+
+  static get ROUND_TRIP_TIME_MEASUREMENT() {
+    return 'round-trip-time-measurement';
+  }
+
+
+  /**
+   * Final report that should be sent up to the backend with a report of all measurement
+   * @return {string}
+   */
+
+  static get REPORT_MEASUREMENT() {
+    return 'report-measurement';
+  }
+
 
   /**
    * Event that is fire when the current location/data center has no
@@ -42,6 +69,11 @@ export default class StreamingEvent {
     return 'emulator-configuration';
   }
 
+  static get STATE_CHANGE() {
+    return 'state-change';
+  }
+
+
   /**
    *
    * @param {string} edgeNodeId
@@ -52,6 +84,19 @@ export default class StreamingEvent {
       edgeNodeEventEmitter[edgeNodeId] = new EventEmitter();
     }
     return edgeNodeEventEmitter[edgeNodeId];
+  }
+
+  /**
+   *
+   * @param {string} edgeNodeId
+   * @return {EventEmitter}
+   */
+  static destroyEdgeNode(edgeNodeId) {
+    const e = edgeNodeEventEmitter[edgeNodeId];
+    edgeNodeEventEmitter[edgeNodeId] = undefined;
+    if (e) {
+      e.removeAllListeners();
+    }
   }
 
   /**

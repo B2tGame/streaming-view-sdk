@@ -22,6 +22,7 @@ import JsepProtocol from './net/jsep_protocol_driver.js';
 import * as Proto from '../../proto/emulator_controller_pb';
 import { RtcService, EmulatorControllerService } from '../../proto/emulator_web_client';
 import StreamingController from '../../StreamingController';
+import StreamingEvent from '../../StreamingEvent';
 
 const PngView = withMouseKeyHandler(EmulatorPngView);
 const RtcView = withMouseKeyHandler(EmulatorWebrtcView);
@@ -100,11 +101,14 @@ class Emulator extends Component {
     poll: false,
     muted: true,
     volume: 1.0,
-    onAudioStateChange: () => {},
-    onStateChange: () => {},
+    onAudioStateChange: () => {
+    },
+    onStateChange: () => {
+    },
     enableFullScreen: true,
     enableControl: true,
-    onEvent: () => {},
+    onEvent: () => {
+    },
     turnEndpoint: undefined,
   };
 
@@ -131,16 +135,22 @@ class Emulator extends Component {
       this.rtc,
       poll,
       () => {
-        this.log.state('user-interaction-state-change', 'connected');
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
+          type: 'user-interaction-state-change',
+          state: 'connected',
+        });
       },
       () => {
         this.reConnect();
-        this.log.state('user-interaction-state-change', 'disconnected');
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
+          type: 'user-interaction-state-change',
+          state: 'disconnected',
+        });
       },
       this.onConfiguration,
       this.props.rtcReportHandler,
       this.props.consoleLogger,
-      this.props.turnEndpoint
+      this.props.turnEndpoint,
     );
     this.view = React.createRef();
   }
@@ -202,8 +212,10 @@ class Emulator extends Component {
   _onAudioStateChange = (state) => {
     const { onAudioStateChange } = this.props;
     this.setState({ audio: state }, onAudioStateChange(state));
-
-    this.log.state('audio-state-change', state ? 'connected' : 'disconnected');
+    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
+      type: 'audio-state-change',
+      state: state ? 'connected' : 'disconnected',
+    });
   };
 
   reConnect() {

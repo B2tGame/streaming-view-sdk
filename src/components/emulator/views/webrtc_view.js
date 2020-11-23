@@ -16,6 +16,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import StreamingController from '../../../StreamingController';
+import StreamingEvent from '../../../StreamingEvent';
 
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
@@ -130,11 +131,17 @@ export default class EmulatorWebrtcView extends Component {
     if (possiblePromise) {
       possiblePromise
         .then(() => {
-          this.log.state('video-stream-state-change', 'connected');
+          StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
+            type: 'video-stream-state-change',
+            state: 'connected',
+          });
         })
         .catch((error) => {
           // Notify listeners that we cannot start.
-          this.log.state('video-stream-state-change', 'error', error);
+          StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
+            type: 'video-stream-state-change',
+            state: 'error',
+          });
           this.props.onError(error);
         });
     }
