@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EventEmitter } from 'events';
+
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import url from 'url';
 import StreamingEvent from '../../../StreamingEvent';
@@ -49,34 +49,24 @@ export default class JsepProtocol {
    * @param {EmulatorService} emulator Service used to make the gRPC calls
    * @param {RtcService} rtc Service used to open up the rtc calls.
    * @param {boolean} poll True if we should use polling
-   * @param {callback} onConnect optional callback that is invoked when a stream is available
-   * @param {callback} onDisconnect optional callback that is invoked when the stream is closed.
-   * @param {callback} onConfiguration callback that is invoked when the emulator configuration is received
-   * @param {RtcReportHandler} rtcReportHandler RTC report handler
+   * @param {string} edgeNodeId
    * @param {Logger} logger for console logs
    * @param {string|undefined} turnEndpoint Override the default uri for turn servers
    * @memberof JsepProtocol
    */
-  constructor(emulator, rtc, poll, onConnect, onDisconnect, onConfiguration, logger, turnEndpoint = undefined) {
+  constructor(emulator, rtc, poll,  edgeNodeId, logger, turnEndpoint = undefined) {
     this.emulator = emulator;
     this.rtc = rtc;
-    this.events = new EventEmitter();
     this.poll = poll;
     this.guid = null;
+    this.edgeNodeId = edgeNodeId;
     this.stream = null;
     this.turnEndpoint = turnEndpoint;
     this.event_forwarders = {};
     if (typeof this.rtc.receiveJsepMessages !== 'function') this.poll = true;
-    if (onConnect) this.events.on('connected', onConnect);
-    if (onDisconnect) this.events.on('disconnected', onDisconnect);
-    this.onConfiguration = onConfiguration;
     this.logger = logger;
 
   }
-
-  on = (name, fn) => {
-    this.events.on(name, fn);
-  };
 
   /**
    * Disconnects the stream. This will stop the message pump as well.
@@ -96,7 +86,7 @@ export default class JsepProtocol {
       clearInterval(this.rtcEventTrigger);
       this.rtcEventTrigger = null;
     }
-    this.events.emit('disconnected', this);
+    StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_DISCONNECTED);
   };
 
   /**
@@ -144,7 +134,7 @@ export default class JsepProtocol {
   };
 
   _handlePeerConnectionTrack = (e) => {
-    this.events.emit('connected', e.track);
+    StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_CONNECTED, e.track);
   };
 
   _handlePeerConnectionStateChange = (e) => {
@@ -221,7 +211,13 @@ export default class JsepProtocol {
 
   _handleStart = (signal) => {
     // Emulator passing configuration via start signal
-    this.onConfiguration(signal.start.iceServers.configuration);
+    const parsedResolution = signal.start.iceServers.configuration.resolution.split('x');
+    StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.EMULATOR_CONFIGURATION, {
+      emulatorWidth: parseInt(parsedResolution[0]),
+      emulatorHeight: parseInt(parsedResolution[1]),
+    });
+
+
     signal.start = {
       iceServers: [this.getIceConfiguration()],
       iceTransportPolicy: 'relay',

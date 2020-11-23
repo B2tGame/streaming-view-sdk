@@ -61,14 +61,22 @@ export default class StreamingEvent {
     return 'stream-connected';
   }
 
+  static get STREAM_VIDEO_PLAYING() {
+    return 'stream-video-playing';
+  }
+
+  static get STREAM_DISCONNECTED() {
+    return 'stream-disconnected';
+  }
+
 
   /**
    * Event that is fire when the user interact with a running stream.
    * @return {string}
    * @constructor
    */
-  static get ON_USER_INTERACTION() {
-    return 'on-user-interaction';
+  static get USER_INTERACTION() {
+    return 'user-interaction';
   }
 
   /**

@@ -1,4 +1,4 @@
-import Emulator from './components/emulator/emulator';
+import Emulator from './components/emulator/Emulator';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import StreamingEvent from './StreamingEvent';
@@ -62,7 +62,7 @@ export default class StreamingView extends Component {
     StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_CONNECTED, (event) => onEvent(StreamingEvent.STREAM_CONNECTED, event));
     StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.EMULATOR_CONFIGURATION, (event) => onEvent(StreamingEvent.EMULATOR_CONFIGURATION, event));
 
-    StreamingEvent.edgeNode(edgeNodeId).once(StreamingEvent.ON_USER_INTERACTION, () => {
+    StreamingEvent.edgeNode(edgeNodeId).once(StreamingEvent.USER_INTERACTION, () => {
       if (this.state.isMuted) {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
           type: 'audio-state-change',

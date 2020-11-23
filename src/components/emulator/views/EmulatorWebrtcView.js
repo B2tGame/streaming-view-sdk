@@ -74,13 +74,16 @@ export default class EmulatorWebrtcView extends Component {
   }
 
   componentWillUnmount() {
+    StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.STREAM_CONNECTED, this.onConnect);
+    StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect);
     this.props.jsep.disconnect();
     this.setState();
   }
 
   componentDidMount() {
-    this.props.jsep.on('connected', this.onConnect);
-    this.props.jsep.on('disconnected', this.onDisconnect);
+    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_CONNECTED, this.onConnect);
+    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect);
+
     this.setState({ connect: 'connecting' }, () => {
       this.props.jsep.startStream();
       this.broadcastState();
@@ -153,7 +156,7 @@ export default class EmulatorWebrtcView extends Component {
   };
 
   onPlaying = (e) => {
-    this.props.onEvent(StreamingController.EVENT_STREAM_CONNECTED, {});
+    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_PLAYING);
   };
 
   onContextMenu = (e) => {

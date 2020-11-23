@@ -15,17 +15,14 @@
  */
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import EmulatorPngView from './views/simple_png_view.js';
-import EmulatorWebrtcView from './views/webrtc_view.js';
-import withMouseKeyHandler from './views/event_handler';
-import JsepProtocol from './net/jsep_protocol_driver.js';
+import EmulatorPngView from './views/EmulatorPngView.js';
+import EmulatorWebrtcView from './views/EmulatorWebrtcView.js';
+import EventHandler from './views/EventHandler';
+import JsepProtocol from './net/JsepProtocol.js';
 import * as Proto from '../../proto/emulator_controller_pb';
 import { RtcService, EmulatorControllerService } from '../../proto/emulator_web_client';
-import StreamingController from '../../StreamingController';
 import StreamingEvent from '../../StreamingEvent';
 
-const PngView = withMouseKeyHandler(EmulatorPngView);
-const RtcView = withMouseKeyHandler(EmulatorWebrtcView);
 
 /**
  * A React component that displays a remote android emulator.
@@ -101,8 +98,8 @@ class Emulator extends Component {
   };
 
   components = {
-    webrtc: RtcView,
-    png: PngView,
+    webrtc: EmulatorWebrtcView,
+    png: EmulatorPngView,
   };
 
   state = {
@@ -121,36 +118,20 @@ class Emulator extends Component {
       this.emulator,
       this.rtc,
       poll,
-      () => {
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
-          type: 'user-interaction-state-change',
-          state: 'connected',
-        });
-      },
-      () => {
-        this.reConnect();
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
-          type: 'user-interaction-state-change',
-          state: 'disconnected',
-        });
-      },
-      (configuration) => {
-        const parsedResolution = configuration.resolution.split('x');
-        const width = parseInt(parsedResolution[0]);
-        const height = parseInt(parsedResolution[1]);
-
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.EMULATOR_CONFIGURATION, {
-          emulatorWidth: width,
-          emulatorHeight: height,
-        });
-        this.setState({
-          width: width,
-          height: height,
-        });
-      },
+      this.props.edgeNodeId,
       this.props.logger,
       this.props.turnEndpoint,
     );
+
+    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_DISCONNECTED, () => this.reConnect())
+
+    StreamingEvent.edgeNode(this.props.edgeNodeId).once(StreamingEvent.EMULATOR_CONFIGURATION, (configuration) => {
+      this.setState({
+        width: configuration.emulatorWidth,
+        height: configuration.emulatorHeight,
+      });
+    });
+
     this.view = React.createRef();
   }
 
@@ -209,29 +190,25 @@ class Emulator extends Component {
   render() {
     const { view, poll, muted, volume, enableFullScreen, enableControl, uri } = this.props;
 
-    const SpecificView = this.components[view] || RtcView;
-
     return this.state.lostConnection ? null : (
-      <SpecificView
-        ref={this.view}
-        emulatorWidth={this.state.width}
-        emulatorHeight={this.state.height}
-        uri={uri}
-        emulator={this.emulator}
-        jsep={this.jsep}
-        poll={poll}
-        muted={muted}
-        volume={volume}
-        onError={this.onError}
-        onAudioStateChange={this.onAudioStateChange}
-        enableFullScreen={enableFullScreen}
-        enableControl={enableControl}
-        onUserInteraction={() => {
-          // TODO
-        }}
-        logger={this.props.logger}
-        edgeNodeId={this.props.edgeNodeId}
-      />
+        <EventHandler
+          ref={this.view}
+          emulatorWidth={this.state.width}
+          emulatorHeight={this.state.height}
+          uri={uri}
+          emulator={this.emulator}
+          jsep={this.jsep}
+          poll={poll}
+          muted={muted}
+          volume={volume}
+          onError={this.onError}
+          onAudioStateChange={this.onAudioStateChange}
+          enableFullScreen={enableFullScreen}
+          enableControl={enableControl}
+          logger={this.props.logger}
+          edgeNodeId={this.props.edgeNodeId}
+          view={this.components[view] || EmulatorWebrtcView}
+        />
     );
   }
 }
