@@ -2,7 +2,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { getNetworkConnectivity, resetNetworkConnectivity } from './stores/networkConnectivity';
 import { getDeviceInfo, resetDeviceInfo } from './stores/deviceInfo';
-import ConsoleLogger from './ConsoleLogger';
+import ConsoleLogger from './x/ConsoleLogger';
 
 /**
  * StreamingAgent class is responsible to running any nesureary background task for the Streaming Service

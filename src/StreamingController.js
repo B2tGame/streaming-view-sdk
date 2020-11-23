@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getNetworkConnectivity } from './stores/networkConnectivity';
 import { getDeviceInfo } from './stores/deviceInfo';
-import ConsoleLogger from './ConsoleLogger';
+import ConsoleLogger from './x/ConsoleLogger';
 
 /**
  * StreamingController is responsible to poll and terminate the edge node.

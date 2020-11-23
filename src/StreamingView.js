@@ -6,8 +6,8 @@ import RtcReportHandler from './components/emulator/net/rtc_report_handler';
 import StreamingController from './StreamingController';
 import url from 'url';
 import io from 'socket.io-client';
-import Log from './Log';
-import ConsoleLogger from './ConsoleLogger';
+import Log from './x/Log';
+import ConsoleLogger from './x/ConsoleLogger';
 import buildInfo from './build-info.json';
 
 /**
@@ -42,6 +42,12 @@ export default class StreamingView extends Component {
 
   constructor(props) {
     super(props);
+
+    if(props.enableDebug) {
+      StreamingEvent.on('LOG', () => {
+
+      })
+    }
 
     this.rtcReportHandler = new RtcReportHandler();
     this.consoleLogger = new ConsoleLogger(props.enableDebug);
