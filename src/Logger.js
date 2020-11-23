@@ -1,6 +1,8 @@
 const StreamingEvent = require('./StreamingEvent');
 
-
+/**
+ * Logger class for logging to browser console.
+ */
 export default class Logger {
   /**
    *

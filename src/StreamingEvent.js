@@ -3,6 +3,9 @@ import EventEmitter from 'eventemitter3';
 const globalEventEmitter = new EventEmitter();
 const edgeNodeEventEmitter = {};
 
+/**
+ * Streamign Event Emitter bus for sending and receiving event cross the SDK.
+ */
 export default class StreamingEvent {
 
   /**
@@ -11,6 +14,32 @@ export default class StreamingEvent {
    */
   static get LOG() {
     return 'log';
+  }
+
+
+  /**
+   * Event that is fire when the current location/data center has no
+   * free allocations for this edge node and result in the edge node is queued until required capacity in the datacenter exists.
+   * @returns {string}
+   */
+  static get SERVER_OUT_OF_CAPACITY() {
+    return 'server-out-of-capacity';
+  }
+
+  /**
+   * Event that is fire when the stream are connected to the backend and the consumer receiving a video stream.
+   * @returns {string}
+   */
+  static get STREAM_CONNECTED() {
+    return 'stream-connected';
+  }
+
+  /**
+   * Event that is fired after receiving emulator configuration during initialization of P2P connection
+   * @returns {string}
+   */
+  static get EMULATOR_CONFIGURATION() {
+    return 'emulator-configuration';
   }
 
   /**

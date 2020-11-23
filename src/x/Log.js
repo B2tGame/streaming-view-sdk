@@ -22,7 +22,7 @@ class Log {
         state: state,
         timestamp: Date.now(),
         extra: extra,
-      })
+      }),
     );
   }
 
@@ -38,7 +38,7 @@ class Log {
         name: 'client-error',
         timestamp: Date.now(),
         extra: extra,
-      })
+      }),
     );
   }
 }
