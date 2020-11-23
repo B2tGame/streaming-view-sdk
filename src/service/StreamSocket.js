@@ -5,6 +5,7 @@ import io from 'socket.io-client';
 export default class StreamSocket {
   constructor(edgeNodeId, streamEndpoint, userId, internalSession) {
     const endpoint = url.parse(streamEndpoint);
+    this.edgeNodeId = edgeNodeId;
     this.socket = io(`${endpoint.protocol}//${endpoint.host}`, {
       path: `${endpoint.path}/emulator-commands/socket.io`,
       query: `userId=${userId}&internal=${internalSession ? '1' : '0'}`,
@@ -17,31 +18,20 @@ export default class StreamSocket {
     this.socket.on('pong', (networkRoundTripTime) => {
       StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, networkRoundTripTime);
     });
-
     // Send measurement report to the backend.
-    StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.REPORT_MEASUREMENT, (payload) => {
-      payload.type = 'report';
-      payload.timestamp = Date.now();
-      this.socket.emit('message', JSON.stringify(payload));
-    });
+    StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.REPORT_MEASUREMENT, this.onReport);
+  }
 
-    // Send state change event to the backend.
-    StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STATE_CHANGE, (payload) => {
-      this.socket.emit(
-        'message',
-        JSON.stringify({
-          type: payload.type,
-          name: 'client-log',
-          state: payload.state,
-          timestamp: Date.now(),
-        }),
-      );
-    });
+  onReport(payload) {
+    payload.type = 'report';
+    payload.timestamp = Date.now();
+    this.socket.emit('message', JSON.stringify(payload));
   }
 
   close() {
     if (this.socket) {
       this.socket.close();
+      StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.REPORT_MEASUREMENT, this.onReport);
       this.socket = undefined;
     }
   }

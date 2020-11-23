@@ -103,7 +103,6 @@ class Emulator extends Component {
   };
 
   state = {
-    audio: false,
     lostConnection: false,
     width: undefined,
     height: undefined,
@@ -131,21 +130,7 @@ class Emulator extends Component {
         height: configuration.emulatorHeight,
       });
     });
-
     this.view = React.createRef();
-  }
-
-
-  onError = (e) => {
-    this.props.logger.error(e);
-  };
-
-  static getDerivedStateFromProps(nextProps, prevState) {
-    if (nextProps.view === 'png')
-      return {
-        audio: false,
-      };
-    return prevState;
   }
 
   /**
@@ -170,16 +155,6 @@ class Emulator extends Component {
     this.jsep.send('keyboard', request);
   };
 
-  onAudioStateChange = (state) => {
-    this.setState({ audio: state }, () => {
-      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
-        type: 'audio-state-change',
-        state: state ? 'connected' : 'disconnected',
-      });
-    });
-
-  };
-
   reConnect() {
     this.setState({ lostConnection: true });
     setTimeout(() => {
@@ -201,7 +176,6 @@ class Emulator extends Component {
         poll={poll}
         muted={muted}
         volume={volume}
-        onError={this.onError}
         onAudioStateChange={this.onAudioStateChange}
         enableFullScreen={enableFullScreen}
         enableControl={enableControl}

@@ -16,16 +16,24 @@ export default class StreamingEvent {
     return 'log';
   }
 
+  /**
+   * Error event with an exception as payload
+   * @return {string}
+   */
   static get ERROR() {
     return 'error';
   }
 
+  /**
+   * Web RTC measurement with payload create from {RTCPeerConnection.getStats}
+   * @return {string}
+   */
   static get WEB_RTC_MEASUREMENT() {
     return 'web-rtc-measurement';
   }
 
   /**
-   * Event of network RTT with payload {number}
+   * Event of network RTT with payload {number} in millisecond
    * @return {string}
    */
 
@@ -43,6 +51,22 @@ export default class StreamingEvent {
     return 'report-measurement';
   }
 
+  /**
+   * Event fire when the audio is available and can be unmuted.
+   * @return {string}
+   */
+  static get STREAM_AUDIO_AVAILABLE() {
+    return 'stream-audio-available';
+  }
+
+
+  /**
+   * Event fire when the audio is not longer available.
+   * @return {string}
+   */
+  static get STREAM_AUDIO_UNAVAILABLE() {
+    return 'stream-audio-unavailable';
+  }
 
   /**
    * Event that is fire when the current location/data center has no
@@ -61,10 +85,34 @@ export default class StreamingEvent {
     return 'stream-connected';
   }
 
+  /**
+   * Event that is fire when the video stream is starting playing (resume from paused or starting)
+   * @return {string}
+   */
   static get STREAM_VIDEO_PLAYING() {
     return 'stream-video-playing';
   }
 
+  /**
+   * Event fire when the video is available and can be played.
+   * @return {string}
+   */
+  static get STREAM_VIDEO_AVAILABLE() {
+    return 'stream-video-available';
+  }
+
+  /**
+   * Event fire when the video is not longer available.
+   * @return {string}
+   */
+  static get STREAM_VIDEO_UNAVAILABLE() {
+    return 'stream-video-unavailable';
+  }
+
+  /**
+   * Event that is fire when the stream are disconnected to the backend and no video or audio may be available.
+   * @return {string}
+   */
   static get STREAM_DISCONNECTED() {
     return 'stream-disconnected';
   }
@@ -73,7 +121,6 @@ export default class StreamingEvent {
   /**
    * Event that is fire when the user interact with a running stream.
    * @return {string}
-   * @constructor
    */
   static get USER_INTERACTION() {
     return 'user-interaction';
@@ -87,11 +134,11 @@ export default class StreamingEvent {
     return 'emulator-configuration';
   }
 
-  static get STATE_CHANGE() {
-    return 'state-change';
-  }
 
-
+  /**
+   * Event that is fired when the stream quality rating has been updated.
+   * @return {string}
+   */
   static get STREAM_QUALITY_RATING() {
     return 'stream-quality-rating';
   }

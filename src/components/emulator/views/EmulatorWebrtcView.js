@@ -32,16 +32,10 @@ export default class EmulatorWebrtcView extends Component {
     logger: PropTypes.object.isRequired,
     /** Jsep protocol driver, used to establish the video stream. */
     jsep: PropTypes.object,
-    /** Function called when the connection state of the emulator changes */
-    onStateChange: PropTypes.func,
-    /** Function called when the audio track becomes available */
-    onAudioStateChange: PropTypes.func.isRequired,
     /** True if you wish to mute the audio */
     muted: PropTypes.bool,
     /** Volume of the video element, value between 0 and 1.  */
     volume: PropTypes.number,
-    /** Function called when an error arises, like play failures due to muting */
-    onError: PropTypes.func.isRequired,
     /** The width of the emulator device */
     deviceWidth: PropTypes.number,
     /** The height of the emulator device */
@@ -61,16 +55,7 @@ export default class EmulatorWebrtcView extends Component {
 
   constructor(props) {
     super(props);
-
-    this.log = this.props.log;
     this.video = React.createRef();
-  }
-
-  broadcastState() {
-    const { onStateChange } = this.props;
-    if (onStateChange) {
-      onStateChange(this.state.connect);
-    }
   }
 
   componentWillUnmount() {
@@ -83,11 +68,7 @@ export default class EmulatorWebrtcView extends Component {
   componentDidMount() {
     StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_CONNECTED, this.onConnect);
     StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect);
-
-    this.setState({ connect: 'connecting' }, () => {
-      this.props.jsep.startStream();
-      this.broadcastState();
-    });
+    this.setState({ connect: 'connecting' }, () => this.props.jsep.startStream());
   }
 
   componentDidUpdate() {
@@ -95,14 +76,12 @@ export default class EmulatorWebrtcView extends Component {
   }
 
   onDisconnect = () => {
-    this.setState({ connect: 'disconnected' }, this.broadcastState);
-    this.setState({ audio: false }, () => {
-      this.props.onAudioStateChange(false);
-    });
+    this.setState({ connect: 'disconnected' });
+    this.setState({ audio: false }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_UNAVAILABLE));
   };
 
   onConnect = (track) => {
-    this.setState({ connect: 'connected' }, this.broadcastState);
+    this.setState({ connect: 'connected' });
     const video = this.video.current;
     if (!video) {
       // Component was unmounted.
@@ -114,9 +93,7 @@ export default class EmulatorWebrtcView extends Component {
     }
     video.srcObject.addTrack(track);
     if (track.kind === 'audio') {
-      this.setState({ audio: true }, () => {
-        this.props.onAudioStateChange(true);
-      });
+      this.setState({ audio: true }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_AVAILABLE));
     }
   };
 
@@ -134,27 +111,19 @@ export default class EmulatorWebrtcView extends Component {
     if (possiblePromise) {
       possiblePromise
         .then(() => {
-          StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
-            type: 'video-stream-state-change',
-            state: 'connected',
-          });
+          // TODO Create a event when video is available
         })
-        .catch((error) => {
-          // Notify listeners that we cannot start.
-          StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
-            type: 'video-stream-state-change',
-            state: 'error',
-          });
-          this.props.onError(error);
+        .catch(() => {
+          // TODO Create a event when video is available
         });
     }
   };
 
-  onCanPlay = (e) => {
+  onCanPlay = () => {
     this.safePlay();
   };
 
-  onPlaying = (e) => {
+  onPlaying = () => {
     StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_PLAYING);
   };
 
@@ -168,14 +137,8 @@ export default class EmulatorWebrtcView extends Component {
       margin: '0 auto',
     };
 
-    // Optimize video size by comparing aspect ratios of the emulator device and browser window eg. (16/9 > 9/16)
-    if (window.innerHeight / window.innerWidth > emulatorHeight / emulatorWidth) {
-      style.width = window.innerWidth + 'px';
-    } else {
-      style.height = window.innerHeight + 'px';
-    }
-
     /*
+     * Optimize video size by comparing aspect ratios of the emulator device and browser window eg. (16/9 > 9/16)
      * User Screen (Desktop eg. 16:9) - optimized for full-height
      * ┌─────────┬────────┬─────────┐
      * │         │        │         |
@@ -196,6 +159,12 @@ export default class EmulatorWebrtcView extends Component {
      * │   "BLACK"  │
      * └────────────┘
      */
+    if (window.innerHeight / window.innerWidth > emulatorHeight / emulatorWidth) {
+      style.width = window.innerWidth + 'px';
+    } else {
+      style.height = window.innerHeight + 'px';
+    }
+
     return (
       <video
         ref={this.video}

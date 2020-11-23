@@ -19,7 +19,6 @@ export default class StreamingAgent extends Component {
 
   constructor(props) {
     super(props);
-
     this.logger = new Logger(this.props.enableDebug);
     this.connection = {};
   }

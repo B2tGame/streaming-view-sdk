@@ -34,20 +34,7 @@ export default class EmulatorPngView extends Component {
     logger: PropTypes.object.isRequired,
     /** The width of the component */
     width: PropTypes.number,
-    /** Function called when the state of the emulator changes,
-     *
-     * The state will be one of:
-     *
-     * - "connecting"
-     * - "connected"
-     * - "disconnected"
-     *
-     * The png view only supports streaming of images, and not audio.
-     */
-    onStateChange: PropTypes.func,
-    /** True if polling should be used, only set this to true if you are using the gowebrpc proxy.
-     * Note: Deprecated, setting this to true results in poor performance.
-     */
+    /** True if polling should be used, only set this to true if you are using the gowebrpc proxy. */
     poll: PropTypes.bool,
     /** The width of the emulator device */
     deviceWidth: PropTypes.number,
@@ -56,41 +43,21 @@ export default class EmulatorPngView extends Component {
   };
 
   state = {
-    /** Currently displayed image, retrieved from the emulator. */
     png: '',
     width: null,
     height: null,
     connect: 'disconnected',
   };
 
-  constructor(props) {
-    super(props);;
-  }
-
-  broadcastState() {
-    const { onStateChange } = this.props;
-    if (onStateChange) {
-      onStateChange(this.state.connect);
-    }
-  }
 
   componentDidMount() {
-
-    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
-      type: 'png-broadcast-state-change',
-      state: 'connecting',
-    });
-    this.setState({ connect: 'connecting' }, this.broadcastState);
+    this.setState({ connect: 'connecting' });
     this.startStream();
   }
 
   componentWillUnmount() {
     if (this.screen) {
-      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
-        type: 'png-broadcast-state-change',
-        state: 'disconnected',
-      });
-      this.setState({ connect: 'disconnected' }, this.broadcastState);
+      this.setState({ connect: 'disconnected' });
       this.screen.cancel();
     }
   }
@@ -116,11 +83,7 @@ export default class EmulatorPngView extends Component {
     this.screen = emulator.streamScreenshot(request);
 
     this.screen.on('data', (response) => {
-      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
-        type: 'png-broadcast-state-change',
-        state: 'connected',
-      });
-      this.setState({ connect: 'connected' }, this.broadcastState);
+      this.setState({ connect: 'connected' });
       // Update the image with the one we just received.
       self.setState({
         png: 'data:image/jpeg;base64,' + response.getImage_asB64(),

@@ -1,19 +1,3 @@
-/*
- * Copyright 2019 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License")
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import url from 'url';
 import StreamingEvent from '../../../StreamingEvent';
@@ -24,29 +8,12 @@ import StreamingEvent from '../../../StreamingEvent';
  * over the data channel if open, otherwise they will be send via the
  * grpc endpoint.
  *
- *  The jsep protocol is described here:
- * https://rtcweb-wg.github.io/jsep/.
- *
- *  This class can fire two events:
- *
- * - `connected` when the stream has become available.
- * - `disconnected` when the stream broke down, or when we failed to establish a connection
- *
- * You usually want to start the stream after instantiating this object. Do not forget to
- * disconnect once you are finished to terminate the message pump.
- *
- *
- * @example
- *  jsep = new JsepProtocolDriver(emulator, s => { video.srcObject = s; video.play() });
- *  jsep.startStream();
- *
- * @export
- * @class JsepProtocol
+ * The jsep protocol is described here: https://rtcweb-wg.github.io/jsep/.
  */
 export default class JsepProtocol {
   /**
    * Creates an instance of JsepProtocol.
-   * @param {EmulatorService} emulator Service used to make the gRPC calls
+   * @param {EmulatorControllerService} emulator Service used to make the gRPC calls
    * @param {RtcService} rtc Service used to open up the rtc calls.
    * @param {boolean} poll True if we should use polling
    * @param {string} edgeNodeId
@@ -56,15 +23,12 @@ export default class JsepProtocol {
   constructor(emulator, rtc, poll, edgeNodeId, logger, turnEndpoint = undefined) {
     this.emulator = emulator;
     this.rtc = rtc;
-    this.poll = poll;
     this.guid = null;
     this.edgeNodeId = edgeNodeId;
     this.stream = null;
     this.turnEndpoint = turnEndpoint;
-    this.event_forwarders = {};
-    if (typeof this.rtc.receiveJsepMessages !== 'function') {
-      this.poll = true;
-    }
+    this.eventForwarders = {};
+    this.poll = typeof this.rtc.receiveJsepMessages !== 'function' ? true : poll;
     this.logger = logger;
   }
 
@@ -73,7 +37,9 @@ export default class JsepProtocol {
    */
   disconnect = () => {
     this.connected = false;
-    if (this.peerConnection) this.peerConnection.close();
+    if (this.peerConnection) {
+      this.peerConnection.close();
+    }
     if (this.stream) {
       this.stream.cancel();
       this.stream = null;
@@ -92,7 +58,6 @@ export default class JsepProtocol {
    *
    */
   startStream = () => {
-    const self = this;
     this.connected = false;
     this.peerConnection = null;
     this.active = true;
@@ -104,18 +69,17 @@ export default class JsepProtocol {
         this.disconnect();
         return;
       }
-
       // Configure
-      self.guid = response;
-      self.connected = true;
-
+      this.guid = response;
+      this.connected = true;
       if (!this.poll) {
         // Streaming envoy based.
-        self._streamJsepMessage();
+        this.logger.info('Streaming JSEP messages.');
+        this._streamJsepMessage();
       } else {
         // Poll pump messages, go/envoy based proxy.
-        self.logger.info('Polling jsep messages.');
-        self._receiveJsepMessage();
+        this.logger.info('Polling JSEP messages.');
+        this._receiveJsepMessage();
       }
     });
   };
@@ -125,16 +89,18 @@ export default class JsepProtocol {
     if (this.peerConnection) {
       this.peerConnection.removeEventListener('track', this._handlePeerConnectionTrack);
       this.peerConnection.removeEventListener('icecandidate', this._handlePeerIceCandidate);
+      this.peerConnection.removeEventListener('connectionstatechange', this._handlePeerConnectionStateChange);
+
       this.peerConnection = null;
     }
-    this.event_forwarders = {};
+    this.eventForwarders = {};
   };
 
-  _handlePeerConnectionTrack = (e) => {
-    StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_CONNECTED, e.track);
+  _handlePeerConnectionTrack = (event) => {
+    StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_CONNECTED, event.track);
   };
 
-  _handlePeerConnectionStateChange = (e) => {
+  _handlePeerConnectionStateChange = () => {
     switch (this.peerConnection.connectionState) {
       case 'disconnected':
         // At least one of the ICE transports for the connection is in the "disconnected" state
@@ -158,12 +124,13 @@ export default class JsepProtocol {
     this.logger.log('Data status change ' + e);
   };
 
+
   send(label, msg) {
     let bytes = msg.serializeBinary();
-    let forwarder = this.event_forwarders[label];
+    let forwarder = this.eventForwarders[label];
     // Send via data channel/gRPC bridge.
     if (this.connected && forwarder && forwarder.readyState === 'open') {
-      this.event_forwarders[label].send(bytes);
+      this.eventForwarders[label].send(bytes);
     } else {
       // Fallback to using the gRPC protocol
       switch (label) {
@@ -188,7 +155,7 @@ export default class JsepProtocol {
 
   _handleDataChannel = (e) => {
     let channel = e.channel;
-    this.event_forwarders[channel.label] = channel;
+    this.eventForwarders[channel.label] = channel;
   };
 
   /**
@@ -214,7 +181,6 @@ export default class JsepProtocol {
       emulatorHeight: parseInt(parsedResolution[1]),
     });
 
-
     signal.start = {
       iceServers: [this.getIceConfiguration()],
       iceTransportPolicy: 'relay',
@@ -224,9 +190,7 @@ export default class JsepProtocol {
     this.peerConnection.addEventListener('track', this._handlePeerConnectionTrack, false);
     this.peerConnection.addEventListener('icecandidate', this._handlePeerIceCandidate, false);
     this.peerConnection.addEventListener('connectionstatechange', this._handlePeerConnectionStateChange, false);
-    this.peerConnection.ondatachannel = (e) => {
-      this._handleDataChannel(e);
-    };
+    this.peerConnection.ondatachannel = (e) => this._handleDataChannel(e);
   };
 
   _startMonitor = (peerConnection) => {
@@ -264,9 +228,7 @@ export default class JsepProtocol {
       if (signal.bye) this._handleBye();
       if (signal.candidate) this._handleCandidate(signal);
     } catch (e) {
-      this.logger.error(
-        'Streaming View SDK: Failed to handle message: [' + message + '], due to: ' + JSON.stringify(e),
-      );
+      this.logger.error('Streaming View SDK: Failed to handle message: [' + message + '], due to: ' + JSON.stringify(e));
     }
   };
 
@@ -278,7 +240,7 @@ export default class JsepProtocol {
 
   _sendJsep = (jsonObject) => {
     /* eslint-disable */
-    var request = new proto.android.emulation.control.JsepMsg();
+    const request = new proto.android.emulation.control.JsepMsg();
     request.setId(this.guid);
     request.setMessage(JSON.stringify(jsonObject));
     this.rtc.sendJsepMessage(request);
@@ -286,7 +248,7 @@ export default class JsepProtocol {
 
   _streamJsepMessage = () => {
     if (!this.connected) return;
-    var self = this;
+    const self = this;
 
     this.stream = this.rtc.receiveJsepMessages(this.guid, {});
     this.stream.on('data', (response) => {
@@ -304,9 +266,7 @@ export default class JsepProtocol {
   // This function is a fallback for v1 (go based proxy), that does not support streaming.
   _receiveJsepMessage = () => {
     if (!this.connected) return;
-
-    var self = this;
-
+    const self = this;
     // This is a blocking call, that will return as soon as a series
     // of messages have been made available, or if we reach a timeout
     this.rtc.receiveJsepMessage(this.guid, {}, (err, response) => {
