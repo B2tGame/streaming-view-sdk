@@ -70,8 +70,6 @@ class Emulator extends Component {
     edgeNodeId: PropTypes.string.isRequired,
     /** The authentication service to use, or null for no authentication. */
     auth: PropTypes.object,
-    /** True if the audio should be disabled. This is only relevant when using the webrtc engine. */
-    muted: PropTypes.bool,
     /** Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100% */
     volume: PropTypes.number,
     /** The underlying view used to display the emulator, one of ["webrtc", "png"] */
@@ -91,7 +89,6 @@ class Emulator extends Component {
     view: 'webrtc',
     auth: null,
     poll: false,
-    muted: true,
     volume: 1.0,
     enableFullScreen: true,
     enableControl: true,
@@ -103,7 +100,7 @@ class Emulator extends Component {
   };
 
   state = {
-    lostConnection: false,
+    streamingConnectionId: Date.now(),
     width: undefined,
     height: undefined,
   };
@@ -123,7 +120,6 @@ class Emulator extends Component {
     );
 
     StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_DISCONNECTED, () => this.reConnect());
-
     StreamingEvent.edgeNode(this.props.edgeNodeId).once(StreamingEvent.EMULATOR_CONFIGURATION, (configuration) => {
       this.setState({
         width: configuration.emulatorWidth,
@@ -149,24 +145,21 @@ class Emulator extends Component {
    * a list of valid values.
    */
   sendKey = (key) => {
-    var request = new Proto.KeyboardEvent();
+    const request = new Proto.KeyboardEvent();
     request.setEventtype(Proto.KeyboardEvent.KeyEventType.KEYPRESS);
     request.setKey(key);
     this.jsep.send('keyboard', request);
   };
 
   reConnect() {
-    this.setState({ lostConnection: true });
-    setTimeout(() => {
-      this.setState({ lostConnection: false });
-    }, 500);
+    this.setState({ streamingConnectionId: Date.now() });
   }
 
   render() {
-    const { view, poll, muted, volume, enableFullScreen, enableControl, uri } = this.props;
-
-    return this.state.lostConnection ? null : (
+    const { view, poll, volume, enableFullScreen, enableControl, uri } = this.props;
+    return (
       <EventHandler
+        key={this.state.streamingConnectionId}
         ref={this.view}
         emulatorWidth={this.state.width}
         emulatorHeight={this.state.height}
@@ -174,7 +167,6 @@ class Emulator extends Component {
         emulator={this.emulator}
         jsep={this.jsep}
         poll={poll}
-        muted={muted}
         volume={volume}
         onAudioStateChange={this.onAudioStateChange}
         enableFullScreen={enableFullScreen}

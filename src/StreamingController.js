@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getNetworkConnectivity } from './stores/networkConnectivity';
 import { getDeviceInfo } from './stores/deviceInfo';
-import StreamingEvent  from './StreamingEvent';
+import StreamingEvent from './StreamingEvent';
 
 /**
  * StreamingController is responsible to poll and terminate the edge node.
@@ -108,6 +108,7 @@ class StreamingController {
    * @return {Promise<string>}
    */
   getStreamEndpoint() {
+    // TODO: this code should throw an exception if the endpoint is not set.
     return this.waitFor().then((status) => status.endpoint);
   }
 

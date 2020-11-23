@@ -19,7 +19,6 @@ export default class StreamingView extends Component {
     isReadyStream: undefined,
     streamEndpoint: undefined,
     turnEndpoint: undefined,
-    isMuted: true,
   };
 
   static propTypes = {
@@ -62,17 +61,6 @@ export default class StreamingView extends Component {
     StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_CONNECTED, (event) => onEvent(StreamingEvent.STREAM_CONNECTED, event));
     StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.EMULATOR_CONFIGURATION, (event) => onEvent(StreamingEvent.EMULATOR_CONFIGURATION, event));
 
-    StreamingEvent.edgeNode(edgeNodeId).once(StreamingEvent.USER_INTERACTION, () => {
-      if (this.state.isMuted) {
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
-          type: 'audio-state-change',
-          state: 'unmuted',
-        });
-        this.setState({ isMuted: false });
-      }
-    });
-
-
     this.isMountedInView = true;
 
     StreamingController({
@@ -90,15 +78,12 @@ export default class StreamingView extends Component {
           this.logger.log('Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
         }
-
         this.streamSocket = new StreamSocket(edgeNodeId, streamEndpoint, userId, internalSession);
-
         this.setState({
           isReadyStream: true,
           streamEndpoint: streamEndpoint,
           turnEndpoint: internalSession && turnEndpoint ? turnEndpoint : undefined,
         });
-        this.logEnableControlState();
 
       })
       .catch((err) => {
@@ -106,9 +91,8 @@ export default class StreamingView extends Component {
           this.logger.log('Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
         }
-        this.logger.error('StreamingController Errors: ', err);
+        this.logger.error('StreamingController Errors -', err);
         // TODO: emit event to rob0 when stream is unreachable
-
         this.setState({
           isReadyStream: false,
         });
@@ -116,24 +100,11 @@ export default class StreamingView extends Component {
   }
 
   shouldComponentUpdate(nextProps) {
-    if (this.props.streamQualityRating !== nextProps.streamQualityRating) {
+    if (nextProps.streamQualityRating) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_QUALITY_RATING, { streamQualityRating: nextProps.streamQualityRating });
     }
     // Don't re-render component when rating was changed
     return this.props.streamQualityRating === nextProps.streamQualityRating;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.props.enableControl !== prevProps.enableControl) {
-      this.logEnableControlState();
-    }
-  }
-
-  logEnableControlState() {
-    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STATE_CHANGE, {
-      type: 'user-control-state-change',
-      state: this.props.enableControl ? 'player' : 'watcher',
-    });
   }
 
   render() {
@@ -147,7 +118,6 @@ export default class StreamingView extends Component {
             enableControl={enableControl}
             enableFullScreen={enableFullScreen}
             view={view}
-            muted={this.state.isMuted}
             volume={volume}
             poll={true}
             logger={this.logger}

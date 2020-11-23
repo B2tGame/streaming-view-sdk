@@ -32,8 +32,6 @@ export default class EmulatorWebrtcView extends Component {
     logger: PropTypes.object.isRequired,
     /** Jsep protocol driver, used to establish the video stream. */
     jsep: PropTypes.object,
-    /** True if you wish to mute the audio */
-    muted: PropTypes.bool,
     /** Volume of the video element, value between 0 and 1.  */
     volume: PropTypes.number,
     /** The width of the emulator device */
@@ -46,10 +44,10 @@ export default class EmulatorWebrtcView extends Component {
 
   state = {
     audio: false,
+    muted: true,
   };
 
   static defaultProps = {
-    muted: true,
     volume: 1.0,
   };
 
@@ -61,6 +59,7 @@ export default class EmulatorWebrtcView extends Component {
   componentWillUnmount() {
     StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.STREAM_CONNECTED, this.onConnect);
     StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect);
+    StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
     this.props.jsep.disconnect();
     this.setState();
   }
@@ -68,12 +67,17 @@ export default class EmulatorWebrtcView extends Component {
   componentDidMount() {
     StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_CONNECTED, this.onConnect);
     StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect);
+    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
     this.setState({ connect: 'connecting' }, () => this.props.jsep.startStream());
   }
 
   componentDidUpdate() {
     this.video.current.volume = this.props.volume;
   }
+
+  onUserInteraction = () => {
+    this.setState({ muted: false });
+  };
 
   onDisconnect = () => {
     this.setState({ connect: 'disconnected' });
@@ -97,30 +101,20 @@ export default class EmulatorWebrtcView extends Component {
     }
   };
 
-  // Starts playing the video stream, muting it if no interaction has taken
-  // place with this component.
-  safePlay = () => {
+  onCanPlay = () => {
     const video = this.video.current;
     if (!video) {
       // Component was unmounted.
       return;
     }
 
-    // See https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
-    const possiblePromise = video.play();
-    if (possiblePromise) {
-      possiblePromise
-        .then(() => {
-          // TODO Create a event when video is available
-        })
-        .catch(() => {
-          // TODO Create a event when video is available
-        });
-    }
-  };
-
-  onCanPlay = () => {
-    this.safePlay();
+    return (video.play() || Promise.resolve())
+      .then(() => {
+        // TODO Create a event when video is available
+      })
+      .catch(() => {
+        // TODO Create a event when video is unavailable
+      });
   };
 
   onPlaying = () => {
@@ -132,7 +126,7 @@ export default class EmulatorWebrtcView extends Component {
   };
 
   render() {
-    const { muted, emulatorWidth, emulatorHeight } = this.props;
+    const { emulatorWidth, emulatorHeight } = this.props;
     const style = {
       margin: '0 auto',
     };
@@ -169,7 +163,7 @@ export default class EmulatorWebrtcView extends Component {
       <video
         ref={this.video}
         style={style}
-        muted={muted}
+        muted={this.state.muted}
         onContextMenu={this.onContextMenu}
         onCanPlay={this.onCanPlay}
         onPlaying={this.onPlaying}
