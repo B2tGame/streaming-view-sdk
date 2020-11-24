@@ -119,13 +119,22 @@ class Emulator extends Component {
       this.props.turnEndpoint,
     );
 
-    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_DISCONNECTED, () => this.reConnect());
-    StreamingEvent.edgeNode(this.props.edgeNodeId).once(StreamingEvent.EMULATOR_CONFIGURATION, (configuration) => {
-      this.setState({
-        width: configuration.emulatorWidth,
-        height: configuration.emulatorHeight,
-      });
+    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_CONNECTED, () => {
+      this.isConnected = true;
     });
+    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_DISCONNECTED, () => {
+      this.reload();
+    });
+    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, () => {
+      this.reload();
+    });
+    
+    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.EMULATOR_CONFIGURATION, (configuration) => {
+      if (this.state.width !== configuration.emulatorWidth || this.state.height !== configuration.emulatorHeight) {
+        this.setState({ width: configuration.emulatorWidth, height: configuration.emulatorHeight });
+      }
+    });
+
     this.view = React.createRef();
   }
 
@@ -151,8 +160,12 @@ class Emulator extends Component {
     this.jsep.send('keyboard', request);
   };
 
-  reConnect() {
-    this.setState({ streamingConnectionId: Date.now() });
+
+  reload() {
+    if ((this.reloadHoldOff || 0) < Date.now()) {
+      this.reloadHoldOff = Date.now() + 500;
+      this.setState({ streamingConnectionId: Date.now() });
+    }
   }
 
   render() {

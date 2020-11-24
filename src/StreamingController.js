@@ -108,8 +108,14 @@ class StreamingController {
    * @return {Promise<string>}
    */
   getStreamEndpoint() {
-    // TODO: this code should throw an exception if the endpoint is not set.
-    return this.waitFor().then((status) => status.endpoint);
+    return this.waitFor()
+      .then((status) => {
+        if (status.endpoint !== undefined) {
+          return status.endpoint;
+        } else {
+          throw new Error('Can\'t resolve Stream Endpoint, got: ' + JSON.stringify(status));
+        }
+      });
   }
 
   /**
@@ -160,7 +166,10 @@ class StreamingController {
       return new Promise((resolve, reject) => {
         const fn = () => {
           callback().then(resolve, (err) => {
-            if (endTimestamp > Date.now()) {
+            const httpStatusCode = (err.response || {}).status || 500;
+            if (httpStatusCode === 404) {
+              resolve((err.response || {}).data || {});
+            } else if (endTimestamp > Date.now()) {
               setTimeout(fn, 10);
             } else {
               reject(err);
@@ -172,7 +181,7 @@ class StreamingController {
     };
 
     return this.getEdgeNodeId().then((edgeNodeId) => {
-      return retry(() => getStatus(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}?wait=1`, 17500), timeout);
+      return retry(() => getStatus(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}?wait=1`, 5000), timeout);
     });
   }
 

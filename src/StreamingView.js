@@ -45,6 +45,7 @@ export default class StreamingView extends Component {
 
   componentWillUnmount() {
     this.isMountedInView = false;
+    StreamingEvent.destroyEdgeNode(this.props.edgeNodeId)
     if (this.streamSocket) {
       this.streamSocket.close();
     }

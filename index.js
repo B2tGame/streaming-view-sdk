@@ -5,6 +5,5 @@ import StreamingEvent from './src/StreamingEvent';
 
 /**
  * Streaming View SDK
- * @type {module.StreamingViewSDK}
  */
 export { StreamingView, StreamingController, StreamingAgent, StreamingEvent };

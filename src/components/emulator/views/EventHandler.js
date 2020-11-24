@@ -178,7 +178,6 @@ export default class EventHandler extends Component {
    */
   sendInput = (label, request) => {
     this.handleUserInteraction();
-
     if (this.props.enableControl) {
       this.props.jsep.send(label, request);
     }

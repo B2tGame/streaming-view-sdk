@@ -44,6 +44,7 @@ export default class EmulatorWebrtcView extends Component {
 
   state = {
     audio: false,
+    video: false,
     muted: true,
   };
 
@@ -68,7 +69,7 @@ export default class EmulatorWebrtcView extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_CONNECTED, this.onConnect);
     StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect);
     StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
-    this.setState({ connect: 'connecting' }, () => this.props.jsep.startStream());
+    this.setState({ video: false, audio: false }, () => this.props.jsep.startStream());
   }
 
   componentDidUpdate() {
@@ -76,16 +77,21 @@ export default class EmulatorWebrtcView extends Component {
   }
 
   onUserInteraction = () => {
-    this.setState({ muted: false });
+    if (this.state.muted === true) {
+      this.setState({ muted: false }); // Set the state only if this will result in a change.
+    }
+
+    if (this.video.current && this.video.current.paused) {
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_UNAVAILABLE);
+    }
   };
 
   onDisconnect = () => {
-    this.setState({ connect: 'disconnected' });
+    this.setState({ video: false }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_UNAVAILABLE));
     this.setState({ audio: false }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_UNAVAILABLE));
   };
 
   onConnect = (track) => {
-    this.setState({ connect: 'connected' });
     const video = this.video.current;
     if (!video) {
       // Component was unmounted.
@@ -95,7 +101,12 @@ export default class EmulatorWebrtcView extends Component {
     if (!video.srcObject) {
       video.srcObject = new MediaStream();
     }
+
     video.srcObject.addTrack(track);
+    if (track.kind === 'video') {
+      this.setState({ video: true }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_AVAILABLE));
+    }
+
     if (track.kind === 'audio') {
       this.setState({ audio: true }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_AVAILABLE));
     }
@@ -104,17 +115,10 @@ export default class EmulatorWebrtcView extends Component {
   onCanPlay = () => {
     const video = this.video.current;
     if (!video) {
-      // Component was unmounted.
-      return;
+      return; // Component was unmounted.
     }
-
-    return (video.play() || Promise.resolve())
-      .then(() => {
-        // TODO Create a event when video is available
-      })
-      .catch(() => {
-        // TODO Create a event when video is unavailable
-      });
+    return (video.play() || Promise.resolve()).catch(() => {
+    });
   };
 
   onPlaying = () => {
