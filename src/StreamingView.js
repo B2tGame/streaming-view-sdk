@@ -43,14 +43,6 @@ export default class StreamingView extends Component {
   }
 
 
-  componentWillUnmount() {
-    this.isMountedInView = false;
-    StreamingEvent.destroyEdgeNode(this.props.edgeNodeId)
-    if (this.streamSocket) {
-      this.streamSocket.close();
-    }
-  }
-
   componentDidMount() {
     const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint } = this.props;
     const onEvent = this.props.onEvent || (() => {
@@ -98,6 +90,16 @@ export default class StreamingView extends Component {
         });
       });
   }
+
+
+  componentWillUnmount() {
+    this.isMountedInView = false;
+    StreamingEvent.destroyEdgeNode(this.props.edgeNodeId)
+    if (this.streamSocket) {
+      this.streamSocket.close();
+    }
+  }
+
 
   shouldComponentUpdate(nextProps) {
     if (nextProps.streamQualityRating) {

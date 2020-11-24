@@ -30,7 +30,6 @@ export default class StreamingAgent extends Component {
   componentDidMount() {
     this.clearStoresCache();
     this.connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
-
     this.connection.onchange = () => this.onConnectivityUpdate();
     this.onConnectivityUpdate();
   }
@@ -58,7 +57,7 @@ export default class StreamingAgent extends Component {
    */
   onConnectivityUpdate() {
     this.clearStoresCache();
-    if (!this.props.internalSession) {
+    if (!this.props.internalSession && this.props.apiEndpoint) {
       getNetworkConnectivity(this.connection).catch((err) => this.logError(err));
       getDeviceInfo(this.props.apiEndpoint, this.connection).catch((err) => this.logError(err));
     }

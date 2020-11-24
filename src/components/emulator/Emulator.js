@@ -22,6 +22,10 @@ import JsepProtocol from './net/JsepProtocol.js';
 import * as Proto from '../../proto/emulator_controller_pb';
 import { RtcService, EmulatorControllerService } from '../../proto/emulator_web_client';
 import StreamingEvent from '../../StreamingEvent';
+import Logger from '../../Logger';
+import buildInfo from '../../build-info.json';
+import StreamingController from '../../StreamingController';
+import StreamSocket from '../../service/StreamSocket';
 
 
 /**
@@ -107,7 +111,10 @@ class Emulator extends Component {
 
   constructor(props) {
     super(props);
-    const { uri, auth, poll } = props;
+    this.isMountedInView = false;
+    this.view = React.createRef();
+
+    const { uri, auth, poll } = this.props;
     this.emulator = new EmulatorControllerService(uri, auth, this.onError);
     this.rtc = new RtcService(uri, auth, this.onError);
     this.jsep = new JsepProtocol(
@@ -119,26 +126,36 @@ class Emulator extends Component {
       this.props.turnEndpoint,
     );
 
-    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_CONNECTED, () => {
-      this.isConnected = true;
-    });
-    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_DISCONNECTED, () => {
-      this.reload();
-    });
-    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, () => {
-      this.reload();
-    });
-
-
-
-    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.EMULATOR_CONFIGURATION, (configuration) => {
-      if (this.state.width !== configuration.emulatorWidth || this.state.height !== configuration.emulatorHeight) {
-        this.setState({ width: configuration.emulatorWidth, height: configuration.emulatorHeight });
-      }
-    });
-
-    this.view = React.createRef();
+    StreamingEvent.edgeNode(this.props.edgeNodeId)
+      .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
+      .on(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onDisconnect)
+      .on(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
   }
+
+
+  componentWillUnmount() {
+    this.isMountedInView = false;
+    StreamingEvent.edgeNode(this.props.edgeNodeId)
+      .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
+      .off(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onDisconnect)
+      .off(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
+  }
+
+
+  onConfiguration = (configuration) => {
+    if (this.state.width !== configuration.emulatorWidth || this.state.height !== configuration.emulatorHeight) {
+      if(this.isMountedInView) {
+        this.setState({ width: configuration.emulatorWidth, height: configuration.emulatorHeight });
+      } else {
+        this.state.width = configuration.emulatorWidth;
+        this.state.height = configuration.emulatorHeight;
+      }
+    }
+  };
+
+  onDisconnect = () => {
+    this.reload();
+  };
 
   /**
    * Sends the given key to the emulator.

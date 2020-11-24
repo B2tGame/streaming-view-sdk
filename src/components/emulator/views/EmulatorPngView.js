@@ -46,18 +46,15 @@ export default class EmulatorPngView extends Component {
     png: '',
     width: null,
     height: null,
-    connect: 'disconnected',
   };
 
 
   componentDidMount() {
-    this.setState({ connect: 'connecting' });
     this.startStream();
   }
 
   componentWillUnmount() {
     if (this.screen) {
-      this.setState({ connect: 'disconnected' });
       this.screen.cancel();
     }
   }
@@ -83,7 +80,6 @@ export default class EmulatorPngView extends Component {
     this.screen = emulator.streamScreenshot(request);
 
     this.screen.on('data', (response) => {
-      this.setState({ connect: 'connected' });
       // Update the image with the one we just received.
       self.setState({
         png: 'data:image/jpeg;base64,' + response.getImage_asB64(),
