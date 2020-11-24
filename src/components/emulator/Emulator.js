@@ -1,18 +1,3 @@
-/*
- * Copyright 2019 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License")
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import EmulatorPngView from './views/EmulatorPngView.js';
@@ -22,10 +7,7 @@ import JsepProtocol from './net/JsepProtocol.js';
 import * as Proto from '../../proto/emulator_controller_pb';
 import { RtcService, EmulatorControllerService } from '../../proto/emulator_web_client';
 import StreamingEvent from '../../StreamingEvent';
-import Logger from '../../Logger';
-import buildInfo from '../../build-info.json';
-import StreamingController from '../../StreamingController';
-import StreamSocket from '../../service/StreamSocket';
+
 
 
 /**
@@ -133,6 +115,10 @@ class Emulator extends Component {
   }
 
 
+  componentDidMount() {
+    this.isMountedInView = true;
+  }
+
   componentWillUnmount() {
     this.isMountedInView = false;
     StreamingEvent.edgeNode(this.props.edgeNodeId)
@@ -147,7 +133,9 @@ class Emulator extends Component {
       if(this.isMountedInView) {
         this.setState({ width: configuration.emulatorWidth, height: configuration.emulatorHeight });
       } else {
+        // eslint-disable-next-line react/no-direct-mutation-state
         this.state.width = configuration.emulatorWidth;
+        // eslint-disable-next-line react/no-direct-mutation-state
         this.state.height = configuration.emulatorHeight;
       }
     }
