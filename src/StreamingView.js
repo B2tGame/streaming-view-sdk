@@ -63,7 +63,6 @@ export default class StreamingView extends Component {
     StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.EMULATOR_CONFIGURATION, (event) => onEvent(StreamingEvent.EMULATOR_CONFIGURATION, event));
 
     this.isMountedInView = true;
-
     StreamingController({
       apiEndpoint: apiEndpoint,
       edgeNodeId: edgeNodeId,

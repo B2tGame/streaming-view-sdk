@@ -57,20 +57,23 @@ export default class EmulatorWebrtcView extends Component {
     this.video = React.createRef();
   }
 
+  componentDidMount() {
+    StreamingEvent.edgeNode(this.props.edgeNodeId)
+      .on(StreamingEvent.STREAM_CONNECTED, this.onConnect)
+      .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
+      .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
+    this.setState({ video: false, audio: false }, () => this.props.jsep.startStream());
+  }
+
   componentWillUnmount() {
-    StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.STREAM_CONNECTED, this.onConnect);
-    StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect);
-    StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
+    StreamingEvent.edgeNode(this.props.edgeNodeId)
+      .off(StreamingEvent.STREAM_CONNECTED, this.onConnect)
+      .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
+      .off(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
     this.props.jsep.disconnect();
     this.setState();
   }
 
-  componentDidMount() {
-    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_CONNECTED, this.onConnect);
-    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect);
-    StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
-    this.setState({ video: false, audio: false }, () => this.props.jsep.startStream());
-  }
 
   componentDidUpdate() {
     this.video.current.volume = this.props.volume;

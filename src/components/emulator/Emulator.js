@@ -128,7 +128,9 @@ class Emulator extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, () => {
       this.reload();
     });
-    
+
+
+
     StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.EMULATOR_CONFIGURATION, (configuration) => {
       if (this.state.width !== configuration.emulatorWidth || this.state.height !== configuration.emulatorHeight) {
         this.setState({ width: configuration.emulatorWidth, height: configuration.emulatorHeight });

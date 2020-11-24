@@ -51,22 +51,6 @@ export default class StreamingEvent {
     return 'report-measurement';
   }
 
-  /**
-   * Event fire when the audio is available and can be unmuted.
-   * @return {string}
-   */
-  static get STREAM_AUDIO_AVAILABLE() {
-    return 'stream-audio-available';
-  }
-
-
-  /**
-   * Event fire when the audio is not longer available.
-   * @return {string}
-   */
-  static get STREAM_AUDIO_UNAVAILABLE() {
-    return 'stream-audio-unavailable';
-  }
 
   /**
    * Event that is fire when the current location/data center has no
@@ -84,6 +68,15 @@ export default class StreamingEvent {
   static get STREAM_CONNECTED() {
     return 'stream-connected';
   }
+
+  /**
+   * Event that is fire when the stream are disconnected to the backend and no video or audio may be available.
+   * @return {string}
+   */
+  static get STREAM_DISCONNECTED() {
+    return 'stream-disconnected';
+  }
+
 
   /**
    * Event that is fire when the video stream is starting playing (resume from paused or starting)
@@ -107,14 +100,6 @@ export default class StreamingEvent {
    */
   static get STREAM_VIDEO_UNAVAILABLE() {
     return 'stream-video-unavailable';
-  }
-
-  /**
-   * Event that is fire when the stream are disconnected to the backend and no video or audio may be available.
-   * @return {string}
-   */
-  static get STREAM_DISCONNECTED() {
-    return 'stream-disconnected';
   }
 
 
@@ -141,6 +126,23 @@ export default class StreamingEvent {
    */
   static get STREAM_QUALITY_RATING() {
     return 'stream-quality-rating';
+  }
+
+  /**
+   * Event fire when the audio is available and can be unmuted.
+   * @return {string}
+   */
+  static get STREAM_AUDIO_AVAILABLE() {
+    return 'stream-audio-available';
+  }
+
+
+  /**
+   * Event fire when the audio is not longer available.
+   * @return {string}
+   */
+  static get STREAM_AUDIO_UNAVAILABLE() {
+    return 'stream-audio-unavailable';
   }
 
   /**
