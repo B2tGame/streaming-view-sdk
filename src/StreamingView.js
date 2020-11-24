@@ -37,24 +37,14 @@ export default class StreamingView extends Component {
     internalSession: PropTypes.bool, // Can't be change after creation
   };
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.isMountedInView = false;
-  }
-
-
-  componentDidMount() {
-    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint } = this.props;
-    const onEvent = this.props.onEvent || (() => {
-    });
-    this.logger = new Logger(this.props.enableDebug);
+    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, enableDebug, onEvent } = props;
+    this.logger = new Logger(enableDebug);
     this.logger.log(`Latest update: ${buildInfo.tag}`);
+    this.registryLegacyOnEvent(edgeNodeId, onEvent);
 
-    StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.SERVER_OUT_OF_CAPACITY, (event) => onEvent(StreamingEvent.SERVER_OUT_OF_CAPACITY, event));
-    StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_CONNECTED, (event) => onEvent(StreamingEvent.STREAM_CONNECTED, event));
-    StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.EMULATOR_CONFIGURATION, (event) => onEvent(StreamingEvent.EMULATOR_CONFIGURATION, event));
-
-    this.isMountedInView = true;
     StreamingController({
       apiEndpoint: apiEndpoint,
       edgeNodeId: edgeNodeId,
@@ -91,10 +81,26 @@ export default class StreamingView extends Component {
       });
   }
 
+  /**
+   * Registry legacy on event listen
+   * @param {string} edgeNodeId
+   * @param {function} onEvent
+   */
+  registryLegacyOnEvent(edgeNodeId, onEvent) {
+    if (onEvent) {
+      StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.SERVER_OUT_OF_CAPACITY, (event) => onEvent(StreamingEvent.SERVER_OUT_OF_CAPACITY, event));
+      StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_CONNECTED, (event) => onEvent(StreamingEvent.STREAM_CONNECTED, event));
+      StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.EMULATOR_CONFIGURATION, (event) => onEvent(StreamingEvent.EMULATOR_CONFIGURATION, event));
+    }
+  }
+
+  componentDidMount() {
+    this.isMountedInView = true;
+  }
 
   componentWillUnmount() {
     this.isMountedInView = false;
-    StreamingEvent.destroyEdgeNode(this.props.edgeNodeId)
+    StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
     if (this.streamSocket) {
       this.streamSocket.close();
     }
