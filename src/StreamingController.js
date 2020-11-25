@@ -34,9 +34,7 @@ class StreamingController {
   getEdgeNodeId() {
     return this.edgeNodeId !== undefined
       ? Promise.resolve(this.edgeNodeId)
-      : Promise.reject(
-        new Error('StreamingController: Missing edgeNodeId, API endpoint unsupported without Edge Node ID.'),
-      );
+      : Promise.reject(new Error('StreamingController: Missing edgeNodeId, API endpoint unsupported without Edge Node ID.'));
   }
 
   /**
@@ -44,9 +42,8 @@ class StreamingController {
    * @returns {Promise<*>}
    */
   terminate() {
-    return this.getStreamEndpoint().then((streamEndpoint) => {
-      return axios.get(`${streamEndpoint}/emulator-commands/terminate`);
-    });
+    return this.getStreamEndpoint()
+      .then((streamEndpoint) => axios.get(`${streamEndpoint}/emulator-commands/terminate`));
   }
 
   /**
@@ -86,9 +83,7 @@ class StreamingController {
    */
   pause() {
     return this.getStreamEndpoint()
-      .then((streamEndpoint) => {
-        return axios.get(`${streamEndpoint}/emulator-commands/pause`);
-      });
+      .then((streamEndpoint) => axios.get(`${streamEndpoint}/emulator-commands/pause`));
   }
 
   /**
@@ -98,9 +93,7 @@ class StreamingController {
    */
   resume() {
     return this.getStreamEndpoint()
-      .then((streamEndpoint) => {
-        return axios.get(`${streamEndpoint}/emulator-commands/resume`);
-      });
+      .then((streamEndpoint) => axios.get(`${streamEndpoint}/emulator-commands/resume`));
   }
 
   /**
