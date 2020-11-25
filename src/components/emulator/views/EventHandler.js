@@ -21,6 +21,15 @@ const ORIENTATION_LANDSCAPE = 'landscape';
  */
 
 export default class EventHandler extends Component {
+
+  /**
+   * The amount time the SDK should wait at least before sending next USER_INTERACTION event
+   * @return {number}
+   */
+  static get USER_INTERACTION_HOLD_OFF_TIMEOUT() {
+    return 500;
+  }
+
   state = {
     deviceHeight: 768,
     deviceWidth: 432,
@@ -44,6 +53,7 @@ export default class EventHandler extends Component {
     const { emulator } = props;
     this.status = new EmulatorStatus(emulator);
     this.mouseDown = false;
+    this.userInteractionHoldOff = 0;
   }
 
   componentDidMount() {
@@ -78,7 +88,10 @@ export default class EventHandler extends Component {
   }
 
   handleUserInteraction = () => {
-    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.USER_INTERACTION);
+    if ((this.userInteractionHoldOff || 0) < Date.now()) {
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.USER_INTERACTION);
+      this.userInteractionHoldOff = Date.now() + EventHandler.USER_INTERACTION_HOLD_OFF_TIMEOUT;
+    }
     this.enterFullScreen();
   };
 

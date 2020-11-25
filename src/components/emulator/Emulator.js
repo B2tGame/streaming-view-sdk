@@ -183,7 +183,7 @@ class Emulator extends Component {
 
   reload() {
     if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
-      this.reloadHoldOff = Date.now() + Emulator.REALOD_HOLD_OFF_TIMEOUT;
+      this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
       setImmediate(() => {
         if(this.isMountedInView) {
           this.setState({ streamingConnectionId: Date.now() });
