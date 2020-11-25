@@ -22,10 +22,12 @@ export default class StreamSocket {
     StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.REPORT_MEASUREMENT, this.onReport);
   }
 
-  onReport(payload) {
+  onReport = (payload) => {
     payload.type = 'report';
     payload.timestamp = Date.now();
-    this.socket.emit('message', JSON.stringify(payload));
+    if(this.socket) {
+      this.socket.emit('message', JSON.stringify(payload));
+    }
   }
 
   close() {

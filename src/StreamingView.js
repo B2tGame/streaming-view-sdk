@@ -42,7 +42,7 @@ export default class StreamingView extends Component {
     super(props);
     this.isMountedInView = false;
   }
-  
+
   componentDidMount() {
     this.isMountedInView = true;
     const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, enableDebug, onEvent } = this.props;
@@ -51,8 +51,9 @@ export default class StreamingView extends Component {
 
     this.measurement = new Measurement(edgeNodeId);
 
-    StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent || (() => {
-    })); // Push all events also to the onEvent callback
+    if (onEvent) {
+      StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
+    }
 
     StreamingController({
       apiEndpoint: apiEndpoint,
@@ -92,12 +93,13 @@ export default class StreamingView extends Component {
 
   componentWillUnmount() {
     this.isMountedInView = false;
-    StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
+    if (this.measurement) {
+      this.measurement.destroy();
+    }
     if (this.streamSocket) {
       this.streamSocket.close();
     }
-    //  TODO: Implement destroy
-    // this.measurement.destroy();
+    StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
   }
 
 
