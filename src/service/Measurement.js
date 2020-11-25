@@ -35,7 +35,7 @@ export default class Measurement {
 
   onStreamQualityRating = (rating) => {
     this.streamQualityRating = rating.streamQualityRating;
-  }
+  };
 
   onRoundTripTimeMeasurement = (networkRoundTripTime) => {
     this.networkRoundTripTime = networkRoundTripTime;
@@ -46,7 +46,10 @@ export default class Measurement {
     this.reportWebRtcMeasurement(stats);
   };
 
-
+  /**
+   * Process reports from the browser and send report measurements to the StreamSocket by REPORT_MEASUREMENT event
+   * @param {RTCPeerConnection.getStats} stats
+   */
   reportWebRtcMeasurement(stats) {
     this.measurement.measureAt = Date.now();
     this.measurement.measureDuration = (this.measurement.measureAt - this.previousMeasurement.measureAt) / 1000;
@@ -81,7 +84,7 @@ export default class Measurement {
       this.measurement.videoProcessing =
         report.framesDecoded - this.previousMeasurement.framesDecoded !== 0
           ? (((report.totalDecodeTime || 0) - this.previousMeasurement.totalDecodeTime) * 1000) /
-          this.measurement.measureDuration
+            this.measurement.measureDuration
           : 0;
 
       this.previousMeasurement.framesDecoded = report.framesDecoded;

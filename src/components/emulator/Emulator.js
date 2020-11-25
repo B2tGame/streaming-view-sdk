@@ -48,8 +48,8 @@ import StreamingEvent from '../../StreamingEvent';
 class Emulator extends Component {
 
   /**
-   * The amount time the SDK should wait at least before doing a hard reload due to bad/none functionally stream.
-   * The time need to take into account after it has been reloaded it will need some time to do a reconnection etc.
+   * The minimum amount time the SDK should wait before doing a hard reload due to bad/none functional stream.
+   * Consider the time needed after it has been reloaded, it will need some time to do a reconnection etc.
    * @return {number}
    */
   static get RELOAD_HOLD_OFF_TIMEOUT() {
@@ -57,7 +57,7 @@ class Emulator extends Component {
   }
 
   /**
-   * Number of times the system should reload the stream before giving up and enter a unreachable state.
+   * Number of times the system should reload the stream before entering an unreachable state.
    * @return {number}
    */
   static get RELOAD_FAILURE_THRESHOLD() {

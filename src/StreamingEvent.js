@@ -12,7 +12,7 @@ const edgeNodeEventEmitter = {};
 
 
 /**
- * Streamign Event Emitter bus for sending and receiving event cross the SDK.
+ * Streaming Event Emitter bus for sending and receiving event across the SDK.
  */
 export default class StreamingEvent {
 
@@ -33,7 +33,7 @@ export default class StreamingEvent {
   }
 
   /**
-   * Web RTC measurement with payload create from {RTCPeerConnection.getStats}
+   * Web RTC measurement with payload created from {RTCPeerConnection.getStats}
    * @return {string}
    */
   static get WEB_RTC_MEASUREMENT() {
@@ -69,8 +69,8 @@ export default class StreamingEvent {
 
 
   /**
-   * Event that is fire when the current location/data center has no
-   * free allocations for this edge node and result in the edge node is queued until required capacity in the datacenter exists.
+   * Event fired when the current location/data center has no free allocations for this edge node
+   * and result in the edge node is queued until required capacity in the datacenter is available.
    * @returns {string}
    */
   static get SERVER_OUT_OF_CAPACITY() {
@@ -78,7 +78,7 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event that is fire when the stream are connected to the backend and the consumer receiving a video stream.
+   * Event fired when the stream is connected to the backend and the consumer receiving a video stream.
    * @returns {string}
    */
   static get STREAM_CONNECTED() {
@@ -86,7 +86,7 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event that is fire when the stream are disconnected to the backend and no video or audio may be available.
+   * Event fired when the stream is disconnected from the backend and no video or no audio is available.
    * @return {string}
    */
   static get STREAM_DISCONNECTED() {
@@ -94,7 +94,7 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event that is fire when the stream enter a unreachable and none recoverable state.
+   * Event that is fired when the stream enters an unreachable and none recoverable state.
    * @return {string}
    */
   static get STREAM_UNREACHABLE() {
@@ -103,7 +103,7 @@ export default class StreamingEvent {
 
 
   /**
-   * Event that is fire when the video stream is starting playing (resume from paused or starting)
+   * Event that is fired when the video stream started playing (resume from paused or started)
    * @return {string}
    */
   static get STREAM_VIDEO_PLAYING() {
@@ -111,7 +111,7 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event fire when the video is available and can be played.
+   * Event fired when the video is available and can be played.
    * @return {string}
    */
   static get STREAM_VIDEO_AVAILABLE() {
@@ -119,7 +119,7 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event fire when the video is not longer available.
+   * Event fired when the video is not longer available.
    * @return {string}
    */
   static get STREAM_VIDEO_UNAVAILABLE() {
@@ -127,7 +127,7 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event fire when the video is missing but not clearly unavailable.
+   * Event fired when the video is missing but not certainly unavailable.
    * @return {string}
    */
   static get STREAM_VIDEO_MISSING() {
@@ -136,7 +136,7 @@ export default class StreamingEvent {
 
 
   /**
-   * Event that is fire when the user interact with a running stream.
+   * Event fired when the user interact with a running stream.
    * @return {string}
    */
   static get USER_INTERACTION() {
@@ -144,16 +144,15 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event that is fired after receiving emulator configuration during initialization of P2P connection
+   * Event fired when receiving emulator configuration during initialization of P2P connection
    * @returns {string}
    */
   static get EMULATOR_CONFIGURATION() {
     return 'emulator-configuration';
   }
 
-
   /**
-   * Event that is fired when the stream quality rating has been updated.
+   * Event fired when the stream quality rating has been updated.
    * @return {string}
    */
   static get STREAM_QUALITY_RATING() {
@@ -161,16 +160,15 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event fire when the audio is available and can be unmuted.
+   * Event fired when the audio is available and can be unmuted.
    * @return {string}
    */
   static get STREAM_AUDIO_AVAILABLE() {
     return 'stream-audio-available';
   }
 
-
   /**
-   * Event fire when the audio is not longer available.
+   * Event fired when the audio is not longer available.
    * @return {string}
    */
   static get STREAM_AUDIO_UNAVAILABLE() {
@@ -178,7 +176,7 @@ export default class StreamingEvent {
   }
 
   /**
-   * Get the EventEmitter that are for event relative to a specific edge node id.
+   * Get EventEmitter for a specific Edge Node Id.
    * This will automatic create a new Event emitter if missing.
    * @param {string} edgeNodeId
    * @return {EventEmitter}
@@ -191,8 +189,8 @@ export default class StreamingEvent {
   }
 
   /**
-   * Destroy all the EventEmitter for a specific edge node and force unsubscribe all
-   * listener that are subscribed for any events for the edge node.
+   * Destroy all the EventEmitter for a specific edge node and force unsubscribe all listeners
+   * that are subscribed for edge node events.
    * @param {string} edgeNodeId
    * @return {EventEmitter}
    */
@@ -232,7 +230,7 @@ export default class StreamingEvent {
   }
 
   /**
-   * Emit a event to the global scope and all edge node scopes.
+   * Emit an event to the global scope and all edge node scopes.
    * @param {string} event
    * @param {*} data
    */

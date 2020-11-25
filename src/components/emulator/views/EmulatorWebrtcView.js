@@ -50,6 +50,7 @@ export default class EmulatorWebrtcView extends Component {
       .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
     this.setState({ video: false, audio: false }, () => this.props.jsep.startStream());
 
+    // Performing 'health-check' of the stream and reporting events when video is missing
     this.timer = setInterval(() => {
       if (this.isMountedInView && this.video.current && this.video.current.paused) {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
@@ -75,8 +76,9 @@ export default class EmulatorWebrtcView extends Component {
   }
 
   onUserInteraction = () => {
+    // Un-muting video stream on first user interaction, volume of video stream can be changed dynamically
     if (this.state.muted === true) {
-      this.setState({ muted: false }); // Set the state only if this will result in a change.
+      this.setState({ muted: false });
     }
 
     if (this.isMountedInView && this.video.current && this.video.current.paused) {

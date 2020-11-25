@@ -5,7 +5,7 @@ import { getDeviceInfo, resetDeviceInfo } from './stores/deviceInfo';
 import Logger from './Logger';
 
 /**
- * StreamingAgent class is responsible to running any necessary background task for the Streaming Service
+ * StreamingAgent class is responsible for running necessary background tasks for the Streaming Service
  *
  * @class StreamingAgent
  * @extends {Component}

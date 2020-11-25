@@ -56,6 +56,7 @@ export default class EmulatorPngView extends Component {
 
     var self = this;
     const { emulator, poll } = this.props;
+    // Temporary disabled pool way of `getScreenshot`, since emulator sending corrupted screenshots
     // if (poll) {
     //   this.screen = emulator.getScreenshot(request);
     // } else {

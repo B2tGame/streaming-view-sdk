@@ -23,7 +23,7 @@ const ORIENTATION_LANDSCAPE = 'landscape';
 export default class EventHandler extends Component {
 
   /**
-   * The amount time the SDK should wait at least before sending next USER_INTERACTION event
+   * The minimum amount of time the SDK should wait before sending next USER_INTERACTION event
    * @return {number}
    */
   static get USER_INTERACTION_HOLD_OFF_TIMEOUT() {
