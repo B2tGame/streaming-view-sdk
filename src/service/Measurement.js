@@ -62,12 +62,10 @@ export default class Measurement {
     this.measurement.measureDuration = Math.round(this.measurement.measureDuration);
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
 
-    /* @TODO: Renable thi code
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REPORT_MEASUREMENT, {
       networkRoundTripTime: this.networkRoundTripTime,
       extra: this.measurement,
     });
-     */
     this.measurement = {};
   }
 
