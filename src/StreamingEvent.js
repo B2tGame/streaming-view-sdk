@@ -41,6 +41,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event requesting Web RTC measurement from {RTCPeerConnection.getStats}
+   * @return {string}
+   */
+  static get REQUEST_WEB_RTC_MEASUREMENT() {
+    return 'request-web-rtc-measurement';
+  }
+
+  /**
    * Event of network RTT with payload {number} in millisecond
    * @return {string}
    */

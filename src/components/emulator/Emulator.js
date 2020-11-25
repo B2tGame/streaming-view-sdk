@@ -9,6 +9,7 @@ import { RtcService, EmulatorControllerService } from '../../proto/emulator_web_
 import StreamingEvent from '../../StreamingEvent';
 
 
+
 /**
  * A React component that displays a remote android emulator.
  *
