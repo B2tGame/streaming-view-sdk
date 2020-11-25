@@ -40,10 +40,18 @@ export default class StreamingView extends Component {
   constructor(props) {
     super(props);
     this.isMountedInView = false;
-    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, enableDebug, onEvent } = props;
+
+  }
+
+
+  componentDidMount() {
+    this.isMountedInView = true;
+    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, enableDebug, onEvent } = this.props;
     this.logger = new Logger(enableDebug);
     this.logger.log(`Latest update: ${buildInfo.tag}`);
-    this.registryLegacyOnEvent(edgeNodeId, onEvent);
+
+    StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent || (() => {
+    })); // Push all events also to the onEvent callback
 
     StreamingController({
       apiEndpoint: apiEndpoint,
@@ -79,23 +87,6 @@ export default class StreamingView extends Component {
           isReadyStream: false,
         });
       });
-  }
-
-  /**
-   * Registry legacy on event listen
-   * @param {string} edgeNodeId
-   * @param {function} onEvent
-   */
-  registryLegacyOnEvent(edgeNodeId, onEvent) {
-    if (onEvent) {
-      StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.SERVER_OUT_OF_CAPACITY, (event) => onEvent(StreamingEvent.SERVER_OUT_OF_CAPACITY, event));
-      StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_CONNECTED, (event) => onEvent(StreamingEvent.STREAM_CONNECTED, event));
-      StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.EMULATOR_CONFIGURATION, (event) => onEvent(StreamingEvent.EMULATOR_CONFIGURATION, event));
-    }
-  }
-
-  componentDidMount() {
-    this.isMountedInView = true;
   }
 
   componentWillUnmount() {

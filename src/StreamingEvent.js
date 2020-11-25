@@ -1,7 +1,15 @@
 import EventEmitter from 'eventemitter3';
 
-const globalEventEmitter = new EventEmitter();
+class ExtendedEventEmitter extends EventEmitter {
+  emit(event, data) {
+    super.emit(event, data);
+    super.emit('event', event, data);
+  }
+}
+
+const globalEventEmitter = new ExtendedEventEmitter();
 const edgeNodeEventEmitter = {};
+
 
 /**
  * Streamign Event Emitter bus for sending and receiving event cross the SDK.
@@ -152,7 +160,7 @@ export default class StreamingEvent {
    */
   static edgeNode(edgeNodeId) {
     if (edgeNodeEventEmitter[edgeNodeId] === undefined) {
-      edgeNodeEventEmitter[edgeNodeId] = new EventEmitter();
+      edgeNodeEventEmitter[edgeNodeId] = new ExtendedEventEmitter();
     }
     return edgeNodeEventEmitter[edgeNodeId];
   }
