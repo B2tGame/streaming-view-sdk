@@ -198,17 +198,15 @@ class Emulator extends Component {
   reload() {
     if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
       this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
-      setImmediate(() => {
-        if (this.isMountedInView) {
-          if (this.reloadCount >= Emulator.RELOAD_FAILURE_THRESHOLD) {
-            // Give up and exit the stream.
-            StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, new Error(`Reach max number of reload tires: ${this.reloadCount}`));
-          } else {
-            this.reloadCount++;
-            this.setState({ streamingConnectionId: Date.now() });
-          }
+      if (this.isMountedInView) {
+        if (this.reloadCount >= Emulator.RELOAD_FAILURE_THRESHOLD) {
+          // Give up and exit the stream.
+          StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, new Error(`Reach max number of reload tires: ${this.reloadCount}`));
+        } else {
+          this.reloadCount++;
+          this.setState({ streamingConnectionId: Date.now() });
         }
-      });
+      }
     }
   }
 
