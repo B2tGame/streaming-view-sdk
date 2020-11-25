@@ -49,10 +49,19 @@ export default class EmulatorWebrtcView extends Component {
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
       .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
     this.setState({ video: false, audio: false }, () => this.props.jsep.startStream());
+
+    this.timer = setInterval(() => {
+      if (this.isMountedInView && this.video.current && this.video.current.paused) {
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
+      }
+    }, 500);
   }
 
   componentWillUnmount() {
     this.isMountedInView = false;
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .off(StreamingEvent.STREAM_CONNECTED, this.onConnect)
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
@@ -70,13 +79,13 @@ export default class EmulatorWebrtcView extends Component {
       this.setState({ muted: false }); // Set the state only if this will result in a change.
     }
 
-    if (this.video.current && this.video.current.paused) {
-      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_UNAVAILABLE);
+    if (this.isMountedInView && this.video.current && this.video.current.paused) {
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
     }
   };
 
   onDisconnect = () => {
-    if(this.isMountedInView) {
+    if (this.isMountedInView) {
       this.setState({ video: false }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_UNAVAILABLE));
       this.setState({ audio: false }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_UNAVAILABLE));
     }

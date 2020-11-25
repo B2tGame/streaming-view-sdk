@@ -9,7 +9,6 @@ import { RtcService, EmulatorControllerService } from '../../proto/emulator_web_
 import StreamingEvent from '../../StreamingEvent';
 
 
-
 /**
  * A React component that displays a remote android emulator.
  *
@@ -111,6 +110,7 @@ class Emulator extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
       .on(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onDisconnect)
+      .on(StreamingEvent.STREAM_VIDEO_MISSING, this.onDisconnect)
       .on(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
   }
 
@@ -124,13 +124,14 @@ class Emulator extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
       .off(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onDisconnect)
+      .off(StreamingEvent.STREAM_VIDEO_MISSING, this.onDisconnect)
       .off(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
   }
 
 
   onConfiguration = (configuration) => {
     if (this.state.width !== configuration.emulatorWidth || this.state.height !== configuration.emulatorHeight) {
-      if(this.isMountedInView) {
+      if (this.isMountedInView) {
         this.setState({ width: configuration.emulatorWidth, height: configuration.emulatorHeight });
       } else {
         // eslint-disable-next-line react/no-direct-mutation-state

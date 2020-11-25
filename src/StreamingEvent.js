@@ -110,6 +110,15 @@ export default class StreamingEvent {
     return 'stream-video-unavailable';
   }
 
+  /**
+   * Event fire when the video is missing but not clearly unavailable.
+   * @return {string}
+   */
+  static get STREAM_VIDEO_MISSING() {
+    return 'stream-video-missing';
+  }
+
+
 
   /**
    * Event that is fire when the user interact with a running stream.
