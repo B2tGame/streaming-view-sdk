@@ -82,7 +82,7 @@ export default class StreamingView extends Component {
           return; // Cancel any action if we not longer are mounted.
         }
         this.logger.error('StreamingController Errors -', err);
-        // TODO: emit event to rob0 when stream is unreachable
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, err);
         this.setState({
           isReadyStream: false,
         });

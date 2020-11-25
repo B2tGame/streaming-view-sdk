@@ -85,6 +85,14 @@ export default class StreamingEvent {
     return 'stream-disconnected';
   }
 
+  /**
+   * Event that is fire when the stream enter a unreachable and none recoverable state.
+   * @return {string}
+   */
+  static get STREAM_UNREACHABLE() {
+    return 'stream-unreachable';
+  }
+
 
   /**
    * Event that is fire when the video stream is starting playing (resume from paused or starting)
