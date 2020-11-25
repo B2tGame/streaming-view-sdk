@@ -178,7 +178,8 @@ export default class StreamingEvent {
   }
 
   /**
-   *
+   * Get the EventEmitter that are for event relative to a specific edge node id.
+   * This will automatic create a new Event emitter if missing.
    * @param {string} edgeNodeId
    * @return {EventEmitter}
    */
@@ -190,7 +191,8 @@ export default class StreamingEvent {
   }
 
   /**
-   *
+   * Destroy all the EventEmitter for a specific edge node and force unsubscribe all
+   * listener that are subscribed for any events for the edge node.
    * @param {string} edgeNodeId
    * @return {EventEmitter}
    */
