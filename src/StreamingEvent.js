@@ -127,7 +127,6 @@ export default class StreamingEvent {
   }
 
 
-
   /**
    * Event that is fire when the user interact with a running stream.
    * @return {string}
@@ -230,7 +229,9 @@ export default class StreamingEvent {
   static emit(event, data) {
     globalEventEmitter.emit(event, data);
     for (let edgeNodeId in edgeNodeEventEmitter) {
-      edgeNodeEventEmitter[edgeNodeId].emit(event, data);
+      if (edgeNodeEventEmitter[edgeNodeId]) {
+        edgeNodeEventEmitter[edgeNodeId].emit(event, data);
+      }
     }
   }
 }
