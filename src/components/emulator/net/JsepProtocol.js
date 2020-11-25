@@ -186,23 +186,18 @@ export default class JsepProtocol {
       iceTransportPolicy: 'relay',
     };
     this.peerConnection = new RTCPeerConnection(signal.start);
-    this._startMonitor(this.peerConnection);
+
+    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, () => {
+      this.peerConnection
+        .getStats()
+        .then((stats) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, stats))
+        .catch((err) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err));
+    });
+
     this.peerConnection.addEventListener('track', this._handlePeerConnectionTrack, false);
     this.peerConnection.addEventListener('icecandidate', this._handlePeerIceCandidate, false);
     this.peerConnection.addEventListener('connectionstatechange', this._handlePeerConnectionStateChange, false);
     this.peerConnection.ondatachannel = (e) => this._handleDataChannel(e);
-  };
-
-  _startMonitor = (peerConnection) => {
-    this.rtcEventTrigger = setInterval(
-      () =>
-        peerConnection
-          .getStats()
-          .then((stats) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, stats))
-          .catch((err) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err)),
-      1000,
-    );
-    this.logger.log('Registry RTC event trigger:', this.rtcEventTrigger);
   };
 
   _handleSDP = async (signal) => {
@@ -228,7 +223,9 @@ export default class JsepProtocol {
       if (signal.bye) this._handleBye();
       if (signal.candidate) this._handleCandidate(signal);
     } catch (e) {
-      this.logger.error('Streaming View SDK: Failed to handle message: [' + message + '], due to: ' + JSON.stringify(e));
+      this.logger.error(
+        'Streaming View SDK: Failed to handle message: [' + message + '], due to: ' + JSON.stringify(e)
+      );
     }
   };
 

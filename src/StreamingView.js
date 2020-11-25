@@ -7,6 +7,7 @@ import StreamingController from './StreamingController';
 import buildInfo from './build-info.json';
 import Logger from './Logger';
 import StreamSocket from './service/StreamSocket';
+import Measurement from './service/Measurement';
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
@@ -49,6 +50,8 @@ export default class StreamingView extends Component {
     });
     this.logger = new Logger(this.props.enableDebug);
     this.logger.log(`Latest update: ${buildInfo.tag}`);
+
+    this.measurement = new Measurement(edgeNodeId);
 
     StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.SERVER_OUT_OF_CAPACITY, (event) => onEvent(StreamingEvent.SERVER_OUT_OF_CAPACITY, event));
     StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_CONNECTED, (event) => onEvent(StreamingEvent.STREAM_CONNECTED, event));
@@ -98,6 +101,8 @@ export default class StreamingView extends Component {
     if (this.streamSocket) {
       this.streamSocket.close();
     }
+    //  TODO: Implement destroy
+    // this.measurement.destroy();
   }
 
 

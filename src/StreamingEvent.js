@@ -33,6 +33,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event requesting Web RTC measurement from {RTCPeerConnection.getStats}
+   * @return {string}
+   */
+  static get REQUEST_WEB_RTC_MEASUREMENT() {
+    return 'request-web-rtc-measurement';
+  }
+
+  /**
    * Event of network RTT with payload {number} in millisecond
    * @return {string}
    */
@@ -40,7 +48,6 @@ export default class StreamingEvent {
   static get ROUND_TRIP_TIME_MEASUREMENT() {
     return 'round-trip-time-measurement';
   }
-
 
   /**
    * Final report that should be sent up to the backend with a report of all measurement
@@ -50,7 +57,6 @@ export default class StreamingEvent {
   static get REPORT_MEASUREMENT() {
     return 'report-measurement';
   }
-
 
   /**
    * Event that is fire when the current location/data center has no
@@ -77,7 +83,6 @@ export default class StreamingEvent {
     return 'stream-disconnected';
   }
 
-
   /**
    * Event that is fire when the video stream is starting playing (resume from paused or starting)
    * @return {string}
@@ -102,7 +107,6 @@ export default class StreamingEvent {
     return 'stream-video-unavailable';
   }
 
-
   /**
    * Event that is fire when the user interact with a running stream.
    * @return {string}
@@ -119,7 +123,6 @@ export default class StreamingEvent {
     return 'emulator-configuration';
   }
 
-
   /**
    * Event that is fired when the stream quality rating has been updated.
    * @return {string}
@@ -135,7 +138,6 @@ export default class StreamingEvent {
   static get STREAM_AUDIO_AVAILABLE() {
     return 'stream-audio-available';
   }
-
 
   /**
    * Event fire when the audio is not longer available.
