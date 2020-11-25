@@ -4,6 +4,62 @@ import StreamingEvent from '../StreamingEvent';
  * Measurement class is responsible for processing and reporting measurement reports
  */
 export default class Measurement {
+
+  /**
+   *
+   * @return {string}
+   * @constructor
+   */
+  static get REPORT_TYPE_INBOUND_RTP() {
+    return 'inbound-rtp';
+  }
+
+  /**
+   *
+   * @return {string}
+   * @constructor
+   */
+  static get REPORT_TYPE_TRACK() {
+    return 'track';
+  }
+
+  /**
+   *
+   * @return {string}
+   * @constructor
+   */
+  static get REPORT_TYPE_DATA_CHANNEL() {
+    return 'data-channel';
+  }
+
+  /**
+   *
+   * @return {string}
+   * @constructor
+   */
+  static get REPORT_KIND_VIDEO() {
+    return 'video';
+  }
+
+  /**
+   *
+   * @return {string}
+   * @constructor
+   */
+  static get REPORT_LABEL_MOUSE() {
+    return 'mouse';
+  }
+
+  /**
+   *
+   * @return {string}
+   * @constructor
+   */
+  static get REPORT_LABEL_TOUCH() {
+    return 'touch';
+  }
+
+
   constructor(edgeNodeId) {
     this.edgeNodeId = edgeNodeId;
     this.networkRoundTripTime = 0;
@@ -76,7 +132,7 @@ export default class Measurement {
    * @param report
    */
   processInboundRtpVideoReport(report) {
-    if (report.type === 'inbound-rtp' && report.kind === 'video') {
+    if (report.type === Measurement.REPORT_TYPE_INBOUND_RTP && report.kind === Measurement.REPORT_KIND_VIDEO) {
       this.measurement.framesDecodedPerSecond =
         (report.framesDecoded - this.previousMeasurement.framesDecoded) / this.measurement.measureDuration;
       this.measurement.bytesReceivedPerSecond =
@@ -98,7 +154,7 @@ export default class Measurement {
    * @param report
    */
   processTrackVideoReport(report) {
-    if (report.type === 'track' && report.kind === 'video') {
+    if (report.type === Measurement.REPORT_TYPE_TRACK && report.kind === Measurement.REPORT_KIND_VIDEO) {
       this.measurement.framesReceivedPerSecond =
         (report.framesReceived - this.previousMeasurement.framesReceived) / this.measurement.measureDuration;
       this.measurement.framesDroppedPerSecond =
@@ -115,7 +171,7 @@ export default class Measurement {
    */
   processDataChannelMouseReport(report) {
     //Extract data-channel:mouse logs
-    if (report.type === 'data-channel' && report.label === 'mouse') {
+    if (report.type === Measurement.REPORT_TYPE_DATA_CHANNEL && report.label === Measurement.REPORT_LABEL_MOUSE) {
       this.measurement.mouseMessagesSentPerSecond =
         (report.messagesSent - this.previousMeasurement.messagesSentMouse) / this.measurement.measureDuration;
       this.previousMeasurement.messagesSentMouse = report.messagesSent;
@@ -128,7 +184,7 @@ export default class Measurement {
    */
   processDataChannelTouchReport(report) {
     //Extract data-channel:touch logs
-    if (report.type === 'data-channel' && report.label === 'touch') {
+    if (report.type === Measurement.REPORT_TYPE_DATA_CHANNEL && report.label === Measurement.REPORT_LABEL_TOUCH) {
       this.measurement.touchMessagesSentPerSecond =
         (report.messagesSent - this.previousMeasurement.messagesSentTouch) / this.measurement.measureDuration;
       this.previousMeasurement.messagesSentTouch = report.messagesSent;
