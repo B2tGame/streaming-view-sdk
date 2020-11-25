@@ -46,6 +46,16 @@ import StreamingEvent from '../../StreamingEvent';
  */
 
 class Emulator extends Component {
+
+  /**
+   * The amount time the SDK should wait at least before doing a hard reload due to bad/none functionally stream.
+   * The time need to take into account after it has been reloaded it will need some time to do a reconnection etc.
+   * @return {number}
+   */
+  static get RELOAD_HOLD_OFF_TIMEOUT() {
+    return 5000;
+  }
+
   static propTypes = {
     /** gRPC Endpoint where we can reach the emulator. */
     uri: PropTypes.string.isRequired,
@@ -94,6 +104,7 @@ class Emulator extends Component {
     super(props);
     this.isMountedInView = false;
     this.view = React.createRef();
+    this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
 
     const { uri, auth, poll } = this.props;
     this.emulator = new EmulatorControllerService(uri, auth, this.onError);
@@ -171,7 +182,7 @@ class Emulator extends Component {
 
   reload() {
     if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
-      this.reloadHoldOff = Date.now() + 500;
+      this.reloadHoldOff = Date.now() + Emulator.REALOD_HOLD_OFF_TIMEOUT;
       this.setState({ streamingConnectionId: Date.now() });
     }
   }
