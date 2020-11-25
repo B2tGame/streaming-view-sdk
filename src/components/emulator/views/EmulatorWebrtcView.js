@@ -86,8 +86,11 @@ export default class EmulatorWebrtcView extends Component {
 
   onDisconnect = () => {
     if (this.isMountedInView) {
-      this.setState({ video: false }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_UNAVAILABLE));
-      this.setState({ audio: false }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_UNAVAILABLE));
+      this.setState({ video: false, audio: false }, () => {
+        StreamingEvent.edgeNode(this.props.edgeNodeId)
+          .emit(StreamingEvent.STREAM_VIDEO_UNAVAILABLE)
+          .emit(StreamingEvent.STREAM_AUDIO_UNAVAILABLE);
+      });
     }
   };
 

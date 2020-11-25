@@ -50,7 +50,6 @@ export default class Measurement {
   reportWebRtcMeasurement(stats) {
     this.measurement.measureAt = Date.now();
     this.measurement.measureDuration = (this.measurement.measureAt - this.previousMeasurement.measureAt) / 1000;
-
     // Process all reports and collect measurement data
     stats.forEach((report) => {
       this.processInboundRtpVideoReport(report);

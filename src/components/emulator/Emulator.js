@@ -56,6 +56,10 @@ class Emulator extends Component {
     return 5000;
   }
 
+  /**
+   * Number of times the system should reload the stream before giving up and enter a unreachable state.
+   * @return {number}
+   */
   static get RELOAD_FAILURE_THRESHOLD() {
     return 2;
   }

@@ -48,7 +48,6 @@ export default class StreamingView extends Component {
     const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, enableDebug, onEvent } = this.props;
     this.logger = new Logger(enableDebug);
     this.logger.log(`Latest update: ${buildInfo.tag}`);
-
     this.measurement = new Measurement(edgeNodeId);
 
     if (onEvent) {

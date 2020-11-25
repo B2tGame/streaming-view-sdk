@@ -28,7 +28,7 @@ export default class JsepProtocol {
     this.stream = null;
     this.turnEndpoint = turnEndpoint;
     this.eventForwarders = {};
-    this.poll = typeof this.rtc.receiveJsepMessages !== 'function' ? true : poll;
+    this.poll = poll || typeof this.rtc.receiveJsepMessages !== 'function';
     this.logger = logger;
   }
 
