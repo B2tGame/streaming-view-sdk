@@ -6,7 +6,7 @@ import StreamingEvent from './StreamingEvent';
 export default class Logger {
   /**
    *
-   * @param {boolean} enableDebug If logging also should be displayed in the browser console.
+   * @param {boolean} enableDebug Enable displaying logs in the browser console.
    */
   constructor(enableDebug = true) {
     this.enableDebug = enableDebug;

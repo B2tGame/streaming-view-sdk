@@ -23,19 +23,19 @@ export default class StreamingView extends Component {
   };
 
   static propTypes = {
-    apiEndpoint: PropTypes.string.isRequired, // Can't be change after creation
-    edgeNodeId: PropTypes.string.isRequired, // Can't be change after creation
-    edgeNodeEndpoint: PropTypes.string, // Can't be change after creation
-    turnEndpoint: PropTypes.string, // Can't be change after creation
-    userId: PropTypes.string, // Can't be change after creation
-    enableControl: PropTypes.bool, // Can be change dynamic
-    enableFullScreen: PropTypes.bool, // Can be change dynamic
-    view: PropTypes.oneOf(['webrtc', 'png']), // Can't be change after creation
-    volume: PropTypes.number, // Can be change dynamic, Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
-    onEvent: PropTypes.func, // Can't be change after creation
-    streamQualityRating: PropTypes.number, // Can be change dynamic
-    enableDebug: PropTypes.bool, // Can't be change after creation
-    internalSession: PropTypes.bool, // Can't be change after creation
+    apiEndpoint: PropTypes.string.isRequired, // Can't be changed after creation
+    edgeNodeId: PropTypes.string.isRequired, // Can't be changed after creation
+    edgeNodeEndpoint: PropTypes.string, // Can't be changed after creation
+    turnEndpoint: PropTypes.string, // Can't be changed after creation
+    userId: PropTypes.string, // Can't be changed after creation
+    enableControl: PropTypes.bool, // Can be changed dynamically
+    enableFullScreen: PropTypes.bool, // Can be changed dynamically
+    view: PropTypes.oneOf(['webrtc', 'png']), // Can't be changed after creation
+    volume: PropTypes.number, // Can be changed dynamically, Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
+    onEvent: PropTypes.func, // Can't be changed after creation
+    streamQualityRating: PropTypes.number, // Can be changed dynamically
+    enableDebug: PropTypes.bool, // Can't be changed after creation
+    internalSession: PropTypes.bool, // Can't be changed after creation
   };
 
   constructor(props) {
