@@ -196,10 +196,10 @@ export default class StreamingEvent {
    * @return {EventEmitter}
    */
   static destroyEdgeNode(edgeNodeId) {
-    const e = edgeNodeEventEmitter[edgeNodeId];
+    const emitter = edgeNodeEventEmitter[edgeNodeId];
     edgeNodeEventEmitter[edgeNodeId] = undefined;
-    if (e) {
-      e.removeAllListeners();
+    if (emitter) {
+      emitter.removeAllListeners();
     }
   }
 
