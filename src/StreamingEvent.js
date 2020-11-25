@@ -104,7 +104,7 @@ export default class StreamingEvent {
 
 
   /**
-   * Event that is fired when the video stream started playing (resume from paused or started)
+   * Event fired when the video stream started playing (resume from paused or started)
    * @return {string}
    */
   static get STREAM_VIDEO_PLAYING() {
