@@ -86,6 +86,7 @@ export default class JsepProtocol {
 
   cleanup = () => {
     this.disconnect();
+    StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
     if (this.peerConnection) {
       this.peerConnection.removeEventListener('track', this._handlePeerConnectionTrack);
       this.peerConnection.removeEventListener('icecandidate', this._handlePeerIceCandidate);
@@ -187,18 +188,23 @@ export default class JsepProtocol {
     };
     this.peerConnection = new RTCPeerConnection(signal.start);
 
-    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, () => {
-      this.peerConnection
-        .getStats()
-        .then((stats) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, stats))
-        .catch((err) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err));
-    });
+    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
 
     this.peerConnection.addEventListener('track', this._handlePeerConnectionTrack, false);
     this.peerConnection.addEventListener('icecandidate', this._handlePeerIceCandidate, false);
     this.peerConnection.addEventListener('connectionstatechange', this._handlePeerConnectionStateChange, false);
     this.peerConnection.ondatachannel = (e) => this._handleDataChannel(e);
   };
+
+  onRequestWebRtcMeasurement = () => {
+    if(this.peerConnection) {
+      this.peerConnection
+        .getStats()
+        .then((stats) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, stats))
+        .catch((err) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err));
+    }
+  }
+
 
   _handleSDP = async (signal) => {
     this.peerConnection.setRemoteDescription(new RTCSessionDescription(signal));
