@@ -55,6 +55,8 @@ export default class StreamingView extends Component {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
     }
 
+    StreamingEvent.edgeNode(edgeNodeId).once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }));
+
     StreamingController({
       apiEndpoint: apiEndpoint,
       edgeNodeId: edgeNodeId,
@@ -85,9 +87,6 @@ export default class StreamingView extends Component {
         }
         this.logger.error('StreamingController Errors -', err);
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, err);
-        this.setState({
-          isReadyStream: false,
-        });
       });
   }
 

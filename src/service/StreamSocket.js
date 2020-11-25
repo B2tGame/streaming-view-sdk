@@ -19,7 +19,10 @@ export default class StreamSocket {
       StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, networkRoundTripTime);
     });
     // Send measurement report to the backend.
-    StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.REPORT_MEASUREMENT, this.onReport);
+    StreamingEvent.edgeNode(edgeNodeId)
+      .on(StreamingEvent.REPORT_MEASUREMENT, this.onReport)
+      .on(StreamingEvent.STREAM_UNREACHABLE, this.close);
+
   }
 
   onReport = (payload) => {
@@ -30,10 +33,12 @@ export default class StreamSocket {
     }
   }
 
-  close() {
+  close = () => {
     if (this.socket) {
       this.socket.close();
-      StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.REPORT_MEASUREMENT, this.onReport);
+      StreamingEvent.edgeNode(this.edgeNodeId)
+        .off(StreamingEvent.REPORT_MEASUREMENT, this.onReport)
+        .off(StreamingEvent.STREAM_UNREACHABLE, this.close);
       this.socket = undefined;
     }
   }

@@ -9,7 +9,6 @@ import { RtcService, EmulatorControllerService } from '../../proto/emulator_web_
 import StreamingEvent from '../../StreamingEvent';
 
 
-
 /**
  * A React component that displays a remote android emulator.
  *
@@ -55,6 +54,10 @@ class Emulator extends Component {
    */
   static get RELOAD_HOLD_OFF_TIMEOUT() {
     return 5000;
+  }
+
+  static get RELOAD_FAILURE_THRESHOLD() {
+    return 2;
   }
 
   static propTypes = {
@@ -105,6 +108,7 @@ class Emulator extends Component {
     super(props);
     this.isMountedInView = false;
     this.view = React.createRef();
+    this.reloadCount = 0;
     this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
 
     const { uri, auth, poll } = this.props;
@@ -123,6 +127,7 @@ class Emulator extends Component {
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
       .on(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onDisconnect)
       .on(StreamingEvent.STREAM_VIDEO_MISSING, this.onDisconnect)
+      .on(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect)
       .on(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
   }
 
@@ -137,6 +142,7 @@ class Emulator extends Component {
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
       .off(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onDisconnect)
       .off(StreamingEvent.STREAM_VIDEO_MISSING, this.onDisconnect)
+      .off(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect)
       .off(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
   }
 
@@ -152,6 +158,10 @@ class Emulator extends Component {
         this.state.height = configuration.emulatorHeight;
       }
     }
+  };
+
+  onConnect = () => {
+    this.reloadCount = 0;
   };
 
   onDisconnect = () => {
@@ -185,8 +195,14 @@ class Emulator extends Component {
     if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
       this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
       setImmediate(() => {
-        if(this.isMountedInView) {
-          this.setState({ streamingConnectionId: Date.now() });
+        if (this.isMountedInView) {
+          if (this.reloadCount >= Emulator.RELOAD_FAILURE_THRESHOLD) {
+            // Give up and exit the stream.
+            StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, new Error(`Reach max number of reload tires: ${this.reloadCount}`));
+          } else {
+            this.reloadCount++;
+            this.setState({ streamingConnectionId: Date.now() });
+          }
         }
       });
     }
