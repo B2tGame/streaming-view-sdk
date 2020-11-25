@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getNetworkConnectivity } from './stores/networkConnectivity';
 import { getDeviceInfo } from './stores/deviceInfo';
-import ConsoleLogger from './ConsoleLogger';
+import StreamingEvent from './StreamingEvent';
 
 /**
  * StreamingController is responsible to poll and terminate the edge node.
@@ -14,39 +14,10 @@ class StreamingController {
   }
 
   /**
-   * Event that is fire when the current location/data center has no
-   * free allocations for this edge node and result in the edge node is queued until required capacity in the datacenter exists.
-   * @returns {string}
-   * @constructor
-   */
-  static get EVENT_SERVER_OUT_OF_CAPACITY() {
-    return 'server-out-of-capacity';
-  }
-
-  /**
-   * Event that is fire when the stream are connected to the backend and the consumer receiving a video stream.
-   * @returns {string}
-   * @constructor
-   */
-  static get EVENT_STREAM_CONNECTED() {
-    return 'stream-connected';
-  }
-
-  /**
-   * Event that is fired after receiving emulator configuration during initialization of P2P connection
-   * @returns {string}
-   * @constructor
-   */
-  static get EVENT_EMULATOR_CONFIGURATION() {
-    return 'emulator-configuration'
-  }
-
-  /**
    *
    * @param {object} props
    * @param {string} props.apiEndpoint
    * @param {string} props.edgeNodeId Optional parameters, require for some of the API.
-   * @param {callback} props.onEvent Optional parameters, callback function to receiving events from the controller.
    */
   constructor(props) {
     if (!props.apiEndpoint) {
@@ -54,8 +25,6 @@ class StreamingController {
     }
     this.apiEndpoint = props.apiEndpoint;
     this.edgeNodeId = props.edgeNodeId || undefined;
-    this.onEvent = props.onEvent || (() => {});
-    this.consoleLogger = new ConsoleLogger(props.enableDebug);
   }
 
   /**
@@ -65,9 +34,7 @@ class StreamingController {
   getEdgeNodeId() {
     return this.edgeNodeId !== undefined
       ? Promise.resolve(this.edgeNodeId)
-      : Promise.reject(
-          new Error('StreamingController: Missing edgeNodeId, API endpoint unsupported without Edge Node ID.')
-        );
+      : Promise.reject(new Error('StreamingController: Missing edgeNodeId, API endpoint unsupported without Edge Node ID.'));
   }
 
   /**
@@ -75,9 +42,8 @@ class StreamingController {
    * @returns {Promise<*>}
    */
   terminate() {
-    return this.getStreamEndpoint().then((streamEndpoint) => {
-      return axios.get(`${streamEndpoint}/emulator-commands/terminate`);
-    });
+    return this.getStreamEndpoint()
+      .then((streamEndpoint) => axios.get(`${streamEndpoint}/emulator-commands/terminate`));
   }
 
   /**
@@ -117,9 +83,7 @@ class StreamingController {
    */
   pause() {
     return this.getStreamEndpoint()
-      .then((streamEndpoint) => {
-        return axios.get(`${streamEndpoint}/emulator-commands/pause`)
-      })
+      .then((streamEndpoint) => axios.get(`${streamEndpoint}/emulator-commands/pause`));
   }
 
   /**
@@ -129,9 +93,7 @@ class StreamingController {
    */
   resume() {
     return this.getStreamEndpoint()
-      .then((streamEndpoint) => {
-        return axios.get(`${streamEndpoint}/emulator-commands/resume`)
-      })
+      .then((streamEndpoint) => axios.get(`${streamEndpoint}/emulator-commands/resume`));
   }
 
   /**
@@ -139,7 +101,14 @@ class StreamingController {
    * @return {Promise<string>}
    */
   getStreamEndpoint() {
-    return this.waitFor().then((status) => status.endpoint);
+    return this.waitFor()
+      .then((status) => {
+        if (status.endpoint !== undefined) {
+          return status.endpoint;
+        } else {
+          throw new Error('Can\'t resolve Stream Endpoint, got: ' + JSON.stringify(status));
+        }
+      });
   }
 
   /**
@@ -168,7 +137,9 @@ class StreamingController {
         if (result.data.state === 'pending') {
           if (result.data.queued && !isQueuedEventFire) {
             isQueuedEventFire = true;
-            this.onEvent(StreamingController.EVENT_SERVER_OUT_OF_CAPACITY);
+            if (this.edgeNodeId) {
+              StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.SERVER_OUT_OF_CAPACITY);
+            }
           }
           throw new Error('pending');
         } else {
@@ -188,7 +159,10 @@ class StreamingController {
       return new Promise((resolve, reject) => {
         const fn = () => {
           callback().then(resolve, (err) => {
-            if (endTimestamp > Date.now()) {
+            const httpStatusCode = (err.response || {}).status || 500;
+            if (httpStatusCode === 404) {
+              resolve((err.response || {}).data || {});
+            } else if (endTimestamp > Date.now()) {
               setTimeout(fn, 10);
             } else {
               reject(err);
@@ -200,7 +174,7 @@ class StreamingController {
     };
 
     return this.getEdgeNodeId().then((edgeNodeId) => {
-      return retry(() => getStatus(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}?wait=1`, 17500), timeout);
+      return retry(() => getStatus(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}?wait=1`, 5000), timeout);
     });
   }
 
@@ -230,8 +204,8 @@ const factory = (props) => {
   return Promise.resolve(props).then((props) => new StreamingController(props));
 };
 
-factory.EVENT_STREAM_CONNECTED = StreamingController.EVENT_STREAM_CONNECTED;
-factory.EVENT_SERVER_OUT_OF_CAPACITY = StreamingController.EVENT_SERVER_OUT_OF_CAPACITY;
-factory.EVENT_EMULATOR_CONFIGURATION = StreamingController.EVENT_EMULATOR_CONFIGURATION;
-
+factory.EVENT_STREAM_CONNECTED = StreamingEvent.STREAM_CONNECTED;
+factory.EVENT_SERVER_OUT_OF_CAPACITY = StreamingEvent.SERVER_OUT_OF_CAPACITY;
+factory.EVENT_EMULATOR_CONFIGURATION = StreamingEvent.EMULATOR_CONFIGURATION;
+factory.EVENT_STREAM_UNREACHABLE = StreamingEvent.STREAM_UNREACHABLE;
 export default factory;

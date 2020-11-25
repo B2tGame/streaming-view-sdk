@@ -1,30 +1,13 @@
-/*
- * Copyright 2019 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License")
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import EmulatorPngView from './views/simple_png_view.js';
-import EmulatorWebrtcView from './views/webrtc_view.js';
-import withMouseKeyHandler from './views/event_handler';
-import JsepProtocol from './net/jsep_protocol_driver.js';
+import EmulatorPngView from './views/EmulatorPngView.js';
+import EmulatorWebrtcView from './views/EmulatorWebrtcView.js';
+import EventHandler from './views/EventHandler';
+import JsepProtocol from './net/JsepProtocol.js';
 import * as Proto from '../../proto/emulator_controller_pb';
 import { RtcService, EmulatorControllerService } from '../../proto/emulator_web_client';
-import StreamingController from '../../StreamingController';
+import StreamingEvent from '../../StreamingEvent';
 
-const PngView = withMouseKeyHandler(EmulatorPngView);
-const RtcView = withMouseKeyHandler(EmulatorWebrtcView);
 
 /**
  * A React component that displays a remote android emulator.
@@ -63,19 +46,35 @@ const RtcView = withMouseKeyHandler(EmulatorWebrtcView);
  */
 
 class Emulator extends Component {
+
+  /**
+   * The minimum amount time the SDK should wait before doing a hard reload due to bad/none functional stream.
+   * Consider the time needed after it has been reloaded, it will need some time to do a reconnection etc.
+   * @return {number}
+   */
+  static get RELOAD_HOLD_OFF_TIMEOUT() {
+    return 5000;
+  }
+
+  /**
+   * Number of times the system should reload the stream before entering an unreachable state.
+   * @return {number}
+   */
+  static get RELOAD_FAILURE_THRESHOLD() {
+    return 2;
+  }
+
   static propTypes = {
     /** gRPC Endpoint where we can reach the emulator. */
     uri: PropTypes.string.isRequired,
+    /** Override the default uri for turn servers */
+    turnEndpoint: PropTypes.string,
+    /** Streaming Edge node ID */
+    edgeNodeId: PropTypes.string.isRequired,
     /** The authentication service to use, or null for no authentication. */
     auth: PropTypes.object,
-    /** True if the audio should be disabled. This is only relevant when using the webrtc engine. */
-    muted: PropTypes.bool,
     /** Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100% */
     volume: PropTypes.number,
-    /** Called upon state change, one of ["connecting", "connected", "disconnected"] */
-    onStateChange: PropTypes.func,
-    /** Called when the audio becomes (un)available. True if audio is available, false otherwise. */
-    onAudioStateChange: PropTypes.func,
     /** The underlying view used to display the emulator, one of ["webrtc", "png"] */
     view: PropTypes.oneOf(['webrtc', 'png']),
     /** True if polling should be used, only set this to true if you are using the go webgrpc proxy. */
@@ -84,98 +83,94 @@ class Emulator extends Component {
     enableFullScreen: PropTypes.bool,
     /** Enable or disable user interactions with the game */
     enableControl: PropTypes.bool,
-    /** Callback that will be invoked on user interaction */
-    onUserInteraction: PropTypes.func,
     /** Event Logger */
-    log: PropTypes.object.isRequired,
-    rtcReportHandler: PropTypes.object,
-    consoleLogger: PropTypes.object.isRequired,
-    onEvent: PropTypes.func, // report events during the streaming view.
-    turnEndpoint: PropTypes.string, // Override the default uri for turn servers
+    logger: PropTypes.object.isRequired,
   };
+
 
   static defaultProps = {
     view: 'webrtc',
     auth: null,
     poll: false,
-    muted: true,
     volume: 1.0,
-    onAudioStateChange: () => {},
-    onStateChange: () => {},
     enableFullScreen: true,
     enableControl: true,
-    onEvent: () => {},
-    turnEndpoint: undefined,
   };
 
   components = {
-    webrtc: RtcView,
-    png: PngView,
+    webrtc: EmulatorWebrtcView,
+    png: EmulatorPngView,
   };
 
   state = {
-    audio: false,
-    lostConnection: false,
+    streamingConnectionId: Date.now(),
     width: undefined,
     height: undefined,
   };
 
   constructor(props) {
     super(props);
-    const { uri, auth, poll } = props;
+    this.isMountedInView = false;
+    this.view = React.createRef();
+    this.reloadCount = 0;
+    this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
+
+    const { uri, auth, poll } = this.props;
     this.emulator = new EmulatorControllerService(uri, auth, this.onError);
     this.rtc = new RtcService(uri, auth, this.onError);
-    this.log = this.props.log;
     this.jsep = new JsepProtocol(
       this.emulator,
       this.rtc,
       poll,
-      () => {
-        this.log.state('user-interaction-state-change', 'connected');
-      },
-      () => {
-        this.reConnect();
-        this.log.state('user-interaction-state-change', 'disconnected');
-      },
-      this.onConfiguration,
-      this.props.rtcReportHandler,
-      this.props.consoleLogger,
-      this.props.turnEndpoint
+      this.props.edgeNodeId,
+      this.props.logger,
+      this.props.turnEndpoint,
     );
-    this.view = React.createRef();
+
+    StreamingEvent.edgeNode(this.props.edgeNodeId)
+      .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
+      .on(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onDisconnect)
+      .on(StreamingEvent.STREAM_VIDEO_MISSING, this.onDisconnect)
+      .on(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect)
+      .on(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
   }
 
-  /**
-   * Callback function triggered when emulator configuration is received
-   * @param configuration
-   */
+
+  componentDidMount() {
+    this.isMountedInView = true;
+  }
+
+  componentWillUnmount() {
+    this.isMountedInView = false;
+    StreamingEvent.edgeNode(this.props.edgeNodeId)
+      .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
+      .off(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onDisconnect)
+      .off(StreamingEvent.STREAM_VIDEO_MISSING, this.onDisconnect)
+      .off(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect)
+      .off(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
+  }
+
+
   onConfiguration = (configuration) => {
-    const parsedResolution = configuration.resolution.split('x');
-    const width = parseInt(parsedResolution[0]);
-    const height = parseInt(parsedResolution[1]);
-
-    this.props.onEvent(StreamingController.EVENT_EMULATOR_CONFIGURATION, {
-      emulatorWidth: width,
-      emulatorHeight: height,
-    });
-    this.setState({
-      width: width,
-      height: height,
-    });
+    if (this.state.width !== configuration.emulatorWidth || this.state.height !== configuration.emulatorHeight) {
+      if (this.isMountedInView) {
+        this.setState({ width: configuration.emulatorWidth, height: configuration.emulatorHeight });
+      } else {
+        // eslint-disable-next-line react/no-direct-mutation-state
+        this.state.width = configuration.emulatorWidth;
+        // eslint-disable-next-line react/no-direct-mutation-state
+        this.state.height = configuration.emulatorHeight;
+      }
+    }
   };
 
-  onError = (e) => {
-    this.props.consoleLogger.error(e);
+  onConnect = () => {
+    this.reloadCount = 0;
   };
 
-  static getDerivedStateFromProps(nextProps, prevState) {
-    if (nextProps.view === 'png')
-      return {
-        audio: false,
-      };
-
-    return prevState;
-  }
+  onDisconnect = () => {
+    this.reload();
+  };
 
   /**
    * Sends the given key to the emulator.
@@ -193,42 +188,33 @@ class Emulator extends Component {
    * a list of valid values.
    */
   sendKey = (key) => {
-    var request = new Proto.KeyboardEvent();
+    const request = new Proto.KeyboardEvent();
     request.setEventtype(Proto.KeyboardEvent.KeyEventType.KEYPRESS);
     request.setKey(key);
     this.jsep.send('keyboard', request);
   };
 
-  _onAudioStateChange = (state) => {
-    const { onAudioStateChange } = this.props;
-    this.setState({ audio: state }, onAudioStateChange(state));
 
-    this.log.state('audio-state-change', state ? 'connected' : 'disconnected');
-  };
-
-  reConnect() {
-    this.setState({ lostConnection: true });
-    setTimeout(() => {
-      this.setState({ lostConnection: false });
-    }, 500);
+  reload() {
+    if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
+      this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
+      if (this.isMountedInView) {
+        if (this.reloadCount >= Emulator.RELOAD_FAILURE_THRESHOLD) {
+          // Give up and exit the stream.
+          StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, new Error(`Reach max number of reload tires: ${this.reloadCount}`));
+        } else {
+          this.reloadCount++;
+          this.setState({ streamingConnectionId: Date.now() });
+        }
+      }
+    }
   }
 
   render() {
-    const {
-      view,
-      poll,
-      muted,
-      volume,
-      enableFullScreen,
-      enableControl,
-      onUserInteraction,
-      uri,
-    } = this.props;
-
-    const SpecificView = this.components[view] || RtcView;
-
-    return this.state.lostConnection ? null : (
-      <SpecificView
+    const { view, poll, volume, enableFullScreen, enableControl, uri } = this.props;
+    return (
+      <EventHandler
+        key={this.state.streamingConnectionId}
         ref={this.view}
         emulatorWidth={this.state.width}
         emulatorHeight={this.state.height}
@@ -236,16 +222,13 @@ class Emulator extends Component {
         emulator={this.emulator}
         jsep={this.jsep}
         poll={poll}
-        muted={muted}
         volume={volume}
-        onError={this.onError}
-        onAudioStateChange={this._onAudioStateChange}
+        onAudioStateChange={this.onAudioStateChange}
         enableFullScreen={enableFullScreen}
         enableControl={enableControl}
-        onUserInteraction={onUserInteraction}
-        log={this.log}
-        consoleLogger={this.props.consoleLogger}
-        onEvent={this.props.onEvent}
+        logger={this.props.logger}
+        edgeNodeId={this.props.edgeNodeId}
+        view={this.components[view] || EmulatorWebrtcView}
       />
     );
   }

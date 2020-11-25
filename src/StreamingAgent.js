@@ -2,10 +2,10 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { getNetworkConnectivity, resetNetworkConnectivity } from './stores/networkConnectivity';
 import { getDeviceInfo, resetDeviceInfo } from './stores/deviceInfo';
-import ConsoleLogger from './ConsoleLogger';
+import Logger from './Logger';
 
 /**
- * StreamingAgent class is responsible to running any nesureary background task for the Streaming Service
+ * StreamingAgent class is responsible for running necessary background tasks for the Streaming Service
  *
  * @class StreamingAgent
  * @extends {Component}
@@ -19,19 +19,17 @@ export default class StreamingAgent extends Component {
 
   constructor(props) {
     super(props);
-
-    this.consoleLogger = new ConsoleLogger(this.props.enableDebug);
+    this.logger = new Logger(this.props.enableDebug);
     this.connection = {};
   }
 
-  logError = (error) => {
-    this.consoleLogger.error('Streaming Agent', error);
-  };
+  logError(error) {
+    this.logger.error('Streaming Agent', error);
+  }
 
   componentDidMount() {
     this.clearStoresCache();
     this.connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
-
     this.connection.onchange = () => this.onConnectivityUpdate();
     this.onConnectivityUpdate();
   }
@@ -59,9 +57,9 @@ export default class StreamingAgent extends Component {
    */
   onConnectivityUpdate() {
     this.clearStoresCache();
-    if (!this.props.internalSession) {
-      getNetworkConnectivity(this.connection).catch(this.logError);
-      getDeviceInfo(this.props.apiEndpoint, this.connection).catch(this.logError);
+    if (!this.props.internalSession && this.props.apiEndpoint) {
+      getNetworkConnectivity(this.connection).catch((err) => this.logError(err));
+      getDeviceInfo(this.props.apiEndpoint, this.connection).catch((err) => this.logError(err));
     }
   }
 
