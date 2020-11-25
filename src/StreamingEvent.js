@@ -4,6 +4,7 @@ class ExtendedEventEmitter extends EventEmitter {
   emit(event, data) {
     super.emit(event, data);
     super.emit('event', event, data);
+    return this;
   }
 }
 
