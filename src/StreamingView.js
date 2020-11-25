@@ -38,26 +38,22 @@ export default class StreamingView extends Component {
     internalSession: PropTypes.bool, // Can't be change after creation
   };
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.isMountedInView = false;
   }
-
-
+  
   componentDidMount() {
-    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint } = this.props;
-    const onEvent = this.props.onEvent || (() => {
-    });
-    this.logger = new Logger(this.props.enableDebug);
+    this.isMountedInView = true;
+    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, enableDebug, onEvent } = this.props;
+    this.logger = new Logger(enableDebug);
     this.logger.log(`Latest update: ${buildInfo.tag}`);
 
     this.measurement = new Measurement(edgeNodeId);
 
-    StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.SERVER_OUT_OF_CAPACITY, (event) => onEvent(StreamingEvent.SERVER_OUT_OF_CAPACITY, event));
-    StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_CONNECTED, (event) => onEvent(StreamingEvent.STREAM_CONNECTED, event));
-    StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.EMULATOR_CONFIGURATION, (event) => onEvent(StreamingEvent.EMULATOR_CONFIGURATION, event));
+    StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent || (() => {
+    })); // Push all events also to the onEvent callback
 
-    this.isMountedInView = true;
     StreamingController({
       apiEndpoint: apiEndpoint,
       edgeNodeId: edgeNodeId,
@@ -87,17 +83,16 @@ export default class StreamingView extends Component {
           return; // Cancel any action if we not longer are mounted.
         }
         this.logger.error('StreamingController Errors -', err);
-        // TODO: emit event to rob0 when stream is unreachable
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, err);
         this.setState({
           isReadyStream: false,
         });
       });
   }
 
-
   componentWillUnmount() {
     this.isMountedInView = false;
-    StreamingEvent.destroyEdgeNode(this.props.edgeNodeId)
+    StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
     if (this.streamSocket) {
       this.streamSocket.close();
     }

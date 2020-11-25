@@ -47,6 +47,16 @@ import StreamingEvent from '../../StreamingEvent';
  */
 
 class Emulator extends Component {
+
+  /**
+   * The amount time the SDK should wait at least before doing a hard reload due to bad/none functionally stream.
+   * The time need to take into account after it has been reloaded it will need some time to do a reconnection etc.
+   * @return {number}
+   */
+  static get RELOAD_HOLD_OFF_TIMEOUT() {
+    return 5000;
+  }
+
   static propTypes = {
     /** gRPC Endpoint where we can reach the emulator. */
     uri: PropTypes.string.isRequired,
@@ -95,6 +105,7 @@ class Emulator extends Component {
     super(props);
     this.isMountedInView = false;
     this.view = React.createRef();
+    this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
 
     const { uri, auth, poll } = this.props;
     this.emulator = new EmulatorControllerService(uri, auth, this.onError);
@@ -111,6 +122,7 @@ class Emulator extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
       .on(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onDisconnect)
+      .on(StreamingEvent.STREAM_VIDEO_MISSING, this.onDisconnect)
       .on(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
   }
 
@@ -124,13 +136,14 @@ class Emulator extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
       .off(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onDisconnect)
+      .off(StreamingEvent.STREAM_VIDEO_MISSING, this.onDisconnect)
       .off(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
   }
 
 
   onConfiguration = (configuration) => {
     if (this.state.width !== configuration.emulatorWidth || this.state.height !== configuration.emulatorHeight) {
-      if(this.isMountedInView) {
+      if (this.isMountedInView) {
         this.setState({ width: configuration.emulatorWidth, height: configuration.emulatorHeight });
       } else {
         // eslint-disable-next-line react/no-direct-mutation-state
@@ -169,8 +182,8 @@ class Emulator extends Component {
 
 
   reload() {
-    if ((this.reloadHoldOff || 0) < Date.now()) {
-      this.reloadHoldOff = Date.now() + 500;
+    if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
+      this.reloadHoldOff = Date.now() + Emulator.REALOD_HOLD_OFF_TIMEOUT;
       this.setState({ streamingConnectionId: Date.now() });
     }
   }

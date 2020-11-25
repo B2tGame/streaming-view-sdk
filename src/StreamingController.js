@@ -214,5 +214,5 @@ const factory = (props) => {
 factory.EVENT_STREAM_CONNECTED = StreamingEvent.STREAM_CONNECTED;
 factory.EVENT_SERVER_OUT_OF_CAPACITY = StreamingEvent.SERVER_OUT_OF_CAPACITY;
 factory.EVENT_EMULATOR_CONFIGURATION = StreamingEvent.EMULATOR_CONFIGURATION;
-
+factory.EVENT_STREAM_UNREACHABLE = StreamingEvent.STREAM_UNREACHABLE;
 export default factory;

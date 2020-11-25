@@ -1,7 +1,15 @@
 import EventEmitter from 'eventemitter3';
 
-const globalEventEmitter = new EventEmitter();
+class ExtendedEventEmitter extends EventEmitter {
+  emit(event, data) {
+    super.emit(event, data);
+    super.emit('event', event, data);
+  }
+}
+
+const globalEventEmitter = new ExtendedEventEmitter();
 const edgeNodeEventEmitter = {};
+
 
 /**
  * Streamign Event Emitter bus for sending and receiving event cross the SDK.
@@ -49,6 +57,7 @@ export default class StreamingEvent {
     return 'round-trip-time-measurement';
   }
 
+
   /**
    * Final report that should be sent up to the backend with a report of all measurement
    * @return {string}
@@ -57,6 +66,7 @@ export default class StreamingEvent {
   static get REPORT_MEASUREMENT() {
     return 'report-measurement';
   }
+
 
   /**
    * Event that is fire when the current location/data center has no
@@ -84,6 +94,15 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event that is fire when the stream enter a unreachable and none recoverable state.
+   * @return {string}
+   */
+  static get STREAM_UNREACHABLE() {
+    return 'stream-unreachable';
+  }
+
+
+  /**
    * Event that is fire when the video stream is starting playing (resume from paused or starting)
    * @return {string}
    */
@@ -108,6 +127,16 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fire when the video is missing but not clearly unavailable.
+   * @return {string}
+   */
+  static get STREAM_VIDEO_MISSING() {
+    return 'stream-video-missing';
+  }
+
+
+
+  /**
    * Event that is fire when the user interact with a running stream.
    * @return {string}
    */
@@ -122,6 +151,7 @@ export default class StreamingEvent {
   static get EMULATOR_CONFIGURATION() {
     return 'emulator-configuration';
   }
+
 
   /**
    * Event that is fired when the stream quality rating has been updated.
@@ -139,6 +169,7 @@ export default class StreamingEvent {
     return 'stream-audio-available';
   }
 
+
   /**
    * Event fire when the audio is not longer available.
    * @return {string}
@@ -154,7 +185,7 @@ export default class StreamingEvent {
    */
   static edgeNode(edgeNodeId) {
     if (edgeNodeEventEmitter[edgeNodeId] === undefined) {
-      edgeNodeEventEmitter[edgeNodeId] = new EventEmitter();
+      edgeNodeEventEmitter[edgeNodeId] = new ExtendedEventEmitter();
     }
     return edgeNodeEventEmitter[edgeNodeId];
   }
