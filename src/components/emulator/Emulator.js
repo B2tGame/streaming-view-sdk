@@ -218,7 +218,7 @@ class Emulator extends Component {
           StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, new Error(`Reach max number of reload tires: ${this.reloadCount}`));
         } else {
           this.reloadCount++;
-          StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_RELOAD, cause);
+          StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_RELOADED, cause);
           this.setState({ streamingConnectionId: Date.now() });
         }
       }

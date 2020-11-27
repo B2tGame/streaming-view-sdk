@@ -103,11 +103,11 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event that is fired when the stream is reloaded for try to auto recover from an error.
+   * Event fired when the stream is reloaded during auto recovery process from an error.
    * @return {string}
    */
-  static get STREAM_RELOAD() {
-    return 'stream-reload';
+  static get STREAM_RELOADED() {
+    return 'stream-reloaded';
   }
 
 
