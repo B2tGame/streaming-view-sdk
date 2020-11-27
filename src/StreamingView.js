@@ -71,6 +71,9 @@ export default class StreamingView extends Component {
           this.logger.log('Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
         }
+
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.EDGE_NODE_READY_TO_ACCEPT_CONNECTION)
+
         this.streamSocket = new StreamSocket(edgeNodeId, streamEndpoint, userId, internalSession);
         this.setState({
           isReadyStream: true,

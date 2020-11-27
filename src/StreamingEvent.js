@@ -34,6 +34,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event that is fire when the SDK reciving the edge node are ready to accept a connection.
+   * @return {string}
+   */
+  static get EDGE_NODE_READY_TO_ACCEPT_CONNECTION() {
+    return 'edge-node-ready-to-accept-connection';
+  }
+
+  /**
    * Web RTC measurement with payload created from {RTCPeerConnection.getStats}
    * @return {string}
    */
