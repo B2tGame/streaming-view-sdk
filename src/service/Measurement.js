@@ -116,7 +116,6 @@ export default class Measurement {
       this.processDataChannelTouchReport(report);
     });
     this.previousMeasurement.measureAt = this.measurement.measureAt;
-    this.measurement.measureDuration = this.measurement.measureDuration.toFixed(2);
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
 
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REPORT_MEASUREMENT, {
