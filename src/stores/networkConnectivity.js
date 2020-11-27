@@ -27,7 +27,7 @@ function getBrowserMeasurement(browserConnection = undefined) {
     roundTripTime: connection.rtt,
     downloadSpeed: convertMbitToBytes(connection.downlink),
     recommendedRegion: undefined,
-    measurementLevel: MEASUREMENT_LEVEL_BROWSER,
+    measurementLevel: MEASUREMENT_LEVEL_BROWSER
   });
 }
 
@@ -46,7 +46,7 @@ function getNetworkConnectivity(browserConnection = undefined) {
         .then((browserMeasurement) => {
           networkConnectivity = browserMeasurement;
           return networkConnectivity;
-        })
+        });
     }
 
     return networkConnectivity;

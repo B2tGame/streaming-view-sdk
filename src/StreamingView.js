@@ -19,7 +19,7 @@ export default class StreamingView extends Component {
   state = {
     isReadyStream: undefined,
     streamEndpoint: undefined,
-    turnEndpoint: undefined,
+    turnEndpoint: undefined
   };
 
   static propTypes = {
@@ -35,7 +35,7 @@ export default class StreamingView extends Component {
     onEvent: PropTypes.func, // Can't be changed after creation
     streamQualityRating: PropTypes.number, // Can be changed dynamically
     enableDebug: PropTypes.bool, // Can't be changed after creation
-    internalSession: PropTypes.bool, // Can't be changed after creation
+    internalSession: PropTypes.bool // Can't be changed after creation
   };
 
   constructor(props) {
@@ -58,7 +58,7 @@ export default class StreamingView extends Component {
 
     StreamingController({
       apiEndpoint: apiEndpoint,
-      edgeNodeId: edgeNodeId,
+      edgeNodeId: edgeNodeId
     })
       .then((controller) => controller.getStreamEndpoint())
       .then((streamEndpoint) => {
@@ -72,13 +72,13 @@ export default class StreamingView extends Component {
           return; // Cancel any action if we not longer are mounted.
         }
 
-        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.EDGE_NODE_READY_TO_ACCEPT_CONNECTION)
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.EDGE_NODE_READY_TO_ACCEPT_CONNECTION);
 
         this.streamSocket = new StreamSocket(edgeNodeId, streamEndpoint, userId, internalSession);
         this.setState({
           isReadyStream: true,
           streamEndpoint: streamEndpoint,
-          turnEndpoint: internalSession && turnEndpoint ? turnEndpoint : undefined,
+          turnEndpoint: internalSession && turnEndpoint ? turnEndpoint : undefined
         });
 
       })

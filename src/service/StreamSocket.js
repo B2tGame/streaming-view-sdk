@@ -18,7 +18,7 @@ export default class StreamSocket {
     this.edgeNodeId = edgeNodeId;
     this.socket = io(`${endpoint.protocol}//${endpoint.host}`, {
       path: `${endpoint.path}/emulator-commands/socket.io`,
-      query: `userId=${userId}&internal=${internalSession ? '1' : '0'}`,
+      query: `userId=${userId}&internal=${internalSession ? '1' : '0'}`
     });
     // Web Socket errors
     this.socket.on('error', (err) => StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ERROR, err));

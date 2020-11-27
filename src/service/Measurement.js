@@ -71,7 +71,7 @@ export default class Measurement {
       framesDropped: 0,
       messagesSentMouse: 0,
       messagesSentTouch: 0,
-      measureAt: Date.now(),
+      measureAt: Date.now()
     };
 
     this.measurement = {};
@@ -120,7 +120,7 @@ export default class Measurement {
 
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REPORT_MEASUREMENT, {
       networkRoundTripTime: this.networkRoundTripTime,
-      extra: this.measurement,
+      extra: this.measurement
     });
     this.measurement = {};
   }
@@ -138,7 +138,7 @@ export default class Measurement {
       this.measurement.videoProcessing =
         report.framesDecoded - this.previousMeasurement.framesDecoded !== 0
           ? (((report.totalDecodeTime || 0) - this.previousMeasurement.totalDecodeTime) * 1000) /
-            this.measurement.framesDecodedPerSecond
+          this.measurement.framesDecodedPerSecond
           : 0;
 
       this.previousMeasurement.framesDecoded = report.framesDecoded;

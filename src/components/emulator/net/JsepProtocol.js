@@ -170,7 +170,7 @@ export default class JsepProtocol {
     return {
       urls: [`${endpoint}?transport=udp`, `${endpoint}?transport=tcp`],
       username: 'webclient',
-      credential: 'webclient',
+      credential: 'webclient'
     };
   }
 
@@ -179,12 +179,12 @@ export default class JsepProtocol {
     const parsedResolution = signal.start.iceServers.configuration.resolution.split('x');
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.EMULATOR_CONFIGURATION, {
       emulatorWidth: parseInt(parsedResolution[0]),
-      emulatorHeight: parseInt(parsedResolution[1]),
+      emulatorHeight: parseInt(parsedResolution[1])
     });
 
     signal.start = {
       iceServers: [this.getIceConfiguration()],
-      iceTransportPolicy: 'relay',
+      iceTransportPolicy: 'relay'
     };
     this.peerConnection = new RTCPeerConnection(signal.start);
 
@@ -197,13 +197,13 @@ export default class JsepProtocol {
   };
 
   onRequestWebRtcMeasurement = () => {
-    if(this.peerConnection) {
+    if (this.peerConnection) {
       this.peerConnection
         .getStats()
         .then((stats) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, stats))
         .catch((err) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err));
     }
-  }
+  };
 
 
   _handleSDP = async (signal) => {

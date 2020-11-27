@@ -23,13 +23,13 @@ export default class EmulatorPngView extends Component {
     /** The width of the emulator device */
     deviceWidth: PropTypes.number,
     /** The height of the emulator device */
-    deviceHeight: PropTypes.number,
+    deviceHeight: PropTypes.number
   };
 
   state = {
     png: '',
     width: null,
-    height: null,
+    height: null
   };
 
 
@@ -67,7 +67,7 @@ export default class EmulatorPngView extends Component {
     this.screen.on('data', (response) => {
       // Update the image with the one we just received.
       self.setState({
-        png: 'data:image/jpeg;base64,' + response.getImage_asB64(),
+        png: 'data:image/jpeg;base64,' + response.getImage_asB64()
       });
       if (poll) {
         this.startStream(width, height);
@@ -86,7 +86,7 @@ export default class EmulatorPngView extends Component {
           objectFit: 'contain',
           objectPosition: 'center',
           width: deviceWidth,
-          height: deviceHeight,
+          height: deviceHeight
         }}
       >
         <ResizeObserver

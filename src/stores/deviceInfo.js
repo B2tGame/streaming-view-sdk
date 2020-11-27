@@ -32,7 +32,7 @@ function getBrowserDeviceInfo(browserConnection = undefined) {
     viewportWidth: Math.round(DPI * Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)),
     viewportHeight: Math.round(DPI * Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)),
     connectionType: connection.type,
-    connectionEffectiveType: connection.effectiveType,
+    connectionEffectiveType: connection.effectiveType
   });
 }
 
@@ -44,9 +44,9 @@ function getBrowserDeviceInfo(browserConnection = undefined) {
 function getNetworkDeviceInfo(apiEndpoint) {
   return Object.keys(deviceInfo).length === 0
     ? requestNetworkDeviceInfo(apiEndpoint).then((networkDeviceInfo) => {
-        deviceInfo = networkDeviceInfo;
-        return networkDeviceInfo;
-      })
+      deviceInfo = networkDeviceInfo;
+      return networkDeviceInfo;
+    })
     : Promise.resolve(deviceInfo);
 }
 
@@ -60,7 +60,7 @@ function getDeviceInfo(apiEndpoint, browserConnection = undefined) {
   return Promise.all([
     getNetworkDeviceInfo(apiEndpoint),
     getBrowserDeviceInfo(browserConnection),
-    getNetworkConnectivity(browserConnection),
+    getNetworkConnectivity(browserConnection)
   ]).then(([networkDeviceInfo, browserDeviceInfo, networkConnectivity]) => {
     return { ...networkDeviceInfo, ...browserDeviceInfo, ...networkConnectivity };
   });

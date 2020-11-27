@@ -14,7 +14,7 @@ export default class StreamingAgent extends Component {
   static propTypes = {
     apiEndpoint: PropTypes.string.isRequired,
     enableDebug: PropTypes.bool,
-    internalSession: PropTypes.bool,
+    internalSession: PropTypes.bool
   };
 
   constructor(props) {

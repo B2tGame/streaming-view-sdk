@@ -73,8 +73,8 @@ class EmulatorStatus {
         vmConfig: {
           hypervisorType: vmConfig.getHypervisortype(),
           numberOfCpuCores: vmConfig.getNumberofcpucores(),
-          ramSizeBytes: vmConfig.getRamsizebytes(),
-        },
+          ramSizeBytes: vmConfig.getRamsizebytes()
+        }
       };
       fnNotify(this.status);
     });
