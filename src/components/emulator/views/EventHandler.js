@@ -32,7 +32,7 @@ export default class EventHandler extends Component {
 
   state = {
     deviceHeight: 768,
-    deviceWidth: 432,
+    deviceWidth: 432
   };
 
   static propTypes = {
@@ -44,7 +44,7 @@ export default class EventHandler extends Component {
     emulatorWidth: PropTypes.number,
     emulatorHeight: PropTypes.number,
     view: PropTypes.any.isRequired,
-    edgeNodeId: PropTypes.string.isRequired, // report events during the streaming view.
+    edgeNodeId: PropTypes.string.isRequired // report events during the streaming view.
   };
 
   constructor(props) {
@@ -82,7 +82,7 @@ export default class EventHandler extends Component {
     this.status.updateStatus((state) => {
       this.setState({
         deviceWidth: parseInt(state.hardwareConfig['hw.lcd.width']) || this.state.deviceWidth,
-        deviceHeight: parseInt(state.hardwareConfig['hw.lcd.height']) || this.state.deviceHeight,
+        deviceHeight: parseInt(state.hardwareConfig['hw.lcd.height']) || this.state.deviceHeight
       });
     });
   }
@@ -118,10 +118,12 @@ export default class EventHandler extends Component {
    */
   calculateTouchEmulatorCoordinates = (event) => {
     const { clientX, clientY } = event;
-    const { clientWidth, clientHeight, offsetLeft, offsetTop } = event.target;
+    const { clientWidth, clientHeight } = event.target;
 
-    const offsetX = clientX - offsetLeft;
-    const offsetY = clientY - offsetTop;
+    // TODO: Improve coordinates to handle cases when video element is not centered in the middle
+    // use offsets to get exact coordinates of video (getBoundingClientRect or other method) and do more accurate calculation
+    const offsetX = clientX - ((window.innerWidth - clientWidth) / 2);
+    const offsetY = clientY - ((window.innerHeight - clientHeight) / 2);
 
     return this.calculateEmulatorCoordinates(offsetX, offsetY, clientWidth, clientHeight);
   };
@@ -140,7 +142,7 @@ export default class EventHandler extends Component {
 
     return {
       x: Math.round(xEmulatorCoordinate),
-      y: Math.round(yEmulatorCoordinate),
+      y: Math.round(yEmulatorCoordinate)
     };
   };
 
@@ -247,11 +249,11 @@ export default class EventHandler extends Component {
         .then(() => {
           const orientation = this.props.emulatorWidth > this.props.emulatorHeight ? ORIENTATION_LANDSCAPE : ORIENTATION_PORTRAIT;
           window.screen.orientation.lock(orientation).catch((error) => {
-            this.props.logger.log('Failed to lock screen orientation to:', error);
+            this.props.logger.log('Failed to lock screen orientation to: ' + error);
           });
         })
         .catch((error) => {
-          this.props.logger.log('Failed to request fullscreen:', error);
+          this.props.logger.log('Failed to request fullscreen: ' + error);
         });
     }
   };
@@ -279,7 +281,7 @@ export default class EventHandler extends Component {
           padding: '0',
           border: '0',
           display: 'inline-block',
-          width: '100%',
+          width: '100%'
         }}
       >
         <View
