@@ -102,6 +102,14 @@ export default class StreamingEvent {
     return 'stream-unreachable';
   }
 
+  /**
+   * Event that is fired when the stream is reloaded for try to auto recover from an error.
+   * @return {string}
+   */
+  static get STREAM_RELOAD() {
+    return 'stream-reload';
+  }
+
 
   /**
    * Event fired when the video stream started playing (resume from paused or started)
