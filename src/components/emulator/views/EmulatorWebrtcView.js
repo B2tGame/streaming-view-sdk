@@ -23,17 +23,18 @@ export default class EmulatorWebrtcView extends Component {
     /** The height of the emulator device */
     deviceHeight: PropTypes.number,
     emulatorWidth: PropTypes.number,
-    emulatorHeight: PropTypes.number,
+    emulatorHeight: PropTypes.number
   };
 
   state = {
     audio: false,
     video: false,
     muted: true,
+    playing: false
   };
 
   static defaultProps = {
-    volume: 1.0,
+    volume: 1.0
   };
 
   constructor(props) {
@@ -49,7 +50,6 @@ export default class EmulatorWebrtcView extends Component {
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
       .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
     this.setState({ video: false, audio: false }, () => this.props.jsep.startStream());
-
     // Performing 'health-check' of the stream and reporting events when video is missing
     this.timer = setInterval(() => {
       if (this.isMountedInView && this.video.current && this.video.current.paused) {
@@ -73,6 +73,21 @@ export default class EmulatorWebrtcView extends Component {
 
   componentDidUpdate() {
     this.video.current.volume = this.props.volume;
+  }
+
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.state.muted === true && nextState.muted === false && this.video.current) {
+      setTimeout(() => {
+        // Some devices is automatic unmuting and do a unmute result in broken stream
+        // Only change muted stated if required after giving the browser some time to act by it self.
+        if (this.isMountedInView && this.video.current.muted) {
+          this.video.current.muted = false;
+        }
+      }, 250);
+      return false;
+    }
+    return true;
   }
 
   onUserInteraction = () => {
@@ -126,6 +141,7 @@ export default class EmulatorWebrtcView extends Component {
   };
 
   onPlaying = () => {
+    this.setState({ playing: true });
     StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_PLAYING);
   };
 
@@ -137,6 +153,7 @@ export default class EmulatorWebrtcView extends Component {
     const { emulatorWidth, emulatorHeight } = this.props;
     const style = {
       margin: '0 auto',
+      visibility: this.state.playing ? 'visible' : 'hidden'
     };
 
     /*

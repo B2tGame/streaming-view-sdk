@@ -84,7 +84,7 @@ class Emulator extends Component {
     /** Enable or disable user interactions with the game */
     enableControl: PropTypes.bool,
     /** Event Logger */
-    logger: PropTypes.object.isRequired,
+    logger: PropTypes.object.isRequired
   };
 
 
@@ -94,18 +94,18 @@ class Emulator extends Component {
     poll: false,
     volume: 1.0,
     enableFullScreen: true,
-    enableControl: true,
+    enableControl: true
   };
 
   components = {
     webrtc: EmulatorWebrtcView,
-    png: EmulatorPngView,
+    png: EmulatorPngView
   };
 
   state = {
     streamingConnectionId: Date.now(),
     width: undefined,
-    height: undefined,
+    height: undefined
   };
 
   constructor(props) {
@@ -124,13 +124,13 @@ class Emulator extends Component {
       poll,
       this.props.edgeNodeId,
       this.props.logger,
-      this.props.turnEndpoint,
+      this.props.turnEndpoint
     );
 
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
-      .on(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onDisconnect)
-      .on(StreamingEvent.STREAM_VIDEO_MISSING, this.onDisconnect)
+      .on(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onVideoUnavailable)
+      .on(StreamingEvent.STREAM_VIDEO_MISSING, this.onVideoMissing)
       .on(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect)
       .on(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
   }
@@ -144,11 +144,24 @@ class Emulator extends Component {
     this.isMountedInView = false;
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
-      .off(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onDisconnect)
-      .off(StreamingEvent.STREAM_VIDEO_MISSING, this.onDisconnect)
+      .off(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onVideoUnavailable)
+      .off(StreamingEvent.STREAM_VIDEO_MISSING, this.onVideoMissing)
       .off(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect)
       .off(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
   }
+
+
+  onDisconnect = () => {
+    this.reload(StreamingEvent.STREAM_DISCONNECTED);
+  };
+
+  onVideoUnavailable = () => {
+    this.reload(StreamingEvent.STREAM_VIDEO_UNAVAILABLE);
+  };
+
+  onVideoMissing = () => {
+    this.reload(StreamingEvent.STREAM_VIDEO_MISSING);
+  };
 
 
   onConfiguration = (configuration) => {
@@ -168,9 +181,6 @@ class Emulator extends Component {
     this.reloadCount = 0;
   };
 
-  onDisconnect = () => {
-    this.reload();
-  };
 
   /**
    * Sends the given key to the emulator.
@@ -195,7 +205,11 @@ class Emulator extends Component {
   };
 
 
-  reload() {
+  /**
+   *
+   * @param {string} cause
+   */
+  reload(cause) {
     if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
       this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
       if (this.isMountedInView) {
@@ -204,6 +218,7 @@ class Emulator extends Component {
           StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, new Error(`Reach max number of reload tires: ${this.reloadCount}`));
         } else {
           this.reloadCount++;
+          StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_RELOADED, cause);
           this.setState({ streamingConnectionId: Date.now() });
         }
       }
