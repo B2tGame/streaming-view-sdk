@@ -120,6 +120,8 @@ export default class EventHandler extends Component {
     const { clientX, clientY } = event;
     const { clientWidth, clientHeight } = event.target;
 
+    // TODO: Improve coordinates to handle cases when video element is not centered in the middle
+    // use offsets to get exact coordinates of video (getBoundingClientRect or other method) and do more accurate calculation
     const offsetX = clientX - ((window.innerWidth - clientWidth) / 2);
     const offsetY = clientY - ((window.innerHeight - clientHeight) / 2);
 
