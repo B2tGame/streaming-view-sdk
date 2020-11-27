@@ -118,10 +118,12 @@ export default class EventHandler extends Component {
    */
   calculateTouchEmulatorCoordinates = (event) => {
     const { clientX, clientY } = event;
-    const { clientWidth, clientHeight, offsetLeft, offsetTop } = event.target;
+    const { clientWidth, clientHeight } = event.target;
 
-    const offsetX = clientX - offsetLeft;
-    const offsetY = clientY - offsetTop;
+    // TODO: Improve coordinates to handle cases when video element is not centered in the middle
+    // use offsets to get exact coordinates of video (getBoundingClientRect or other method) and do more accurate calculation
+    const offsetX = clientX - ((window.innerWidth - clientWidth) / 2);
+    const offsetY = clientY - ((window.innerHeight - clientHeight) / 2);
 
     return this.calculateEmulatorCoordinates(offsetX, offsetY, clientWidth, clientHeight);
   };

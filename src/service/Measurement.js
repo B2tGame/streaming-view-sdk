@@ -59,7 +59,6 @@ export default class Measurement {
     return 'touch';
   }
 
-
   constructor(edgeNodeId) {
     this.edgeNodeId = edgeNodeId;
     this.networkRoundTripTime = 0;
@@ -117,7 +116,6 @@ export default class Measurement {
       this.processDataChannelTouchReport(report);
     });
     this.previousMeasurement.measureAt = this.measurement.measureAt;
-    this.measurement.measureDuration = Math.round(this.measurement.measureDuration);
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
 
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REPORT_MEASUREMENT, {
@@ -140,7 +138,7 @@ export default class Measurement {
       this.measurement.videoProcessing =
         report.framesDecoded - this.previousMeasurement.framesDecoded !== 0
           ? (((report.totalDecodeTime || 0) - this.previousMeasurement.totalDecodeTime) * 1000) /
-            this.measurement.measureDuration
+            this.measurement.framesDecodedPerSecond
           : 0;
 
       this.previousMeasurement.framesDecoded = report.framesDecoded;
