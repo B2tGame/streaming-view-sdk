@@ -68,7 +68,7 @@ export default class Measurement {
       bytesReceived: 0,
       totalDecodeTime: 0,
       framesReceived: 0,
-      framesDropped: 0,
+      framesDropped: null,
       messagesSentMouse: 0,
       messagesSentTouch: 0,
       measureAt: Date.now()
@@ -148,18 +148,22 @@ export default class Measurement {
   }
 
   /**
-   * Process track video report to fetch framesReceivedPerSecond and framesDroppedPerSecond
+   * Process track video report to fetch framesReceivedPerSecond and framesDropped
    * @param report
    */
   processTrackVideoReport(report) {
     if (report.type === Measurement.REPORT_TYPE_TRACK && report.kind === Measurement.REPORT_KIND_VIDEO) {
       this.measurement.framesReceivedPerSecond =
         (report.framesReceived - this.previousMeasurement.framesReceived) / this.measurement.measureDuration;
-      this.measurement.framesDroppedPerSecond =
-        (report.framesDropped - this.previousMeasurement.framesDropped) / this.measurement.measureDuration;
+      this.measurement.framesDropped = report.framesDropped - this.previousMeasurement.framesDropped;
 
       this.previousMeasurement.framesReceived = report.framesReceived;
       this.previousMeasurement.framesDropped = report.framesDropped;
+      console.log({
+        dbg: 'DEBUG',
+        'report.framesDropped': report.framesDropped,
+        'this.previousMeasurement.framesDropped': this.previousMeasurement.framesDropped,
+      });
     }
   }
 
