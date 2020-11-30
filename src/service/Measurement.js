@@ -71,7 +71,7 @@ export default class Measurement {
       framesDropped: null,
       messagesSentMouse: 0,
       messagesSentTouch: 0,
-      measureAt: Date.now()
+      measureAt: Date.now(),
     };
 
     this.measurement = {};
@@ -120,7 +120,7 @@ export default class Measurement {
 
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REPORT_MEASUREMENT, {
       networkRoundTripTime: this.networkRoundTripTime,
-      extra: this.measurement
+      extra: this.measurement,
     });
     this.measurement = {};
   }
@@ -159,11 +159,6 @@ export default class Measurement {
 
       this.previousMeasurement.framesReceived = report.framesReceived;
       this.previousMeasurement.framesDropped = report.framesDropped;
-      console.log({
-        dbg: 'DEBUG',
-        'report.framesDropped': report.framesDropped,
-        'this.previousMeasurement.framesDropped': this.previousMeasurement.framesDropped,
-      });
     }
   }
 
