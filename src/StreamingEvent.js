@@ -11,12 +11,10 @@ class ExtendedEventEmitter extends EventEmitter {
 const globalEventEmitter = new ExtendedEventEmitter();
 const edgeNodeEventEmitter = {};
 
-
 /**
  * Streaming Event Emitter bus for sending and receiving event across the SDK.
  */
 export default class StreamingEvent {
-
   /**
    * Event of log with payload {type: string, data: []*}
    * @return {string}
@@ -66,7 +64,6 @@ export default class StreamingEvent {
     return 'round-trip-time-measurement';
   }
 
-
   /**
    * Final report that should be sent up to the backend with a report of all measurement
    * @return {string}
@@ -75,7 +72,6 @@ export default class StreamingEvent {
   static get REPORT_MEASUREMENT() {
     return 'report-measurement';
   }
-
 
   /**
    * Event fired when the current location/data center has no free allocations for this edge node
@@ -118,7 +114,6 @@ export default class StreamingEvent {
     return 'stream-reloaded';
   }
 
-
   /**
    * Event fired when the video stream started playing (resume from paused or started)
    * @return {string}
@@ -150,7 +145,6 @@ export default class StreamingEvent {
   static get STREAM_VIDEO_MISSING() {
     return 'stream-video-missing';
   }
-
 
   /**
    * Event fired when the user interact with a running stream.
@@ -190,6 +184,14 @@ export default class StreamingEvent {
    */
   static get STREAM_AUDIO_UNAVAILABLE() {
     return 'stream-audio-unavailable';
+  }
+
+  /**
+   * Report that should be sent up to the backend from user clicked play until stream video is playing
+   * @return {string}
+   */
+  static get STREAM_LOADING_TIME() {
+    return 'stream-loading-time';
   }
 
   /**

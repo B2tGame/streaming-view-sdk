@@ -35,8 +35,25 @@ export default class StreamingView extends Component {
     onEvent: PropTypes.func, // Can't be changed after creation
     streamQualityRating: PropTypes.number, // Can be changed dynamically
     enableDebug: PropTypes.bool, // Can't be changed after creation
-    internalSession: PropTypes.bool // Can't be changed after creation
+    internalSession: PropTypes.bool, // Can't be changed after creation
+    userClickedPlayAt: PropTypes.number // Can't be changed after creation
   };
+
+  /**
+   * Player is a user with enabled control
+   * @return {string}
+   */
+  static get ROLE_PLAYER() {
+    return 'player';
+  }
+
+  /**
+   * Watcher is a user with disabled control
+   * @return {string}
+   */
+  static get ROLE_WATCHER() {
+    return 'watcher';
+  }
 
   constructor(props) {
     super(props);
@@ -73,13 +90,13 @@ export default class StreamingView extends Component {
         }
 
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.EDGE_NODE_READY_TO_ACCEPT_CONNECTION);
-
         this.streamSocket = new StreamSocket(edgeNodeId, streamEndpoint, userId, internalSession);
         this.setState({
           isReadyStream: true,
           streamEndpoint: streamEndpoint,
           turnEndpoint: internalSession && turnEndpoint ? turnEndpoint : undefined
         });
+        this.registerUserEventsHandler();
 
       })
       .catch((err) => {
@@ -110,6 +127,24 @@ export default class StreamingView extends Component {
     }
     // Don't re-render component when rating was changed
     return this.props.streamQualityRating === nextProps.streamQualityRating;
+  }
+
+  /**
+   * Register user event handler reporting different user events through Stream Socket into Supervisor
+   */
+  registerUserEventsHandler() {
+    // Report user event - stream-loading-time
+    StreamingEvent.edgeNode(this.props.edgeNodeId).once(StreamingEvent.STREAM_VIDEO_PLAYING, () => {
+      const streamLoadingTime = Date.now() - this.props.userClickedPlayAt;
+      const userEventPayload = {
+        role: this.props.enableControl ? StreamingView.ROLE_PLAYER : StreamingView.ROLE_WATCHER,
+        eventType: StreamingEvent.STREAM_LOADING_TIME,
+        value: streamLoadingTime,
+        message: `User event - ${StreamingEvent.STREAM_LOADING_TIME}: ${streamLoadingTime} ms.`
+      };
+
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_LOADING_TIME, userEventPayload);
+    });
   }
 
   render() {

@@ -6,7 +6,6 @@ import io from 'socket.io-client';
  * Websocket connection and communicate with the backend
  */
 export default class StreamSocket {
-
   /**
    * @param {string} edgeNodeId
    * @param {string} streamEndpoint
@@ -16,6 +15,7 @@ export default class StreamSocket {
   constructor(edgeNodeId, streamEndpoint, userId, internalSession) {
     const endpoint = url.parse(streamEndpoint);
     this.edgeNodeId = edgeNodeId;
+    this.userId = userId;
     this.socket = io(`${endpoint.protocol}//${endpoint.host}`, {
       path: `${endpoint.path}/emulator-commands/socket.io`,
       query: `userId=${userId}&internal=${internalSession ? '1' : '0'}`
@@ -29,6 +29,7 @@ export default class StreamSocket {
     // Send measurement report to the backend.
     StreamingEvent.edgeNode(edgeNodeId)
       .on(StreamingEvent.REPORT_MEASUREMENT, this.onReport)
+      .on(StreamingEvent.STREAM_LOADING_TIME, this.onUserEventReport)
       .on(StreamingEvent.STREAM_UNREACHABLE, this.close);
   }
 
@@ -40,14 +41,27 @@ export default class StreamSocket {
     }
   };
 
+  /**
+   * Report user events into supervisor
+   * @param {{role: string, eventType: string, value: number, message: string}} payload
+   * Example payload structure { role: "player"|"watcher", eventType: "stream-loading-time", value: 12000, message: "User event details"}
+   */
+  onUserEventReport = (payload) => {
+    payload.type = 'report-user-event';
+    payload.timestamp = Date.now();
+    if (this.socket) {
+      this.socket.emit('message', JSON.stringify(payload));
+    }
+  };
+
   close = () => {
     if (this.socket) {
       this.socket.close();
       StreamingEvent.edgeNode(this.edgeNodeId)
         .off(StreamingEvent.REPORT_MEASUREMENT, this.onReport)
+        .off(StreamingEvent.STREAM_LOADING_TIME, this.onUserEventReport)
         .off(StreamingEvent.STREAM_UNREACHABLE, this.close);
       this.socket = undefined;
     }
   };
-
 }
