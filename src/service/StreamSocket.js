@@ -43,8 +43,8 @@ export default class StreamSocket {
 
   /**
    * Report user events into supervisor
+   * @param {{role: string, eventType: string, value: number, message: string}} payload
    * Example payload structure { role: "player"|"watcher", eventType: "stream-loading-time", value: 12000, message: "User event details"}
-   * @param payload
    */
   onUserEventReport = (payload) => {
     payload.type = 'report-user-event';
