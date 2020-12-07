@@ -6,7 +6,6 @@ import io from 'socket.io-client';
  * Websocket connection and communicate with the backend
  */
 export default class StreamSocket {
-
   /**
    * @param {string} edgeNodeId
    * @param {string} streamEndpoint
@@ -44,7 +43,7 @@ export default class StreamSocket {
 
   /**
    * Report user events into supervisor
-   * Payload structure { role: "player"|"watcher", eventType   }
+   * Example payload structure { role: "player"|"watcher", eventType: "stream-loading-time", value: 12000, message: "User event details"}
    * @param payload
    */
   onUserEventReport = (payload) => {
@@ -53,7 +52,7 @@ export default class StreamSocket {
     if (this.socket) {
       this.socket.emit('message', JSON.stringify(payload));
     }
-  }
+  };
 
   close = () => {
     if (this.socket) {
@@ -65,5 +64,4 @@ export default class StreamSocket {
       this.socket = undefined;
     }
   };
-
 }
