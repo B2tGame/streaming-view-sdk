@@ -50,6 +50,8 @@ export default class JsepProtocol {
       clearInterval(this.rtcEventTrigger);
       this.rtcEventTrigger = null;
     }
+
+    StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_DISCONNECTED);
   };
 

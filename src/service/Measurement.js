@@ -63,7 +63,51 @@ export default class Measurement {
     this.edgeNodeId = edgeNodeId;
     this.networkRoundTripTime = 0;
     this.streamQualityRating = 0;
-    this.previousMeasurement = {
+    this.previousMeasurement = this.defaultPreviousMeasurement();
+    this.measurement = {};
+
+    StreamingEvent.edgeNode(edgeNodeId)
+      .on(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
+      .on(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
+      .on(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
+      .on(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
+  }
+
+  destroy() {
+    StreamingEvent.edgeNode(this.edgeNodeId)
+      .off(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
+      .off(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
+      .off(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
+      .off(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
+  }
+
+  onStreamQualityRating = (rating) => {
+    this.streamQualityRating = rating.streamQualityRating;
+  };
+
+  onRoundTripTimeMeasurement = (networkRoundTripTime) => {
+    const measureDuration = (Date.now() - this.previousMeasurement.measureAt);
+    // Report only when measure duration is more than 1.5 second
+    if (measureDuration > 1500) {
+      this.networkRoundTripTime = networkRoundTripTime;
+      StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
+    }
+  };
+
+  onWebRtcMeasurement = (stats) => {
+    this.reportWebRtcMeasurement(stats);
+  };
+
+  onStreamDisconnected = () => {
+   this.previousMeasurement = this.defaultPreviousMeasurement();
+  }
+
+  /**
+   * Return default values for previous measurement
+   * @return {{messagesSentMouse: number, bytesReceived: number, framesReceived: number, messagesSentTouch: number, measureAt: number, totalDecodeTime: number, framesDecoded: number, framesDropped: null}}
+   */
+  defaultPreviousMeasurement() {
+    return {
       framesDecoded: 0,
       bytesReceived: 0,
       totalDecodeTime: 0,
@@ -73,33 +117,7 @@ export default class Measurement {
       messagesSentTouch: 0,
       measureAt: Date.now(),
     };
-
-    this.measurement = {};
-    StreamingEvent.edgeNode(edgeNodeId)
-      .on(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
-      .on(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
-      .on(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating);
   }
-
-  destroy() {
-    StreamingEvent.edgeNode(this.edgeNodeId)
-      .off(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
-      .off(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
-      .off(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating);
-  }
-
-  onStreamQualityRating = (rating) => {
-    this.streamQualityRating = rating.streamQualityRating;
-  };
-
-  onRoundTripTimeMeasurement = (networkRoundTripTime) => {
-    this.networkRoundTripTime = networkRoundTripTime;
-    StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
-  };
-
-  onWebRtcMeasurement = (stats) => {
-    this.reportWebRtcMeasurement(stats);
-  };
 
   /**
    * Process reports from the browser and send report measurements to the StreamSocket by REPORT_MEASUREMENT event
