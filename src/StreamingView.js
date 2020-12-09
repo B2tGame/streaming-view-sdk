@@ -135,15 +135,26 @@ export default class StreamingView extends Component {
   registerUserEventsHandler() {
     // Report user event - stream-loading-time
     StreamingEvent.edgeNode(this.props.edgeNodeId).once(StreamingEvent.STREAM_VIDEO_PLAYING, () => {
-      const streamLoadingTime = Date.now() - this.props.userClickedPlayAt;
-      const userEventPayload = {
-        role: this.props.enableControl ? StreamingView.ROLE_PLAYER : StreamingView.ROLE_WATCHER,
-        eventType: StreamingEvent.STREAM_LOADING_TIME,
-        value: streamLoadingTime,
-        message: `User event - ${StreamingEvent.STREAM_LOADING_TIME}: ${streamLoadingTime} ms.`
-      };
+      const role = this.props.enableControl ? StreamingView.ROLE_PLAYER : StreamingView.ROLE_WATCHER;
+      if (this.props.userClickedPlayAt > 0) {
+        // Send the stream loading time if we have a user clicked play at props.
+        const streamLoadingTime = Date.now() - this.props.userClickedPlayAt;
+        const userEventPayload = {
+          role: role,
+          eventType: StreamingEvent.STREAM_LOADING_TIME,
+          value: streamLoadingTime,
+          message: `User event - ${StreamingEvent.STREAM_LOADING_TIME}: ${streamLoadingTime} ms.`
+        };
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.USER_EVENT_REPORT, userEventPayload);
+      }
 
-      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_LOADING_TIME, userEventPayload);
+      // Send the video playing event when user can see the stream.
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.USER_EVENT_REPORT, {
+        role: role,
+        eventType: StreamingEvent.USER_START_PLAYING,
+        value: 1,
+        message: `User event - ${StreamingEvent.USER_START_PLAYING}: Video is playing.`
+      });
     });
   }
 
