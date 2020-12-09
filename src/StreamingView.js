@@ -151,9 +151,9 @@ export default class StreamingView extends Component {
       // Send the video playing event when user can see the stream.
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.USER_EVENT_REPORT, {
         role: role,
-        eventType: StreamingEvent.USER_START_PLAYING,
+        eventType: StreamingEvent.USER_STARTS_PLAYING,
         value: 1,
-        message: `User event - ${StreamingEvent.USER_START_PLAYING}: Video is playing.`
+        message: `User event - ${StreamingEvent.USER_STARTS_PLAYING}: Video is playing.`
       });
     });
   }

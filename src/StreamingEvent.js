@@ -196,7 +196,8 @@ export default class StreamingEvent {
 
 
   /**
-   * Send a event as User Event
+   * Event fired when User Event Report is submitted
+   * Send an event as User Event Report
    * @return {string}
    */
   static get USER_EVENT_REPORT() {
@@ -204,11 +205,11 @@ export default class StreamingEvent {
   }
 
   /**
-   * When the user is starting playing the game.
+   * Event fired when the user starts playing the game
    * @return {string}
    */
-  static get USER_START_PLAYING() {
-    return 'user-start-playing';
+  static get USER_STARTS_PLAYING() {
+    return 'user-starts-playing';
   }
 
   /**
