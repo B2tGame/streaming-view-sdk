@@ -37,9 +37,18 @@ export default class JsepProtocol {
    */
   disconnect = () => {
     this.connected = false;
+    this.streamConnectedTimestamp = undefined;
+
     if (this.peerConnection) {
       this.peerConnection.close();
+      this.peerConnection.removeEventListener('track', this._handlePeerConnectionTrack);
+      this.peerConnection.removeEventListener('icecandidate', this._handlePeerIceCandidate);
+      this.peerConnection.removeEventListener('connectionstatechange', this._handlePeerConnectionStateChange);
+      this.peerConnection = null;
     }
+
+    this.eventForwarders = {};
+
     if (this.stream) {
       this.stream.cancel();
       this.stream = null;
@@ -51,7 +60,10 @@ export default class JsepProtocol {
       this.rtcEventTrigger = null;
     }
 
-    StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
+    StreamingEvent.edgeNode(this.edgeNodeId).off(
+      StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT,
+      this.onRequestWebRtcMeasurement
+    );
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_DISCONNECTED);
   };
 
@@ -86,20 +98,10 @@ export default class JsepProtocol {
     });
   };
 
-  cleanup = () => {
-    this.disconnect();
-    StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
-    if (this.peerConnection) {
-      this.peerConnection.removeEventListener('track', this._handlePeerConnectionTrack);
-      this.peerConnection.removeEventListener('icecandidate', this._handlePeerIceCandidate);
-      this.peerConnection.removeEventListener('connectionstatechange', this._handlePeerConnectionStateChange);
-
-      this.peerConnection = null;
-    }
-    this.eventForwarders = {};
-  };
-
   _handlePeerConnectionTrack = (event) => {
+    if (this.streamConnectedTimestamp === undefined) {
+      this.streamConnectedTimestamp = Date.now();
+    }
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_CONNECTED, event.track);
   };
 
@@ -126,7 +128,6 @@ export default class JsepProtocol {
   _handleDataChannelStatusChange = (e) => {
     this.logger.log('Data status change ' + e);
   };
-
 
   send(label, msg) {
     let bytes = msg.serializeBinary();
@@ -190,7 +191,10 @@ export default class JsepProtocol {
     };
     this.peerConnection = new RTCPeerConnection(signal.start);
 
-    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
+    StreamingEvent.edgeNode(this.edgeNodeId).on(
+      StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT,
+      this.onRequestWebRtcMeasurement
+    );
 
     this.peerConnection.addEventListener('track', this._handlePeerConnectionTrack, false);
     this.peerConnection.addEventListener('icecandidate', this._handlePeerIceCandidate, false);
@@ -199,14 +203,14 @@ export default class JsepProtocol {
   };
 
   onRequestWebRtcMeasurement = () => {
-    if (this.peerConnection) {
+    // Report only when user is connected for more than 1.5 second
+    if (this.peerConnection && Date.now() - this.streamConnectedTimestamp > 1500) {
       this.peerConnection
         .getStats()
         .then((stats) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, stats))
         .catch((err) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err));
     }
   };
-
 
   _handleSDP = async (signal) => {
     this.peerConnection.setRemoteDescription(new RTCSessionDescription(signal));

@@ -4,7 +4,6 @@ import StreamingEvent from '../StreamingEvent';
  * Measurement class is responsible for processing and reporting measurement reports
  */
 export default class Measurement {
-
   /**
    *
    * @return {string}
@@ -86,12 +85,8 @@ export default class Measurement {
   };
 
   onRoundTripTimeMeasurement = (networkRoundTripTime) => {
-    const measureDuration = (Date.now() - this.previousMeasurement.measureAt);
-    // Report only when measure duration is more than 1.5 second
-    if (measureDuration > 1500) {
-      this.networkRoundTripTime = networkRoundTripTime;
-      StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
-    }
+    this.networkRoundTripTime = networkRoundTripTime;
+    StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
   };
 
   onWebRtcMeasurement = (stats) => {
@@ -99,8 +94,8 @@ export default class Measurement {
   };
 
   onStreamDisconnected = () => {
-   this.previousMeasurement = this.defaultPreviousMeasurement();
-  }
+    this.previousMeasurement = this.defaultPreviousMeasurement();
+  };
 
   /**
    * Return default values for previous measurement
@@ -115,7 +110,7 @@ export default class Measurement {
       framesDropped: null,
       messagesSentMouse: 0,
       messagesSentTouch: 0,
-      measureAt: Date.now(),
+      measureAt: Date.now()
     };
   }
 
@@ -138,7 +133,7 @@ export default class Measurement {
 
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REPORT_MEASUREMENT, {
       networkRoundTripTime: this.networkRoundTripTime,
-      extra: this.measurement,
+      extra: this.measurement
     });
     this.measurement = {};
   }
@@ -156,7 +151,7 @@ export default class Measurement {
       this.measurement.videoProcessing =
         report.framesDecoded - this.previousMeasurement.framesDecoded !== 0
           ? (((report.totalDecodeTime || 0) - this.previousMeasurement.totalDecodeTime) * 1000) /
-          this.measurement.framesDecodedPerSecond
+            this.measurement.framesDecodedPerSecond
           : 0;
 
       this.previousMeasurement.framesDecoded = report.framesDecoded;
