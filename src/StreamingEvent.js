@@ -197,7 +197,6 @@ export default class StreamingEvent {
 
   /**
    * Event fired when User Event Report is submitted
-   * Send an event as User Event Report
    * @return {string}
    */
   static get USER_EVENT_REPORT() {
