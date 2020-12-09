@@ -194,6 +194,23 @@ export default class StreamingEvent {
     return 'stream-loading-time';
   }
 
+
+  /**
+   * Event fired when User Event Report is submitted
+   * @return {string}
+   */
+  static get USER_EVENT_REPORT() {
+    return 'user-event-report';
+  }
+
+  /**
+   * Event fired when the user starts playing the game
+   * @return {string}
+   */
+  static get USER_STARTS_PLAYING() {
+    return 'user-starts-playing';
+  }
+
   /**
    * Get EventEmitter for a specific Edge Node Id.
    * This will automatic create a new Event emitter if missing.
