@@ -29,7 +29,7 @@ export default class StreamSocket {
     // Send measurement report to the backend.
     StreamingEvent.edgeNode(edgeNodeId)
       .on(StreamingEvent.REPORT_MEASUREMENT, this.onReport)
-      .on(StreamingEvent.STREAM_LOADING_TIME, this.onUserEventReport)
+      .on(StreamingEvent.USER_EVENT_REPORT, this.onUserEventReport)
       .on(StreamingEvent.STREAM_UNREACHABLE, this.close);
   }
 
@@ -59,7 +59,7 @@ export default class StreamSocket {
       this.socket.close();
       StreamingEvent.edgeNode(this.edgeNodeId)
         .off(StreamingEvent.REPORT_MEASUREMENT, this.onReport)
-        .off(StreamingEvent.STREAM_LOADING_TIME, this.onUserEventReport)
+        .off(StreamingEvent.USER_EVENT_REPORT, this.onUserEventReport)
         .off(StreamingEvent.STREAM_UNREACHABLE, this.close);
       this.socket = undefined;
     }
