@@ -179,11 +179,11 @@ export default class JsepProtocol {
 
   _handleStart = (signal) => {
     // Emulator passing configuration via start signal
-    const parsedResolution = signal.start.iceServers.configuration.resolution.split('x');
-    StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.EMULATOR_CONFIGURATION, {
-      emulatorWidth: parseInt(parsedResolution[0]),
-      emulatorHeight: parseInt(parsedResolution[1])
-    });
+    // const parsedResolution = signal.start.iceServers.configuration.resolution.split('x');
+    // StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.EMULATOR_CONFIGURATION, {
+    //   emulatorWidth: parseInt(parsedResolution[0]),
+    //   emulatorHeight: parseInt(parsedResolution[1])
+    // });
 
     signal.start = {
       iceServers: [this.getIceConfiguration()],
