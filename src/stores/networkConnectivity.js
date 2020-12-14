@@ -7,7 +7,7 @@ const MEASUREMENT_LEVEL_BROWSER = 'browser-measurement';
 const MEASUREMENT_LEVEL_BASIC = 'basic';
 const MEASUREMENT_LEVEL_ADVANCED = 'advanced';
 
-const DOWNLOAD_SPEED_RACE_FOR_MS = 2000;
+const DOWNLOAD_SPEED_RACE_FOR_MS = 200;
 
 const defaultNetworkConnectivity = {
   roundTripTime: undefined,
@@ -72,6 +72,7 @@ function getBasicMeasurement() {
  */
 function getAdvancedMeasurement() {
   const download = (url) => {
+    console.log({ url });
     let firstByteReceivedAt = undefined;
     let firstLoadedBytes = undefined;
     let cancelDownload;
@@ -101,23 +102,43 @@ function getAdvancedMeasurement() {
           cancelDownload = canceler;
         })
       })
-      .catch(() => {})
-      .then(() => {
-        cancelDownload();
-      });
+      .then(() => true)
+      .catch((err) => err.name !== 'Error');
+  };
+
+  const downloadManager = (baseUrl, speedTestUrls) => {
+    return new Promise((resolve, reject) => {
+      if (speedTestUrls.length === 0) {
+        reject(false);
+      }
+
+      return download(baseUrl + speedTestUrls.shift() + '?/cb=' + Math.random()).then((successfull) =>
+        resolve(successfull ? successfull : downloadManager(baseUrl, speedTestUrls))
+      );
+    });
   };
 
   return getDeviceInfo()
     .then((deviceInfo) => {
       const baseUrl = 'http://18.193.172.176/measurement/';
-      const speedTestUrls = ((deviceInfo.recommendation || []).shift() || {}).speedTestUrls || ['random4000x4000.jpg'];
+      const speedTestUrls = ((deviceInfo.recommendation || []).shift() || {}).speedTestUrls || [
+        undefined,
+        'FAIL_CASE',
+        'ALMOST_THERE',
+        'random4000x4000.jpg'
+      ];
 
-      return download(baseUrl + speedTestUrls.shift() + '?/cb=' + Math.random());
+      return downloadManager(baseUrl, speedTestUrls);
     })
-    .then(() => ({
-      downloadSpeed: downloadSpeed,
-      measurementLevel: MEASUREMENT_LEVEL_ADVANCED
-    }));
+    .then((resp) => {
+      console.log({ downloadResp: resp });
+      return downloadSpeed
+        ? {
+            downloadSpeed: downloadSpeed,
+            measurementLevel: MEASUREMENT_LEVEL_ADVANCED
+          }
+        : {};
+    });
 }
 
 /**
