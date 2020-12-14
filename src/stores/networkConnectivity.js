@@ -7,6 +7,8 @@ const MEASUREMENT_LEVEL_BROWSER = 'browser-measurement';
 const MEASUREMENT_LEVEL_BASIC = 'basic';
 const MEASUREMENT_LEVEL_ADVANCED = 'advanced';
 
+const DOWNLOAD_SPEED_RACE_FOR_MS = 2000;
+
 const defaultNetworkConnectivity = {
   roundTripTime: undefined,
   downloadSpeed: undefined,
@@ -66,43 +68,42 @@ function getBasicMeasurement() {
 
 /**
  *
- * @return {Promise<{measurementLevel: string, downloadSpeed: number}>}
+ * @return {Promise<{measurementLevel: string, downloadSpeed: any}>}
  */
 function getAdvancedMeasurement() {
-  let cancelDownload;
-
-  const getLatestAverage = (source, skipPercent) => {
-    const avgSlice = source.slice(Math.round(skipPercent * source.length), source.length - 1);
-    //console.log('getLatestAverage', { source, avgSlice });
-    return parseFloat(
-      (avgSlice.length ? avgSlice.reduce((a, b) => a + b, 0) / avgSlice.length : source.pop()).toFixed(2)
-    );
-  };
-
   const download = (url) => {
-    const startTime = Date.now();
-    let mbps = undefined;
-    const mbpsMeasurements = [];
+    let firstByteReceivedAt = undefined;
+    let firstLoadedBytes = undefined;
+    let cancelDownload;
 
-    //console.log({ url, startTime, ms: Date.now() - startTime });
     return axios
       .get(url, {
         onDownloadProgress: (event) => {
+          const dateNow = Date.now();
           const loaded = event.loaded;
           const progress = Math.round((event.loaded * 100) / event.total);
-          const ms = Date.now() - startTime;
-          mbps = parseFloat(((loaded * 8000) / ms / 1024 / 1024).toFixed(2));
-          mbpsMeasurements.push(mbps);
-          downloadSpeed = getLatestAverage([...mbpsMeasurements], 0.6);
-          console.log({ ms, progress, loaded, mbps });
+          const timeSinceFirstByte = dateNow - firstByteReceivedAt;
+
+          if (firstByteReceivedAt === undefined) {
+            firstByteReceivedAt = dateNow;
+            firstLoadedBytes = loaded;
+          } else {
+            downloadSpeed = ((loaded - firstLoadedBytes) * 8000) / timeSinceFirstByte / 1024 / 1024;
+            console.log({ ms: timeSinceFirstByte, progress, loaded, downloadSpeed });
+
+            if (cancelDownload && dateNow >= firstByteReceivedAt + DOWNLOAD_SPEED_RACE_FOR_MS) {
+              cancelDownload();
+            }
+          }
         },
         cancelToken: new CancelToken(function executor(canceler) {
           // An executor function receives a cancel function as a parameter
           cancelDownload = canceler;
         })
       })
-      .catch(() => {
-        downloadSpeed = undefined;
+      .catch(() => {})
+      .then(() => {
+        cancelDownload();
       });
   };
 
@@ -111,18 +112,12 @@ function getAdvancedMeasurement() {
       const baseUrl = 'http://18.193.172.176/measurement/';
       const speedTestUrls = ((deviceInfo.recommendation || []).shift() || {}).speedTestUrls || ['random4000x4000.jpg'];
 
-      return Promise.race([
-        download(baseUrl + speedTestUrls.shift() + '?/cb=' + Math.random()),
-        new Promise((resolve) => setTimeout(resolve, 2000))
-      ]);
+      return download(baseUrl + speedTestUrls.shift() + '?/cb=' + Math.random());
     })
-    .then(() => {
-      cancelDownload();
-      return {
-        downloadSpeed: downloadSpeed,
-        measurementLevel: MEASUREMENT_LEVEL_ADVANCED
-      };
-    });
+    .then(() => ({
+      downloadSpeed: downloadSpeed,
+      measurementLevel: MEASUREMENT_LEVEL_ADVANCED
+    }));
 }
 
 /**
