@@ -17,7 +17,7 @@ const defaultNetworkConnectivity = {
   measurementLevel: undefined
 };
 let networkConnectivity = { ...defaultNetworkConnectivity };
-let downloadSpeed = undefined; // in Mbps with 2 decimal precision
+let downloadSpeed = undefined; // in Mbps
 
 /**
  * Reset all network connectivity data
