@@ -7,7 +7,8 @@ const MEASUREMENT_LEVEL_BROWSER = 'browser-measurement';
 const MEASUREMENT_LEVEL_BASIC = 'basic';
 const MEASUREMENT_LEVEL_ADVANCED = 'advanced';
 
-const DOWNLOAD_SPEED_RACE_FOR_MS = 200;
+const DOWNLOAD_SPEED_RACE_FOR_MS = 2000;
+const DOWNLOAD_DATASOURCE_NAME = 'random4000x4000.jpg';
 
 const defaultNetworkConnectivity = {
   roundTripTime: undefined,
@@ -60,8 +61,7 @@ function getBrowserMeasurement(browserConnection = undefined) {
  */
 function getBasicMeasurement() {
   return getDeviceInfo().then((deviceInfo) => ({
-    //TODO: set the correct region!
-    recommendedRegion: ((deviceInfo.recommendation || []).shift() || {}).edgeRegion,
+    recommendedRegion: (([...deviceInfo.recommendation] || []).shift() || {}).edgeRegion,
     measurementLevel: MEASUREMENT_LEVEL_BASIC
   }));
 }
@@ -71,8 +71,12 @@ function getBasicMeasurement() {
  * @return {Promise<{measurementLevel: string, downloadSpeed: any}>}
  */
 function getAdvancedMeasurement() {
+  /**
+   * Downloader function used for speed-test measurements
+   * @param {string} url Download url
+   * @return {Promise<boolean>}
+   */
   const download = (url) => {
-    console.log({ url });
     let firstByteReceivedAt = undefined;
     let firstLoadedBytes = undefined;
     let cancelDownload;
@@ -82,7 +86,6 @@ function getAdvancedMeasurement() {
         onDownloadProgress: (event) => {
           const dateNow = Date.now();
           const loaded = event.loaded;
-          const progress = Math.round((event.loaded * 100) / event.total);
           const timeSinceFirstByte = dateNow - firstByteReceivedAt;
 
           if (firstByteReceivedAt === undefined) {
@@ -90,7 +93,6 @@ function getAdvancedMeasurement() {
             firstLoadedBytes = loaded;
           } else {
             downloadSpeed = ((loaded - firstLoadedBytes) * 8000) / timeSinceFirstByte / 1024 / 1024;
-            console.log({ ms: timeSinceFirstByte, progress, loaded, downloadSpeed });
 
             if (cancelDownload && dateNow >= firstByteReceivedAt + DOWNLOAD_SPEED_RACE_FOR_MS) {
               cancelDownload();
@@ -106,39 +108,41 @@ function getAdvancedMeasurement() {
       .catch((err) => err.name !== 'Error');
   };
 
-  const downloadManager = (baseUrl, speedTestUrls) => {
+  /**
+   * Recursive function to manage download speed measurement and fallback case.
+   *
+   * @param {[]} speedTestUrls Array of possible speed test urls
+   * @return {Promise<boolean>}
+   */
+  const downloadManager = (speedTestUrls) => {
     return new Promise((resolve, reject) => {
       if (speedTestUrls.length === 0) {
         reject(false);
       }
 
-      return download(baseUrl + speedTestUrls.shift() + '?/cb=' + Math.random()).then((successfull) =>
-        resolve(successfull ? successfull : downloadManager(baseUrl, speedTestUrls))
+      // add a cache break query param to avoid speed measurement distorsion
+      return download(speedTestUrls.shift() + '?/cb=' + Math.random()).then((successfull) =>
+        resolve(successfull ? successfull : downloadManager(speedTestUrls))
       );
     });
   };
 
   return getDeviceInfo()
-    .then((deviceInfo) => {
-      const baseUrl = 'http://18.193.172.176/measurement/';
-      const speedTestUrls = ((deviceInfo.recommendation || []).shift() || {}).speedTestUrls || [
-        undefined,
-        'FAIL_CASE',
-        'ALMOST_THERE',
-        'random4000x4000.jpg'
-      ];
-
-      return downloadManager(baseUrl, speedTestUrls);
-    })
-    .then((resp) => {
-      console.log({ downloadResp: resp });
-      return downloadSpeed
+    .then((deviceInfo) =>
+      downloadManager(
+        ([...deviceInfo.recommendation] || [])
+          .reduce((output, rec) => [...output, ...rec.measurementEndpoints], [])
+          .map((endpoint) => endpoint + '/' + DOWNLOAD_DATASOURCE_NAME)
+      )
+    )
+    .then(() =>
+      downloadSpeed
         ? {
             downloadSpeed: downloadSpeed,
             measurementLevel: MEASUREMENT_LEVEL_ADVANCED
           }
-        : {};
-    });
+        : {}
+    );
 }
 
 /**
