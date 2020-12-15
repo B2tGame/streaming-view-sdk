@@ -161,14 +161,27 @@ export default class EventHandler extends Component {
     this.sendInput('mouse', request);
   };
 
-  sendTouch = (event, mouseButton) => {
-    const emulatorCords = this.calculateTouchEmulatorCoordinates(event);
-    const request = new Proto.MouseEvent();
-    request.setX(emulatorCords.x);
-    request.setY(emulatorCords.y);
-    request.setButtons(mouseButton === 0 ? 1 : 0);
+  sendTouch = (type, touches) => {
+    const touchesToSend = Object.keys(touches).map((index) => {
+      const touch = touches[index];
+      const emulatorCords = this.calculateTouchEmulatorCoordinates(touch);
 
-    this.sendInput('mouse', request);
+      const { identifier, force } = touch;
+
+      const protoTouch = new Proto.Touch();
+      protoTouch.setX(emulatorCords.x);
+      protoTouch.setY(emulatorCords.y);
+      protoTouch.setIdentifier(identifier);
+      protoTouch.setPressure(force > 0 && type !== 'touchend' ? 1 : 0);
+
+      return protoTouch;
+    });
+
+    // Make the grpc call.
+    const requestTouchEvent = new Proto.TouchEvent();
+    requestTouchEvent.setTouchesList(touchesToSend);
+    const { jsep } = this.props;
+    jsep.send('touch', requestTouchEvent);
   };
 
   /**
@@ -184,15 +197,30 @@ export default class EventHandler extends Component {
   };
 
   handleTouchStart = (event) => {
-    this.sendTouch(event.nativeEvent.touches[0], 0);
+    // Make sure they are not processed as mouse events later on.
+    // See https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+    this.sendTouch(event.nativeEvent.type, event.nativeEvent.changedTouches);
   };
 
   handleTouchEnd = (event) => {
-    this.sendTouch(event.nativeEvent.changedTouches[0]);
+    // Make sure they are not processed as mouse events later on.
+    // See https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+    this.sendTouch(event.nativeEvent.type, event.nativeEvent.changedTouches);
   };
 
   handleTouchMove = (event) => {
-    this.sendTouch(event.nativeEvent.touches[0], 0);
+    // Make sure they are not processed as mouse events later on.
+    // See https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+    this.sendTouch(event.nativeEvent.type, event.nativeEvent.changedTouches);
   };
 
   // Properly handle the mouse events.
