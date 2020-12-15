@@ -121,10 +121,9 @@ function getAdvancedMeasurement() {
     }
 
     const edge = availableEdges.shift();
-    const url = edge.url + '?_=' + Math.random();
+    const url = edge.url + '?_=' + Math.random(); // add a cache break query param to avoid speed measurement distorsion
     networkConnectivity.recommendedRegion = edge.edgeRegion;
 
-    // add a cache break query param to avoid speed measurement distorsion
     return download(url).then((successfull) => (successfull ? successfull : downloadManager(availableEdges)));
   };
 
@@ -134,7 +133,7 @@ function getAdvancedMeasurement() {
         ([...deviceInfo.recommendation] || []).reduce((output, rec) => {
           rec.measurementEndpoints.map((endpoint) =>
             output.push({
-              url: endpoint + '/' + DOWNLOAD_DATASOURCE_NAME,
+              url: `${endpoint}/${DOWNLOAD_DATASOURCE_NAME}`,
               edgeRegion: rec.edgeRegion
             })
           );
