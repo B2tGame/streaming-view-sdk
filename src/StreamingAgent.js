@@ -17,10 +17,6 @@ export default class StreamingAgent extends Component {
     internalSession: PropTypes.bool
   };
 
-  static get DELAY_DEVICE_INFO_MS() {
-    return 3000;
-  }
-
   constructor(props) {
     super(props);
     this.logger = new Logger(this.props.enableDebug);
@@ -61,12 +57,9 @@ export default class StreamingAgent extends Component {
   onConnectivityUpdate() {
     this.clearStoresCache();
     if (!this.props.internalSession && this.props.apiEndpoint) {
-      setTimeout(() => {
-        getDeviceInfo(this.props.apiEndpoint, this.connection)
-          .then(() => measureNetworkConnectivity(this.connection))
-          .then(console.log)
-          .catch((err) => this.logError(err));
-      }, StreamingAgent.DELAY_DEVICE_INFO_MS); // delay the execution
+      getDeviceInfo(this.props.apiEndpoint, this.connection)
+        .then(() => measureNetworkConnectivity(this.connection))
+        .catch((err) => this.logError(err));
     }
   }
 
