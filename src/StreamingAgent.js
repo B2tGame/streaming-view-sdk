@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
-import { getNetworkConnectivity, resetNetworkConnectivity } from './stores/networkConnectivity';
+import { measureNetworkConnectivity, resetNetworkConnectivity } from './stores/networkConnectivity';
 import { getDeviceInfo, resetDeviceInfo } from './stores/deviceInfo';
 import Logger from './Logger';
 
@@ -35,8 +35,7 @@ export default class StreamingAgent extends Component {
   }
 
   componentWillUnmount() {
-    this.connection.onchange = () => {
-    };
+    this.connection.onchange = () => {};
     this.clearStoresCache();
   }
 
@@ -58,8 +57,9 @@ export default class StreamingAgent extends Component {
   onConnectivityUpdate() {
     this.clearStoresCache();
     if (!this.props.internalSession && this.props.apiEndpoint) {
-      getNetworkConnectivity(this.connection).catch((err) => this.logError(err));
-      getDeviceInfo(this.props.apiEndpoint, this.connection).catch((err) => this.logError(err));
+      getDeviceInfo(this.props.apiEndpoint, this.connection)
+        .then(() => measureNetworkConnectivity(this.connection))
+        .catch((err) => this.logError(err));
     }
   }
 
