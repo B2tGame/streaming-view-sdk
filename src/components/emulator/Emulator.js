@@ -84,7 +84,9 @@ class Emulator extends Component {
     /** Enable or disable user interactions with the game */
     enableControl: PropTypes.bool,
     /** Event Logger */
-    logger: PropTypes.object.isRequired
+    logger: PropTypes.object.isRequired,
+    /** Override the default threshold for now many time the SDK will try to reconnect to the stream */
+    maxConnectionRetries: PropTypes.number
   };
 
 
@@ -94,7 +96,8 @@ class Emulator extends Component {
     poll: false,
     volume: 1.0,
     enableFullScreen: true,
-    enableControl: true
+    enableControl: true,
+    maxConnectionRetries: Emulator.RELOAD_FAILURE_THRESHOLD
   };
 
   components = {
@@ -213,7 +216,7 @@ class Emulator extends Component {
     if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
       this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
       if (this.isMountedInView) {
-        if (this.reloadCount >= Emulator.RELOAD_FAILURE_THRESHOLD) {
+        if (this.reloadCount >= this.props.maxConnectionRetries) {
           // Give up and exit the stream.
           StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, new Error(`Reach max number of reload tires: ${this.reloadCount}`));
         } else {
