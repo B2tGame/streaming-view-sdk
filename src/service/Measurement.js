@@ -153,6 +153,7 @@ export default class Measurement {
           ? (((report.totalDecodeTime || 0) - this.previousMeasurement.totalDecodeTime) * 1000) /
             this.measurement.framesDecodedPerSecond
           : 0;
+      this.measurement.packetsLostPercent = (report.packetsLost * 100) / report.packetsReceived;
 
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;
@@ -169,6 +170,8 @@ export default class Measurement {
       this.measurement.framesReceivedPerSecond =
         (report.framesReceived - this.previousMeasurement.framesReceived) / this.measurement.measureDuration;
       this.measurement.framesDropped = report.framesDropped - this.previousMeasurement.framesDropped;
+      this.measurement.jitterBufferDelay = report.jitterBufferDelay * 1000;
+      this.measurement.jitterBufferEmittedCount = report.jitterBufferEmittedCount;
 
       this.previousMeasurement.framesReceived = report.framesReceived;
       this.previousMeasurement.framesDropped = report.framesDropped;
