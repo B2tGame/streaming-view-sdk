@@ -36,7 +36,8 @@ export default class StreamingView extends Component {
     streamQualityRating: PropTypes.number, // Can be changed dynamically
     enableDebug: PropTypes.bool, // Can't be changed after creation
     internalSession: PropTypes.bool, // Can't be changed after creation
-    userClickedPlayAt: PropTypes.number // Can't be changed after creation
+    userClickedPlayAt: PropTypes.number, // Can't be changed after creation
+    maxConnectionRetries: PropTypes.number, // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
   };
 
   /**
@@ -173,6 +174,7 @@ export default class StreamingView extends Component {
             poll={true}
             logger={this.logger}
             edgeNodeId={edgeNodeId}
+            maxConnectionRetries={this.props.maxConnectionRetries}
           />
         );
       case false:
