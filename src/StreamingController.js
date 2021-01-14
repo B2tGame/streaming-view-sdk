@@ -66,9 +66,9 @@ class StreamingController {
       ])
       .then(([apiEndpoint, connectivityInfo]) => {
         const encodedConnectivityInfo = encodeURIComponent(JSON.stringify(connectivityInfo));
-        return axios.get(`${apiEndpoint}//api/streaming-games/predicted-game-experience?connectivity-info=${encodedConnectivityInfo}`);
+        return axios.get(`${apiEndpoint}/api/streaming-games/predicted-game-experience?connectivity-info=${encodedConnectivityInfo}`);
       })
-      .then((result) => result.data);
+      .then((result) => (result.data || {}).apps || []);
   }
 
   /**
