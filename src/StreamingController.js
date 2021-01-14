@@ -56,7 +56,7 @@ class StreamingController {
 
   /**
    * Get a list of predicted game experiences for all apps based on the current usage connectivity.
-   * @returns {Promise<{appId: number, score: number}[]>}
+   * @returns {Promise<[{appId: number, score: number}]>}
    */
   getPredictedGameExperiences() {
     return Promise
