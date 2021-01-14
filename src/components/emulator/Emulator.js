@@ -51,6 +51,15 @@ class Emulator extends Component {
    * @return {number}
    */
   static get RELOAD_HOLD_OFF_TIMEOUT() {
+    return 10000;
+  }
+
+  /**
+   * The minimum amount time the SDK should wait (after a onConnect event) before doing a hard reload due to bad/none functional stream.
+   * Consider the time needed after it has been reloaded, it will need some time to do a reconnection etc.
+   * @return {number}
+   */
+  static get RELOAD_HOLD_OFF_TIMEOUT_AFTER_CONNECT() {
     return 5000;
   }
 
@@ -114,8 +123,7 @@ class Emulator extends Component {
     this.isMountedInView = false;
     this.view = React.createRef();
     this.reloadCount = 0;
-    this.reloadHoldOff = undefined;
-
+    this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
     const { uri, auth, poll } = this.props;
     this.emulator = new EmulatorControllerService(uri, auth, this.onError);
     this.rtc = new RtcService(uri, auth, this.onError);
@@ -177,7 +185,7 @@ class Emulator extends Component {
 
   onConnect = () => {
     this.reloadCount = 0;
-    this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
+    this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT_AFTER_CONNECT;
   };
 
   /**
@@ -207,7 +215,7 @@ class Emulator extends Component {
    * @param {string} cause
    */
   reload(cause) {
-    if (this.reloadHoldOff && this.reloadHoldOff < Date.now() && this.isMountedInView) {
+    if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
       this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
       if (this.reloadCount >= this.props.maxConnectionRetries) {
         // Give up and exit the stream.
