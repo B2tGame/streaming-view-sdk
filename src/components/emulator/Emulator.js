@@ -86,7 +86,13 @@ class Emulator extends Component {
     /** Event Logger */
     logger: PropTypes.object.isRequired,
     /** Override the default threshold for now many time the SDK will try to reconnect to the stream */
-    maxConnectionRetries: PropTypes.number
+    maxConnectionRetries: PropTypes.number,
+    /** Emulator Width */
+    emulatorWidth: PropTypes.number,
+    /** Emulator Height */
+    emulatorHeight: PropTypes.number,
+    /** Emulator Version */
+    emulatorVersion: PropTypes.string,
   };
 
 
@@ -107,8 +113,6 @@ class Emulator extends Component {
 
   state = {
     streamingConnectionId: Date.now(),
-    width: undefined,
-    height: undefined
   };
 
   constructor(props) {
@@ -135,7 +139,6 @@ class Emulator extends Component {
       .on(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onVideoUnavailable)
       .on(StreamingEvent.STREAM_VIDEO_MISSING, this.onVideoMissing)
       .on(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect)
-      .on(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
   }
 
 
@@ -150,7 +153,6 @@ class Emulator extends Component {
       .off(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onVideoUnavailable)
       .off(StreamingEvent.STREAM_VIDEO_MISSING, this.onVideoMissing)
       .off(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect)
-      .off(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
   }
 
 
@@ -164,20 +166,6 @@ class Emulator extends Component {
 
   onVideoMissing = () => {
     this.reload(StreamingEvent.STREAM_VIDEO_MISSING);
-  };
-
-
-  onConfiguration = (configuration) => {
-    if (this.state.width !== configuration.emulatorWidth || this.state.height !== configuration.emulatorHeight) {
-      if (this.isMountedInView) {
-        this.setState({ width: configuration.emulatorWidth, height: configuration.emulatorHeight });
-      } else {
-        // eslint-disable-next-line react/no-direct-mutation-state
-        this.state.width = configuration.emulatorWidth;
-        // eslint-disable-next-line react/no-direct-mutation-state
-        this.state.height = configuration.emulatorHeight;
-      }
-    }
   };
 
   onConnect = () => {
@@ -229,13 +217,14 @@ class Emulator extends Component {
   }
 
   render() {
-    const { view, poll, volume, enableFullScreen, enableControl, uri } = this.props;
+    const { view, poll, volume, enableFullScreen, enableControl, uri, emulatorWidth, emulatorHeight, emulatorVersion } = this.props;
     return (
       <EventHandler
         key={this.state.streamingConnectionId}
         ref={this.view}
-        emulatorWidth={this.state.width}
-        emulatorHeight={this.state.height}
+        emulatorWidth={emulatorWidth}
+        emulatorHeight={emulatorHeight}
+        emulatorVersion={emulatorVersion}
         uri={uri}
         emulator={this.emulator}
         jsep={this.jsep}

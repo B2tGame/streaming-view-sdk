@@ -43,6 +43,7 @@ export default class EventHandler extends Component {
     logger: PropTypes.object.isRequired,
     emulatorWidth: PropTypes.number,
     emulatorHeight: PropTypes.number,
+    emulatorVersion: PropTypes.string,
     view: PropTypes.any.isRequired,
     edgeNodeId: PropTypes.string.isRequired // report events during the streaming view.
   };
@@ -316,8 +317,6 @@ export default class EventHandler extends Component {
           {...this.props}
           deviceHeight={this.state.deviceHeight}
           deviceWidth={this.state.deviceWidth}
-          emulatorWidth={this.props.emulatorWidth}
-          emulatorHeight={this.props.emulatorHeight}
         />
       </div>
     );

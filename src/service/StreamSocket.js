@@ -26,6 +26,13 @@ export default class StreamSocket {
     this.socket.on('pong', (networkRoundTripTime) => {
       StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, networkRoundTripTime);
     });
+
+    this.socket.on('message', (data) => {
+      const message = JSON.parse(data);
+      if(message.name === 'emulator-configuration') {
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.EMULATOR_CONFIGURATION, message.configuration);
+      }
+    })
     // Send measurement report to the backend.
     StreamingEvent.edgeNode(edgeNodeId)
       .on(StreamingEvent.REPORT_MEASUREMENT, this.onReport)
