@@ -63,7 +63,7 @@ function getBrowserMeasurement(browserConnection = undefined) {
  */
 function getBasicMeasurement() {
   return getDeviceInfo().then((deviceInfo) => ({
-    recommendedRegion: ((deviceInfo.recommendation || []).find(() => true) || {}).edgeRegion,
+    recommendedRegion: (((deviceInfo || {}).recommendation || []).find(() => true) || {}).edgeRegion,
     measurementLevel: MEASUREMENT_LEVEL_BASIC
   }));
 }
@@ -130,8 +130,8 @@ function getAdvancedMeasurement() {
   return getDeviceInfo()
     .then((deviceInfo) =>
       downloadManager(
-        ([...deviceInfo.recommendation] || []).reduce((output, rec) => {
-          rec.measurementEndpoints.map((endpoint) =>
+        ((deviceInfo || {}).recommendation || []).reduce((output, rec) => {
+            rec.measurementEndpoints.map((endpoint) =>
             output.push({
               url: `${endpoint}/${DOWNLOAD_DATASOURCE_NAME}`,
               edgeRegion: rec.edgeRegion
