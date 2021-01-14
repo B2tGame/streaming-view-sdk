@@ -55,6 +55,23 @@ class StreamingController {
   }
 
   /**
+   * Get a list of predicted game experiences for all apps based on the current usage connectivity.
+   * @returns {Promise<[{appId: number, score: number}]>}
+   */
+  getPredictedGameExperiences() {
+    return Promise
+      .all([
+        this.getApiEndpoint(),
+        this.getConnectivityInfo()
+      ])
+      .then(([apiEndpoint, connectivityInfo]) => {
+        const encodedConnectivityInfo = encodeURIComponent(JSON.stringify(connectivityInfo));
+        return axios.get(`${apiEndpoint}/api/streaming-games/predicted-game-experience?connectivity-info=${encodedConnectivityInfo}`);
+      })
+      .then((result) => (result.data || {}).apps || []);
+  }
+
+  /**
    * Sends the save command to the supervisor.
    * This is used to trigger different save behaviour depending on edgenode mode.
    * Snapshot mode: saves a snapshot
