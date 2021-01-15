@@ -45,7 +45,6 @@ import StreamingEvent from '../../StreamingEvent';
  */
 
 class Emulator extends Component {
-
   /**
    * The minimum amount time the SDK should wait before doing a hard reload due to bad/none functional stream.
    * Consider the time needed after it has been reloaded, it will need some time to do a reconnection etc.
@@ -100,9 +99,8 @@ class Emulator extends Component {
     /** Emulator Height */
     emulatorHeight: PropTypes.number,
     /** Emulator Version */
-    emulatorVersion: PropTypes.string,
+    emulatorVersion: PropTypes.string
   };
-
 
   static defaultProps = {
     view: 'webrtc',
@@ -149,10 +147,8 @@ class Emulator extends Component {
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
       .on(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onVideoUnavailable)
       .on(StreamingEvent.STREAM_VIDEO_MISSING, this.onVideoMissing)
-      .on(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect)
-      .on(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
+      .on(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect);
   }
-
 
   componentDidMount() {
     this.isMountedInView = true;
@@ -164,10 +160,8 @@ class Emulator extends Component {
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
       .off(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onVideoUnavailable)
       .off(StreamingEvent.STREAM_VIDEO_MISSING, this.onVideoMissing)
-      .off(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect)
-      .off(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
+      .off(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect);
   }
-
 
   onDisconnect = () => {
     this.reload(StreamingEvent.STREAM_DISCONNECTED);
@@ -185,7 +179,6 @@ class Emulator extends Component {
     this.reloadCount = 0;
     this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT_AFTER_CONNECT;
   };
-
 
   /**
    * Sends the given key to the emulator.
@@ -209,7 +202,6 @@ class Emulator extends Component {
     this.jsep.send('keyboard', request);
   };
 
-
   /**
    *
    * @param {string} cause
@@ -232,7 +224,17 @@ class Emulator extends Component {
   }
 
   render() {
-    const { view, poll, volume, enableFullScreen, enableControl, uri, emulatorWidth, emulatorHeight, emulatorVersion } = this.props;
+    const {
+      view,
+      poll,
+      volume,
+      enableFullScreen,
+      enableControl,
+      uri,
+      emulatorWidth,
+      emulatorHeight,
+      emulatorVersion
+    } = this.props;
     return (
       <EventHandler
         key={this.state.streamingConnectionId}
