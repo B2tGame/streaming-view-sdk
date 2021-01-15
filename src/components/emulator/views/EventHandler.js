@@ -69,6 +69,9 @@ export default class EventHandler extends Component {
   componentWillUnmount() {
     this.handler.current.removeEventListener('touchmove', this.preventDefault, { passive: false });
     window.removeEventListener('resize', this.forceRender);
+    if (this.props.enableFullScreen && screenfull.isEnabled && screenfull.isFullscreen) {
+      window.screen.orientation.unlock();
+    }
   }
 
   forceRender = () => {
@@ -181,8 +184,7 @@ export default class EventHandler extends Component {
     // Make the grpc call.
     const requestTouchEvent = new Proto.TouchEvent();
     requestTouchEvent.setTouchesList(touchesToSend);
-    const { jsep } = this.props;
-    jsep.send('touch', requestTouchEvent);
+    this.sendInput('touch', requestTouchEvent);
   };
 
   /**
