@@ -68,7 +68,8 @@ export default class EventHandler extends Component {
       };
     } else {
       this.touchHandler = function(type, events, firstChangedEvent) {
-        return this.sendMouse(firstChangedEvent, 0);
+        this.mouseDown = type !== 'touchend';
+        return this.sendMouse(this.calculateTouchEmulatorCoordinates(firstChangedEvent), type !== 'touchend' ? 0 : 1);
       };
     }
   }
@@ -165,11 +166,10 @@ export default class EventHandler extends Component {
 
   /**
    *
-   * @param event
+   * @param emulatorCords
    * @param mouseButton
    */
-  sendMouse = (event, mouseButton) => {
-    const emulatorCords = this.calculateMouseEmulatorCoordinates(event);
+  sendMouse = (emulatorCords, mouseButton) => {
     const request = new Proto.MouseEvent();
     request.setX(emulatorCords.x);
     request.setY(emulatorCords.y);
@@ -242,7 +242,7 @@ export default class EventHandler extends Component {
   handleMouseDown = (event) => {
     if (!isMobile) {
       this.mouseDown = true;
-      this.sendMouse(event.nativeEvent, event.button);
+      this.sendMouse(this.calculateMouseEmulatorCoordinates(event.nativeEvent), event.button);
     }
   };
 
@@ -250,14 +250,14 @@ export default class EventHandler extends Component {
     // Don't release mouse when not pressed
     if (!isMobile && this.mouseDown) {
       this.mouseDown = false;
-      this.sendMouse(event.nativeEvent);
+      this.sendMouse(this.calculateMouseEmulatorCoordinates(event.nativeEvent));
     }
   };
 
   handleMouseMove = (event) => {
     // Mouse button needs to be pressed before triggering move
     if (!isMobile && this.mouseDown) {
-      this.sendMouse(event.nativeEvent, event.button);
+      this.sendMouse(this.calculateMouseEmulatorCoordinates(event.nativeEvent), event.button);
     }
   };
 
