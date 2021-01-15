@@ -1,5 +1,6 @@
 import StreamingEvent from '../StreamingEvent';
 import axios from 'axios';
+import { v4 as uuid } from 'uuid';
 
 /**
  * Collect and send logs from SDK directly to the Service Coordinator.
@@ -8,17 +9,21 @@ export default class LogQueueService {
   /**
    * @param {string} edgeNodeId
    * @param {string} apiEndpoint
+   * @param {string} userId
    */
-  constructor(edgeNodeId, apiEndpoint) {
+  constructor(edgeNodeId, apiEndpoint, userId) {
     this.logQueue = [];
     this.endpoint = `${apiEndpoint}/api/streaming-games/edge-node/log`;
-    StreamingEvent.edgeNode(edgeNodeId).on('event', (event) => {
+    this.streamingViewId = uuid();
+    StreamingEvent.edgeNode(edgeNodeId).on('event', (eventType, payload) => {
+      payload.streamingViewId = this.streamingViewId;
+      payload.userId = userId;
       this.logQueue.push({
         edgeNodeId: edgeNodeId,
-        name: 'SDK',
+        name: 'sdk',
         timestamp: new Date().toISOString(),
         type: 'log',
-        message: JSON.stringify(event)
+        message: JSON.stringify(payload)
       });
       if (this.logQueue.length > 25) {
         this.sendQueue();

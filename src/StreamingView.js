@@ -69,7 +69,7 @@ export default class StreamingView extends Component {
     this.isMountedInView = true;
     const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, enableDebug, onEvent } = this.props;
     if(!internalSession) {
-      this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint);
+      this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId);
     }
     this.logger = new Logger(enableDebug);
     this.logger.log(`Latest update: ${buildInfo.tag}`);

@@ -25,7 +25,8 @@
     "request-promise": "^4.2.5",
     "screenfull": "^5.0.2",
     "socket.io-client": "^2.3.0",
-    "react-resize-observer": "^1.1.1"
+    "react-resize-observer": "^1.1.1",
+    "uuid": "^8.3.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
