@@ -57,6 +57,22 @@ export default class EventHandler extends Component {
     this.userInteractionHoldOff = 0;
   }
 
+  touchHandler = function(type, events, firstChangedEvent) {
+    return this.sendMouse(firstChangedEvent, 0);
+  }
+
+  componentDidUpdate() {
+    if (this.props.emulatorVersion !== "emu-30.2.4-android10") {
+      this.touchHandler = function(type, events, firstChangedEvent) {
+        return this.sendMultiTouch(type, events);
+      };
+    } else {
+      this.touchHandler = function(type, events, firstChangedEvent) {
+        return this.sendMouse(firstChangedEvent, 0);
+      };
+    }
+  }
+
   componentDidMount() {
     this.getScreenSize();
     // Disabling passive mode to be able to call 'event.preventDefault()' for disabling scroll, which causing
@@ -162,7 +178,7 @@ export default class EventHandler extends Component {
     this.sendInput('mouse', request);
   };
 
-  sendTouch = (type, touches) => {
+  sendMultiTouch = (type, touches) => {
     const touchesToSend = Object.keys(touches).map((index) => {
       const touch = touches[index];
       const emulatorCords = this.calculateTouchEmulatorCoordinates(touch);
@@ -182,7 +198,11 @@ export default class EventHandler extends Component {
     const requestTouchEvent = new Proto.TouchEvent();
     requestTouchEvent.setTouchesList(touchesToSend);
     const { jsep } = this.props;
-    jsep.send('touch', requestTouchEvent);
+
+    this.handleUserInteraction();
+    if (this.props.enableControl) {
+      jsep.send('touch', requestTouchEvent);
+    }
   };
 
   /**
@@ -198,30 +218,24 @@ export default class EventHandler extends Component {
   };
 
   handleTouchStart = (event) => {
-    // Make sure they are not processed as mouse events later on.
-    // See https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
     if (event.cancelable) {
       event.preventDefault();
     }
-    this.sendTouch(event.nativeEvent.type, event.nativeEvent.changedTouches);
+    this.touchHandler(event.nativeEvent.type, event.nativeEvent.changedTouches, event.nativeEvent.touches[0])
   };
 
   handleTouchEnd = (event) => {
-    // Make sure they are not processed as mouse events later on.
-    // See https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
     if (event.cancelable) {
       event.preventDefault();
     }
-    this.sendTouch(event.nativeEvent.type, event.nativeEvent.changedTouches);
+    this.touchHandler(event.nativeEvent.type, event.nativeEvent.changedTouches, event.nativeEvent.changedTouches[0])
   };
 
   handleTouchMove = (event) => {
-    // Make sure they are not processed as mouse events later on.
-    // See https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
     if (event.cancelable) {
       event.preventDefault();
     }
-    this.sendTouch(event.nativeEvent.type, event.nativeEvent.changedTouches);
+    this.touchHandler(event.nativeEvent.type, event.nativeEvent.changedTouches, event.nativeEvent.touches[0])
   };
 
   // Properly handle the mouse events.
