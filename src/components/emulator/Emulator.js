@@ -8,7 +8,6 @@ import * as Proto from '../../proto/emulator_controller_pb';
 import { RtcService, EmulatorControllerService } from '../../proto/emulator_web_client';
 import StreamingEvent from '../../StreamingEvent';
 
-
 /**
  * A React component that displays a remote android emulator.
  *
@@ -46,13 +45,21 @@ import StreamingEvent from '../../StreamingEvent';
  */
 
 class Emulator extends Component {
-
   /**
    * The minimum amount time the SDK should wait before doing a hard reload due to bad/none functional stream.
    * Consider the time needed after it has been reloaded, it will need some time to do a reconnection etc.
    * @return {number}
    */
   static get RELOAD_HOLD_OFF_TIMEOUT() {
+    return 10000;
+  }
+
+  /**
+   * The minimum amount time the SDK should wait (after a onConnect event) before doing a hard reload due to bad/none functional stream.
+   * Consider the time needed after it has been reloaded, it will need some time to do a reconnection etc.
+   * @return {number}
+   */
+  static get RELOAD_HOLD_OFF_TIMEOUT_AFTER_CONNECT() {
     return 5000;
   }
 
@@ -92,9 +99,8 @@ class Emulator extends Component {
     /** Emulator Height */
     emulatorHeight: PropTypes.number,
     /** Emulator Version */
-    emulatorVersion: PropTypes.string,
+    emulatorVersion: PropTypes.string
   };
-
 
   static defaultProps = {
     view: 'webrtc',
@@ -113,10 +119,13 @@ class Emulator extends Component {
 
   state = {
     streamingConnectionId: Date.now(),
+    width: undefined,
+    height: undefined
   };
 
   constructor(props) {
     super(props);
+
     this.isMountedInView = false;
     this.view = React.createRef();
     this.reloadCount = 0;
@@ -138,9 +147,8 @@ class Emulator extends Component {
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
       .on(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onVideoUnavailable)
       .on(StreamingEvent.STREAM_VIDEO_MISSING, this.onVideoMissing)
-      .on(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect)
+      .on(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect);
   }
-
 
   componentDidMount() {
     this.isMountedInView = true;
@@ -152,9 +160,8 @@ class Emulator extends Component {
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
       .off(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onVideoUnavailable)
       .off(StreamingEvent.STREAM_VIDEO_MISSING, this.onVideoMissing)
-      .off(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect)
+      .off(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect);
   }
-
 
   onDisconnect = () => {
     this.reload(StreamingEvent.STREAM_DISCONNECTED);
@@ -170,8 +177,8 @@ class Emulator extends Component {
 
   onConnect = () => {
     this.reloadCount = 0;
+    this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT_AFTER_CONNECT;
   };
-
 
   /**
    * Sends the given key to the emulator.
@@ -195,7 +202,6 @@ class Emulator extends Component {
     this.jsep.send('keyboard', request);
   };
 
-
   /**
    *
    * @param {string} cause
@@ -203,21 +209,32 @@ class Emulator extends Component {
   reload(cause) {
     if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
       this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
-      if (this.isMountedInView) {
-        if (this.reloadCount >= this.props.maxConnectionRetries) {
-          // Give up and exit the stream.
-          StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, new Error(`Reach max number of reload tires: ${this.reloadCount}`));
-        } else {
-          this.reloadCount++;
-          StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_RELOADED, cause);
-          this.setState({ streamingConnectionId: Date.now() });
-        }
+      if (this.reloadCount >= this.props.maxConnectionRetries) {
+        // Give up and exit the stream.
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(
+          StreamingEvent.STREAM_UNREACHABLE,
+          new Error(`Reach max number of reload tires: ${this.reloadCount}`)
+        );
+      } else {
+        this.reloadCount++;
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_RELOADED, cause);
+        this.setState({ streamingConnectionId: Date.now() });
       }
     }
   }
 
   render() {
-    const { view, poll, volume, enableFullScreen, enableControl, uri, emulatorWidth, emulatorHeight, emulatorVersion } = this.props;
+    const {
+      view,
+      poll,
+      volume,
+      enableFullScreen,
+      enableControl,
+      uri,
+      emulatorWidth,
+      emulatorHeight,
+      emulatorVersion
+    } = this.props;
     return (
       <EventHandler
         key={this.state.streamingConnectionId}

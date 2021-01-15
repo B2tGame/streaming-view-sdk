@@ -71,11 +71,9 @@ export default class EmulatorWebrtcView extends Component {
     this.props.jsep.disconnect();
   }
 
-
   componentDidUpdate() {
     this.video.current.volume = this.props.volume;
   }
-
 
   shouldComponentUpdate(nextProps, nextState) {
     if (this.state.muted === true && nextState.muted === false && this.video.current) {
@@ -124,11 +122,15 @@ export default class EmulatorWebrtcView extends Component {
 
     video.srcObject.addTrack(track);
     if (track.kind === 'video') {
-      this.setState({ video: true }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_AVAILABLE));
+      this.setState({ video: true }, () =>
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_AVAILABLE)
+      );
     }
 
     if (track.kind === 'audio') {
-      this.setState({ audio: true }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_AVAILABLE));
+      this.setState({ audio: true }, () =>
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_AVAILABLE)
+      );
     }
   };
 
@@ -137,8 +139,7 @@ export default class EmulatorWebrtcView extends Component {
     if (!video) {
       return; // Component was unmounted.
     }
-    return (video.play() || Promise.resolve()).catch(() => {
-    });
+    return (video.play() || Promise.resolve()).catch(() => {});
   };
 
   onPlaying = () => {
