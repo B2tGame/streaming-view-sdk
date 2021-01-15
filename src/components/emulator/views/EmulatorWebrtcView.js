@@ -23,7 +23,8 @@ export default class EmulatorWebrtcView extends Component {
     /** The height of the emulator device */
     deviceHeight: PropTypes.number,
     emulatorWidth: PropTypes.number,
-    emulatorHeight: PropTypes.number
+    emulatorHeight: PropTypes.number,
+    emulatorVersion: PropTypes.string,
   };
 
   state = {

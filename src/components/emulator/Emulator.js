@@ -45,6 +45,7 @@ import StreamingEvent from '../../StreamingEvent';
  */
 
 class Emulator extends Component {
+
   /**
    * The minimum amount time the SDK should wait before doing a hard reload due to bad/none functional stream.
    * Consider the time needed after it has been reloaded, it will need some time to do a reconnection etc.
@@ -93,8 +94,15 @@ class Emulator extends Component {
     /** Event Logger */
     logger: PropTypes.object.isRequired,
     /** Override the default threshold for now many time the SDK will try to reconnect to the stream */
-    maxConnectionRetries: PropTypes.number
+    maxConnectionRetries: PropTypes.number,
+    /** Emulator Width */
+    emulatorWidth: PropTypes.number,
+    /** Emulator Height */
+    emulatorHeight: PropTypes.number,
+    /** Emulator Version */
+    emulatorVersion: PropTypes.string,
   };
+
 
   static defaultProps = {
     view: 'webrtc',
@@ -124,6 +132,7 @@ class Emulator extends Component {
     this.view = React.createRef();
     this.reloadCount = 0;
     this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
+
     const { uri, auth, poll } = this.props;
     this.emulator = new EmulatorControllerService(uri, auth, this.onError);
     this.rtc = new RtcService(uri, auth, this.onError);
@@ -144,6 +153,7 @@ class Emulator extends Component {
       .on(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
   }
 
+
   componentDidMount() {
     this.isMountedInView = true;
   }
@@ -158,6 +168,7 @@ class Emulator extends Component {
       .off(StreamingEvent.EMULATOR_CONFIGURATION, this.onConfiguration);
   }
 
+
   onDisconnect = () => {
     this.reload(StreamingEvent.STREAM_DISCONNECTED);
   };
@@ -170,23 +181,11 @@ class Emulator extends Component {
     this.reload(StreamingEvent.STREAM_VIDEO_MISSING);
   };
 
-  onConfiguration = (configuration) => {
-    if (this.state.width !== configuration.emulatorWidth || this.state.height !== configuration.emulatorHeight) {
-      if (this.isMountedInView) {
-        this.setState({ width: configuration.emulatorWidth, height: configuration.emulatorHeight });
-      } else {
-        // eslint-disable-next-line react/no-direct-mutation-state
-        this.state.width = configuration.emulatorWidth;
-        // eslint-disable-next-line react/no-direct-mutation-state
-        this.state.height = configuration.emulatorHeight;
-      }
-    }
-  };
-
   onConnect = () => {
     this.reloadCount = 0;
     this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT_AFTER_CONNECT;
   };
+
 
   /**
    * Sends the given key to the emulator.
@@ -210,6 +209,7 @@ class Emulator extends Component {
     this.jsep.send('keyboard', request);
   };
 
+
   /**
    *
    * @param {string} cause
@@ -232,13 +232,14 @@ class Emulator extends Component {
   }
 
   render() {
-    const { view, poll, volume, enableFullScreen, enableControl, uri } = this.props;
+    const { view, poll, volume, enableFullScreen, enableControl, uri, emulatorWidth, emulatorHeight, emulatorVersion } = this.props;
     return (
       <EventHandler
         key={this.state.streamingConnectionId}
         ref={this.view}
-        emulatorWidth={this.state.width}
-        emulatorHeight={this.state.height}
+        emulatorWidth={emulatorWidth}
+        emulatorHeight={emulatorHeight}
+        emulatorVersion={emulatorVersion}
         uri={uri}
         emulator={this.emulator}
         jsep={this.jsep}

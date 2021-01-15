@@ -19,7 +19,10 @@ export default class StreamingView extends Component {
   state = {
     isReadyStream: undefined,
     streamEndpoint: undefined,
-    turnEndpoint: undefined
+    turnEndpoint: undefined,
+    emulatorWidth: undefined,
+    emulatorHeight: undefined,
+    emulatorVersion: undefined,
   };
 
   static propTypes = {
@@ -72,7 +75,15 @@ export default class StreamingView extends Component {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
     }
 
-    StreamingEvent.edgeNode(edgeNodeId).once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }));
+    StreamingEvent.edgeNode(edgeNodeId)
+      .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
+      .on(StreamingEvent.EMULATOR_CONFIGURATION, (configuration) => {
+        this.setState({
+          emulatorWidth: configuration.emulatorWidth,
+          emulatorHeight: configuration.emulatorHeight,
+          emulatorVersion: configuration.emulatorVersion
+        });
+      });
 
     StreamingController({
       apiEndpoint: apiEndpoint,
@@ -172,6 +183,9 @@ export default class StreamingView extends Component {
             view={view}
             volume={volume}
             poll={true}
+            emulatorWidth={this.state.emulatorWidth}
+            emulatorHeight={this.state.emulatorHeight}
+            emulatorVersion={this.state.emulatorVersion}
             logger={this.logger}
             edgeNodeId={edgeNodeId}
             maxConnectionRetries={this.props.maxConnectionRetries}
