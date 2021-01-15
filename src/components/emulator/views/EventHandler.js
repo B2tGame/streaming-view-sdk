@@ -8,7 +8,6 @@ import StreamingEvent from '../../../StreamingEvent';
 
 const ORIENTATION_PORTRAIT = 'portrait';
 const ORIENTATION_LANDSCAPE = 'landscape';
-
 const EMULATOR_WITHOUT_MULTITOUCH = 'emu-30.2.4-android10';
 
 /**
