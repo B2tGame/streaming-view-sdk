@@ -272,12 +272,10 @@ export default class EventHandler extends Component {
   };
 
   enterFullScreen = () => {
-    console.warn('enterFullScreen');
     if (this.props.enableFullScreen && screenfull.isEnabled && !screenfull.isFullscreen) {
       screenfull
         .request()
         .then(() => {
-          console.warn('EHMKM');
           const orientation = this.props.emulatorWidth > this.props.emulatorHeight ? ORIENTATION_LANDSCAPE : ORIENTATION_PORTRAIT;
           window.screen.orientation.lock(orientation).catch((error) => {
             this.props.logger.log('Failed to lock screen orientation to: ' + error);
