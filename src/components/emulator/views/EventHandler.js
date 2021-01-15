@@ -8,6 +8,7 @@ import StreamingEvent from '../../../StreamingEvent';
 
 const ORIENTATION_PORTRAIT = 'portrait';
 const ORIENTATION_LANDSCAPE = 'landscape';
+const EMULATOR_WITHOUT_MULTITOUCH = 'emu-30.2.4-android10';
 
 /**
  * A handler that extends a view to send key/mouse events to the emulator.
@@ -57,7 +58,29 @@ export default class EventHandler extends Component {
     this.userInteractionHoldOff = 0;
   }
 
+  touchHandler = function(type, events, firstChangedEvent) {
+    return this.sendMouse(firstChangedEvent, 0);
+  }
+
+  updateTouchHandler() {
+    if (this.props.emulatorVersion !== EMULATOR_WITHOUT_MULTITOUCH) {
+      this.touchHandler = function(type, events, firstChangedEvent) {
+        return this.sendMultiTouch(type, events);
+      };
+    } else {
+      this.touchHandler = function(type, events, firstChangedEvent) {
+        this.mouseDown = type !== 'touchend';
+        return this.sendMouse(this.calculateTouchEmulatorCoordinates(firstChangedEvent), type !== 'touchend' ? 0 : 1);
+      };
+    }
+  }
+
+  componentDidUpdate() {
+    this.updateTouchHandler();
+  }
+
   componentDidMount() {
+    this.updateTouchHandler();
     this.getScreenSize();
     // Disabling passive mode to be able to call 'event.preventDefault()' for disabling scroll, which causing
     // laggy touch move performance on mobile phones, since some browsers changed default passive: true from false
@@ -152,11 +175,10 @@ export default class EventHandler extends Component {
 
   /**
    *
-   * @param event
+   * @param emulatorCords {{x: number, y: number}}
    * @param mouseButton
    */
-  sendMouse = (event, mouseButton) => {
-    const emulatorCords = this.calculateMouseEmulatorCoordinates(event);
+  sendMouse = (emulatorCords, mouseButton) => {
     const request = new Proto.MouseEvent();
     request.setX(emulatorCords.x);
     request.setY(emulatorCords.y);
@@ -165,7 +187,7 @@ export default class EventHandler extends Component {
     this.sendInput('mouse', request);
   };
 
-  sendTouch = (type, touches) => {
+  sendMultiTouch = (type, touches) => {
     const touchesToSend = Object.keys(touches).map((index) => {
       const touch = touches[index];
       const emulatorCords = this.calculateTouchEmulatorCoordinates(touch);
@@ -200,37 +222,31 @@ export default class EventHandler extends Component {
   };
 
   handleTouchStart = (event) => {
-    // Make sure they are not processed as mouse events later on.
-    // See https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
     if (event.cancelable) {
       event.preventDefault();
     }
-    this.sendTouch(event.nativeEvent.type, event.nativeEvent.changedTouches);
+    this.touchHandler(event.nativeEvent.type, event.nativeEvent.changedTouches, event.nativeEvent.touches[0])
   };
 
   handleTouchEnd = (event) => {
-    // Make sure they are not processed as mouse events later on.
-    // See https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
     if (event.cancelable) {
       event.preventDefault();
     }
-    this.sendTouch(event.nativeEvent.type, event.nativeEvent.changedTouches);
+    this.touchHandler(event.nativeEvent.type, event.nativeEvent.changedTouches, event.nativeEvent.changedTouches[0])
   };
 
   handleTouchMove = (event) => {
-    // Make sure they are not processed as mouse events later on.
-    // See https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
     if (event.cancelable) {
       event.preventDefault();
     }
-    this.sendTouch(event.nativeEvent.type, event.nativeEvent.changedTouches);
+    this.touchHandler(event.nativeEvent.type, event.nativeEvent.changedTouches, event.nativeEvent.touches[0])
   };
 
   // Properly handle the mouse events.
   handleMouseDown = (event) => {
     if (!isMobile) {
       this.mouseDown = true;
-      this.sendMouse(event.nativeEvent, event.button);
+      this.sendMouse(this.calculateMouseEmulatorCoordinates(event.nativeEvent), event.button);
     }
   };
 
@@ -238,14 +254,14 @@ export default class EventHandler extends Component {
     // Don't release mouse when not pressed
     if (!isMobile && this.mouseDown) {
       this.mouseDown = false;
-      this.sendMouse(event.nativeEvent);
+      this.sendMouse(this.calculateMouseEmulatorCoordinates(event.nativeEvent));
     }
   };
 
   handleMouseMove = (event) => {
     // Mouse button needs to be pressed before triggering move
     if (!isMobile && this.mouseDown) {
-      this.sendMouse(event.nativeEvent, event.button);
+      this.sendMouse(this.calculateMouseEmulatorCoordinates(event.nativeEvent), event.button);
     }
   };
 
