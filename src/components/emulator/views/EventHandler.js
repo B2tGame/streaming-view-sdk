@@ -69,7 +69,9 @@ export default class EventHandler extends Component {
   componentWillUnmount() {
     this.handler.current.removeEventListener('touchmove', this.preventDefault, { passive: false });
     window.removeEventListener('resize', this.forceRender);
-    window.screen.orientation.unlock();
+    if (this.props.enableFullScreen && screenfull.isEnabled && screenfull.isFullscreen) {
+      window.screen.orientation.unlock();
+    }
   }
 
   forceRender = () => {
