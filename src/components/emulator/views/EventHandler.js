@@ -9,6 +9,8 @@ import StreamingEvent from '../../../StreamingEvent';
 const ORIENTATION_PORTRAIT = 'portrait';
 const ORIENTATION_LANDSCAPE = 'landscape';
 
+const EMULATOR_WITHOUT_MULTITOUCH = 'emu-30.2.4-android10';
+
 /**
  * A handler that extends a view to send key/mouse events to the emulator.
  * It wraps the inner component in a div, and will use the jsep handler
@@ -61,8 +63,8 @@ export default class EventHandler extends Component {
     return this.sendMouse(firstChangedEvent, 0);
   }
 
-  componentDidUpdate() {
-    if (this.props.emulatorVersion !== "emu-30.2.4-android10") {
+  updateTouchHandler() {
+    if (this.props.emulatorVersion !== EMULATOR_WITHOUT_MULTITOUCH) {
       this.touchHandler = function(type, events, firstChangedEvent) {
         return this.sendMultiTouch(type, events);
       };
@@ -74,7 +76,12 @@ export default class EventHandler extends Component {
     }
   }
 
+  componentDidUpdate() {
+    this.updateTouchHandler();
+  }
+
   componentDidMount() {
+    this.updateTouchHandler();
     this.getScreenSize();
     // Disabling passive mode to be able to call 'event.preventDefault()' for disabling scroll, which causing
     // laggy touch move performance on mobile phones, since some browsers changed default passive: true from false
@@ -169,7 +176,7 @@ export default class EventHandler extends Component {
 
   /**
    *
-   * @param emulatorCords
+   * @param emulatorCords {{x: number, y: number}}
    * @param mouseButton
    */
   sendMouse = (emulatorCords, mouseButton) => {
