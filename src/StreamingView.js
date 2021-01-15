@@ -8,6 +8,7 @@ import buildInfo from './build-info.json';
 import Logger from './Logger';
 import StreamSocket from './service/StreamSocket';
 import Measurement from './service/Measurement';
+import LogQueueService from './service/LogQueueService';
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
@@ -67,6 +68,7 @@ export default class StreamingView extends Component {
   componentDidMount() {
     this.isMountedInView = true;
     const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, enableDebug, onEvent } = this.props;
+    this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint);
     this.logger = new Logger(enableDebug);
     this.logger.log(`Latest update: ${buildInfo.tag}`);
     this.measurement = new Measurement(edgeNodeId);
@@ -122,12 +124,16 @@ export default class StreamingView extends Component {
   }
 
   componentWillUnmount() {
+
     this.isMountedInView = false;
     if (this.measurement) {
       this.measurement.destroy();
     }
     if (this.streamSocket) {
       this.streamSocket.close();
+    }
+    if(this.LogQueueService) {
+      this.LogQueueService.destroy();
     }
     StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
   }
