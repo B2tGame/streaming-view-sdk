@@ -18,6 +18,7 @@ export default class LogQueueService {
     StreamingEvent.edgeNode(edgeNodeId).on('event', (eventType, payload) => {
       payload = typeof payload === 'object' ? payload : {data: payload};
       payload.streamingViewId = this.streamingViewId;
+      payload.event = eventType;
       payload.userId = userId;
       this.logQueue.push({
         edgeNodeId: edgeNodeId,
