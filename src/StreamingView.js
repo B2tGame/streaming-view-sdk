@@ -81,6 +81,15 @@ export default class StreamingView extends Component {
 
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
+      .once(StreamingEvent.STREAM_TERMINATED, () => {
+        if (this.measurement) {
+          this.measurement.destroy();
+        }
+        if (this.streamSocket) {
+          this.streamSocket.close();
+        }
+        this.setState({isReadyStream: false});
+      })
       .on(StreamingEvent.EMULATOR_CONFIGURATION, (configuration) => {
         this.setState({
           emulatorWidth: configuration.emulatorWidth,

@@ -29,10 +29,30 @@ export default class StreamSocket {
 
     this.socket.on('message', (data) => {
       const message = JSON.parse(data);
-      if(message.name === 'emulator-configuration') {
+      if (message.name === 'emulator-configuration') {
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.EMULATOR_CONFIGURATION, message.configuration);
+      } else if (message.name === 'emulator-event') {
+
+        switch (message.event) {
+          case 'paused': {
+            StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_PAUSED);
+            break;
+          }
+          case 'resumed': {
+            StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_RESUMED);
+            break;
+          }
+          case 'terminated': {
+            StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE);
+            StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_TERMINATED);
+            break;
+          }
+          default: {
+            // Unexpected value
+          }
+        }
       }
-    })
+    });
     // Send measurement report to the backend.
     StreamingEvent.edgeNode(edgeNodeId)
       .on(StreamingEvent.REPORT_MEASUREMENT, this.onReport)
