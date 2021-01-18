@@ -107,6 +107,30 @@ export default class StreamingEvent {
   }
 
   /**
+   * Backend signal the stream are in progress to be terminated.
+   * @returns {string}
+   */
+  static get STREAM_TERMINATED() {
+    return 'stream-terminated';
+  }
+
+  /**
+   * Backend signal the stream are paused now.
+   * @returns {string}
+   */
+  static get STREAM_PAUSED() {
+    return 'stream-paused';
+  }
+
+  /**
+   * Backend signal the stream are resumed now.
+   * @returns {string}
+   */
+  static get STREAM_RESUMED() {
+    return 'stream-resumed';
+  }
+
+  /**
    * Event fired when the stream is reloaded during auto recovery process from an error.
    * @return {string}
    */
