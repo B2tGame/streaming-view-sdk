@@ -22,7 +22,6 @@ const EMULATOR_WITHOUT_MULTITOUCH = 'emu-30.2.4-android10';
  */
 
 export default class EventHandler extends Component {
-
   /**
    * The minimum amount of time the SDK should wait before sending next USER_INTERACTION event
    * @return {number}
@@ -56,19 +55,21 @@ export default class EventHandler extends Component {
     this.status = new EmulatorStatus(emulator);
     this.mouseDown = false;
     this.userInteractionHoldOff = 0;
+    this.touchIdentifiersHistory = {};
+    this.touchHistory = [];
   }
 
-  touchHandler = function(type, events, firstChangedEvent) {
+  touchHandler = function (type, allEvents, events, firstChangedEvent) {
     return this.sendMouse(firstChangedEvent, 0);
-  }
+  };
 
   updateTouchHandler() {
     if (this.props.emulatorVersion !== EMULATOR_WITHOUT_MULTITOUCH) {
-      this.touchHandler = function(type, events, firstChangedEvent) {
-        return this.sendMultiTouch(type, events);
+      this.touchHandler = function (type, allEvents, events, firstChangedEvent) {
+        return this.sendMultiTouch(type, allEvents, events);
       };
     } else {
-      this.touchHandler = function(type, events, firstChangedEvent) {
+      this.touchHandler = function (type, allEvents, events, firstChangedEvent) {
         this.mouseDown = type !== 'touchend';
         return this.sendMouse(this.calculateTouchEmulatorCoordinates(firstChangedEvent), type !== 'touchend' ? 0 : 1);
       };
@@ -149,8 +150,8 @@ export default class EventHandler extends Component {
 
     // TODO: Improve coordinates to handle cases when video element is not centered in the middle
     // use offsets to get exact coordinates of video (getBoundingClientRect or other method) and do more accurate calculation
-    const offsetX = clientX - ((window.innerWidth - clientWidth) / 2);
-    const offsetY = clientY - ((window.innerHeight - clientHeight) / 2);
+    const offsetX = clientX - (window.innerWidth - clientWidth) / 2;
+    const offsetY = clientY - (window.innerHeight - clientHeight) / 2;
 
     return this.calculateEmulatorCoordinates(offsetX, offsetY, clientWidth, clientHeight);
   };
@@ -187,21 +188,50 @@ export default class EventHandler extends Component {
     this.sendInput('mouse', request);
   };
 
-  sendMultiTouch = (type, touches) => {
-    const touchesToSend = Object.keys(touches).map((index) => {
-      const touch = touches[index];
-      const emulatorCords = this.calculateTouchEmulatorCoordinates(touch);
+  sendMultiTouch = (type, allTouchesObject, changedTouchesObject) => {
+    const touches = [];
+    const allTouches = Object.values(allTouchesObject);
+    const changedTouches = Object.values(changedTouchesObject);
 
-      const { identifier, force } = touch;
+    if(type === 'touchstart' || type === 'touchmove') {
+      // Add the current set of changed touches (new started/moved touches)
+      touches.push(...changedTouches.map((touch) => {
+        touch.hasForce = 1;
+        return touch;
+      }));
+    }
+    // Collect all removed touches that are no longer in touchHistory set
+    const missingTouches = this.touchHistory.filter((touch) => allTouches.findIndex((t) => t.identifier === touch.identifier) === -1);
+    touches.push(...missingTouches.map((touch) => {
+      touch.hasForce = 0;
+      return touch;
+    }));
 
-      const protoTouch = new Proto.Touch();
-      protoTouch.setX(emulatorCords.x);
-      protoTouch.setY(emulatorCords.y);
-      protoTouch.setIdentifier(identifier);
-      protoTouch.setPressure(force > 0 && type !== 'touchend' ? 1 : 0);
+    // Prepare all touch identifiers for existing touch identifiers and add new available touch identifiers (0..9)
+    const touchIdentifiers = [...allTouches, ...missingTouches].reduce((touchIdentifiers, touch) => {
+      if(this.touchIdentifiersHistory[touch.identifier] !== undefined) {
+        touchIdentifiers[touch.identifier] = this.touchIdentifiersHistory[touch.identifier];
+      } else {
+        const alreadyUsedIdentifiers = Object.values(touchIdentifiers);
+        const nextFreeIdentifier =  [0,1,2,3,4,5,6,7,8,9].find((identifier) => !(alreadyUsedIdentifiers.indexOf(identifier) !== -1));
+        if(nextFreeIdentifier !== undefined) {
+          touchIdentifiers[touch.identifier]  = nextFreeIdentifier;
+        }
+      }
+      return touchIdentifiers;
+    }, {});
 
-      return protoTouch;
-    });
+    const touchesToSend = [...touches, ...missingTouches]
+      .map((touch) => {
+        const emulatorCords = this.calculateTouchEmulatorCoordinates(touch);
+        const identifier = touchIdentifiers[touch.identifier];
+        const protoTouch = new Proto.Touch();
+        protoTouch.setX(emulatorCords.x);
+        protoTouch.setY(emulatorCords.y);
+        protoTouch.setIdentifier(identifier);
+        protoTouch.setPressure(touch.hasForce);
+        return protoTouch;
+      });
 
     // Make the grpc call.
     const requestTouchEvent = new Proto.TouchEvent();
@@ -225,21 +255,21 @@ export default class EventHandler extends Component {
     if (event.cancelable) {
       event.preventDefault();
     }
-    this.touchHandler(event.nativeEvent.type, event.nativeEvent.changedTouches, event.nativeEvent.touches[0])
+    this.touchHandler(event.nativeEvent.type, event.nativeEvent.touches, event.nativeEvent.changedTouches, event.nativeEvent.touches[0]);
   };
 
   handleTouchEnd = (event) => {
     if (event.cancelable) {
       event.preventDefault();
     }
-    this.touchHandler(event.nativeEvent.type, event.nativeEvent.changedTouches, event.nativeEvent.changedTouches[0])
+    this.touchHandler(event.nativeEvent.type, event.nativeEvent.touches, event.nativeEvent.changedTouches, event.nativeEvent.changedTouches[0]);
   };
 
   handleTouchMove = (event) => {
     if (event.cancelable) {
       event.preventDefault();
     }
-    this.touchHandler(event.nativeEvent.type, event.nativeEvent.changedTouches, event.nativeEvent.touches[0])
+    this.touchHandler(event.nativeEvent.type, event.nativeEvent.touches, event.nativeEvent.changedTouches, event.nativeEvent.touches[0]);
   };
 
   // Properly handle the mouse events.
@@ -294,7 +324,8 @@ export default class EventHandler extends Component {
       screenfull
         .request()
         .then(() => {
-          const orientation = this.props.emulatorWidth > this.props.emulatorHeight ? ORIENTATION_LANDSCAPE : ORIENTATION_PORTRAIT;
+          const orientation =
+            this.props.emulatorWidth > this.props.emulatorHeight ? ORIENTATION_LANDSCAPE : ORIENTATION_PORTRAIT;
           window.screen.orientation.lock(orientation).catch((error) => {
             this.props.logger.log('Failed to lock screen orientation to: ' + error);
           });
@@ -331,11 +362,7 @@ export default class EventHandler extends Component {
           width: '100%'
         }}
       >
-        <View
-          {...this.props}
-          deviceHeight={this.state.deviceHeight}
-          deviceWidth={this.state.deviceWidth}
-        />
+        <View {...this.props} deviceHeight={this.state.deviceHeight} deviceWidth={this.state.deviceWidth} />
       </div>
     );
   }
