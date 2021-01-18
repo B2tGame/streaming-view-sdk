@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import * as Proto from '../../../proto/emulator_controller_pb';
 import EmulatorStatus from '../net/EmulatorStatus';
-import { isMobile } from 'react-device-detect';
+import { isMobile, isMobileSafari } from 'react-device-detect';
 import screenfull from 'screenfull';
 import StreamingEvent from '../../../StreamingEvent';
 
@@ -58,17 +58,17 @@ export default class EventHandler extends Component {
     this.userInteractionHoldOff = 0;
   }
 
-  touchHandler = function(type, events, firstChangedEvent) {
+  touchHandler = function (type, events, firstChangedEvent) {
     return this.sendMouse(firstChangedEvent, 0);
-  }
+  };
 
   updateTouchHandler() {
     if (this.props.emulatorVersion !== EMULATOR_WITHOUT_MULTITOUCH) {
-      this.touchHandler = function(type, events, firstChangedEvent) {
+      this.touchHandler = function (type, events, firstChangedEvent) {
         return this.sendMultiTouch(type, events);
       };
     } else {
-      this.touchHandler = function(type, events, firstChangedEvent) {
+      this.touchHandler = function (type, events, firstChangedEvent) {
         this.mouseDown = type !== 'touchend';
         return this.sendMouse(this.calculateTouchEmulatorCoordinates(firstChangedEvent), type !== 'touchend' ? 0 : 1);
       };
@@ -149,8 +149,8 @@ export default class EventHandler extends Component {
 
     // TODO: Improve coordinates to handle cases when video element is not centered in the middle
     // use offsets to get exact coordinates of video (getBoundingClientRect or other method) and do more accurate calculation
-    const offsetX = clientX - ((window.innerWidth - clientWidth) / 2);
-    const offsetY = clientY - ((window.innerHeight - clientHeight) / 2);
+    const offsetX = clientX - (window.innerWidth - clientWidth) / 2;
+    const offsetY = clientY - (window.innerHeight - clientHeight) / 2;
 
     return this.calculateEmulatorCoordinates(offsetX, offsetY, clientWidth, clientHeight);
   };
@@ -188,20 +188,26 @@ export default class EventHandler extends Component {
   };
 
   sendMultiTouch = (type, touches) => {
-    const touchesToSend = Object.keys(touches).map((index) => {
-      const touch = touches[index];
-      const emulatorCords = this.calculateTouchEmulatorCoordinates(touch);
+    const touchesToSend = Object.keys(touches)
+      .map((index) => {
+        const touch = touches[index];
+        const emulatorCords = this.calculateTouchEmulatorCoordinates(touch);
+        let identifier = touch.identifier;
+        const force = type !== 'touchend' ? 1 : 0;
+        // Iphone Safari triggering touch events with negative identifiers like (-1074001159) and identifiers
+        // are different for every touch (same for touch move), what breaking execution of touch events
+        if (isMobileSafari) {
+          identifier = Math.abs(identifier % 10);
+        }
 
-      const { identifier, force } = touch;
+        const protoTouch = new Proto.Touch();
+        protoTouch.setX(emulatorCords.x);
+        protoTouch.setY(emulatorCords.y);
+        protoTouch.setIdentifier(identifier);
+        protoTouch.setPressure(force);
 
-      const protoTouch = new Proto.Touch();
-      protoTouch.setX(emulatorCords.x);
-      protoTouch.setY(emulatorCords.y);
-      protoTouch.setIdentifier(identifier);
-      protoTouch.setPressure(force > 0 && type !== 'touchend' ? 1 : 0);
-
-      return protoTouch;
-    });
+        return protoTouch;
+      });
 
     // Make the grpc call.
     const requestTouchEvent = new Proto.TouchEvent();
@@ -225,21 +231,21 @@ export default class EventHandler extends Component {
     if (event.cancelable) {
       event.preventDefault();
     }
-    this.touchHandler(event.nativeEvent.type, event.nativeEvent.changedTouches, event.nativeEvent.touches[0])
+    this.touchHandler(event.nativeEvent.type, event.nativeEvent.changedTouches, event.nativeEvent.touches[0]);
   };
 
   handleTouchEnd = (event) => {
     if (event.cancelable) {
       event.preventDefault();
     }
-    this.touchHandler(event.nativeEvent.type, event.nativeEvent.changedTouches, event.nativeEvent.changedTouches[0])
+    this.touchHandler(event.nativeEvent.type, event.nativeEvent.changedTouches, event.nativeEvent.changedTouches[0]);
   };
 
   handleTouchMove = (event) => {
     if (event.cancelable) {
       event.preventDefault();
     }
-    this.touchHandler(event.nativeEvent.type, event.nativeEvent.changedTouches, event.nativeEvent.touches[0])
+    this.touchHandler(event.nativeEvent.type, event.nativeEvent.changedTouches, event.nativeEvent.touches[0]);
   };
 
   // Properly handle the mouse events.
@@ -294,7 +300,8 @@ export default class EventHandler extends Component {
       screenfull
         .request()
         .then(() => {
-          const orientation = this.props.emulatorWidth > this.props.emulatorHeight ? ORIENTATION_LANDSCAPE : ORIENTATION_PORTRAIT;
+          const orientation =
+            this.props.emulatorWidth > this.props.emulatorHeight ? ORIENTATION_LANDSCAPE : ORIENTATION_PORTRAIT;
           window.screen.orientation.lock(orientation).catch((error) => {
             this.props.logger.log('Failed to lock screen orientation to: ' + error);
           });
@@ -331,11 +338,7 @@ export default class EventHandler extends Component {
           width: '100%'
         }}
       >
-        <View
-          {...this.props}
-          deviceHeight={this.state.deviceHeight}
-          deviceWidth={this.state.deviceWidth}
-        />
+        <View {...this.props} deviceHeight={this.state.deviceHeight} deviceWidth={this.state.deviceWidth} />
       </div>
     );
   }
