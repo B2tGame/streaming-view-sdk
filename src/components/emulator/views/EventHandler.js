@@ -22,7 +22,6 @@ const EMULATOR_WITHOUT_MULTITOUCH = 'emu-30.2.4-android10';
  */
 
 export default class EventHandler extends Component {
-
   /**
    * The minimum amount of time the SDK should wait before sending next USER_INTERACTION event
    * @return {number}
@@ -188,26 +187,25 @@ export default class EventHandler extends Component {
   };
 
   sendMultiTouch = (type, touches) => {
-    const touchesToSend = Object.keys(touches)
-      .map((index) => {
-        const touch = touches[index];
-        const emulatorCords = this.calculateTouchEmulatorCoordinates(touch);
-        let identifier = touch.identifier;
-        const force = type !== 'touchend' ? 1 : 0;
-        // Iphone Safari triggering touch events with negative identifiers like (-1074001159) and identifiers
-        // are different for every touch (same for touch move), what breaking execution of touch events
-        if (isMobileSafari) {
-          identifier = Math.abs(identifier % 10);
-        }
+    const touchesToSend = Object.keys(touches).map((index) => {
+      const touch = touches[index];
+      const emulatorCords = this.calculateTouchEmulatorCoordinates(touch);
+      let identifier = touch.identifier;
+      const force = type !== 'touchend' ? 1 : 0;
+      // Iphone Safari triggering touch events with negative identifiers like (-1074001159) and identifiers
+      // are different for every touch (same for touch move), what breaking execution of touch events
+      if (isMobileSafari) {
+        identifier = Math.abs(identifier % 10);
+      }
 
-        const protoTouch = new Proto.Touch();
-        protoTouch.setX(emulatorCords.x);
-        protoTouch.setY(emulatorCords.y);
-        protoTouch.setIdentifier(identifier);
-        protoTouch.setPressure(force);
+      const protoTouch = new Proto.Touch();
+      protoTouch.setX(emulatorCords.x);
+      protoTouch.setY(emulatorCords.y);
+      protoTouch.setIdentifier(identifier);
+      protoTouch.setPressure(force);
 
-        return protoTouch;
-      });
+      return protoTouch;
+    });
 
     // Make the grpc call.
     const requestTouchEvent = new Proto.TouchEvent();
