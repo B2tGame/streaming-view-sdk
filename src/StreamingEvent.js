@@ -107,6 +107,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event that is fired when the stream crashes.
+   * @return {string}
+   */
+  static get STREAM_CRASHED() {
+    return 'stream-crashed';
+  }
+
+  /**
    * Backend signal the stream are in progress to be terminated.
    * @returns {string}
    */
