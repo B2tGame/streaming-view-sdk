@@ -237,6 +237,8 @@ export default class EventHandler extends Component {
     const requestTouchEvent = new Proto.TouchEvent();
     requestTouchEvent.setTouchesList(touchesToSend);
     this.sendInput('touch', requestTouchEvent);
+    this.touchHistory = allTouches;
+    this.touchIdentifiersHistory = touchIdentifiers;
   };
 
   /**
