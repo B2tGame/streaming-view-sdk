@@ -150,8 +150,7 @@ export default class Measurement {
         (report.bytesReceived - this.previousMeasurement.bytesReceived) / this.measurement.measureDuration;
       this.measurement.videoProcessing =
         report.framesDecoded - this.previousMeasurement.framesDecoded !== 0
-          ? (((report.totalDecodeTime || 0) - this.previousMeasurement.totalDecodeTime) * 1000) /
-            this.measurement.framesDecodedPerSecond
+          ? (((report.totalDecodeTime || 0) - this.previousMeasurement.totalDecodeTime) * 1000) / this.measurement.framesDecodedPerSecond
           : 0;
       this.measurement.packetsLostPercent = (report.packetsLost * 100) / report.packetsReceived;
 

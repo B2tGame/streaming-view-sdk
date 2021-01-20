@@ -9,9 +9,7 @@ let deviceInfo = {};
  * @returns {Promise<*>}
  */
 function requestNetworkDeviceInfo(apiEndpoint) {
-  return axios
-    .get(`${apiEndpoint}/api/streaming-games/edge-node/device-info`, { timeout: 2500 })
-    .then((result) => result.data);
+  return axios.get(`${apiEndpoint}/api/streaming-games/edge-node/device-info`, { timeout: 2500 }).then((result) => result.data);
 }
 
 /**
@@ -44,9 +42,9 @@ function getBrowserDeviceInfo(browserConnection = undefined) {
 function getNetworkDeviceInfo(apiEndpoint) {
   return Object.keys(deviceInfo).length === 0
     ? requestNetworkDeviceInfo(apiEndpoint).then((networkDeviceInfo) => {
-      deviceInfo = networkDeviceInfo;
-      return networkDeviceInfo;
-    })
+        deviceInfo = networkDeviceInfo;
+        return networkDeviceInfo;
+      })
     : Promise.resolve(deviceInfo);
 }
 

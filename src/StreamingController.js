@@ -42,8 +42,7 @@ class StreamingController {
    * @returns {Promise<*>}
    */
   terminate() {
-    return this.getStreamEndpoint()
-      .then((streamEndpoint) => axios.get(`${streamEndpoint}/emulator-commands/terminate`));
+    return this.getStreamEndpoint().then((streamEndpoint) => axios.get(`${streamEndpoint}/emulator-commands/terminate`));
   }
 
   /**
@@ -59,11 +58,7 @@ class StreamingController {
    * @returns {Promise<[{appId: number, score: number}]>}
    */
   getPredictedGameExperiences() {
-    return Promise
-      .all([
-        this.getApiEndpoint(),
-        this.getConnectivityInfo()
-      ])
+    return Promise.all([this.getApiEndpoint(), this.getConnectivityInfo()])
       .then(([apiEndpoint, connectivityInfo]) => {
         const encodedConnectivityInfo = encodeURIComponent(JSON.stringify(connectivityInfo));
         return axios.get(`${apiEndpoint}/api/streaming-games/predicted-game-experience?connectivity-info=${encodedConnectivityInfo}`);
@@ -99,8 +94,7 @@ class StreamingController {
    * @returns {Promise<*>}
    */
   pause() {
-    return this.getStreamEndpoint()
-      .then((streamEndpoint) => axios.get(`${streamEndpoint}/emulator-commands/pause`));
+    return this.getStreamEndpoint().then((streamEndpoint) => axios.get(`${streamEndpoint}/emulator-commands/pause`));
   }
 
   /**
@@ -109,8 +103,7 @@ class StreamingController {
    * @returns {Promise<*>}
    */
   resume() {
-    return this.getStreamEndpoint()
-      .then((streamEndpoint) => axios.get(`${streamEndpoint}/emulator-commands/resume`));
+    return this.getStreamEndpoint().then((streamEndpoint) => axios.get(`${streamEndpoint}/emulator-commands/resume`));
   }
 
   /**
@@ -118,14 +111,13 @@ class StreamingController {
    * @return {Promise<string>}
    */
   getStreamEndpoint() {
-    return this.waitFor()
-      .then((status) => {
-        if (status.endpoint !== undefined) {
-          return status.endpoint;
-        } else {
-          throw new Error('Can\'t resolve Stream Endpoint, got: ' + JSON.stringify(status));
-        }
-      });
+    return this.waitFor().then((status) => {
+      if (status.endpoint !== undefined) {
+        return status.endpoint;
+      } else {
+        throw new Error("Can't resolve Stream Endpoint, got: " + JSON.stringify(status));
+      }
+    });
   }
 
   /**

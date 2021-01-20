@@ -16,7 +16,7 @@ export default class LogQueueService {
     this.endpoint = `${apiEndpoint}/api/streaming-games/edge-node/log`;
     this.streamingViewId = uuid();
     StreamingEvent.edgeNode(edgeNodeId).on('event', (eventType, payload) => {
-      payload = typeof payload === 'object' ? payload : {data: payload};
+      payload = typeof payload === 'object' ? payload : { data: payload };
       payload.streamingViewId = this.streamingViewId;
       payload.event = eventType;
       payload.userId = userId;
@@ -58,10 +58,8 @@ export default class LogQueueService {
         navigator.sendBeacon(this.endpoint, JSON.stringify(logQueue));
       } else {
         // otherwise with axios
-        axios.post(this.endpoint, logQueue).catch(() => {
-        });
+        axios.post(this.endpoint, logQueue).catch(() => {});
       }
     }
   }
-
 }

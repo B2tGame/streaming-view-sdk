@@ -226,7 +226,6 @@ export default class StreamingEvent {
     return 'stream-loading-time';
   }
 
-
   /**
    * Event fired when User Event Report is submitted
    * @return {string}

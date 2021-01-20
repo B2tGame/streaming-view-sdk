@@ -24,7 +24,7 @@ export default class EmulatorWebrtcView extends Component {
     deviceHeight: PropTypes.number,
     emulatorWidth: PropTypes.number,
     emulatorHeight: PropTypes.number,
-    emulatorVersion: PropTypes.string,
+    emulatorVersion: PropTypes.string
   };
 
   state = {
@@ -122,15 +122,11 @@ export default class EmulatorWebrtcView extends Component {
 
     video.srcObject.addTrack(track);
     if (track.kind === 'video') {
-      this.setState({ video: true }, () =>
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_AVAILABLE)
-      );
+      this.setState({ video: true }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_AVAILABLE));
     }
 
     if (track.kind === 'audio') {
-      this.setState({ audio: true }, () =>
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_AVAILABLE)
-      );
+      this.setState({ audio: true }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_AVAILABLE));
     }
   };
 
