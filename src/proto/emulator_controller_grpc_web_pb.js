@@ -6,17 +6,13 @@
 
 // GENERATED CODE -- DO NOT EDIT!
 
-
 /* eslint-disable */
 // @ts-nocheck
-
-
 
 const grpc = {};
 grpc.web = require('grpc-web');
 
-
-var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js')
+var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js');
 const proto = {};
 proto.android = {};
 proto.android.emulation = {};
@@ -30,8 +26,7 @@ proto.android.emulation.control = require('./emulator_controller_pb.js');
  * @struct
  * @final
  */
-proto.android.emulation.control.EmulatorControllerClient =
-    function(hostname, credentials, options) {
+proto.android.emulation.control.EmulatorControllerClient = function (hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
 
@@ -44,9 +39,7 @@ proto.android.emulation.control.EmulatorControllerClient =
    * @private @const {string} The hostname
    */
   this.hostname_ = hostname;
-
 };
-
 
 /**
  * @param {string} hostname
@@ -56,8 +49,7 @@ proto.android.emulation.control.EmulatorControllerClient =
  * @struct
  * @final
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient =
-    function(hostname, credentials, options) {
+proto.android.emulation.control.EmulatorControllerPromiseClient = function (hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
 
@@ -70,9 +62,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient =
    * @private @const {string} The hostname
    */
   this.hostname_ = hostname;
-
 };
-
 
 /**
  * @const
@@ -89,12 +79,11 @@ const methodDescriptor_EmulatorController_streamSensor = new grpc.web.MethodDesc
    * @param {!proto.android.emulation.control.SensorValue} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.SensorValue.deserializeBinary
 );
-
 
 /**
  * @const
@@ -108,12 +97,27 @@ const methodInfo_EmulatorController_streamSensor = new grpc.web.AbstractClientBa
    * @param {!proto.android.emulation.control.SensorValue} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.SensorValue.deserializeBinary
 );
 
+/**
+ * @param {!proto.android.emulation.control.SensorValue} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.SensorValue>}
+ *     The XHR Node Readable Stream
+ */
+proto.android.emulation.control.EmulatorControllerClient.prototype.streamSensor = function (request, metadata) {
+  return this.client_.serverStreaming(
+    this.hostname_ + '/android.emulation.control.EmulatorController/streamSensor',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_streamSensor
+  );
+};
 
 /**
  * @param {!proto.android.emulation.control.SensorValue} request The request proto
@@ -122,32 +126,14 @@ const methodInfo_EmulatorController_streamSensor = new grpc.web.AbstractClientBa
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.SensorValue>}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.streamSensor =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/android.emulation.control.EmulatorController/streamSensor',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_streamSensor);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.streamSensor = function (request, metadata) {
+  return this.client_.serverStreaming(
+    this.hostname_ + '/android.emulation.control.EmulatorController/streamSensor',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_streamSensor
+  );
 };
-
-
-/**
- * @param {!proto.android.emulation.control.SensorValue} request The request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.SensorValue>}
- *     The XHR Node Readable Stream
- */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.streamSensor =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/android.emulation.control.EmulatorController/streamSensor',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_streamSensor);
-};
-
 
 /**
  * @const
@@ -164,12 +150,11 @@ const methodDescriptor_EmulatorController_getSensor = new grpc.web.MethodDescrip
    * @param {!proto.android.emulation.control.SensorValue} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.SensorValue.deserializeBinary
 );
-
 
 /**
  * @const
@@ -183,12 +168,11 @@ const methodInfo_EmulatorController_getSensor = new grpc.web.AbstractClientBase.
    * @param {!proto.android.emulation.control.SensorValue} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.SensorValue.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.SensorValue} request The
@@ -200,16 +184,15 @@ const methodInfo_EmulatorController_getSensor = new grpc.web.AbstractClientBase.
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.SensorValue>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.getSensor =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getSensor',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getSensor,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.getSensor = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getSensor',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getSensor,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.SensorValue} request The
@@ -219,15 +202,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.getSensor =
  * @return {!Promise<!proto.android.emulation.control.SensorValue>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getSensor =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getSensor',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getSensor);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getSensor = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getSensor',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getSensor
+  );
 };
-
 
 /**
  * @const
@@ -244,12 +226,11 @@ const methodDescriptor_EmulatorController_setSensor = new grpc.web.MethodDescrip
    * @param {!proto.android.emulation.control.SensorValue} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @const
@@ -263,12 +244,11 @@ const methodInfo_EmulatorController_setSensor = new grpc.web.AbstractClientBase.
    * @param {!proto.android.emulation.control.SensorValue} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.SensorValue} request The
@@ -280,16 +260,15 @@ const methodInfo_EmulatorController_setSensor = new grpc.web.AbstractClientBase.
  * @return {!grpc.web.ClientReadableStream<!proto.google.protobuf.Empty>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.setSensor =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/setSensor',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_setSensor,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.setSensor = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/setSensor',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_setSensor,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.SensorValue} request The
@@ -299,15 +278,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.setSensor =
  * @return {!Promise<!proto.google.protobuf.Empty>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setSensor =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/setSensor',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_setSensor);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setSensor = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/setSensor',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_setSensor
+  );
 };
-
 
 /**
  * @const
@@ -324,12 +302,11 @@ const methodDescriptor_EmulatorController_setPhysicalModel = new grpc.web.Method
    * @param {!proto.android.emulation.control.PhysicalModelValue} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @const
@@ -343,12 +320,11 @@ const methodInfo_EmulatorController_setPhysicalModel = new grpc.web.AbstractClie
    * @param {!proto.android.emulation.control.PhysicalModelValue} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.PhysicalModelValue} request The
@@ -360,16 +336,15 @@ const methodInfo_EmulatorController_setPhysicalModel = new grpc.web.AbstractClie
  * @return {!grpc.web.ClientReadableStream<!proto.google.protobuf.Empty>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.setPhysicalModel =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/setPhysicalModel',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_setPhysicalModel,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.setPhysicalModel = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/setPhysicalModel',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_setPhysicalModel,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.PhysicalModelValue} request The
@@ -379,15 +354,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.setPhysicalMo
  * @return {!Promise<!proto.google.protobuf.Empty>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setPhysicalModel =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/setPhysicalModel',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_setPhysicalModel);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setPhysicalModel = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/setPhysicalModel',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_setPhysicalModel
+  );
 };
-
 
 /**
  * @const
@@ -404,12 +378,11 @@ const methodDescriptor_EmulatorController_getPhysicalModel = new grpc.web.Method
    * @param {!proto.android.emulation.control.PhysicalModelValue} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.PhysicalModelValue.deserializeBinary
 );
-
 
 /**
  * @const
@@ -423,12 +396,11 @@ const methodInfo_EmulatorController_getPhysicalModel = new grpc.web.AbstractClie
    * @param {!proto.android.emulation.control.PhysicalModelValue} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.PhysicalModelValue.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.PhysicalModelValue} request The
@@ -440,16 +412,15 @@ const methodInfo_EmulatorController_getPhysicalModel = new grpc.web.AbstractClie
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.PhysicalModelValue>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.getPhysicalModel =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getPhysicalModel',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getPhysicalModel,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.getPhysicalModel = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getPhysicalModel',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getPhysicalModel,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.PhysicalModelValue} request The
@@ -459,15 +430,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.getPhysicalMo
  * @return {!Promise<!proto.android.emulation.control.PhysicalModelValue>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getPhysicalModel =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getPhysicalModel',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getPhysicalModel);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getPhysicalModel = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getPhysicalModel',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getPhysicalModel
+  );
 };
-
 
 /**
  * @const
@@ -484,12 +454,11 @@ const methodDescriptor_EmulatorController_streamPhysicalModel = new grpc.web.Met
    * @param {!proto.android.emulation.control.PhysicalModelValue} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.PhysicalModelValue.deserializeBinary
 );
-
 
 /**
  * @const
@@ -503,12 +472,27 @@ const methodInfo_EmulatorController_streamPhysicalModel = new grpc.web.AbstractC
    * @param {!proto.android.emulation.control.PhysicalModelValue} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.PhysicalModelValue.deserializeBinary
 );
 
+/**
+ * @param {!proto.android.emulation.control.PhysicalModelValue} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.PhysicalModelValue>}
+ *     The XHR Node Readable Stream
+ */
+proto.android.emulation.control.EmulatorControllerClient.prototype.streamPhysicalModel = function (request, metadata) {
+  return this.client_.serverStreaming(
+    this.hostname_ + '/android.emulation.control.EmulatorController/streamPhysicalModel',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_streamPhysicalModel
+  );
+};
 
 /**
  * @param {!proto.android.emulation.control.PhysicalModelValue} request The request proto
@@ -517,32 +501,14 @@ const methodInfo_EmulatorController_streamPhysicalModel = new grpc.web.AbstractC
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.PhysicalModelValue>}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.streamPhysicalModel =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/android.emulation.control.EmulatorController/streamPhysicalModel',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_streamPhysicalModel);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.streamPhysicalModel = function (request, metadata) {
+  return this.client_.serverStreaming(
+    this.hostname_ + '/android.emulation.control.EmulatorController/streamPhysicalModel',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_streamPhysicalModel
+  );
 };
-
-
-/**
- * @param {!proto.android.emulation.control.PhysicalModelValue} request The request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.PhysicalModelValue>}
- *     The XHR Node Readable Stream
- */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.streamPhysicalModel =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/android.emulation.control.EmulatorController/streamPhysicalModel',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_streamPhysicalModel);
-};
-
 
 /**
  * @const
@@ -559,12 +525,11 @@ const methodDescriptor_EmulatorController_setClipboard = new grpc.web.MethodDesc
    * @param {!proto.android.emulation.control.ClipData} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @const
@@ -578,12 +543,11 @@ const methodInfo_EmulatorController_setClipboard = new grpc.web.AbstractClientBa
    * @param {!proto.android.emulation.control.ClipData} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.ClipData} request The
@@ -595,16 +559,15 @@ const methodInfo_EmulatorController_setClipboard = new grpc.web.AbstractClientBa
  * @return {!grpc.web.ClientReadableStream<!proto.google.protobuf.Empty>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.setClipboard =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/setClipboard',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_setClipboard,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.setClipboard = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/setClipboard',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_setClipboard,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.ClipData} request The
@@ -614,15 +577,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.setClipboard 
  * @return {!Promise<!proto.google.protobuf.Empty>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setClipboard =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/setClipboard',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_setClipboard);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setClipboard = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/setClipboard',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_setClipboard
+  );
 };
-
 
 /**
  * @const
@@ -639,12 +601,11 @@ const methodDescriptor_EmulatorController_getClipboard = new grpc.web.MethodDesc
    * @param {!proto.google.protobuf.Empty} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.ClipData.deserializeBinary
 );
-
 
 /**
  * @const
@@ -658,12 +619,11 @@ const methodInfo_EmulatorController_getClipboard = new grpc.web.AbstractClientBa
    * @param {!proto.google.protobuf.Empty} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.ClipData.deserializeBinary
 );
-
 
 /**
  * @param {!proto.google.protobuf.Empty} request The
@@ -675,16 +635,15 @@ const methodInfo_EmulatorController_getClipboard = new grpc.web.AbstractClientBa
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.ClipData>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.getClipboard =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getClipboard',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getClipboard,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.getClipboard = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getClipboard',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getClipboard,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.google.protobuf.Empty} request The
@@ -694,15 +653,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.getClipboard 
  * @return {!Promise<!proto.android.emulation.control.ClipData>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getClipboard =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getClipboard',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getClipboard);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getClipboard = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getClipboard',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getClipboard
+  );
 };
-
 
 /**
  * @const
@@ -719,12 +677,11 @@ const methodDescriptor_EmulatorController_streamClipboard = new grpc.web.MethodD
    * @param {!proto.google.protobuf.Empty} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.ClipData.deserializeBinary
 );
-
 
 /**
  * @const
@@ -738,12 +695,27 @@ const methodInfo_EmulatorController_streamClipboard = new grpc.web.AbstractClien
    * @param {!proto.google.protobuf.Empty} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.ClipData.deserializeBinary
 );
 
+/**
+ * @param {!proto.google.protobuf.Empty} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.ClipData>}
+ *     The XHR Node Readable Stream
+ */
+proto.android.emulation.control.EmulatorControllerClient.prototype.streamClipboard = function (request, metadata) {
+  return this.client_.serverStreaming(
+    this.hostname_ + '/android.emulation.control.EmulatorController/streamClipboard',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_streamClipboard
+  );
+};
 
 /**
  * @param {!proto.google.protobuf.Empty} request The request proto
@@ -752,32 +724,14 @@ const methodInfo_EmulatorController_streamClipboard = new grpc.web.AbstractClien
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.ClipData>}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.streamClipboard =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/android.emulation.control.EmulatorController/streamClipboard',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_streamClipboard);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.streamClipboard = function (request, metadata) {
+  return this.client_.serverStreaming(
+    this.hostname_ + '/android.emulation.control.EmulatorController/streamClipboard',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_streamClipboard
+  );
 };
-
-
-/**
- * @param {!proto.google.protobuf.Empty} request The request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.ClipData>}
- *     The XHR Node Readable Stream
- */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.streamClipboard =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/android.emulation.control.EmulatorController/streamClipboard',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_streamClipboard);
-};
-
 
 /**
  * @const
@@ -794,12 +748,11 @@ const methodDescriptor_EmulatorController_setBattery = new grpc.web.MethodDescri
    * @param {!proto.android.emulation.control.BatteryState} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @const
@@ -813,12 +766,11 @@ const methodInfo_EmulatorController_setBattery = new grpc.web.AbstractClientBase
    * @param {!proto.android.emulation.control.BatteryState} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.BatteryState} request The
@@ -830,16 +782,15 @@ const methodInfo_EmulatorController_setBattery = new grpc.web.AbstractClientBase
  * @return {!grpc.web.ClientReadableStream<!proto.google.protobuf.Empty>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.setBattery =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/setBattery',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_setBattery,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.setBattery = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/setBattery',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_setBattery,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.BatteryState} request The
@@ -849,15 +800,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.setBattery =
  * @return {!Promise<!proto.google.protobuf.Empty>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setBattery =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/setBattery',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_setBattery);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setBattery = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/setBattery',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_setBattery
+  );
 };
-
 
 /**
  * @const
@@ -874,12 +824,11 @@ const methodDescriptor_EmulatorController_getBattery = new grpc.web.MethodDescri
    * @param {!proto.google.protobuf.Empty} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.BatteryState.deserializeBinary
 );
-
 
 /**
  * @const
@@ -893,12 +842,11 @@ const methodInfo_EmulatorController_getBattery = new grpc.web.AbstractClientBase
    * @param {!proto.google.protobuf.Empty} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.BatteryState.deserializeBinary
 );
-
 
 /**
  * @param {!proto.google.protobuf.Empty} request The
@@ -910,16 +858,15 @@ const methodInfo_EmulatorController_getBattery = new grpc.web.AbstractClientBase
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.BatteryState>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.getBattery =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getBattery',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getBattery,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.getBattery = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getBattery',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getBattery,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.google.protobuf.Empty} request The
@@ -929,15 +876,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.getBattery =
  * @return {!Promise<!proto.android.emulation.control.BatteryState>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getBattery =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getBattery',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getBattery);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getBattery = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getBattery',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getBattery
+  );
 };
-
 
 /**
  * @const
@@ -954,12 +900,11 @@ const methodDescriptor_EmulatorController_setGps = new grpc.web.MethodDescriptor
    * @param {!proto.android.emulation.control.GpsState} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @const
@@ -973,12 +918,11 @@ const methodInfo_EmulatorController_setGps = new grpc.web.AbstractClientBase.Met
    * @param {!proto.android.emulation.control.GpsState} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.GpsState} request The
@@ -990,16 +934,15 @@ const methodInfo_EmulatorController_setGps = new grpc.web.AbstractClientBase.Met
  * @return {!grpc.web.ClientReadableStream<!proto.google.protobuf.Empty>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.setGps =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/setGps',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_setGps,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.setGps = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/setGps',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_setGps,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.GpsState} request The
@@ -1009,15 +952,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.setGps =
  * @return {!Promise<!proto.google.protobuf.Empty>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setGps =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/setGps',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_setGps);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setGps = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/setGps',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_setGps
+  );
 };
-
 
 /**
  * @const
@@ -1034,12 +976,11 @@ const methodDescriptor_EmulatorController_getGps = new grpc.web.MethodDescriptor
    * @param {!proto.google.protobuf.Empty} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.GpsState.deserializeBinary
 );
-
 
 /**
  * @const
@@ -1053,12 +994,11 @@ const methodInfo_EmulatorController_getGps = new grpc.web.AbstractClientBase.Met
    * @param {!proto.google.protobuf.Empty} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.GpsState.deserializeBinary
 );
-
 
 /**
  * @param {!proto.google.protobuf.Empty} request The
@@ -1070,16 +1010,15 @@ const methodInfo_EmulatorController_getGps = new grpc.web.AbstractClientBase.Met
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.GpsState>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.getGps =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getGps',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getGps,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.getGps = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getGps',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getGps,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.google.protobuf.Empty} request The
@@ -1089,15 +1028,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.getGps =
  * @return {!Promise<!proto.android.emulation.control.GpsState>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getGps =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getGps',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getGps);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getGps = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getGps',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getGps
+  );
 };
-
 
 /**
  * @const
@@ -1114,12 +1052,11 @@ const methodDescriptor_EmulatorController_sendFingerprint = new grpc.web.MethodD
    * @param {!proto.android.emulation.control.Fingerprint} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @const
@@ -1133,12 +1070,11 @@ const methodInfo_EmulatorController_sendFingerprint = new grpc.web.AbstractClien
    * @param {!proto.android.emulation.control.Fingerprint} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.Fingerprint} request The
@@ -1150,16 +1086,15 @@ const methodInfo_EmulatorController_sendFingerprint = new grpc.web.AbstractClien
  * @return {!grpc.web.ClientReadableStream<!proto.google.protobuf.Empty>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.sendFingerprint =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/sendFingerprint',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_sendFingerprint,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.sendFingerprint = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/sendFingerprint',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_sendFingerprint,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.Fingerprint} request The
@@ -1169,15 +1104,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.sendFingerpri
  * @return {!Promise<!proto.google.protobuf.Empty>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendFingerprint =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/sendFingerprint',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_sendFingerprint);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendFingerprint = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/sendFingerprint',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_sendFingerprint
+  );
 };
-
 
 /**
  * @const
@@ -1194,12 +1128,11 @@ const methodDescriptor_EmulatorController_sendKey = new grpc.web.MethodDescripto
    * @param {!proto.android.emulation.control.KeyboardEvent} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @const
@@ -1213,12 +1146,11 @@ const methodInfo_EmulatorController_sendKey = new grpc.web.AbstractClientBase.Me
    * @param {!proto.android.emulation.control.KeyboardEvent} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.KeyboardEvent} request The
@@ -1230,16 +1162,15 @@ const methodInfo_EmulatorController_sendKey = new grpc.web.AbstractClientBase.Me
  * @return {!grpc.web.ClientReadableStream<!proto.google.protobuf.Empty>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.sendKey =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/sendKey',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_sendKey,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.sendKey = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/sendKey',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_sendKey,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.KeyboardEvent} request The
@@ -1249,15 +1180,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.sendKey =
  * @return {!Promise<!proto.google.protobuf.Empty>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendKey =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/sendKey',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_sendKey);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendKey = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/sendKey',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_sendKey
+  );
 };
-
 
 /**
  * @const
@@ -1274,12 +1204,11 @@ const methodDescriptor_EmulatorController_sendTouch = new grpc.web.MethodDescrip
    * @param {!proto.android.emulation.control.TouchEvent} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @const
@@ -1293,12 +1222,11 @@ const methodInfo_EmulatorController_sendTouch = new grpc.web.AbstractClientBase.
    * @param {!proto.android.emulation.control.TouchEvent} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.TouchEvent} request The
@@ -1310,16 +1238,15 @@ const methodInfo_EmulatorController_sendTouch = new grpc.web.AbstractClientBase.
  * @return {!grpc.web.ClientReadableStream<!proto.google.protobuf.Empty>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.sendTouch =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/sendTouch',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_sendTouch,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.sendTouch = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/sendTouch',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_sendTouch,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.TouchEvent} request The
@@ -1329,15 +1256,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.sendTouch =
  * @return {!Promise<!proto.google.protobuf.Empty>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendTouch =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/sendTouch',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_sendTouch);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendTouch = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/sendTouch',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_sendTouch
+  );
 };
-
 
 /**
  * @const
@@ -1354,12 +1280,11 @@ const methodDescriptor_EmulatorController_sendMouse = new grpc.web.MethodDescrip
    * @param {!proto.android.emulation.control.MouseEvent} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @const
@@ -1373,12 +1298,11 @@ const methodInfo_EmulatorController_sendMouse = new grpc.web.AbstractClientBase.
    * @param {!proto.android.emulation.control.MouseEvent} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.MouseEvent} request The
@@ -1390,16 +1314,15 @@ const methodInfo_EmulatorController_sendMouse = new grpc.web.AbstractClientBase.
  * @return {!grpc.web.ClientReadableStream<!proto.google.protobuf.Empty>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.sendMouse =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/sendMouse',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_sendMouse,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.sendMouse = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/sendMouse',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_sendMouse,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.MouseEvent} request The
@@ -1409,15 +1332,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.sendMouse =
  * @return {!Promise<!proto.google.protobuf.Empty>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendMouse =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/sendMouse',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_sendMouse);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendMouse = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/sendMouse',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_sendMouse
+  );
 };
-
 
 /**
  * @const
@@ -1434,12 +1356,11 @@ const methodDescriptor_EmulatorController_sendPhone = new grpc.web.MethodDescrip
    * @param {!proto.android.emulation.control.PhoneCall} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.PhoneResponse.deserializeBinary
 );
-
 
 /**
  * @const
@@ -1453,12 +1374,11 @@ const methodInfo_EmulatorController_sendPhone = new grpc.web.AbstractClientBase.
    * @param {!proto.android.emulation.control.PhoneCall} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.PhoneResponse.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.PhoneCall} request The
@@ -1470,16 +1390,15 @@ const methodInfo_EmulatorController_sendPhone = new grpc.web.AbstractClientBase.
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.PhoneResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.sendPhone =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/sendPhone',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_sendPhone,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.sendPhone = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/sendPhone',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_sendPhone,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.PhoneCall} request The
@@ -1489,15 +1408,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.sendPhone =
  * @return {!Promise<!proto.android.emulation.control.PhoneResponse>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendPhone =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/sendPhone',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_sendPhone);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendPhone = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/sendPhone',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_sendPhone
+  );
 };
-
 
 /**
  * @const
@@ -1514,12 +1432,11 @@ const methodDescriptor_EmulatorController_sendSms = new grpc.web.MethodDescripto
    * @param {!proto.android.emulation.control.SmsMessage} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.PhoneResponse.deserializeBinary
 );
-
 
 /**
  * @const
@@ -1533,12 +1450,11 @@ const methodInfo_EmulatorController_sendSms = new grpc.web.AbstractClientBase.Me
    * @param {!proto.android.emulation.control.SmsMessage} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.PhoneResponse.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.SmsMessage} request The
@@ -1550,16 +1466,15 @@ const methodInfo_EmulatorController_sendSms = new grpc.web.AbstractClientBase.Me
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.PhoneResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.sendSms =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/sendSms',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_sendSms,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.sendSms = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/sendSms',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_sendSms,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.SmsMessage} request The
@@ -1569,15 +1484,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.sendSms =
  * @return {!Promise<!proto.android.emulation.control.PhoneResponse>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendSms =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/sendSms',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_sendSms);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendSms = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/sendSms',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_sendSms
+  );
 };
-
 
 /**
  * @const
@@ -1594,12 +1508,11 @@ const methodDescriptor_EmulatorController_getStatus = new grpc.web.MethodDescrip
    * @param {!proto.google.protobuf.Empty} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.EmulatorStatus.deserializeBinary
 );
-
 
 /**
  * @const
@@ -1613,12 +1526,11 @@ const methodInfo_EmulatorController_getStatus = new grpc.web.AbstractClientBase.
    * @param {!proto.google.protobuf.Empty} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.EmulatorStatus.deserializeBinary
 );
-
 
 /**
  * @param {!proto.google.protobuf.Empty} request The
@@ -1630,16 +1542,15 @@ const methodInfo_EmulatorController_getStatus = new grpc.web.AbstractClientBase.
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.EmulatorStatus>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.getStatus =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getStatus',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getStatus,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.getStatus = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getStatus',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getStatus,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.google.protobuf.Empty} request The
@@ -1649,15 +1560,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.getStatus =
  * @return {!Promise<!proto.android.emulation.control.EmulatorStatus>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getStatus =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getStatus',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getStatus);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getStatus = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getStatus',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getStatus
+  );
 };
-
 
 /**
  * @const
@@ -1674,12 +1584,11 @@ const methodDescriptor_EmulatorController_getScreenshot = new grpc.web.MethodDes
    * @param {!proto.android.emulation.control.ImageFormat} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.Image.deserializeBinary
 );
-
 
 /**
  * @const
@@ -1693,12 +1602,11 @@ const methodInfo_EmulatorController_getScreenshot = new grpc.web.AbstractClientB
    * @param {!proto.android.emulation.control.ImageFormat} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.Image.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.ImageFormat} request The
@@ -1710,16 +1618,15 @@ const methodInfo_EmulatorController_getScreenshot = new grpc.web.AbstractClientB
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.Image>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.getScreenshot =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getScreenshot',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getScreenshot,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.getScreenshot = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getScreenshot',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getScreenshot,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.ImageFormat} request The
@@ -1729,15 +1636,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.getScreenshot
  * @return {!Promise<!proto.android.emulation.control.Image>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getScreenshot =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getScreenshot',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getScreenshot);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getScreenshot = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getScreenshot',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getScreenshot
+  );
 };
-
 
 /**
  * @const
@@ -1754,12 +1660,11 @@ const methodDescriptor_EmulatorController_streamScreenshot = new grpc.web.Method
    * @param {!proto.android.emulation.control.ImageFormat} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.Image.deserializeBinary
 );
-
 
 /**
  * @const
@@ -1773,12 +1678,27 @@ const methodInfo_EmulatorController_streamScreenshot = new grpc.web.AbstractClie
    * @param {!proto.android.emulation.control.ImageFormat} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.Image.deserializeBinary
 );
 
+/**
+ * @param {!proto.android.emulation.control.ImageFormat} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.Image>}
+ *     The XHR Node Readable Stream
+ */
+proto.android.emulation.control.EmulatorControllerClient.prototype.streamScreenshot = function (request, metadata) {
+  return this.client_.serverStreaming(
+    this.hostname_ + '/android.emulation.control.EmulatorController/streamScreenshot',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_streamScreenshot
+  );
+};
 
 /**
  * @param {!proto.android.emulation.control.ImageFormat} request The request proto
@@ -1787,32 +1707,14 @@ const methodInfo_EmulatorController_streamScreenshot = new grpc.web.AbstractClie
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.Image>}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.streamScreenshot =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/android.emulation.control.EmulatorController/streamScreenshot',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_streamScreenshot);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.streamScreenshot = function (request, metadata) {
+  return this.client_.serverStreaming(
+    this.hostname_ + '/android.emulation.control.EmulatorController/streamScreenshot',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_streamScreenshot
+  );
 };
-
-
-/**
- * @param {!proto.android.emulation.control.ImageFormat} request The request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.Image>}
- *     The XHR Node Readable Stream
- */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.streamScreenshot =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/android.emulation.control.EmulatorController/streamScreenshot',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_streamScreenshot);
-};
-
 
 /**
  * @const
@@ -1829,12 +1731,11 @@ const methodDescriptor_EmulatorController_streamAudio = new grpc.web.MethodDescr
    * @param {!proto.android.emulation.control.AudioFormat} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.AudioPacket.deserializeBinary
 );
-
 
 /**
  * @const
@@ -1848,12 +1749,27 @@ const methodInfo_EmulatorController_streamAudio = new grpc.web.AbstractClientBas
    * @param {!proto.android.emulation.control.AudioFormat} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.AudioPacket.deserializeBinary
 );
 
+/**
+ * @param {!proto.android.emulation.control.AudioFormat} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.AudioPacket>}
+ *     The XHR Node Readable Stream
+ */
+proto.android.emulation.control.EmulatorControllerClient.prototype.streamAudio = function (request, metadata) {
+  return this.client_.serverStreaming(
+    this.hostname_ + '/android.emulation.control.EmulatorController/streamAudio',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_streamAudio
+  );
+};
 
 /**
  * @param {!proto.android.emulation.control.AudioFormat} request The request proto
@@ -1862,32 +1778,14 @@ const methodInfo_EmulatorController_streamAudio = new grpc.web.AbstractClientBas
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.AudioPacket>}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.streamAudio =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/android.emulation.control.EmulatorController/streamAudio',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_streamAudio);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.streamAudio = function (request, metadata) {
+  return this.client_.serverStreaming(
+    this.hostname_ + '/android.emulation.control.EmulatorController/streamAudio',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_streamAudio
+  );
 };
-
-
-/**
- * @param {!proto.android.emulation.control.AudioFormat} request The request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.AudioPacket>}
- *     The XHR Node Readable Stream
- */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.streamAudio =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/android.emulation.control.EmulatorController/streamAudio',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_streamAudio);
-};
-
 
 /**
  * @const
@@ -1904,12 +1802,11 @@ const methodDescriptor_EmulatorController_getLogcat = new grpc.web.MethodDescrip
    * @param {!proto.android.emulation.control.LogMessage} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.LogMessage.deserializeBinary
 );
-
 
 /**
  * @const
@@ -1923,12 +1820,11 @@ const methodInfo_EmulatorController_getLogcat = new grpc.web.AbstractClientBase.
    * @param {!proto.android.emulation.control.LogMessage} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.LogMessage.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.LogMessage} request The
@@ -1940,16 +1836,15 @@ const methodInfo_EmulatorController_getLogcat = new grpc.web.AbstractClientBase.
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.LogMessage>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.getLogcat =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getLogcat',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getLogcat,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.getLogcat = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getLogcat',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getLogcat,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.LogMessage} request The
@@ -1959,15 +1854,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.getLogcat =
  * @return {!Promise<!proto.android.emulation.control.LogMessage>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getLogcat =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getLogcat',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getLogcat);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getLogcat = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getLogcat',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getLogcat
+  );
 };
-
 
 /**
  * @const
@@ -1984,12 +1878,11 @@ const methodDescriptor_EmulatorController_streamLogcat = new grpc.web.MethodDesc
    * @param {!proto.android.emulation.control.LogMessage} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.LogMessage.deserializeBinary
 );
-
 
 /**
  * @const
@@ -2003,12 +1896,27 @@ const methodInfo_EmulatorController_streamLogcat = new grpc.web.AbstractClientBa
    * @param {!proto.android.emulation.control.LogMessage} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.LogMessage.deserializeBinary
 );
 
+/**
+ * @param {!proto.android.emulation.control.LogMessage} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.LogMessage>}
+ *     The XHR Node Readable Stream
+ */
+proto.android.emulation.control.EmulatorControllerClient.prototype.streamLogcat = function (request, metadata) {
+  return this.client_.serverStreaming(
+    this.hostname_ + '/android.emulation.control.EmulatorController/streamLogcat',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_streamLogcat
+  );
+};
 
 /**
  * @param {!proto.android.emulation.control.LogMessage} request The request proto
@@ -2017,32 +1925,14 @@ const methodInfo_EmulatorController_streamLogcat = new grpc.web.AbstractClientBa
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.LogMessage>}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.streamLogcat =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/android.emulation.control.EmulatorController/streamLogcat',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_streamLogcat);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.streamLogcat = function (request, metadata) {
+  return this.client_.serverStreaming(
+    this.hostname_ + '/android.emulation.control.EmulatorController/streamLogcat',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_streamLogcat
+  );
 };
-
-
-/**
- * @param {!proto.android.emulation.control.LogMessage} request The request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.LogMessage>}
- *     The XHR Node Readable Stream
- */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.streamLogcat =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/android.emulation.control.EmulatorController/streamLogcat',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_streamLogcat);
-};
-
 
 /**
  * @const
@@ -2059,12 +1949,11 @@ const methodDescriptor_EmulatorController_setVmState = new grpc.web.MethodDescri
    * @param {!proto.android.emulation.control.VmRunState} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @const
@@ -2078,12 +1967,11 @@ const methodInfo_EmulatorController_setVmState = new grpc.web.AbstractClientBase
    * @param {!proto.android.emulation.control.VmRunState} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.VmRunState} request The
@@ -2095,16 +1983,15 @@ const methodInfo_EmulatorController_setVmState = new grpc.web.AbstractClientBase
  * @return {!grpc.web.ClientReadableStream<!proto.google.protobuf.Empty>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.setVmState =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/setVmState',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_setVmState,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.setVmState = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/setVmState',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_setVmState,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.VmRunState} request The
@@ -2114,15 +2001,14 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.setVmState =
  * @return {!Promise<!proto.google.protobuf.Empty>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setVmState =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/setVmState',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_setVmState);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setVmState = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/setVmState',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_setVmState
+  );
 };
-
 
 /**
  * @const
@@ -2139,12 +2025,11 @@ const methodDescriptor_EmulatorController_getVmState = new grpc.web.MethodDescri
    * @param {!proto.google.protobuf.Empty} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.VmRunState.deserializeBinary
 );
-
 
 /**
  * @const
@@ -2158,12 +2043,11 @@ const methodInfo_EmulatorController_getVmState = new grpc.web.AbstractClientBase
    * @param {!proto.google.protobuf.Empty} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.VmRunState.deserializeBinary
 );
-
 
 /**
  * @param {!proto.google.protobuf.Empty} request The
@@ -2175,16 +2059,15 @@ const methodInfo_EmulatorController_getVmState = new grpc.web.AbstractClientBase
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.VmRunState>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.EmulatorControllerClient.prototype.getVmState =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getVmState',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getVmState,
-      callback);
+proto.android.emulation.control.EmulatorControllerClient.prototype.getVmState = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getVmState',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getVmState,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.google.protobuf.Empty} request The
@@ -2194,15 +2077,13 @@ proto.android.emulation.control.EmulatorControllerClient.prototype.getVmState =
  * @return {!Promise<!proto.android.emulation.control.VmRunState>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getVmState =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.EmulatorController/getVmState',
-      request,
-      metadata || {},
-      methodDescriptor_EmulatorController_getVmState);
+proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getVmState = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.EmulatorController/getVmState',
+    request,
+    metadata || {},
+    methodDescriptor_EmulatorController_getVmState
+  );
 };
 
-
 module.exports = proto.android.emulation.control;
-

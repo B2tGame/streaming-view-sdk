@@ -6,17 +6,13 @@
 
 // GENERATED CODE -- DO NOT EDIT!
 
-
 /* eslint-disable */
 // @ts-nocheck
-
-
 
 const grpc = {};
 grpc.web = require('grpc-web');
 
-
-var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js')
+var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js');
 const proto = {};
 proto.android = {};
 proto.android.emulation = {};
@@ -30,8 +26,7 @@ proto.android.emulation.control = require('./rtc_service_pb.js');
  * @struct
  * @final
  */
-proto.android.emulation.control.RtcClient =
-    function(hostname, credentials, options) {
+proto.android.emulation.control.RtcClient = function (hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
 
@@ -44,9 +39,7 @@ proto.android.emulation.control.RtcClient =
    * @private @const {string} The hostname
    */
   this.hostname_ = hostname;
-
 };
-
 
 /**
  * @param {string} hostname
@@ -56,8 +49,7 @@ proto.android.emulation.control.RtcClient =
  * @struct
  * @final
  */
-proto.android.emulation.control.RtcPromiseClient =
-    function(hostname, credentials, options) {
+proto.android.emulation.control.RtcPromiseClient = function (hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
 
@@ -70,9 +62,7 @@ proto.android.emulation.control.RtcPromiseClient =
    * @private @const {string} The hostname
    */
   this.hostname_ = hostname;
-
 };
-
 
 /**
  * @const
@@ -89,12 +79,11 @@ const methodDescriptor_Rtc_requestRtcStream = new grpc.web.MethodDescriptor(
    * @param {!proto.google.protobuf.Empty} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.RtcId.deserializeBinary
 );
-
 
 /**
  * @const
@@ -108,12 +97,11 @@ const methodInfo_Rtc_requestRtcStream = new grpc.web.AbstractClientBase.MethodIn
    * @param {!proto.google.protobuf.Empty} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.RtcId.deserializeBinary
 );
-
 
 /**
  * @param {!proto.google.protobuf.Empty} request The
@@ -125,16 +113,15 @@ const methodInfo_Rtc_requestRtcStream = new grpc.web.AbstractClientBase.MethodIn
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.RtcId>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.RtcClient.prototype.requestRtcStream =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.Rtc/requestRtcStream',
-      request,
-      metadata || {},
-      methodDescriptor_Rtc_requestRtcStream,
-      callback);
+proto.android.emulation.control.RtcClient.prototype.requestRtcStream = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.Rtc/requestRtcStream',
+    request,
+    metadata || {},
+    methodDescriptor_Rtc_requestRtcStream,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.google.protobuf.Empty} request The
@@ -144,15 +131,14 @@ proto.android.emulation.control.RtcClient.prototype.requestRtcStream =
  * @return {!Promise<!proto.android.emulation.control.RtcId>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.RtcPromiseClient.prototype.requestRtcStream =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.Rtc/requestRtcStream',
-      request,
-      metadata || {},
-      methodDescriptor_Rtc_requestRtcStream);
+proto.android.emulation.control.RtcPromiseClient.prototype.requestRtcStream = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.Rtc/requestRtcStream',
+    request,
+    metadata || {},
+    methodDescriptor_Rtc_requestRtcStream
+  );
 };
-
 
 /**
  * @const
@@ -169,12 +155,11 @@ const methodDescriptor_Rtc_sendJsepMessage = new grpc.web.MethodDescriptor(
    * @param {!proto.android.emulation.control.JsepMsg} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @const
@@ -188,12 +173,11 @@ const methodInfo_Rtc_sendJsepMessage = new grpc.web.AbstractClientBase.MethodInf
    * @param {!proto.android.emulation.control.JsepMsg} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   google_protobuf_empty_pb.Empty.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.JsepMsg} request The
@@ -205,16 +189,15 @@ const methodInfo_Rtc_sendJsepMessage = new grpc.web.AbstractClientBase.MethodInf
  * @return {!grpc.web.ClientReadableStream<!proto.google.protobuf.Empty>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.RtcClient.prototype.sendJsepMessage =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.Rtc/sendJsepMessage',
-      request,
-      metadata || {},
-      methodDescriptor_Rtc_sendJsepMessage,
-      callback);
+proto.android.emulation.control.RtcClient.prototype.sendJsepMessage = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.Rtc/sendJsepMessage',
+    request,
+    metadata || {},
+    methodDescriptor_Rtc_sendJsepMessage,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.JsepMsg} request The
@@ -224,15 +207,14 @@ proto.android.emulation.control.RtcClient.prototype.sendJsepMessage =
  * @return {!Promise<!proto.google.protobuf.Empty>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.RtcPromiseClient.prototype.sendJsepMessage =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.Rtc/sendJsepMessage',
-      request,
-      metadata || {},
-      methodDescriptor_Rtc_sendJsepMessage);
+proto.android.emulation.control.RtcPromiseClient.prototype.sendJsepMessage = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.Rtc/sendJsepMessage',
+    request,
+    metadata || {},
+    methodDescriptor_Rtc_sendJsepMessage
+  );
 };
-
 
 /**
  * @const
@@ -249,12 +231,11 @@ const methodDescriptor_Rtc_receiveJsepMessages = new grpc.web.MethodDescriptor(
    * @param {!proto.android.emulation.control.RtcId} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.JsepMsg.deserializeBinary
 );
-
 
 /**
  * @const
@@ -268,12 +249,27 @@ const methodInfo_Rtc_receiveJsepMessages = new grpc.web.AbstractClientBase.Metho
    * @param {!proto.android.emulation.control.RtcId} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.JsepMsg.deserializeBinary
 );
 
+/**
+ * @param {!proto.android.emulation.control.RtcId} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.JsepMsg>}
+ *     The XHR Node Readable Stream
+ */
+proto.android.emulation.control.RtcClient.prototype.receiveJsepMessages = function (request, metadata) {
+  return this.client_.serverStreaming(
+    this.hostname_ + '/android.emulation.control.Rtc/receiveJsepMessages',
+    request,
+    metadata || {},
+    methodDescriptor_Rtc_receiveJsepMessages
+  );
+};
 
 /**
  * @param {!proto.android.emulation.control.RtcId} request The request proto
@@ -282,32 +278,14 @@ const methodInfo_Rtc_receiveJsepMessages = new grpc.web.AbstractClientBase.Metho
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.JsepMsg>}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.RtcClient.prototype.receiveJsepMessages =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/android.emulation.control.Rtc/receiveJsepMessages',
-      request,
-      metadata || {},
-      methodDescriptor_Rtc_receiveJsepMessages);
+proto.android.emulation.control.RtcPromiseClient.prototype.receiveJsepMessages = function (request, metadata) {
+  return this.client_.serverStreaming(
+    this.hostname_ + '/android.emulation.control.Rtc/receiveJsepMessages',
+    request,
+    metadata || {},
+    methodDescriptor_Rtc_receiveJsepMessages
+  );
 };
-
-
-/**
- * @param {!proto.android.emulation.control.RtcId} request The request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.JsepMsg>}
- *     The XHR Node Readable Stream
- */
-proto.android.emulation.control.RtcPromiseClient.prototype.receiveJsepMessages =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/android.emulation.control.Rtc/receiveJsepMessages',
-      request,
-      metadata || {},
-      methodDescriptor_Rtc_receiveJsepMessages);
-};
-
 
 /**
  * @const
@@ -324,12 +302,11 @@ const methodDescriptor_Rtc_receiveJsepMessage = new grpc.web.MethodDescriptor(
    * @param {!proto.android.emulation.control.RtcId} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.JsepMsg.deserializeBinary
 );
-
 
 /**
  * @const
@@ -343,12 +320,11 @@ const methodInfo_Rtc_receiveJsepMessage = new grpc.web.AbstractClientBase.Method
    * @param {!proto.android.emulation.control.RtcId} request
    * @return {!Uint8Array}
    */
-  function(request) {
+  function (request) {
     return request.serializeBinary();
   },
   proto.android.emulation.control.JsepMsg.deserializeBinary
 );
-
 
 /**
  * @param {!proto.android.emulation.control.RtcId} request The
@@ -360,16 +336,15 @@ const methodInfo_Rtc_receiveJsepMessage = new grpc.web.AbstractClientBase.Method
  * @return {!grpc.web.ClientReadableStream<!proto.android.emulation.control.JsepMsg>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.android.emulation.control.RtcClient.prototype.receiveJsepMessage =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/android.emulation.control.Rtc/receiveJsepMessage',
-      request,
-      metadata || {},
-      methodDescriptor_Rtc_receiveJsepMessage,
-      callback);
+proto.android.emulation.control.RtcClient.prototype.receiveJsepMessage = function (request, metadata, callback) {
+  return this.client_.rpcCall(
+    this.hostname_ + '/android.emulation.control.Rtc/receiveJsepMessage',
+    request,
+    metadata || {},
+    methodDescriptor_Rtc_receiveJsepMessage,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.android.emulation.control.RtcId} request The
@@ -379,15 +354,13 @@ proto.android.emulation.control.RtcClient.prototype.receiveJsepMessage =
  * @return {!Promise<!proto.android.emulation.control.JsepMsg>}
  *     A native promise that resolves to the response
  */
-proto.android.emulation.control.RtcPromiseClient.prototype.receiveJsepMessage =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/android.emulation.control.Rtc/receiveJsepMessage',
-      request,
-      metadata || {},
-      methodDescriptor_Rtc_receiveJsepMessage);
+proto.android.emulation.control.RtcPromiseClient.prototype.receiveJsepMessage = function (request, metadata) {
+  return this.client_.unaryCall(
+    this.hostname_ + '/android.emulation.control.Rtc/receiveJsepMessage',
+    request,
+    metadata || {},
+    methodDescriptor_Rtc_receiveJsepMessage
+  );
 };
 
-
 module.exports = proto.android.emulation.control;
-
