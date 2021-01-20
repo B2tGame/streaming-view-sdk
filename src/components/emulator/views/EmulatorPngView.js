@@ -32,7 +32,6 @@ export default class EmulatorPngView extends Component {
     height: null
   };
 
-
   componentDidMount() {
     this.startStream();
   }

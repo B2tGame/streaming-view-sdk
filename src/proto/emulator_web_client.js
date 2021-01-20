@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EmulatorControllerClient } from "../proto/emulator_controller_grpc_web_pb";
-import { RtcClient } from "../proto/rtc_service_grpc_web_pb";
-import { GrpcWebClientBase } from "grpc-web";
-import { EventEmitter } from "events";
+import { EmulatorControllerClient } from '../proto/emulator_controller_grpc_web_pb';
+import { RtcClient } from '../proto/rtc_service_grpc_web_pb';
+import { GrpcWebClientBase } from 'grpc-web';
+import { EventEmitter } from 'events';
 
 export class NopAuthenticator {
   authHeader = () => {
     return {};
   };
 
-  unauthorized = () => { };
+  unauthorized = () => {};
 }
 
 /**
@@ -39,7 +39,9 @@ class EmulatorWebClient extends GrpcWebClientBase {
     super(options);
     this.auth = auth;
     this.events = new EventEmitter();
-    this.events.on("error", e => {console.log("low level gRPC error: " + JSON.stringify(e));})
+    this.events.on('error', (e) => {
+      console.log('low level gRPC error: ' + JSON.stringify(e));
+    });
   }
 
   on = (name, fn) => {
@@ -53,8 +55,7 @@ class EmulatorWebClient extends GrpcWebClientBase {
     return super.rpcCall(method, request, meta, methodinfo, (err, res) => {
       if (err) {
         if (err.code === 401) self.auth.unauthorized();
-        if (self.events)
-          self.events.emit("error", err);
+        if (self.events) self.events.emit('error', err);
       }
       if (callback) callback(err, res);
     });
@@ -67,11 +68,11 @@ class EmulatorWebClient extends GrpcWebClientBase {
     const self = this;
 
     // Intercept errors.
-    stream.on("error", e => {
+    stream.on('error', (e) => {
       if (e.code === 401) {
         self.auth.unauthorized();
       }
-      self.events.emit("error", e);
+      self.events.emit('error', e);
     });
     return stream;
   };
@@ -105,10 +106,12 @@ export class EmulatorControllerService extends EmulatorControllerClient {
     super(uri);
     if (!authenticator) authenticator = new NopAuthenticator();
     this.client_ = new EmulatorWebClient({}, authenticator);
-    if (onError) this.client_.on('error', e => { onError(e); });
+    if (onError)
+      this.client_.on('error', (e) => {
+        onError(e);
+      });
   }
 }
-
 
 /**
  * An RtcService is an RtcClient that inject authentication headers.
@@ -135,6 +138,9 @@ export class RtcService extends RtcClient {
     super(uri);
     if (!authenticator) authenticator = new NopAuthenticator();
     this.client_ = new EmulatorWebClient({}, authenticator);
-    if (onError) this.client_.on('error', e => { onError(e); });
+    if (onError)
+      this.client_.on('error', (e) => {
+        onError(e);
+      });
   }
 }

@@ -131,7 +131,7 @@ function getAdvancedMeasurement() {
     .then((deviceInfo) =>
       downloadManager(
         ((deviceInfo || {}).recommendation || []).reduce((output, rec) => {
-            rec.measurementEndpoints.map((endpoint) =>
+          rec.measurementEndpoints.map((endpoint) =>
             output.push({
               url: `${endpoint}/${DOWNLOAD_DATASOURCE_NAME}`,
               edgeRegion: rec.edgeRegion

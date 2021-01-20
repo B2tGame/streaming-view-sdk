@@ -193,45 +193,50 @@ export default class EventHandler extends Component {
     const allTouches = Object.values(allTouchesObject);
     const changedTouches = Object.values(changedTouchesObject);
 
-    if(type === 'touchstart' || type === 'touchmove') {
+    if (type === 'touchstart' || type === 'touchmove') {
       // Add the current set of changed touches (new started/moved touches)
-      touches.push(...changedTouches.map((touch) => {
-        touch.hasForce = 1;
-        return touch;
-      }));
+      touches.push(
+        ...changedTouches.map((touch) => {
+          touch.hasForce = 1;
+          return touch;
+        })
+      );
     }
     // Collect all removed touches that are no longer in touchHistory set
     const missingTouches = this.touchHistory.filter((touch) => allTouches.findIndex((t) => t.identifier === touch.identifier) === -1);
-    touches.push(...missingTouches.map((touch) => {
-      touch.hasForce = 0;
-      return touch;
-    }));
+    touches.push(
+      ...missingTouches.map((touch) => {
+        touch.hasForce = 0;
+        return touch;
+      })
+    );
 
     // Prepare all touch identifiers for existing touch identifiers and add new available touch identifiers (0..9)
     const touchIdentifiers = [...allTouches, ...missingTouches].reduce((touchIdentifiers, touch) => {
-      if(this.touchIdentifiersHistory[touch.identifier] !== undefined) {
+      if (this.touchIdentifiersHistory[touch.identifier] !== undefined) {
         touchIdentifiers[touch.identifier] = this.touchIdentifiersHistory[touch.identifier];
       } else {
         const alreadyUsedIdentifiers = Object.values(touchIdentifiers);
-        const nextFreeIdentifier =  [0,1,2,3,4,5,6,7,8,9].find((identifier) => !(alreadyUsedIdentifiers.indexOf(identifier) !== -1));
-        if(nextFreeIdentifier !== undefined) {
-          touchIdentifiers[touch.identifier]  = nextFreeIdentifier;
+        const nextFreeIdentifier = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].find(
+          (identifier) => !(alreadyUsedIdentifiers.indexOf(identifier) !== -1)
+        );
+        if (nextFreeIdentifier !== undefined) {
+          touchIdentifiers[touch.identifier] = nextFreeIdentifier;
         }
       }
       return touchIdentifiers;
     }, {});
 
-    const touchesToSend = [...touches, ...missingTouches]
-      .map((touch) => {
-        const emulatorCords = this.calculateTouchEmulatorCoordinates(touch);
-        const identifier = touchIdentifiers[touch.identifier];
-        const protoTouch = new Proto.Touch();
-        protoTouch.setX(emulatorCords.x);
-        protoTouch.setY(emulatorCords.y);
-        protoTouch.setIdentifier(identifier);
-        protoTouch.setPressure(touch.hasForce);
-        return protoTouch;
-      });
+    const touchesToSend = [...touches, ...missingTouches].map((touch) => {
+      const emulatorCords = this.calculateTouchEmulatorCoordinates(touch);
+      const identifier = touchIdentifiers[touch.identifier];
+      const protoTouch = new Proto.Touch();
+      protoTouch.setX(emulatorCords.x);
+      protoTouch.setY(emulatorCords.y);
+      protoTouch.setIdentifier(identifier);
+      protoTouch.setPressure(touch.hasForce);
+      return protoTouch;
+    });
 
     // Make the grpc call.
     const requestTouchEvent = new Proto.TouchEvent();
@@ -264,7 +269,12 @@ export default class EventHandler extends Component {
     if (event.cancelable) {
       event.preventDefault();
     }
-    this.touchHandler(event.nativeEvent.type, event.nativeEvent.touches, event.nativeEvent.changedTouches, event.nativeEvent.changedTouches[0]);
+    this.touchHandler(
+      event.nativeEvent.type,
+      event.nativeEvent.touches,
+      event.nativeEvent.changedTouches,
+      event.nativeEvent.changedTouches[0]
+    );
   };
 
   handleTouchMove = (event) => {
@@ -326,8 +336,7 @@ export default class EventHandler extends Component {
       screenfull
         .request()
         .then(() => {
-          const orientation =
-            this.props.emulatorWidth > this.props.emulatorHeight ? ORIENTATION_LANDSCAPE : ORIENTATION_PORTRAIT;
+          const orientation = this.props.emulatorWidth > this.props.emulatorHeight ? ORIENTATION_LANDSCAPE : ORIENTATION_PORTRAIT;
           window.screen.orientation.lock(orientation).catch((error) => {
             this.props.logger.log('Failed to lock screen orientation to: ' + error);
           });

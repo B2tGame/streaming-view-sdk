@@ -32,7 +32,6 @@ export default class StreamSocket {
       if (message.name === 'emulator-configuration') {
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.EMULATOR_CONFIGURATION, message.configuration);
       } else if (message.name === 'emulator-event') {
-
         switch (message.event) {
           case 'paused': {
             StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_PAUSED);

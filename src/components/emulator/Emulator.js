@@ -134,14 +134,7 @@ class Emulator extends Component {
     const { uri, auth, poll } = this.props;
     this.emulator = new EmulatorControllerService(uri, auth, this.onError);
     this.rtc = new RtcService(uri, auth, this.onError);
-    this.jsep = new JsepProtocol(
-      this.emulator,
-      this.rtc,
-      poll,
-      this.props.edgeNodeId,
-      this.props.logger,
-      this.props.turnEndpoint
-    );
+    this.jsep = new JsepProtocol(this.emulator, this.rtc, poll, this.props.edgeNodeId, this.props.logger, this.props.turnEndpoint);
 
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
@@ -224,17 +217,7 @@ class Emulator extends Component {
   }
 
   render() {
-    const {
-      view,
-      poll,
-      volume,
-      enableFullScreen,
-      enableControl,
-      uri,
-      emulatorWidth,
-      emulatorHeight,
-      emulatorVersion
-    } = this.props;
+    const { view, poll, volume, enableFullScreen, enableControl, uri, emulatorWidth, emulatorHeight, emulatorVersion } = this.props;
     return (
       <EventHandler
         key={this.state.streamingConnectionId}

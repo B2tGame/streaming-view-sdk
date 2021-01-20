@@ -60,10 +60,7 @@ export default class JsepProtocol {
       this.rtcEventTrigger = null;
     }
 
-    StreamingEvent.edgeNode(this.edgeNodeId).off(
-      StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT,
-      this.onRequestWebRtcMeasurement
-    );
+    StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_DISCONNECTED);
   };
 
@@ -184,10 +181,7 @@ export default class JsepProtocol {
     };
     this.peerConnection = new RTCPeerConnection(signal.start);
 
-    StreamingEvent.edgeNode(this.edgeNodeId).on(
-      StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT,
-      this.onRequestWebRtcMeasurement
-    );
+    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
 
     this.peerConnection.addEventListener('track', this._handlePeerConnectionTrack, false);
     this.peerConnection.addEventListener('icecandidate', this._handlePeerIceCandidate, false);
@@ -228,9 +222,7 @@ export default class JsepProtocol {
       if (signal.bye) this._handleBye();
       if (signal.candidate) this._handleCandidate(signal);
     } catch (e) {
-      this.logger.error(
-        'Streaming View SDK: Failed to handle message: [' + message + '], due to: ' + JSON.stringify(e)
-      );
+      this.logger.error('Streaming View SDK: Failed to handle message: [' + message + '], due to: ' + JSON.stringify(e));
     }
   };
 

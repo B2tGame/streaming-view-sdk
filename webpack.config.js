@@ -7,12 +7,12 @@ module.exports = {
     path: path.resolve('build'),
     filename: 'index.js',
     library: 'streaming-view-sdk',
-    libraryTarget: 'umd',
+    libraryTarget: 'umd'
   },
   optimization: {
     // Set this to false during debugging time..
     minimize: true,
-    usedExports: true,
+    usedExports: true
   },
   module: {
     rules: [
@@ -21,14 +21,14 @@ module.exports = {
         exclude: [/(node_modules)/],
         loader: 'babel-loader',
         options: {
-          configFile: './babel.config.js',
-        },
-      },
-    ],
+          configFile: './babel.config.js'
+        }
+      }
+    ]
   },
   node: {
     fs: 'empty',
     net: 'empty',
-    tls: 'empty',
-  },
+    tls: 'empty'
+  }
 };

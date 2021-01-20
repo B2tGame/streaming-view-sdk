@@ -23,7 +23,7 @@ export default class StreamingView extends Component {
     turnEndpoint: undefined,
     emulatorWidth: undefined,
     emulatorHeight: undefined,
-    emulatorVersion: undefined,
+    emulatorVersion: undefined
   };
 
   static propTypes = {
@@ -41,7 +41,7 @@ export default class StreamingView extends Component {
     enableDebug: PropTypes.bool, // Can't be changed after creation
     internalSession: PropTypes.bool, // Can't be changed after creation
     userClickedPlayAt: PropTypes.number, // Can't be changed after creation
-    maxConnectionRetries: PropTypes.number, // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
+    maxConnectionRetries: PropTypes.number // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
   };
 
   /**
@@ -68,7 +68,7 @@ export default class StreamingView extends Component {
   componentDidMount() {
     this.isMountedInView = true;
     const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, enableDebug, onEvent } = this.props;
-    if(!internalSession) {
+    if (!internalSession) {
       this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId);
     }
     this.logger = new Logger(enableDebug);
@@ -88,7 +88,7 @@ export default class StreamingView extends Component {
         if (this.streamSocket) {
           this.streamSocket.close();
         }
-        this.setState({isReadyStream: false});
+        this.setState({ isReadyStream: false });
       })
       .on(StreamingEvent.EMULATOR_CONFIGURATION, (configuration) => {
         this.setState({
@@ -122,7 +122,6 @@ export default class StreamingView extends Component {
           turnEndpoint: internalSession && turnEndpoint ? turnEndpoint : undefined
         });
         this.registerUserEventsHandler();
-
       })
       .catch((err) => {
         if (!this.isMountedInView) {
@@ -135,7 +134,6 @@ export default class StreamingView extends Component {
   }
 
   componentWillUnmount() {
-
     this.isMountedInView = false;
     if (this.measurement) {
       this.measurement.destroy();
@@ -143,16 +141,17 @@ export default class StreamingView extends Component {
     if (this.streamSocket) {
       this.streamSocket.close();
     }
-    if(this.LogQueueService) {
+    if (this.LogQueueService) {
       this.LogQueueService.destroy();
     }
     StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
   }
 
-
   shouldComponentUpdate(nextProps) {
     if (nextProps.streamQualityRating) {
-      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_QUALITY_RATING, { streamQualityRating: nextProps.streamQualityRating });
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_QUALITY_RATING, {
+        streamQualityRating: nextProps.streamQualityRating
+      });
     }
     // Don't re-render component when rating was changed
     return this.props.streamQualityRating === nextProps.streamQualityRating;
