@@ -107,11 +107,11 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event that is fired when the stream crashes.
+   * Event that is fired when the edge node crashes.
    * @return {string}
    */
-  static get STREAM_CRASHED() {
-    return 'stream-crashed';
+  static get EDGE_NODE_CRASHED() {
+    return 'edge-node-crashed';
   }
 
   /**
