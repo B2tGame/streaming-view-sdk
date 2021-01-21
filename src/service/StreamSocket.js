@@ -46,6 +46,12 @@ export default class StreamSocket {
             StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_TERMINATED);
             break;
           }
+          case 'edge-node-crashed': {
+            StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE);
+            StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.EDGE_NODE_CRASHED);
+            StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_TERMINATED);
+            break;
+          }
           default: {
             // Unexpected value
           }
