@@ -48,6 +48,11 @@ export default class EventHandler extends Component {
     edgeNodeId: PropTypes.string.isRequired // report events during the streaming view.
   };
 
+  static defaultProps = {
+    emulatorHeight: 768,
+    emulatorWidth: 432
+  };
+
   constructor(props) {
     super(props);
     this.handler = React.createRef();
@@ -107,6 +112,7 @@ export default class EventHandler extends Component {
   };
 
   getScreenSize() {
+    // TODO: Fix update status for old emulator emu-30.2.4-android10
     this.status.updateStatus((state) => {
       this.setState({
         deviceWidth: parseInt(state.hardwareConfig['hw.lcd.width']) || this.state.deviceWidth,
@@ -165,8 +171,8 @@ export default class EventHandler extends Component {
    * @returns {{x: number, y: number}}
    */
   calculateEmulatorCoordinates = (offsetX, offsetY, clientWidth, clientHeight) => {
-    const xEmulatorCoordinate = (offsetX / clientWidth) * this.state.deviceWidth;
-    const yEmulatorCoordinate = (offsetY / clientHeight) * this.state.deviceHeight;
+    const xEmulatorCoordinate = (offsetX / clientWidth) * this.props.emulatorWidth;
+    const yEmulatorCoordinate = (offsetY / clientHeight) * this.props.emulatorHeight;
 
     return {
       x: Math.round(xEmulatorCoordinate),
