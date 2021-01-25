@@ -30,7 +30,6 @@ export default class EmulatorWebrtcView extends Component {
   state = {
     audio: false,
     video: false,
-    muted: true,
     playing: false
   };
 
@@ -75,25 +74,21 @@ export default class EmulatorWebrtcView extends Component {
     this.video.current.volume = this.props.volume;
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    if (this.state.muted === true && nextState.muted === false && this.video.current) {
+  unmuteVideo() {
+    // Some devices is automatic unmuting and do a unmute result in broken stream
+    // Only change muted stated if required after giving the browser some time to act by it self.
+    if (this.isMountedInView && this.video.current && this.video.current.muted) {
       setTimeout(() => {
-        // Some devices is automatic unmuting and do a unmute result in broken stream
-        // Only change muted stated if required after giving the browser some time to act by it self.
-        if (this.isMountedInView && this.video.current.muted) {
+        if (this.video.current.muted) {
           this.video.current.muted = false;
         }
       }, 250);
-      return false;
     }
-    return true;
   }
 
   onUserInteraction = () => {
     // Un-muting video stream on first user interaction, volume of video stream can be changed dynamically
-    if (this.state.muted === true) {
-      this.setState({ muted: false });
-    }
+    this.unmuteVideo();
 
     if (this.isMountedInView && this.video.current && this.video.current.paused) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
@@ -186,7 +181,7 @@ export default class EmulatorWebrtcView extends Component {
       <video
         ref={this.video}
         style={style}
-        muted={this.state.muted}
+        muted={"true"} // Un-muting is done dynamically through ref on userInteraction
         onContextMenu={this.onContextMenu}
         onCanPlay={this.onCanPlay}
         onPlaying={this.onPlaying}
