@@ -67,17 +67,27 @@ export default class StreamingView extends Component {
 
   componentDidMount() {
     this.isMountedInView = true;
-    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, enableDebug, onEvent } = this.props;
+    const {
+      apiEndpoint,
+      edgeNodeId,
+      userId,
+      edgeNodeEndpoint,
+      internalSession,
+      turnEndpoint,
+      enableDebug,
+      onEvent
+    } = this.props;
     if (!internalSession) {
       this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId);
     }
     this.logger = new Logger(enableDebug);
     this.logger.log(`Latest update: ${buildInfo.tag}`);
     this.measurement = new Measurement(edgeNodeId);
-
+    this.configureCaptureScreenWatchdog();
     if (onEvent) {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
     }
+
 
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
@@ -90,6 +100,7 @@ export default class StreamingView extends Component {
         }
         this.setState({ isReadyStream: false });
       })
+      .on(StreamingEvent.CAPTURE_SCREEN, () => this.feedCaptureScreenWatchdog())
       .on(StreamingEvent.EMULATOR_CONFIGURATION, (configuration) => {
         this.setState({
           emulatorWidth: configuration.emulatorWidth,
@@ -97,6 +108,7 @@ export default class StreamingView extends Component {
           emulatorVersion: configuration.emulatorVersion
         });
       });
+
 
     StreamingController({
       apiEndpoint: apiEndpoint,
@@ -155,6 +167,26 @@ export default class StreamingView extends Component {
     }
     // Don't re-render component when rating was changed
     return this.props.streamQualityRating === nextProps.streamQualityRating;
+  }
+
+  /**
+   * Configure the system capture screen watchdog logic that ensure a every is always fire on a regular basic.
+   */
+  feedCaptureScreenWatchdog() {
+    if (this.captureScreenWatchdogTimeout) {
+      clearTimeout(this.captureScreenWatchdogTimeout);
+    }
+    this.captureScreenWatchdogTimeout = setTimeout(() => {
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.CAPTURE_SCREEN, {
+        hasVideo: false,
+        cause: 'Stream not yet ready',
+        captureScreen: undefined
+      });
+    }, 750);
+  }
+
+  configureCaptureScreenWatchdog() {
+    this.feedCaptureScreenWatchdog();
   }
 
   /**

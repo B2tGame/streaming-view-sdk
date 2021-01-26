@@ -242,6 +242,11 @@ export default class StreamingEvent {
     return 'user-starts-playing';
   }
 
+  static get CAPTURE_SCREEN() {
+    return 'capture-screen';
+  }
+
+
   /**
    * Get EventEmitter for a specific Edge Node Id.
    * This will automatic create a new Event emitter if missing.
