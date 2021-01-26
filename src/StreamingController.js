@@ -94,7 +94,10 @@ class StreamingController {
    * @returns {Promise<*>}
    */
   pause() {
-    return this.getStreamEndpoint().then((streamEndpoint) => axios.get(`${streamEndpoint}/emulator-commands/pause`));
+    return Promise.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(([edgeNodeId, streamEndpoint]) => {
+      StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.LOG, { name: 'streaming-controller', action: 'pause' });
+      return axios.get(`${streamEndpoint}/emulator-commands/pause`);
+    });
   }
 
   /**
@@ -103,7 +106,10 @@ class StreamingController {
    * @returns {Promise<*>}
    */
   resume() {
-    return this.getStreamEndpoint().then((streamEndpoint) => axios.get(`${streamEndpoint}/emulator-commands/resume`));
+    return Promise.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(([edgeNodeId, streamEndpoint]) => {
+      StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.LOG, { name: 'streaming-controller', action: 'resume' });
+      return axios.get(`${streamEndpoint}/emulator-commands/resume`);
+    });
   }
 
   /**
