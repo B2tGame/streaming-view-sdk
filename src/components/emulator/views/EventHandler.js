@@ -87,20 +87,26 @@ export default class EventHandler extends Component {
 
   componentDidMount() {
     this.updateTouchHandler();
-    this.getScreenSize();
+    // this.getScreenSize(); // TODO: Fix update status for old emulator emu-30.2.4-android10
     // Disabling passive mode to be able to call 'event.preventDefault()' for disabling scroll, which causing
     // laggy touch move performance on mobile phones, since some browsers changed default passive: true from false
     // related issue: https://github.com/facebook/react/issues/9809
     this.handler.current.addEventListener('touchmove', this.preventDefault, { passive: false });
-    window.addEventListener('resize', this.forceRender);
+    window.addEventListener('resize', this.handleResize);
   }
 
   componentWillUnmount() {
     this.handler.current.removeEventListener('touchmove', this.preventDefault, { passive: false });
-    window.removeEventListener('resize', this.forceRender);
+    window.removeEventListener('resize', this.handleResize);
     if (this.props.enableFullScreen && screenfull.isEnabled && screenfull.isFullscreen) {
       window.screen.orientation.unlock();
     }
+  }
+
+  handleResize = () => {
+    setTimeout(() => {
+      this.forceRender();
+    }, 50);
   }
 
   forceRender = () => {

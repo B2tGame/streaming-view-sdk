@@ -181,7 +181,7 @@ export default class EmulatorWebrtcView extends Component {
       <video
         ref={this.video}
         style={style}
-        muted={"true"} // Un-muting is done dynamically through ref on userInteraction
+        muted={true} // Un-muting is done dynamically through ref on userInteraction
         onContextMenu={this.onContextMenu}
         onCanPlay={this.onCanPlay}
         onPlaying={this.onPlaying}
