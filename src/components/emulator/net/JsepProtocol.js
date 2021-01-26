@@ -129,23 +129,10 @@ export default class JsepProtocol {
   send(label, msg) {
     let bytes = msg.serializeBinary();
     let forwarder = this.eventForwarders[label];
+
     // Send via data channel/gRPC bridge.
     if (this.connected && forwarder && forwarder.readyState === 'open') {
       this.eventForwarders[label].send(bytes);
-    } else {
-      // Fallback to using the gRPC protocol
-      switch (label) {
-        case 'mouse':
-          this.emulator.sendMouse(msg);
-          break;
-        case 'keyboard':
-          this.emulator.sendKey(msg);
-          break;
-        case 'touch':
-          this.emulator.sendTouch(msg);
-          break;
-        default:
-      }
     }
   }
 
