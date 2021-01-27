@@ -178,6 +178,15 @@ export default class StreamingEvent {
     return 'stream-video-missing';
   }
 
+
+  /**
+   * Event fired when a thumbnail screenshot of the video has been created.
+   * @returns {string}
+   */
+  static get STREAM_VIDEO_SCREENSHOT() {
+    return 'stream-video-screenshot';
+  }
+
   /**
    * Event fired when the user interact with a running stream.
    * @return {string}
@@ -242,13 +251,6 @@ export default class StreamingEvent {
     return 'user-starts-playing';
   }
 
-  static get CAPTURE_SCREEN() {
-    return 'capture-screen';
-  }
-
-  static get WATCH_DOG() {
-    return 'watch-dog';
-  }
 
 
   /**

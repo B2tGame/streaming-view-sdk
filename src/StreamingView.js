@@ -9,7 +9,6 @@ import Logger from './Logger';
 import StreamSocket from './service/StreamSocket';
 import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
-import WatchDog from './service/WatchDog';
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
@@ -68,27 +67,17 @@ export default class StreamingView extends Component {
 
   componentDidMount() {
     this.isMountedInView = true;
-    const {
-      apiEndpoint,
-      edgeNodeId,
-      userId,
-      edgeNodeEndpoint,
-      internalSession,
-      turnEndpoint,
-      enableDebug,
-      onEvent
-    } = this.props;
+    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, enableDebug, onEvent } = this.props;
     if (!internalSession) {
       this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId);
     }
     this.logger = new Logger(enableDebug);
     this.logger.log(`Latest update: ${buildInfo.tag}`);
     this.measurement = new Measurement(edgeNodeId);
-    this.watchDog = new WatchDog(edgeNodeId);
+
     if (onEvent) {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
     }
-
 
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
@@ -108,7 +97,6 @@ export default class StreamingView extends Component {
           emulatorVersion: configuration.emulatorVersion
         });
       });
-
 
     StreamingController({
       apiEndpoint: apiEndpoint,
@@ -153,10 +141,6 @@ export default class StreamingView extends Component {
     if (this.streamSocket) {
       this.streamSocket.close();
     }
-    if (this.watchDog) {
-      this.watchDog.destroy();
-    }
-
     if (this.LogQueueService) {
       this.LogQueueService.destroy();
     }

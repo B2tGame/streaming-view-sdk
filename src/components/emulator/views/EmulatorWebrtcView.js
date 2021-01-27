@@ -27,11 +27,21 @@ export default class EmulatorWebrtcView extends Component {
     emulatorVersion: PropTypes.string
   };
 
+  /**
+   * How many times smaller should the thumbnail screenshot be compare with the source stream.
+   * @returns {number}
+   * @constructor
+   */
   static get CANVAS_SCALE_FACTOR() {
-    return 10;
+    return 12;
   }
 
-  static get BLACK_SCREEN_DETECTOR_OFFSET() {
+  /**
+   * How many pixels in of the border of the screen should be used for calculate if the screen is black/gray or not.
+   * The real pixel position is SCREEN_DETECTOR_OFFSET*CANVAS_SCALE_FACTOR of the origin size video stream.
+   * @returns {number}
+   */
+  static get SCREEN_DETECTOR_OFFSET() {
     return 5;
   }
 
@@ -101,8 +111,43 @@ export default class EmulatorWebrtcView extends Component {
    * @returns {string}
    */
   captureScreen = () => {
-    const isBlackOrGrey = (r, g, b) => {
-      return r < 50 && g < 50 && b < 50 && Math.abs(r - g) < 25 && Math.abs(g - b) < 25 && Math.abs(b - r) < 25;
+    /**
+     * Test if a color is dark grey (including total black)
+     * @param {{red: number, green: number, blue: number}} pixel
+     * @returns {boolean}
+     */
+    const isDarkGrey = (pixel) => {
+      return pixel.red < 50 && pixel.green < 50 && pixel.blue < 50 && Math.abs(pixel.red - pixel.green) < 25 && Math.abs(pixel.green - pixel.blue) < 25 && Math.abs(pixel.blue - pixel.red) < 25;
+    };
+
+    /**
+     *
+     * @param {ImageData} image
+     * @param {number} offset
+     * @returns {{red: number, green: number, blue: number}}
+     */
+    const getPixel = (image, offset) => {
+      return {
+        red: image.data[offset],
+        green: image.data[offset + 1],
+        blue: image.data[offset + 2]
+      };
+    };
+
+    /**
+     * @param {{red: number, green: number, blue: number}[]} pixels
+     * @returns {{red: number, green: number, blue: number}}
+     */
+    const avgColor = (pixels) => {
+      return {
+        red: Math.round(pixels.reduce((sum, pixel) => sum + pixel.red, 0) / pixels.length),
+        green: Math.round(pixels.reduce((sum, pixel) => sum + pixel.green, 0) / pixels.length),
+        blue: Math.round(pixels.reduce((sum, pixel) => sum + pixel.blue, 0) / pixels.length)
+      };
+    };
+
+    const rgbToHex = (pixel) => {
+      return '#' + ((1 << 24) + (pixel.red << 16) + (pixel.green << 8) + pixel.blue).toString(16).slice(1);
     };
 
     if (this.canvas.current && this.video.current) {
@@ -110,45 +155,40 @@ export default class EmulatorWebrtcView extends Component {
       const { emulatorWidth, emulatorHeight } = this.props;
       ctx.drawImage(this.video.current, 0, 0, emulatorWidth / EmulatorWebrtcView.CANVAS_SCALE_FACTOR, emulatorHeight / EmulatorWebrtcView.CANVAS_SCALE_FACTOR);
       const rawImage = ctx.getImageData(0, 0, emulatorWidth / EmulatorWebrtcView.CANVAS_SCALE_FACTOR, emulatorHeight / EmulatorWebrtcView.CANVAS_SCALE_FACTOR);
-      const selectedPixels = [
+      const borderPixels = [
         // Top Left
-        isBlackOrGrey(
-          rawImage.data[rawImage.width * EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4],
-          rawImage.data[rawImage.width * EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + 1],
-          rawImage.data[rawImage.width * EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + 2]
-        ),
+        getPixel(
+          rawImage,
+          rawImage.width * EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET * 4 + EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET * 4),
         // Top Right
-        isBlackOrGrey(
-          rawImage.data[rawImage.width * EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + (rawImage.width - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4],
-          rawImage.data[rawImage.width * EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + (rawImage.width - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + 1],
-          rawImage.data[rawImage.width * EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + (rawImage.width - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + 2]
+        getPixel(
+          rawImage,
+          rawImage.width * EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET * 4 + (rawImage.width - EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET) * 4
         ),
         // Bottom Left
-        isBlackOrGrey(
-          rawImage.data[rawImage.width * (rawImage.height - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4],
-          rawImage.data[rawImage.width * (rawImage.height - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + 1],
-          rawImage.data[rawImage.width * (rawImage.height - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + 2]
+        getPixel(
+          rawImage,
+          rawImage.width * (rawImage.height - EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET) * 4 + EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET * 4
         ),
         // Bottom Right
-        isBlackOrGrey(
-          rawImage.data[rawImage.width * (rawImage.height - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + (rawImage.width - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4],
-          rawImage.data[rawImage.width * (rawImage.height - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + (rawImage.width - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + 1],
-          rawImage.data[rawImage.width * (rawImage.height - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + (rawImage.width - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + 2]
-        ),
-        // Center Center
-        isBlackOrGrey(
-          rawImage.data[rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width / 2) * 4],
-          rawImage.data[rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width / 2) * 4 + 1],
-          rawImage.data[rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width / 2) * 4 + 2]
+        getPixel(
+          rawImage,
+          rawImage.width * (rawImage.height - EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET) * 4 + (rawImage.width - EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET) * 4
         )
       ];
-      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.CAPTURE_SCREEN, {
-        isVideoStreamBlack: selectedPixels.reduce((oldValue, newValue) => oldValue && newValue, true),
-        isMountedInView: this.isMountedInView,
-        isVideoStreamReceived: this.state.video,
-        isVideoStreamPlaying: this.state.playing,
-        timestamp: Date.now(),
-        captureScreen: () => this.canvas.current.toDataURL('image/png')
+
+      const centerPixels = [
+        // Center Center
+        getPixel(
+          rawImage,
+          rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width / 2) * 4
+        )
+      ];
+
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_SCREENSHOT, {
+        hasVideo: ![].concat(borderPixels, centerPixels).every((pixel) => isDarkGrey(pixel)),
+        borderColor: rgbToHex(avgColor(borderPixels)),
+        screenshot: this.canvas.current.toDataURL('image/jpeg') // or 'image/png'
       });
     }
   };
