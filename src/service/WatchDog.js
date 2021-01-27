@@ -18,18 +18,26 @@ export default class WatchDog {
   }
 
 
+  /**
+   *
+   * @param {string} edgeNodeId
+   */
   constructor(edgeNodeId) {
+    // Set default values for internal fields.
     this.edgeNodeId = edgeNodeId;
-    this.lifecycelState = WatchDog.LIFECYCLE_STATE_WAITING_FOR_EDGE_NODE_TO_BE_READY;
     this.subscribers = [];
-    this.timer = setInterval(() => this.analyzeState(), 1000);
-
+    this.lifecycelState = WatchDog.LIFECYCLE_STATE_WAITING_FOR_EDGE_NODE_TO_BE_READY;
     this.edgeNodeHasCrached = false;
     this.edgeNodeHasTerminated = false;
     this.serverOutOfCapacity = false;
     this.emulatorState = StreamingEvent.STREAM_PAUSED;
     this.capureScreenEvent = undefined;
 
+
+    // Configure timer that control how often this event will be emitted.
+    this.timer = setInterval(() => this.analyzeState(), 1000);
+
+    // Setup subscribers that listen on diffrent types of events cross the system,
     this.subscribeTo(StreamingEvent.EDGE_NODE_READY_TO_ACCEPT_CONNECTION, () => {
       this.lifecycelState = WatchDog.LIFECYCLE_STATE_READY;
     });
@@ -45,15 +53,12 @@ export default class WatchDog {
     this.subscribeTo(StreamingEvent.STREAM_TERMINATED, () => {
       this.edgeNodeHasTerminated = true;
     });
-
     this.subscribeTo(StreamingEvent.STREAM_PAUSED, () => {
       this.emulatorState = StreamingEvent.STREAM_PAUSED;
     });
-
     this.subscribeTo(StreamingEvent.STREAM_RESUMED, () => {
       this.emulatorState = StreamingEvent.STREAM_RESUMED;
     });
-
     this.subscribeTo(StreamingEvent.EMULATOR_CONFIGURATION, (configuration) => {
       this.emulatorState = configuration.state !== 'paused' ? StreamingEvent.STREAM_RESUMED : StreamingEvent.STREAM_PAUSED;
     });
@@ -63,6 +68,12 @@ export default class WatchDog {
 
   }
 
+  /**
+   * Subscribe to an edgeNode event and include logic to unsubscribe.
+   * @param {string} event
+   * @param {callback} callback
+   * @returns {WatchDog}
+   */
   subscribeTo(event, callback) {
     this.subscribers.push({ event: event, callback: callback });
     StreamingEvent.edgeNode(this.edgeNodeId).on(event, callback);
