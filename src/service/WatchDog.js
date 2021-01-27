@@ -33,7 +33,6 @@ export default class WatchDog {
     this.emulatorState = StreamingEvent.STREAM_PAUSED;
     this.capureScreenEvent = undefined;
 
-
     // Configure timer that control how often this event will be emitted.
     this.timer = setInterval(() => this.analyzeState(), 1000);
 

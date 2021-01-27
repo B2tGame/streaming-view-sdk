@@ -153,7 +153,7 @@ export default class StreamingView extends Component {
     if (this.streamSocket) {
       this.streamSocket.close();
     }
-    if(this.watchDog){
+    if (this.watchDog) {
       this.watchDog.destroy();
     }
 
