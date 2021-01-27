@@ -246,6 +246,10 @@ export default class StreamingEvent {
     return 'capture-screen';
   }
 
+  static get WATCH_DOG() {
+    return 'watch-dog';
+  }
+
 
   /**
    * Get EventEmitter for a specific Edge Node Id.

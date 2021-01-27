@@ -9,6 +9,7 @@ import Logger from './Logger';
 import StreamSocket from './service/StreamSocket';
 import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
+import WatchDog from './service/WatchDog';
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
@@ -83,7 +84,7 @@ export default class StreamingView extends Component {
     this.logger = new Logger(enableDebug);
     this.logger.log(`Latest update: ${buildInfo.tag}`);
     this.measurement = new Measurement(edgeNodeId);
-    this.configureCaptureScreenWatchdog();
+    this.watchDog = new WatchDog(edgeNodeId);
     if (onEvent) {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
     }
@@ -100,7 +101,6 @@ export default class StreamingView extends Component {
         }
         this.setState({ isReadyStream: false });
       })
-      .on(StreamingEvent.CAPTURE_SCREEN, () => this.feedCaptureScreenWatchdog())
       .on(StreamingEvent.EMULATOR_CONFIGURATION, (configuration) => {
         this.setState({
           emulatorWidth: configuration.emulatorWidth,
@@ -153,6 +153,10 @@ export default class StreamingView extends Component {
     if (this.streamSocket) {
       this.streamSocket.close();
     }
+    if(this.watchDog){
+      this.watchDog.destroy();
+    }
+
     if (this.LogQueueService) {
       this.LogQueueService.destroy();
     }
@@ -167,26 +171,6 @@ export default class StreamingView extends Component {
     }
     // Don't re-render component when rating was changed
     return this.props.streamQualityRating === nextProps.streamQualityRating;
-  }
-
-  /**
-   * Configure the system capture screen watchdog logic that ensure a every is always fire on a regular basic.
-   */
-  feedCaptureScreenWatchdog() {
-    if (this.captureScreenWatchdogTimeout) {
-      clearTimeout(this.captureScreenWatchdogTimeout);
-    }
-    this.captureScreenWatchdogTimeout = setTimeout(() => {
-      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.CAPTURE_SCREEN, {
-        hasVideo: false,
-        cause: 'Stream not yet ready',
-        captureScreen: undefined
-      });
-    }, 750);
-  }
-
-  configureCaptureScreenWatchdog() {
-    this.feedCaptureScreenWatchdog();
   }
 
   /**

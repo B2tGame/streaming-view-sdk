@@ -104,17 +104,6 @@ export default class EmulatorWebrtcView extends Component {
     const isBlackOrGrey = (r, g, b) => {
       return r < 50 && g < 50 && b < 50 && Math.abs(r - g) < 25 && Math.abs(g - b) < 25 && Math.abs(b - r) < 25;
     };
-    const getCauseOfBlackScreen = () => {
-      if (!this.isMountedInView) {
-        return 'Video element not in DOM tree';
-      } else if (!this.state.video) {
-        return 'Track has not been added to the video stream';
-      } else if (this.video.current && this.video.current.paused || !this.state.playing) {
-        return 'Video stream is paused';
-      } else {
-        return 'Unknown reason';
-      }
-    };
 
     if (this.canvas.current && this.video.current) {
       const ctx = this.canvas.current.getContext('2d');
@@ -141,20 +130,20 @@ export default class EmulatorWebrtcView extends Component {
           rawImage.data[rawImage.width * (rawImage.height - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + (rawImage.width - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4],
           rawImage.data[rawImage.width * (rawImage.height - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + (rawImage.width - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + 1],
           rawImage.data[rawImage.width * (rawImage.height - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + (rawImage.width - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + 2]
+        ),
+        isBlackOrGrey(
+          rawImage.data[rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width / 2) * 4],
+          rawImage.data[rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width / 2) * 4 + 1],
+          rawImage.data[rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width / 2) * 4 + 2]
         )
       ];
-
-      const hasVideo = !selectedPixels.reduce((oldValue, newValue) => oldValue && newValue, true);
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.CAPTURE_SCREEN, {
-        hasVideo: hasVideo,
-        cause: hasVideo ? 'OK' : getCauseOfBlackScreen(),
-        captureScreen: this.canvas.current.toDataURL('image/png')
-      });
-    } else {
-      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.CAPTURE_SCREEN, {
-        hasVideo: false,
-        cause: 'DOM element not ready',
-        captureScreen: undefined
+        isVideoStreamBlack: selectedPixels.reduce((oldValue, newValue) => oldValue && newValue, true),
+        isMountedInView: this.isMountedInView,
+        isVideoStreamReceived: this.state.video,
+        isVideoStreamPlaying: this.state.playing,
+        timestamp: Date.now(),
+        captureScreen: () => this.canvas.current.toDataURL('image/png')
       });
     }
   };
