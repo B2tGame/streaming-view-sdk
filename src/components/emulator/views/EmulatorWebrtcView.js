@@ -111,26 +111,31 @@ export default class EmulatorWebrtcView extends Component {
       ctx.drawImage(this.video.current, 0, 0, emulatorWidth / EmulatorWebrtcView.CANVAS_SCALE_FACTOR, emulatorHeight / EmulatorWebrtcView.CANVAS_SCALE_FACTOR);
       const rawImage = ctx.getImageData(0, 0, emulatorWidth / EmulatorWebrtcView.CANVAS_SCALE_FACTOR, emulatorHeight / EmulatorWebrtcView.CANVAS_SCALE_FACTOR);
       const selectedPixels = [
+        // Top Left
         isBlackOrGrey(
           rawImage.data[rawImage.width * EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4],
           rawImage.data[rawImage.width * EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + 1],
           rawImage.data[rawImage.width * EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + 2]
         ),
+        // Top Right
         isBlackOrGrey(
           rawImage.data[rawImage.width * EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + (rawImage.width - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4],
           rawImage.data[rawImage.width * EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + (rawImage.width - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + 1],
           rawImage.data[rawImage.width * EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + (rawImage.width - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + 2]
         ),
+        // Bottom Left
         isBlackOrGrey(
           rawImage.data[rawImage.width * (rawImage.height - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4],
           rawImage.data[rawImage.width * (rawImage.height - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + 1],
           rawImage.data[rawImage.width * (rawImage.height - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET * 4 + 2]
         ),
+        // Bottom Right
         isBlackOrGrey(
           rawImage.data[rawImage.width * (rawImage.height - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + (rawImage.width - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4],
           rawImage.data[rawImage.width * (rawImage.height - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + (rawImage.width - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + 1],
           rawImage.data[rawImage.width * (rawImage.height - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + (rawImage.width - EmulatorWebrtcView.BLACK_SCREEN_DETECTOR_OFFSET) * 4 + 2]
         ),
+        // Center Center
         isBlackOrGrey(
           rawImage.data[rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width / 2) * 4],
           rawImage.data[rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width / 2) * 4 + 1],
