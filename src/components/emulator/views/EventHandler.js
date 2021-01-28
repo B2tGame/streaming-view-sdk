@@ -100,7 +100,7 @@ export default class EventHandler extends Component {
     window.removeEventListener('resize', this.handleResize);
     if (this.props.enableFullScreen && screenfull.isEnabled && screenfull.isFullscreen) {
       try {
-        window.screen.orientation.unlock();
+        window.screen.orientation.unlock().catch(() => {});
       } catch(e) {
         // We ignore if the system fail to preforming unlock, typical due to we not is already in a locked mode.
       }

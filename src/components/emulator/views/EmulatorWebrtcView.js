@@ -61,6 +61,7 @@ export default class EmulatorWebrtcView extends Component {
     this.canvas = React.createRef();
     this.isMountedInView = false;
     this.captureScreenMetaData = [];
+    this.requireUserInteractionToPlay = false;
   }
 
   componentDidMount() {
@@ -73,6 +74,10 @@ export default class EmulatorWebrtcView extends Component {
     // Performing 'health-check' of the stream and reporting events when video is missing
     let timerEventCount = 0;
     this.timer = setInterval(() => {
+      if (this.requireUserInteractionToPlay) {
+        return; // Qucik break!
+      }
+
       if (this.isMountedInView && this.video.current && this.video.current.paused) {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
       } else if (timerEventCount++ % (timerEventCount < 20 ? 2 : 10) === 0) {
@@ -186,9 +191,20 @@ export default class EmulatorWebrtcView extends Component {
 
 
   onUserInteraction = () => {
+    if (this.requireUserInteractionToPlay) {
+      const video = this.video.current;
+      if (video && video.paused) {
+        return (video.play() || Promise.reject(new Error('video.play() was not a promise')))
+          .catch((error) => {
+            this.props.logger.error('Fail to start playing stream by user intreracttion', error.message);
+          });
+      } else {
+        this.props.logger.info('  Video stream was already playing');
+      }
+    }
+
     // Un-muting video stream on first user interaction, volume of video stream can be changed dynamically
     this.unmuteVideo();
-
     if (this.isMountedInView && this.video.current && this.video.current.paused) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
     }
@@ -244,13 +260,17 @@ export default class EmulatorWebrtcView extends Component {
     }
     StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_CAN_PLAY);
     const play = () => {
+      if (this.requireUserInteractionToPlay) {
+        return;
+      }
       if (video.paused) {
         return (video.play() || Promise.reject(new Error('video.play() was not a promise')))
           .catch((error) => {
+            this.requireUserInteractionToPlay = true;
             this.props.logger.error('Fail to start playing stream', error.message);
           });
       } else {
-        this.props.logger.info('Video stream was already playing');
+        this.props.logger.info('  Video stream was already playing');
       }
     };
 
@@ -275,6 +295,12 @@ export default class EmulatorWebrtcView extends Component {
       margin: '0 auto',
       visibility: this.state.playing ? 'visible' : 'hidden'
     };
+    const style2 = {
+      margin: '0 auto',
+      visibility: this.state.playing ?  'hidden' : 'visible',
+      position: 'fixed'
+    };
+
 
     /*
      * Optimize video size by comparing aspect ratios of the emulator device and browser window eg. (16/9 > 9/16)
@@ -306,6 +332,7 @@ export default class EmulatorWebrtcView extends Component {
 
     return (
       <div>
+        <div style={style2}><br /><br />If you can see this message, auto play has been disable, please click here for start playing</div>
         <video
           ref={this.video}
           style={style}
