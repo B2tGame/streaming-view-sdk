@@ -28,7 +28,7 @@ export default class EmulatorWebrtcView extends Component {
   };
 
   /**
-   * How many times smaller should the thumbnail screenshot be compare with the source stream.
+   * How many times smaller should the thumbnail screenshot in comparison with the source stream.
    * @returns {number}
    * @constructor
    */
@@ -37,7 +37,7 @@ export default class EmulatorWebrtcView extends Component {
   }
 
   /**
-   * How many pixels in of the border of the screen should be used for calculate if the screen is black/gray or not.
+   * How many pixels of the stream border should be used for calculation if the screen is black/gray.
    * The real pixel position is SCREEN_DETECTOR_OFFSET*CANVAS_SCALE_FACTOR of the origin size video stream.
    * @returns {number}
    */
@@ -115,6 +115,7 @@ export default class EmulatorWebrtcView extends Component {
    * @returns {string}
    */
   captureVideoStream = () => {
+    const captureVideoStreamStartTime = Date.now();
     /**
      * Test if a color is dark grey (including total black)
      * @param {{red: number, green: number, blue: number}} pixel
@@ -177,6 +178,7 @@ export default class EmulatorWebrtcView extends Component {
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_SCREENSHOT, {
         hasVideo: ![].concat(borderPixels, centerPixels).every((pixel) => isDarkGrey(pixel)),
         borderColor: rgbToHex(avgColor(borderPixels)),
+        captureProcessingTime: Date.now() - captureVideoStreamStartTime,
         screenshot: this.canvas.current.toDataURL('image/jpeg') // or 'image/png'
       });
     }
