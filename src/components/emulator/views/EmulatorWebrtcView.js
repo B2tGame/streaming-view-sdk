@@ -75,7 +75,8 @@ export default class EmulatorWebrtcView extends Component {
     this.timer = setInterval(() => {
       if (this.isMountedInView && this.video.current && this.video.current.paused) {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
-      } else if (timerEventCount++ % 10 === 0) {
+      } else if (timerEventCount++ % (timerEventCount < 20 ? 2 : 10) === 0) {
+        // During the session 10 sec, the system capture screen every 1 sec, then after 10 sec, capture screen every 5 sec
         this.captureScreen();
       }
     }, 500);
