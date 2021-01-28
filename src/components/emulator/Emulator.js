@@ -157,10 +157,15 @@ class Emulator extends Component {
   }
 
   onDisconnect = () => {
-    this.reload(StreamingEvent.STREAM_DISCONNECTED);
+    setTimeout(() => {
+      this.reload(StreamingEvent.STREAM_DISCONNECTED);
+    }, 250);
   };
 
   onVideoUnavailable = () => {
+    setTimeout(() => {
+      this.reload(StreamingEvent.STREAM_VIDEO_UNAVAILABLE);
+    }, 250);
     this.reload(StreamingEvent.STREAM_VIDEO_UNAVAILABLE);
   };
 
