@@ -166,7 +166,6 @@ class Emulator extends Component {
     setTimeout(() => {
       this.reload(StreamingEvent.STREAM_VIDEO_UNAVAILABLE);
     }, 250);
-    this.reload(StreamingEvent.STREAM_VIDEO_UNAVAILABLE);
   };
 
   onVideoMissing = () => {
