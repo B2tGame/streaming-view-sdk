@@ -260,9 +260,6 @@ export default class EmulatorWebrtcView extends Component {
     }
     StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_CAN_PLAY);
     const play = () => {
-      if (this.requireUserInteractionToPlay) {
-        return;
-      }
       if (video.paused) {
         return (video.play() || Promise.reject(new Error('video.play() was not a promise')))
           .catch((error) => {
@@ -274,9 +271,14 @@ export default class EmulatorWebrtcView extends Component {
       }
     };
 
+    if (this.requireUserInteractionToPlay) {
+      return;
+    }
     return Promise.all([
       play(),
-      this.timeout(250).then(() => play())
+      this.timeout(250).then(() => play()),
+      this.timeout(1000).then(() => play()),
+      this.timeout(2500).then(() => play())
     ]);
   };
 
