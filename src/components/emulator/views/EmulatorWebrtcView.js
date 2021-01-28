@@ -42,7 +42,7 @@ export default class EmulatorWebrtcView extends Component {
    * @returns {number}
    */
   static get SCREEN_DETECTOR_OFFSET() {
-    return 5;
+    return 2;
   }
 
   state = {
@@ -60,6 +60,7 @@ export default class EmulatorWebrtcView extends Component {
     this.video = React.createRef();
     this.canvas = React.createRef();
     this.isMountedInView = false;
+    this.captureScreenMetaData = [];
   }
 
   componentDidMount() {
@@ -70,11 +71,13 @@ export default class EmulatorWebrtcView extends Component {
       .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
     this.setState({ video: false, audio: false }, () => this.props.jsep.startStream());
     // Performing 'health-check' of the stream and reporting events when video is missing
+    let timerEventCount = 0;
     this.timer = setInterval(() => {
       if (this.isMountedInView && this.video.current && this.video.current.paused) {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
+      } else if (timerEventCount++ % 10 === 0) {
+        this.captureScreen();
       }
-      this.captureScreen();
     }, 500);
   }
 
@@ -155,34 +158,19 @@ export default class EmulatorWebrtcView extends Component {
       const { emulatorWidth, emulatorHeight } = this.props;
       ctx.drawImage(this.video.current, 0, 0, emulatorWidth / EmulatorWebrtcView.CANVAS_SCALE_FACTOR, emulatorHeight / EmulatorWebrtcView.CANVAS_SCALE_FACTOR);
       const rawImage = ctx.getImageData(0, 0, emulatorWidth / EmulatorWebrtcView.CANVAS_SCALE_FACTOR, emulatorHeight / EmulatorWebrtcView.CANVAS_SCALE_FACTOR);
+      const offset = EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET;
       const borderPixels = [
-        // Top Left
-        getPixel(
-          rawImage,
-          rawImage.width * EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET * 4 + EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET * 4),
-        // Top Right
-        getPixel(
-          rawImage,
-          rawImage.width * EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET * 4 + (rawImage.width - EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET) * 4
-        ),
-        // Bottom Left
-        getPixel(
-          rawImage,
-          rawImage.width * (rawImage.height - EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET) * 4 + EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET * 4
-        ),
-        // Bottom Right
-        getPixel(
-          rawImage,
-          rawImage.width * (rawImage.height - EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET) * 4 + (rawImage.width - EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET) * 4
-        )
+        getPixel(rawImage, rawImage.width * offset * 4 + offset * 4), // Top Left
+        getPixel(rawImage, rawImage.width * offset * 4 + (rawImage.width / 2) * 4), // Top Middle
+        getPixel(rawImage, rawImage.width * offset * 4 + (rawImage.width - offset) * 4), // Top Right
+        getPixel(rawImage, rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width - offset) * 4), // Middle Right
+        getPixel(rawImage, rawImage.width * (rawImage.height - offset) * 4 + offset * 4), // Bottom Left
+        getPixel(rawImage, rawImage.width * (rawImage.height - offset) * 4 + (rawImage.width / 2) * 4), // Bottom Right
+        getPixel(rawImage, rawImage.width * (rawImage.height - offset) * 4 + (rawImage.width - offset) * 4), // Bottom Right
+        getPixel(rawImage, rawImage.width * (rawImage.height / 2) * 4 + offset * 4) // Middle Left
       ];
-
       const centerPixels = [
-        // Center Center
-        getPixel(
-          rawImage,
-          rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width / 2) * 4
-        )
+        getPixel(rawImage, rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width / 2) * 4) // Center Center
       ];
 
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_SCREENSHOT, {
