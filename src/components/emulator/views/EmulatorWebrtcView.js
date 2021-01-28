@@ -77,7 +77,7 @@ export default class EmulatorWebrtcView extends Component {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
       } else if (timerEventCount++ % (timerEventCount < 20 ? 2 : 10) === 0) {
         // During the session 10 sec, the system capture screen every 1 sec, then after 10 sec, capture screen every 5 sec
-        this.captureScreen();
+        this.captureVideoStream();
       }
     }, 500);
   }
@@ -111,10 +111,10 @@ export default class EmulatorWebrtcView extends Component {
   }
 
   /**
-   * Capture the screen <video> element and check if the screen are a black (grey) screen or not.
+   * Capture the stream <video> element and check if the video stream is a black or grey.
    * @returns {string}
    */
-  captureScreen = () => {
+  captureVideoStream = () => {
     /**
      * Test if a color is dark grey (including total black)
      * @param {{red: number, green: number, blue: number}} pixel
