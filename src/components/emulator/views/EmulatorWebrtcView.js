@@ -222,13 +222,40 @@ export default class EmulatorWebrtcView extends Component {
     }
   };
 
+
+  /**
+   * Promise Timeout
+   * @param {number} timeoutDuration
+   * @returns {Promise<undefined>}
+   */
+  timeout = (timeoutDuration) => {
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(), timeoutDuration);
+    });
+  };
+
   onCanPlay = () => {
     const video = this.video.current;
     if (!video) {
+      this.props.logger.error('Video DOM element not ready');
       return; // Component was unmounted.
     }
-    return (video.play() || Promise.resolve()).catch(() => {
-    });
+    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_CAN_PLAY);
+    const play = () => {
+      if (video.paused) {
+        return (video.play() || Promise.reject(new Error('video.play() was not a promise')))
+          .catch((error) => {
+            this.props.logger.error('Fail to start playing stream', error.message);
+          });
+      } else {
+        this.props.logger.info('Video stream was already playing');
+      }
+    };
+
+    return Promise.all([
+      play(),
+      this.timeout(250).then(() => play())
+    ]);
   };
 
   onPlaying = () => {

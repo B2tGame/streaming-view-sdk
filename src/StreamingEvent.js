@@ -154,6 +154,15 @@ export default class StreamingEvent {
     return 'stream-video-playing';
   }
 
+
+  /**
+   * Event fired the event oncanplay is happen on the video DOM element after the tracks has been added.
+   * @return {string}
+   */
+  static get STREAM_VIDEO_CAN_PLAY() {
+    return 'stream-video-can-play';
+  }
+
   /**
    * Event fired when the video is available and can be played.
    * @return {string}
@@ -250,7 +259,6 @@ export default class StreamingEvent {
   static get USER_STARTS_PLAYING() {
     return 'user-starts-playing';
   }
-
 
 
   /**
