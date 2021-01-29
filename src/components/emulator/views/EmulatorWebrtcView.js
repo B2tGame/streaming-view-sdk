@@ -307,6 +307,7 @@ export default class EmulatorWebrtcView extends Component {
   };
 
   onPlaying = () => {
+    this.requireUserInteractionToPlay = false;
     this.setState({ playing: true });
     StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_PLAYING);
   };

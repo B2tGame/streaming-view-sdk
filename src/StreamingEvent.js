@@ -191,7 +191,7 @@ export default class StreamingEvent {
    * @return {string}
    */
   static get REQUIRE_USER_PLAY_INTERACTION() {
-    return 'require-user-play';
+    return 'require-user-play-interaction';
   }
 
   /**
