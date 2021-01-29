@@ -195,6 +195,9 @@ export default class EmulatorWebrtcView extends Component {
       const video = this.video.current;
       if (video && video.paused) {
         return (video.play() || Promise.reject(new Error('video.play() was not a promise')))
+          .then(() => {
+            this.requireUserInteractionToPlay = false;
+          })
           .catch((error) => {
             this.props.logger.error('Fail to start playing stream by user intreracttion', error.message);
           });
@@ -261,10 +264,14 @@ export default class EmulatorWebrtcView extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_CAN_PLAY);
     const play = () => {
       if (video.paused) {
-        return (video.play() || Promise.reject(new Error('video.play() was not a promise')))
+        return (video.play() || Promise.resolve('video.play() was not a promise'))
           .catch((error) => {
-            this.requireUserInteractionToPlay = true;
+            this.requireUserInteractionToPlay = true; // Check the errors and only do this if needed.
             this.props.logger.error('Fail to start playing stream', error.message);
+            StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.REQUIRE_USER_PLAY, () => {
+              this.requireUserInteractionToPlay = false; // Check the errors and only do this if needed.
+
+            });
           });
       } else {
         this.props.logger.info('  Video stream was already playing');
@@ -276,9 +283,9 @@ export default class EmulatorWebrtcView extends Component {
     }
     return Promise.all([
       play(),
-      this.timeout(250).then(() => play()),
-      this.timeout(1000).then(() => play()),
-      this.timeout(2500).then(() => play())
+      // this.timeout(250).then(() => play()),
+      // this.timeout(1000).then(() => play()),
+      // this.timeout(2500).then(() => play())
     ]);
   };
 
@@ -296,11 +303,6 @@ export default class EmulatorWebrtcView extends Component {
     const style = {
       margin: '0 auto',
       visibility: this.state.playing ? 'visible' : 'hidden'
-    };
-    const style2 = {
-      margin: '0 auto',
-      visibility: this.state.playing ?  'hidden' : 'visible',
-      position: 'fixed'
     };
 
 
@@ -334,7 +336,6 @@ export default class EmulatorWebrtcView extends Component {
 
     return (
       <div>
-        <div style={style2}><br /><br />If you can see this message, auto play has been disable, please click here for start playing</div>
         <video
           ref={this.video}
           style={style}
