@@ -75,7 +75,7 @@ export default class EmulatorWebrtcView extends Component {
     let timerEventCount = 0;
     this.timer = setInterval(() => {
       if (this.requireUserInteractionToPlay) {
-        return; // Quick break!
+        return; // Do not reporting any StreamingEvent.STREAM_VIDEO_MISSING if the stream is waiting for user interaction in order to start the stream.
       }
 
       if (this.isMountedInView && this.video.current && this.video.current.paused) {
@@ -207,20 +207,25 @@ export default class EmulatorWebrtcView extends Component {
     }
   };
 
+  playVideo = () => {
+    const video = this.video.current;
+    if (video && video.paused) {
+      return (video.play() || Promise.reject(new Error('video.play() was not a promise')))
+        .then(() => {
+          this.requireUserInteractionToPlay = false;
+        })
+        .catch((error) => {
+          this.props.logger.error(`Fail to start playing stream by user interaction due to ${error.name}`, error.message);
+        });
+    }
+
+    this.requireUserInteractionToPlay = false;
+    this.props.logger.info('Video stream was already playing');
+  };
+
   onUserInteraction = () => {
     if (this.requireUserInteractionToPlay) {
-      const video = this.video.current;
-      if (video && video.paused) {
-        return (video.play() || Promise.reject(new Error('video.play() was not a promise')))
-          .then(() => {
-            this.requireUserInteractionToPlay = false;
-          })
-          .catch((error) => {
-            this.props.logger.error(`Fail to start playing stream by user interaction due to ${error.name}`, error.message);
-          });
-      }
-
-      this.props.logger.info('Video stream was already playing');
+      this.playVideo();
     }
 
     // Un-muting video stream on first user interaction, volume of video stream can be changed dynamically
@@ -283,16 +288,16 @@ export default class EmulatorWebrtcView extends Component {
     if (!this.requireUserInteractionToPlay) {
       if (video.paused) {
         return (video.play() || Promise.resolve('video.play() was not a promise')).catch((error) => {
-          this.props.logger.error(`Fail to start playing stream due to ${error.name}`, error.message);
-
           if (error.name === 'NotAllowedError') {
             // The user agent (browser) or operating system doesn't allow playback of media in the current context or situation.
             // This may happen, if the browser requires the user to explicitly start media playback by clicking a "play" button.
             this.requireUserInteractionToPlay = true;
 
-            StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.REQUIRE_USER_PLAY, () => {
-              this.requireUserInteractionToPlay = false;
+            StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.REQUIRE_USER_PLAY_INTERACTION, () => {
+              this.playVideo();
             });
+          } else {
+            this.props.logger.error(`Fail to start playing stream due to ${error.name}`, error.message);
           }
         });
       }

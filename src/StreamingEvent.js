@@ -190,7 +190,7 @@ export default class StreamingEvent {
    * Event fired when a user interaction is required in order to start video playing
    * @return {string}
    */
-  static get REQUIRE_USER_PLAY() {
+  static get REQUIRE_USER_PLAY_INTERACTION() {
     return 'require-user-play';
   }
 
