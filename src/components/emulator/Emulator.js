@@ -157,11 +157,15 @@ class Emulator extends Component {
   }
 
   onDisconnect = () => {
-    this.reload(StreamingEvent.STREAM_DISCONNECTED);
+    setTimeout(() => {
+      this.reload(StreamingEvent.STREAM_DISCONNECTED);
+    }, 250);
   };
 
   onVideoUnavailable = () => {
-    this.reload(StreamingEvent.STREAM_VIDEO_UNAVAILABLE);
+    setTimeout(() => {
+      this.reload(StreamingEvent.STREAM_VIDEO_UNAVAILABLE);
+    }, 250);
   };
 
   onVideoMissing = () => {
@@ -206,7 +210,7 @@ class Emulator extends Component {
         // Give up and exit the stream.
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(
           StreamingEvent.STREAM_UNREACHABLE,
-          new Error(`Reach max number of reload tires: ${this.reloadCount}`)
+          `Reached max number of reload tries: ${this.reloadCount}`
         );
       } else {
         this.reloadCount++;

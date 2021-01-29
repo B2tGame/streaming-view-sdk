@@ -154,7 +154,6 @@ export default class StreamingEvent {
     return 'stream-video-playing';
   }
 
-
   /**
    * Event fired the event oncanplay is happen on the video DOM element after the tracks has been added.
    * @return {string}
@@ -187,6 +186,13 @@ export default class StreamingEvent {
     return 'stream-video-missing';
   }
 
+  /**
+   * Event fired when a user interaction is required in order to start video playing
+   * @return {string}
+   */
+  static get REQUIRE_USER_PLAY() {
+    return 'require-user-play';
+  }
 
   /**
    * Event fired when a thumbnail screenshot of the video has been created.
@@ -259,7 +265,6 @@ export default class StreamingEvent {
   static get USER_STARTS_PLAYING() {
     return 'user-starts-playing';
   }
-
 
   /**
    * Get EventEmitter for a specific Edge Node Id.
