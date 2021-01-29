@@ -209,7 +209,8 @@ class Emulator extends Component {
       if (this.reloadCount >= this.props.maxConnectionRetries) {
         // Give up and exit the stream.
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(
-          StreamingEvent.STREAM_UNREACHABLE, `Reach max number of reload tires: ${this.reloadCount}`
+          StreamingEvent.STREAM_UNREACHABLE,
+          `Reached max number of reload tries: ${this.reloadCount}`
         );
       } else {
         this.reloadCount++;

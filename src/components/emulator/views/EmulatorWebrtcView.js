@@ -61,6 +61,7 @@ export default class EmulatorWebrtcView extends Component {
     this.canvas = React.createRef();
     this.isMountedInView = false;
     this.captureScreenMetaData = [];
+    this.requireUserInteractionToPlay = false;
   }
 
   componentDidMount() {
@@ -73,6 +74,10 @@ export default class EmulatorWebrtcView extends Component {
     // Performing 'health-check' of the stream and reporting events when video is missing
     let timerEventCount = 0;
     this.timer = setInterval(() => {
+      if (this.requireUserInteractionToPlay) {
+        return; // Do not reporting any StreamingEvent.STREAM_VIDEO_MISSING if the stream is waiting for user interaction in order to start the stream.
+      }
+
       if (this.isMountedInView && this.video.current && this.video.current.paused) {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
       } else if (timerEventCount++ % (timerEventCount < 20 ? 2 : 10) === 0) {
@@ -122,7 +127,14 @@ export default class EmulatorWebrtcView extends Component {
      * @returns {boolean}
      */
     const isDarkGrey = (pixel) => {
-      return pixel.red < 50 && pixel.green < 50 && pixel.blue < 50 && Math.abs(pixel.red - pixel.green) < 25 && Math.abs(pixel.green - pixel.blue) < 25 && Math.abs(pixel.blue - pixel.red) < 25;
+      return (
+        pixel.red < 50 &&
+        pixel.green < 50 &&
+        pixel.blue < 50 &&
+        Math.abs(pixel.red - pixel.green) < 25 &&
+        Math.abs(pixel.green - pixel.blue) < 25 &&
+        Math.abs(pixel.blue - pixel.red) < 25
+      );
     };
 
     /**
@@ -158,8 +170,19 @@ export default class EmulatorWebrtcView extends Component {
     if (this.canvas.current && this.video.current) {
       const ctx = this.canvas.current.getContext('2d');
       const { emulatorWidth, emulatorHeight } = this.props;
-      ctx.drawImage(this.video.current, 0, 0, emulatorWidth / EmulatorWebrtcView.CANVAS_SCALE_FACTOR, emulatorHeight / EmulatorWebrtcView.CANVAS_SCALE_FACTOR);
-      const rawImage = ctx.getImageData(0, 0, emulatorWidth / EmulatorWebrtcView.CANVAS_SCALE_FACTOR, emulatorHeight / EmulatorWebrtcView.CANVAS_SCALE_FACTOR);
+      ctx.drawImage(
+        this.video.current,
+        0,
+        0,
+        emulatorWidth / EmulatorWebrtcView.CANVAS_SCALE_FACTOR,
+        emulatorHeight / EmulatorWebrtcView.CANVAS_SCALE_FACTOR
+      );
+      const rawImage = ctx.getImageData(
+        0,
+        0,
+        emulatorWidth / EmulatorWebrtcView.CANVAS_SCALE_FACTOR,
+        emulatorHeight / EmulatorWebrtcView.CANVAS_SCALE_FACTOR
+      );
       const offset = EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET;
       const borderPixels = [
         getPixel(rawImage, rawImage.width * offset * 4 + offset * 4), // Top Left
@@ -184,11 +207,29 @@ export default class EmulatorWebrtcView extends Component {
     }
   };
 
+  playVideo = () => {
+    const video = this.video.current;
+    if (video && video.paused) {
+      return (video.play() || Promise.reject(new Error('video.play() was not a promise')))
+        .then(() => {
+          this.requireUserInteractionToPlay = false;
+        })
+        .catch((error) => {
+          this.props.logger.error(`Fail to start playing stream by user interaction due to ${error.name}`, error.message);
+        });
+    }
+
+    this.requireUserInteractionToPlay = false;
+    this.props.logger.info('Video stream was already playing');
+  };
 
   onUserInteraction = () => {
+    if (this.requireUserInteractionToPlay) {
+      this.playVideo();
+    }
+
     // Un-muting video stream on first user interaction, volume of video stream can be changed dynamically
     this.unmuteVideo();
-
     if (this.isMountedInView && this.video.current && this.video.current.paused) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
     }
@@ -224,7 +265,6 @@ export default class EmulatorWebrtcView extends Component {
     }
   };
 
-
   /**
    * Promise Timeout
    * @param {number} timeoutDuration
@@ -242,25 +282,32 @@ export default class EmulatorWebrtcView extends Component {
       this.props.logger.error('Video DOM element not ready');
       return; // Component was unmounted.
     }
-    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_CAN_PLAY);
-    const play = () => {
-      if (video.paused) {
-        return (video.play() || Promise.reject(new Error('video.play() was not a promise')))
-          .catch((error) => {
-            this.props.logger.error('Fail to start playing stream', error.message);
-          });
-      } else {
-        this.props.logger.info('Video stream was already playing');
-      }
-    };
 
-    return Promise.all([
-      play(),
-      this.timeout(250).then(() => play())
-    ]);
+    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_CAN_PLAY);
+
+    if (!this.requireUserInteractionToPlay) {
+      if (video.paused) {
+        return (video.play() || Promise.resolve('video.play() was not a promise')).catch((error) => {
+          if (error.name === 'NotAllowedError') {
+            // The user agent (browser) or operating system doesn't allow playback of media in the current context or situation.
+            // This may happen, if the browser requires the user to explicitly start media playback by clicking a "play" button.
+            this.requireUserInteractionToPlay = true;
+
+            StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.REQUIRE_USER_PLAY_INTERACTION, () => {
+              this.playVideo();
+            });
+          } else {
+            this.props.logger.error(`Fail to start playing stream due to ${error.name}`, error.message);
+          }
+        });
+      }
+
+      this.props.logger.info('Video stream was already playing');
+    }
   };
 
   onPlaying = () => {
+    this.requireUserInteractionToPlay = false;
     this.setState({ playing: true });
     StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_PLAYING);
   };
@@ -315,9 +362,12 @@ export default class EmulatorWebrtcView extends Component {
           onPlaying={this.onPlaying}
           playsInline
         />
-        <canvas style={{ display: 'none' }} ref={this.canvas}
-                height={emulatorHeight / EmulatorWebrtcView.CANVAS_SCALE_FACTOR}
-                width={emulatorWidth / EmulatorWebrtcView.CANVAS_SCALE_FACTOR} />
+        <canvas
+          style={{ display: 'none' }}
+          ref={this.canvas}
+          height={emulatorHeight / EmulatorWebrtcView.CANVAS_SCALE_FACTOR}
+          width={emulatorWidth / EmulatorWebrtcView.CANVAS_SCALE_FACTOR}
+        />
       </div>
     );
   }
