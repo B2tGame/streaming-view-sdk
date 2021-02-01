@@ -27,6 +27,10 @@ export default class StreamingView extends Component {
     emulatorVersion: undefined
   };
 
+  /**
+   * Return an object of props and what type it should be.
+   * We need to create a custom function for this since accessing `static propTypes` during runtime get a warning.
+   */
   static get PROP_TYPES() {
     return {
       apiEndpoint: PropTypes.string.isRequired, // Can't be changed after creation
@@ -72,7 +76,16 @@ export default class StreamingView extends Component {
 
   componentDidMount() {
     this.isMountedInView = true;
-    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, enableDebug, onEvent } = this.props;
+    const {
+      apiEndpoint,
+      edgeNodeId,
+      userId,
+      edgeNodeEndpoint,
+      internalSession,
+      turnEndpoint,
+      enableDebug,
+      onEvent
+    } = this.props;
     if (!internalSession) {
       this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId);
     }
