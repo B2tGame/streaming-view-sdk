@@ -147,13 +147,23 @@ export default class StreamingView extends Component {
   }
 
   shouldComponentUpdate(nextProps) {
-    if (nextProps.streamQualityRating) {
+    // List of fields that should not generate into a render operation.
+    const whiteListedFields = ['streamQualityRating', 'onEvent'];
+    if (nextProps.streamQualityRating !== this.props.streamQualityRating) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_QUALITY_RATING, {
         streamQualityRating: nextProps.streamQualityRating
       });
     }
-    // Don't re-render component when rating was changed
-    return this.props.streamQualityRating === nextProps.streamQualityRating;
+
+    if (nextProps.onEvent !== this.props.onEvent) {
+      console.log('Update onEvent handler');
+      StreamingEvent.edgeNode(this.props.edgeNodeId).off('event', this.props.onEvent);
+      StreamingEvent.edgeNode(this.props.edgeNodeId).on('event', nextProps.onEvent);
+    }
+
+    // Do not render if it are changes in the props and then the changes is only to the whitelisted attributes.
+    const hasChanges = Object.keys(this.constructor.propTypes).filter((key) => nextProps[key] !== this.props[key]);
+    return hasChanges.length > 0 && hasChanges.filter((key) => whiteListedFields.indexOf(key) !== -1).length === 0;
   }
 
   /**
