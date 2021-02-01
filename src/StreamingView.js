@@ -76,16 +76,7 @@ export default class StreamingView extends Component {
 
   componentDidMount() {
     this.isMountedInView = true;
-    const {
-      apiEndpoint,
-      edgeNodeId,
-      userId,
-      edgeNodeEndpoint,
-      internalSession,
-      turnEndpoint,
-      enableDebug,
-      onEvent
-    } = this.props;
+    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, enableDebug, onEvent } = this.props;
     if (!internalSession) {
       this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId);
     }
@@ -179,7 +170,7 @@ export default class StreamingView extends Component {
       StreamingEvent.edgeNode(this.props.edgeNodeId).on('event', nextProps.onEvent);
     }
 
-    // Do not render if it are changes in the props and then the changes is only to the whitelisted attributes.
+    // Do not render if there are only changes in the whitelisted props attributes.
     const hasChanges = Object.keys(StreamingView.PROP_TYPES).filter((key) => nextProps[key] !== this.props[key]);
     return hasChanges.length > 0 && hasChanges.filter((key) => whiteListedFields.indexOf(key) !== -1).length === 0;
   }
