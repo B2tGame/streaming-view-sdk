@@ -10,6 +10,7 @@ import StreamSocket from './service/StreamSocket';
 import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
 
+
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
  *
@@ -26,23 +27,27 @@ export default class StreamingView extends Component {
     emulatorVersion: undefined
   };
 
-  static propTypes = {
-    apiEndpoint: PropTypes.string.isRequired, // Can't be changed after creation
-    edgeNodeId: PropTypes.string.isRequired, // Can't be changed after creation
-    edgeNodeEndpoint: PropTypes.string, // Can't be changed after creation
-    turnEndpoint: PropTypes.string, // Can't be changed after creation
-    userId: PropTypes.string, // Can't be changed after creation
-    enableControl: PropTypes.bool, // Can be changed dynamically
-    enableFullScreen: PropTypes.bool, // Can be changed dynamically
-    view: PropTypes.oneOf(['webrtc', 'png']), // Can't be changed after creation
-    volume: PropTypes.number, // Can be changed dynamically, Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
-    onEvent: PropTypes.func, // Can't be changed after creation
-    streamQualityRating: PropTypes.number, // Can be changed dynamically
-    enableDebug: PropTypes.bool, // Can't be changed after creation
-    internalSession: PropTypes.bool, // Can't be changed after creation
-    userClickedPlayAt: PropTypes.number, // Can't be changed after creation
-    maxConnectionRetries: PropTypes.number // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
-  };
+  static get PROP_TYPES() {
+    return {
+      apiEndpoint: PropTypes.string.isRequired, // Can't be changed after creation
+      edgeNodeId: PropTypes.string.isRequired, // Can't be changed after creation
+      edgeNodeEndpoint: PropTypes.string, // Can't be changed after creation
+      turnEndpoint: PropTypes.string, // Can't be changed after creation
+      userId: PropTypes.string, // Can't be changed after creation
+      enableControl: PropTypes.bool, // Can be changed dynamically
+      enableFullScreen: PropTypes.bool, // Can be changed dynamically
+      view: PropTypes.oneOf(['webrtc', 'png']), // Can't be changed after creation
+      volume: PropTypes.number, // Can be changed dynamically, Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
+      onEvent: PropTypes.func, // Can't be changed after creation
+      streamQualityRating: PropTypes.number, // Can be changed dynamically
+      enableDebug: PropTypes.bool, // Can't be changed after creation
+      internalSession: PropTypes.bool, // Can't be changed after creation
+      userClickedPlayAt: PropTypes.number, // Can't be changed after creation
+      maxConnectionRetries: PropTypes.number // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
+    };
+  }
+
+  static propTypes = StreamingView.PROP_TYPES;
 
   /**
    * Player is a user with enabled control
@@ -162,7 +167,7 @@ export default class StreamingView extends Component {
     }
 
     // Do not render if it are changes in the props and then the changes is only to the whitelisted attributes.
-    const hasChanges = Object.keys(this.constructor.propTypes).filter((key) => nextProps[key] !== this.props[key]);
+    const hasChanges = Object.keys(StreamingView.PROP_TYPES).filter((key) => nextProps[key] !== this.props[key]);
     return hasChanges.length > 0 && hasChanges.filter((key) => whiteListedFields.indexOf(key) !== -1).length === 0;
   }
 
