@@ -165,7 +165,6 @@ export default class StreamingView extends Component {
     }
 
     if (nextProps.onEvent !== this.props.onEvent) {
-      console.log('Update onEvent handler');
       StreamingEvent.edgeNode(this.props.edgeNodeId).off('event', this.props.onEvent);
       StreamingEvent.edgeNode(this.props.edgeNodeId).on('event', nextProps.onEvent);
     }
