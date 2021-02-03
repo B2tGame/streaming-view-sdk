@@ -57,11 +57,6 @@ export default class StreamingView extends Component {
 
   static propTypes = StreamingView.PROP_TYPES;
 
-  static defaultProps = {
-    height: undefined,
-    width: undefined
-  };
-
   /**
    * Player is a user with enabled control
    * @return {string}
@@ -262,7 +257,7 @@ export default class StreamingView extends Component {
           </div>
         );
       case false:
-        return (<p style={{ color: 'white' }}>EdgeNode Stream is unreachable</p>);
+        return <p style={{ color: 'white' }}>EdgeNode Stream is unreachable</p>;
       default:
         return this.props.children;
     }
