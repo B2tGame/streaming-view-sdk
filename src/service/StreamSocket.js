@@ -21,7 +21,10 @@ export default class StreamSocket {
       query: `userId=${userId}&internal=${internalSession ? '1' : '0'}`
     });
     // Web Socket errors
-    this.socket.on('error', (err) => StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ERROR, err));
+    this.socket.on('error', (err) => {
+      console.error('Debug Error:', JSON.stringify(err))
+      return StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ERROR, err);
+    });
     // Preforming and emit RTT to the streaming event bus.
     this.socket.on('pong', (networkRoundTripTime) => {
       StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, networkRoundTripTime);
@@ -29,6 +32,8 @@ export default class StreamSocket {
 
     this.socket.on('message', (data) => {
       const message = JSON.parse(data);
+      console.log('DEBUG Message: ', JSON.stringify(message));
+
       if (message.name === 'emulator-configuration') {
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.EMULATOR_CONFIGURATION, message.configuration);
       } else if (message.name === 'emulator-event') {

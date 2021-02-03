@@ -326,6 +326,7 @@ export default class StreamingEvent {
    * @param {*} data
    */
   static emit(event, data) {
+    console.log('Debug, emit StreamingEvent: ', JSON.stringify(data));
     globalEventEmitter.emit(event, data);
     for (let edgeNodeId in edgeNodeEventEmitter) {
       if (edgeNodeEventEmitter[edgeNodeId]) {

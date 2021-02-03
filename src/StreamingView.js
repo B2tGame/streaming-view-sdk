@@ -133,6 +133,8 @@ export default class StreamingView extends Component {
         this.registerUserEventsHandler();
       })
       .catch((err) => {
+        console.error('StreamingView -> componentDidMount', JSON.stringify(err));
+
         if (!this.isMountedInView) {
           this.logger.log('Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.

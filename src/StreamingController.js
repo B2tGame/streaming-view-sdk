@@ -97,6 +97,9 @@ class StreamingController {
     return Promise.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(([edgeNodeId, streamEndpoint]) => {
       StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.LOG, { name: 'streaming-controller', action: 'pause' });
       return axios.get(`${streamEndpoint}/emulator-commands/pause`);
+    }).catch(function(error) {
+      console.error('pause(): ', JSON.stringify(error));
+      throw error;
     });
   }
 
@@ -109,6 +112,9 @@ class StreamingController {
     return Promise.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(([edgeNodeId, streamEndpoint]) => {
       StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.LOG, { name: 'streaming-controller', action: 'resume' });
       return axios.get(`${streamEndpoint}/emulator-commands/resume`);
+    }).catch(function(error) {
+      console.error('resume(): ', JSON.stringify(error));
+      throw error;
     });
   }
 
@@ -121,8 +127,12 @@ class StreamingController {
       if (status.endpoint !== undefined) {
         return status.endpoint;
       } else {
+        console.error('getStreamEndpoint: ', JSON.stringify(status));
         throw new Error("Can't resolve Stream Endpoint, got: " + JSON.stringify(status));
       }
+    }).catch(function(error) {
+      console.error('getStreamEndpoint(): ', JSON.stringify(error));
+      throw error;
     });
   }
 
@@ -160,6 +170,9 @@ class StreamingController {
         } else {
           return result.data;
         }
+      }).catch(function(error) {
+        console.error('waitFor -> getStatus: ', JSON.stringify(error));
+        throw error;
       });
     };
 
@@ -182,6 +195,9 @@ class StreamingController {
             } else {
               reject(err);
             }
+          }).catch(function(error) {
+            console.error('retry -> fn: ', JSON.stringify(error));
+            throw error;
           });
         };
         fn();
@@ -198,7 +214,10 @@ class StreamingController {
    * @returns {Promise<object>}
    */
   getDeviceInfo() {
-    return getDeviceInfo(this.getApiEndpoint());
+    return getDeviceInfo(this.getApiEndpoint()).catch(function(error) {
+      console.error('getDeviceInfo: ', JSON.stringify(error));
+      throw error;
+    });
   }
 
   /**
@@ -206,7 +225,10 @@ class StreamingController {
    * @returns {Promise<{}>}
    */
   getConnectivityInfo() {
-    return getNetworkConnectivity();
+    return getNetworkConnectivity().catch(function(error) {
+      console.error('getConnectivityInfo: ', JSON.stringify(error));
+      throw error;
+    });
   }
 }
 
