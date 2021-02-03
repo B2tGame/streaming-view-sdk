@@ -88,7 +88,7 @@ export default class StreamingView extends Component {
       this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId);
     }
     this.logger = new Logger(enableDebug);
-    this.logger.log(`Latest update: ${buildInfo.tag}`);
+    this.logger.log(`SDK Version: ${buildInfo.tag}`);
     this.measurement = new Measurement(edgeNodeId);
 
     if (onEvent) {
