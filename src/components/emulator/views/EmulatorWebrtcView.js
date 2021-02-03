@@ -324,34 +324,6 @@ export default class EmulatorWebrtcView extends Component {
       height: '100%'
     };
 
-    /*
-     * Optimize video size by comparing aspect ratios of the emulator device and browser window eg. (16/9 > 9/16)
-     * User Screen (Desktop eg. 16:9) - optimized for full-height
-     * ┌─────────┬────────┬─────────┐
-     * │         │        │         |
-     * │ "BLACK" │ STREAM │ "BLACK" │
-     * │         │        │         │
-     * └─────────┴────────┴─────────┘
-     *
-     * User Screen (Phone eg. IPHONE X - 9:19.5) - optimized for full-width
-     * ┌────────────┐
-     * │   "BLACK"  │
-     * ├────────────┤
-     * │            │
-     * │            │
-     * │   STREAM   │
-     * │            │
-     * │            │
-     * ├────────────┤
-     * │   "BLACK"  │
-     * └────────────┘
-     */
-    // if (height / width > emulatorHeight / emulatorWidth) {
-    //   style.width = '100%';
-    // } else {
-    //   style.height = '100%';
-    // }
-
     return (
       <div style={{
         display: 'flex',
