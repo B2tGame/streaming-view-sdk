@@ -59,17 +59,17 @@ export default class EventHandler extends Component {
     this.touchHistory = [];
   }
 
-  touchHandler = function (type, allEvents, events, firstChangedEvent) {
+  touchHandler = function(type, allEvents, events, firstChangedEvent) {
     return this.sendMouse(firstChangedEvent, 0);
   };
 
   updateTouchHandler() {
     if (this.props.emulatorVersion !== EMULATOR_WITHOUT_MULTITOUCH) {
-      this.touchHandler = function (type, allEvents, events, firstChangedEvent) {
+      this.touchHandler = function(type, allEvents, events, firstChangedEvent) {
         return this.sendMultiTouch(type, allEvents, events);
       };
     } else {
-      this.touchHandler = function (type, allEvents, events, firstChangedEvent) {
+      this.touchHandler = function(type, allEvents, events, firstChangedEvent) {
         this.mouseDown = type !== 'touchend';
         return this.sendMouse(this.calculateTouchEmulatorCoordinates(firstChangedEvent), type !== 'touchend' ? 0 : 1);
       };
@@ -94,7 +94,8 @@ export default class EventHandler extends Component {
     window.removeEventListener('resize', this.handleResize);
     if (this.props.enableFullScreen && screenfull.isEnabled && screenfull.isFullscreen) {
       try {
-        window.screen.orientation.unlock().catch(() => {});
+        window.screen.orientation.unlock().catch(() => {
+        });
       } catch (e) {
         // We ignore if the system fails to perform unlock(), typical due to we were not in a locked mode previously,
         // or we are on iOS Safari, where the feature is not supported.
@@ -134,41 +135,14 @@ export default class EventHandler extends Component {
    * @returns {{x: number, y: number}}
    */
   calculateMouseEmulatorCoordinates = (event) => {
-    // Target = <video> element
-    // Step 1: Calc where on the element you clicked in % of the width/height
-    // Step 2: Calc how much of the element is the real video feed based on the emulor info
-    // STep 3: Convert the click % into pixels click inside the emulator.
-
-    const { offsetX, offsetY } = event;
-    const { clientWidth, clientHeight } = event.target;
-    const eventOffset = {
-      x: this.withinInterval(0, offsetX / clientWidth, 1),
-      y: this.withinInterval(0, offsetY / clientHeight, 1)
-    };
-
-    const emulatorIsUsingFullHeight = this.props.emulatorHeight / this.props.emulatorWidth > clientHeight / clientWidth;
-
-    if (emulatorIsUsingFullHeight) {
-      const scaleFactor = (clientHeight / (this.props.emulatorHeight / this.props.emulatorWidth)) / clientWidth;
-      const xOffset = this.withinInterval(0, (eventOffset.x - ((1 - scaleFactor) / 2)) / scaleFactor, 1);
-      return {
-        x: Math.round(xOffset * this.props.emulatorWidth) || 0,
-        y: Math.round(eventOffset.y * this.props.emulatorHeight) || 0
-      };
-
-    } else {
-      const scaleFactor = (clientHeight / ( this.props.emulatorWidth / this.props.emulatorHeight)) / clientWidth;
-      const yOffset = this.withinInterval(0, (eventOffset.y - ((1 - scaleFactor) / 2)) / scaleFactor, 1);
-      return {
-        x: Math.round(eventOffset.x * this.props.emulatorWidth) || 0,
-        y: Math.round(yOffset * this.props.emulatorHeight) || 0
-      };
-    }
+    return this.calculateEmulatorCoordinates(
+      event.offsetX,
+      event.offsetY,
+      event.target.clientWidth,
+      event.target.clientHeight
+    );
   };
 
-  withinInterval(minValue, value, maxValue) {
-    return Math.max(Math.min(value, maxValue), minValue);
-  }
 
   /**
    *
@@ -176,33 +150,60 @@ export default class EventHandler extends Component {
    * @returns {{x: number, y: number}}
    */
   calculateTouchEmulatorCoordinates = (event) => {
-    const { clientX, clientY } = event;
-    const { clientWidth, clientHeight } = event.target;
-
-    // TODO: Improve coordinates to handle cases when video element is not centered in the middle
-    // use offsets to get exact coordinates of video (getBoundingClientRect or other method) and do more accurate calculation
-    const offsetX = clientX - (window.innerWidth - clientWidth) / 2;
-    const offsetY = clientY - (window.innerHeight - clientHeight) / 2;
-
-    return this.calculateEmulatorCoordinates(offsetX, offsetY, clientWidth, clientHeight);
+    const elementOffset = event.target.getBoundingClientRect();
+    return this.calculateEmulatorCoordinates(
+      event.clientX - elementOffset.x,
+      event.clientY - elementOffset.y,
+      event.target.clientWidth,
+      event.target.clientHeight
+    );
   };
+
 
   /**
-   * Calculate coordinates for the emulator from client offset coordinates
-   * @param offsetX
-   * @param offsetY
-   * @param clientWidth
-   * @param clientHeight
+   *
+   * @param {number} offsetX
+   * @param {number} offsetY
+   * @param {number} clientWidth
+   * @param {number} clientHeight
    * @returns {{x: number, y: number}}
    */
-  calculateEmulatorCoordinates = (offsetX, offsetY, clientWidth, clientHeight) => {
-    const xEmulatorCoordinate = (offsetX / clientWidth) * this.props.emulatorWidth;
-    const yEmulatorCoordinate = (offsetY / clientHeight) * this.props.emulatorHeight;
-    return {
-      x: Math.round(xEmulatorCoordinate),
-      y: Math.round(yEmulatorCoordinate)
+  calculateEmulatorCoordinates(offsetX, offsetY, clientWidth, clientHeight) {
+    const { emulatorHeight, emulatorWidth } = this.props;
+    const eventOffset = {
+      x: this.withinInterval(0, offsetX / clientWidth, 1),
+      y: this.withinInterval(0, offsetY / clientHeight, 1)
     };
-  };
+    const emulatorIsUsingFullHeight = emulatorHeight / emulatorWidth > clientHeight / clientWidth;
+
+    if (emulatorIsUsingFullHeight) {
+      const scaleFactor = (clientHeight * emulatorWidth) / (emulatorHeight * clientWidth);
+      const scaledTo = Math.round(this.withinInterval(0, (eventOffset.x - 0.5) / scaleFactor + 0.5, 1) * emulatorWidth) || 0;
+      return {
+        x: this.withinInterval(1, scaledTo, emulatorWidth),
+        y: this.withinInterval(1, Math.round(eventOffset.y * emulatorHeight) || 0, emulatorHeight)
+      };
+    } else {
+      const scaleFactor = (clientHeight * emulatorHeight) / (emulatorWidth * clientWidth);
+      const scaledTo = Math.round(this.withinInterval(0, (eventOffset.y - 0.5) / scaleFactor + 0.5, 1) * emulatorHeight) || 0;
+      console.log('scaledTo', eventOffset.y, scaleFactor);
+      return {
+        x: this.withinInterval(1, Math.round(eventOffset.x * emulatorWidth) || 0, emulatorWidth),
+        y: this.withinInterval(1, scaledTo, emulatorHeight)
+      };
+    }
+  }
+
+  /**
+   * Get a value and truncate it to always be between the min and max value
+   * @param {number} minValue
+   * @param {number} value
+   * @param {number} maxValue
+   * @returns {number}
+   */
+  withinInterval(minValue, value, maxValue) {
+    return Math.max(Math.min(value, maxValue), minValue);
+  }
 
   /**
    *
@@ -214,7 +215,6 @@ export default class EventHandler extends Component {
     request.setX(emulatorCords.x);
     request.setY(emulatorCords.y);
     request.setButtons(mouseButton === 0 ? 1 : 0);
-
     this.sendInput('mouse', request);
   };
 
@@ -404,7 +404,7 @@ export default class EventHandler extends Component {
           height: '100%'
         }}
       >
-        <View {...this.props}/>
+        <View {...this.props} />
       </div>
     );
   }
