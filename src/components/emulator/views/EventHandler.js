@@ -184,9 +184,8 @@ export default class EventHandler extends Component {
         y: this.withinInterval(1, Math.round(eventOffset.y * emulatorHeight) || 0, emulatorHeight)
       };
     } else {
-      const scaleFactor = (clientHeight * emulatorHeight) / (emulatorWidth * clientWidth);
+      const scaleFactor = (clientWidth * emulatorHeight) / (emulatorWidth * clientHeight);
       const scaledTo = Math.round(this.withinInterval(0, (eventOffset.y - 0.5) / scaleFactor + 0.5, 1) * emulatorHeight) || 0;
-      console.log('scaledTo', eventOffset.y, scaleFactor);
       return {
         x: this.withinInterval(1, Math.round(eventOffset.x * emulatorWidth) || 0, emulatorWidth),
         y: this.withinInterval(1, scaledTo, emulatorHeight)
