@@ -24,7 +24,9 @@ export default class StreamingView extends Component {
     turnEndpoint: undefined,
     emulatorWidth: undefined,
     emulatorHeight: undefined,
-    emulatorVersion: undefined
+    emulatorVersion: undefined,
+    height: window.innerHeight + 'px',
+    width: window.innerWidth + 'px'
   };
 
   /**
@@ -56,8 +58,8 @@ export default class StreamingView extends Component {
   static propTypes = StreamingView.PROP_TYPES;
 
   static defaultProps = {
-    height: '100vh', //  window.innerWidth
-    width: '100vw' // window.innerWidth,
+    height: undefined,
+    width: undefined
   };
 
   /**
@@ -79,6 +81,7 @@ export default class StreamingView extends Component {
   constructor(props) {
     super(props);
     this.isMountedInView = false;
+
   }
 
   componentDidMount() {
@@ -94,6 +97,7 @@ export default class StreamingView extends Component {
     if (onEvent) {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
     }
+    window.addEventListener('resize', this.onResize);
 
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
@@ -159,8 +163,26 @@ export default class StreamingView extends Component {
     if (this.LogQueueService) {
       this.LogQueueService.destroy();
     }
+    window.removeEventListener('resize', this.onResize);
     StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
   }
+
+  /**
+   * Update the state parameter heigth and width when screen size is changeing.
+   */
+  onResize = () => {
+    if (this.onResizeTieout) {
+      clearTimeout(this.onResizeTieout);
+    }
+    this.onResizeTieout = setTimeout(() => {
+      if (this.isMountedInView) {
+        this.setState({
+          height: window.innerHeight + 'px',
+          width: window.innerWidth + 'px'
+        });
+      }
+    }, 50);
+  };
 
   shouldComponentUpdate(nextProps) {
     // List of fields that should not generate into a render operation.
@@ -215,11 +237,13 @@ export default class StreamingView extends Component {
   }
 
   render() {
-    const { enableControl, enableFullScreen, view, volume, edgeNodeId } = this.props;
+    const { enableControl, enableFullScreen, view, volume, edgeNodeId, height: propsHeight, width: propsWidth } = this.props;
+    const { height: stateHeight, width: stateWidth } = this.state;
+
     switch (this.state.isReadyStream) {
       case true:
         return (
-          <div style={{ height: this.props.height, width: this.props.width }}>
+          <div style={{ height: propsHeight || stateHeight, width: propsWidth || stateWidth }}>
             <Emulator
               uri={this.state.streamEndpoint}
               turnEndpoint={this.state.turnEndpoint}
