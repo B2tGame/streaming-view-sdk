@@ -175,7 +175,7 @@ export default class EventHandler extends Component {
       y: this.withinInterval(0, offsetY / clientHeight, 1)
     };
     const emulatorIsUsingFullHeight = emulatorHeight / emulatorWidth > clientHeight / clientWidth;
-
+    console.log("eventOffset", eventOffset);
     if (emulatorIsUsingFullHeight) {
       const scaleFactor = (clientHeight * emulatorWidth) / (emulatorHeight * clientWidth);
       const scaledTo = Math.round(this.withinInterval(0, (eventOffset.x - 0.5) / scaleFactor + 0.5, 1) * emulatorWidth) || 0;
