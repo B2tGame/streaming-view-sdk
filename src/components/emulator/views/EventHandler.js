@@ -30,11 +30,6 @@ export default class EventHandler extends Component {
     return 500;
   }
 
-  state = {
-    deviceHeight: 768,
-    deviceWidth: 432
-  };
-
   static propTypes = {
     emulator: PropTypes.object.isRequired,
     jsep: PropTypes.object.isRequired,
@@ -87,7 +82,6 @@ export default class EventHandler extends Component {
 
   componentDidMount() {
     this.updateTouchHandler();
-    // this.getScreenSize(); // TODO: Fix update status for old emulator emu-30.2.4-android10
     // Disabling passive mode to be able to call 'event.preventDefault()' for disabling scroll, which causing
     // laggy touch move performance on mobile phones, since some browsers changed default passive: true from false
     // related issue: https://github.com/facebook/react/issues/9809
@@ -122,16 +116,6 @@ export default class EventHandler extends Component {
     event.preventDefault();
   };
 
-  getScreenSize() {
-    // TODO: Fix update status for old emulator emu-30.2.4-android10
-    this.status.updateStatus((state) => {
-      this.setState({
-        deviceWidth: parseInt(state.hardwareConfig['hw.lcd.width']) || this.state.deviceWidth,
-        deviceHeight: parseInt(state.hardwareConfig['hw.lcd.height']) || this.state.deviceHeight
-      });
-    });
-  }
-
   handleUserInteraction = () => {
     if ((this.userInteractionHoldOff || 0) < Date.now()) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.USER_INTERACTION);
@@ -150,11 +134,41 @@ export default class EventHandler extends Component {
    * @returns {{x: number, y: number}}
    */
   calculateMouseEmulatorCoordinates = (event) => {
+    // Target = <video> element
+    // Step 1: Calc where on the element you clicked in % of the width/height
+    // Step 2: Calc how much of the element is the real video feed based on the emulor info
+    // STep 3: Convert the click % into pixels click inside the emulator.
+
     const { offsetX, offsetY } = event;
     const { clientWidth, clientHeight } = event.target;
+    const eventOffset = {
+      x: this.withinInterval(0, offsetX / clientWidth, 1),
+      y: this.withinInterval(0, offsetY / clientHeight, 1)
+    };
 
-    return this.calculateEmulatorCoordinates(offsetX, offsetY, clientWidth, clientHeight);
+    const emulatorIsUsingFullHeight = this.props.emulatorHeight / this.props.emulatorWidth > clientHeight / clientWidth;
+
+    if (emulatorIsUsingFullHeight) {
+      const scaleFactor = (clientHeight / (this.props.emulatorHeight / this.props.emulatorWidth)) / clientWidth;
+      const xOffset = this.withinInterval(0, (eventOffset.x - ((1 - scaleFactor) / 2)) / scaleFactor, 1);
+      return {
+        x: Math.round(xOffset * this.props.emulatorWidth) || 0,
+        y: Math.round(eventOffset.y * this.props.emulatorHeight) || 0
+      };
+
+    } else {
+      const scaleFactor = (clientHeight / ( this.props.emulatorWidth / this.props.emulatorHeight)) / clientWidth;
+      const yOffset = this.withinInterval(0, (eventOffset.y - ((1 - scaleFactor) / 2)) / scaleFactor, 1);
+      return {
+        x: Math.round(eventOffset.x * this.props.emulatorWidth) || 0,
+        y: Math.round(yOffset * this.props.emulatorHeight) || 0
+      };
+    }
   };
+
+  withinInterval(minValue, value, maxValue) {
+    return Math.max(Math.min(value, maxValue), minValue);
+  }
 
   /**
    *
@@ -184,7 +198,6 @@ export default class EventHandler extends Component {
   calculateEmulatorCoordinates = (offsetX, offsetY, clientWidth, clientHeight) => {
     const xEmulatorCoordinate = (offsetX / clientWidth) * this.props.emulatorWidth;
     const yEmulatorCoordinate = (offsetY / clientHeight) * this.props.emulatorHeight;
-
     return {
       x: Math.round(xEmulatorCoordinate),
       y: Math.round(yEmulatorCoordinate)
@@ -387,10 +400,11 @@ export default class EventHandler extends Component {
           padding: '0',
           border: '0',
           display: 'inline-block',
-          width: '100%'
+          width: '100%',
+          height: '100%'
         }}
       >
-        <View {...this.props} deviceHeight={this.state.deviceHeight} deviceWidth={this.state.deviceWidth} />
+        <View {...this.props}/>
       </div>
     );
   }

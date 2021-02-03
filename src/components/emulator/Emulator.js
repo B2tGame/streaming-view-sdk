@@ -98,6 +98,10 @@ class Emulator extends Component {
     emulatorWidth: PropTypes.number,
     /** Emulator Height */
     emulatorHeight: PropTypes.number,
+    /** The width of the consumer device or size assigned by the parent*/
+    width: PropTypes.number,
+    /** The height of the consumer device or size assigned by the parent */
+    height: PropTypes.number,
     /** Emulator Version */
     emulatorVersion: PropTypes.string
   };
@@ -221,7 +225,7 @@ class Emulator extends Component {
   }
 
   render() {
-    const { view, poll, volume, enableFullScreen, enableControl, uri, emulatorWidth, emulatorHeight, emulatorVersion } = this.props;
+    const { view, poll, volume, enableFullScreen, enableControl, uri, emulatorWidth, emulatorHeight, emulatorVersion, width, height } = this.props;
     return (
       <EventHandler
         key={this.state.streamingConnectionId}
@@ -229,6 +233,8 @@ class Emulator extends Component {
         emulatorWidth={emulatorWidth}
         emulatorHeight={emulatorHeight}
         emulatorVersion={emulatorVersion}
+        width={width}
+        height={height}
         uri={uri}
         emulator={this.emulator}
         jsep={this.jsep}

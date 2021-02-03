@@ -47,11 +47,18 @@ export default class StreamingView extends Component {
       enableDebug: PropTypes.bool, // Can't be changed after creation
       internalSession: PropTypes.bool, // Can't be changed after creation
       userClickedPlayAt: PropTypes.number, // Can't be changed after creation
-      maxConnectionRetries: PropTypes.number // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
+      maxConnectionRetries: PropTypes.number, // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
+      height: PropTypes.string,
+      width: PropTypes.string
     };
   }
 
   static propTypes = StreamingView.PROP_TYPES;
+
+  static defaultProps = {
+    height: '100vh',
+    width: '100vw'
+  };
 
   /**
    * Player is a user with enabled control
@@ -171,7 +178,7 @@ export default class StreamingView extends Component {
 
     // Do not render if there are only changes in the whitelisted props attributes.
     const hasChanges = Object.keys(StreamingView.PROP_TYPES).filter((key) => nextProps[key] !== this.props[key]);
-    if(hasChanges.length > 0) {
+    if (hasChanges.length > 0) {
       return hasChanges.filter((key) => whiteListedFields.indexOf(key) !== -1).length !== 0;
     } else {
       return true;
@@ -212,24 +219,26 @@ export default class StreamingView extends Component {
     switch (this.state.isReadyStream) {
       case true:
         return (
-          <Emulator
-            uri={this.state.streamEndpoint}
-            turnEndpoint={this.state.turnEndpoint}
-            enableControl={enableControl}
-            enableFullScreen={enableFullScreen}
-            view={view}
-            volume={volume}
-            poll={true}
-            emulatorWidth={this.state.emulatorWidth}
-            emulatorHeight={this.state.emulatorHeight}
-            emulatorVersion={this.state.emulatorVersion}
-            logger={this.logger}
-            edgeNodeId={edgeNodeId}
-            maxConnectionRetries={this.props.maxConnectionRetries}
-          />
+          <div style={{ height: this.props.height, width: this.props.width }}>
+            <Emulator
+              uri={this.state.streamEndpoint}
+              turnEndpoint={this.state.turnEndpoint}
+              enableControl={enableControl}
+              enableFullScreen={enableFullScreen}
+              view={view}
+              volume={volume}
+              poll={true}
+              emulatorWidth={this.state.emulatorWidth}
+              emulatorHeight={this.state.emulatorHeight}
+              emulatorVersion={this.state.emulatorVersion}
+              logger={this.logger}
+              edgeNodeId={edgeNodeId}
+              maxConnectionRetries={this.props.maxConnectionRetries}
+            />
+          </div>
         );
       case false:
-        return <p style={{ color: 'white' }}>EdgeNode Stream is unreachable</p>;
+        return (<p style={{ height: this.props.height, width: this.props.width, color: 'white' }}>EdgeNode Stream is unreachable</p>);
       default:
         return this.props.children;
     }

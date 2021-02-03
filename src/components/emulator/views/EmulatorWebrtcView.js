@@ -18,12 +18,11 @@ export default class EmulatorWebrtcView extends Component {
     jsep: PropTypes.object,
     /** Volume of the video element, value between 0 and 1.  */
     volume: PropTypes.number,
-    /** The width of the emulator device */
-    deviceWidth: PropTypes.number,
-    /** The height of the emulator device */
-    deviceHeight: PropTypes.number,
+    /** The width of the screen/video feed provided by the emulator */
     emulatorWidth: PropTypes.number,
+    /** The height of the screen/video feed provided by the emulator */
     emulatorHeight: PropTypes.number,
+
     emulatorVersion: PropTypes.string
   };
 
@@ -320,7 +319,9 @@ export default class EmulatorWebrtcView extends Component {
     const { emulatorWidth, emulatorHeight } = this.props;
     const style = {
       margin: '0 auto',
-      visibility: this.state.playing ? 'visible' : 'hidden'
+      visibility: this.state.playing ? 'visible' : 'hidden',
+      width: '100%',
+      height: '100%'
     };
 
     /*
@@ -345,14 +346,21 @@ export default class EmulatorWebrtcView extends Component {
      * │   "BLACK"  │
      * └────────────┘
      */
-    if (window.innerHeight / window.innerWidth > emulatorHeight / emulatorWidth) {
-      style.width = window.innerWidth + 'px';
-    } else {
-      style.height = window.innerHeight + 'px';
-    }
+    // if (height / width > emulatorHeight / emulatorWidth) {
+    //   style.width = '100%';
+    // } else {
+    //   style.height = '100%';
+    // }
 
     return (
-      <div>
+      <div style={{
+        display: 'flex',
+        width: '100%',
+        height: '100%',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
         <video
           ref={this.video}
           style={style}
