@@ -140,7 +140,7 @@ class Emulator extends Component {
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
       .on(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onVideoUnavailable)
       .on(StreamingEvent.STREAM_VIDEO_MISSING, this.onVideoMissing)
-      .on(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect);
+      .on(StreamingEvent.STREAM_CONNECTED, this.onConnect);
   }
 
   componentDidMount() {
@@ -153,7 +153,7 @@ class Emulator extends Component {
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
       .off(StreamingEvent.STREAM_VIDEO_UNAVAILABLE, this.onVideoUnavailable)
       .off(StreamingEvent.STREAM_VIDEO_MISSING, this.onVideoMissing)
-      .off(StreamingEvent.STREAM_VIDEO_AVAILABLE, this.onConnect);
+      .off(StreamingEvent.STREAM_CONNECTED, this.onConnect);
   }
 
   onDisconnect = () => {

@@ -256,7 +256,10 @@ export default class EmulatorWebrtcView extends Component {
 
     video.srcObject.addTrack(track);
     if (track.kind === 'video') {
-      this.setState({ video: true }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_AVAILABLE));
+      this.setState({ video: true }, () => {
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_AVAILABLE);
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY);
+      });
     }
 
     if (track.kind === 'audio') {

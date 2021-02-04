@@ -15,10 +15,12 @@ export default class LogQueueService {
     this.logQueue = [];
     this.endpoint = `${apiEndpoint}/api/streaming-games/edge-node/log`;
     this.streamingViewId = uuid();
+    this.seqId = 0;
     StreamingEvent.edgeNode(edgeNodeId).on('event', (eventType, payload) => {
       payload = typeof payload === 'object' ? payload : { data: payload };
       payload.streamingViewId = this.streamingViewId;
       payload.event = eventType;
+      payload.seqId = this.seqId++;
       payload.userId = userId;
       this.logQueue.push({
         edgeNodeId: edgeNodeId,
