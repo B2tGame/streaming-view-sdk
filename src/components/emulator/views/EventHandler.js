@@ -30,11 +30,6 @@ export default class EventHandler extends Component {
     return 500;
   }
 
-  state = {
-    deviceHeight: 768,
-    deviceWidth: 432
-  };
-
   static propTypes = {
     emulator: PropTypes.object.isRequired,
     jsep: PropTypes.object.isRequired,
@@ -64,17 +59,17 @@ export default class EventHandler extends Component {
     this.touchHistory = [];
   }
 
-  touchHandler = function (type, allEvents, events, firstChangedEvent) {
+  touchHandler = function(type, allEvents, events, firstChangedEvent) {
     return this.sendMouse(firstChangedEvent, 0);
   };
 
   updateTouchHandler() {
     if (this.props.emulatorVersion !== EMULATOR_WITHOUT_MULTITOUCH) {
-      this.touchHandler = function (type, allEvents, events, firstChangedEvent) {
+      this.touchHandler = function(type, allEvents, events, firstChangedEvent) {
         return this.sendMultiTouch(type, allEvents, events);
       };
     } else {
-      this.touchHandler = function (type, allEvents, events, firstChangedEvent) {
+      this.touchHandler = function(type, allEvents, events, firstChangedEvent) {
         this.mouseDown = type !== 'touchend';
         return this.sendMouse(this.calculateTouchEmulatorCoordinates(firstChangedEvent), type !== 'touchend' ? 0 : 1);
       };
@@ -87,7 +82,6 @@ export default class EventHandler extends Component {
 
   componentDidMount() {
     this.updateTouchHandler();
-    // this.getScreenSize(); // TODO: Fix update status for old emulator emu-30.2.4-android10
     // Disabling passive mode to be able to call 'event.preventDefault()' for disabling scroll, which causing
     // laggy touch move performance on mobile phones, since some browsers changed default passive: true from false
     // related issue: https://github.com/facebook/react/issues/9809
@@ -100,7 +94,8 @@ export default class EventHandler extends Component {
     window.removeEventListener('resize', this.handleResize);
     if (this.props.enableFullScreen && screenfull.isEnabled && screenfull.isFullscreen) {
       try {
-        window.screen.orientation.unlock().catch(() => {});
+        window.screen.orientation.unlock().catch(() => {
+        });
       } catch (e) {
         // We ignore if the system fails to perform unlock(), typical due to we were not in a locked mode previously,
         // or we are on iOS Safari, where the feature is not supported.
@@ -122,16 +117,6 @@ export default class EventHandler extends Component {
     event.preventDefault();
   };
 
-  getScreenSize() {
-    // TODO: Fix update status for old emulator emu-30.2.4-android10
-    this.status.updateStatus((state) => {
-      this.setState({
-        deviceWidth: parseInt(state.hardwareConfig['hw.lcd.width']) || this.state.deviceWidth,
-        deviceHeight: parseInt(state.hardwareConfig['hw.lcd.height']) || this.state.deviceHeight
-      });
-    });
-  }
-
   handleUserInteraction = () => {
     if ((this.userInteractionHoldOff || 0) < Date.now()) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.USER_INTERACTION);
@@ -150,11 +135,14 @@ export default class EventHandler extends Component {
    * @returns {{x: number, y: number}}
    */
   calculateMouseEmulatorCoordinates = (event) => {
-    const { offsetX, offsetY } = event;
-    const { clientWidth, clientHeight } = event.target;
-
-    return this.calculateEmulatorCoordinates(offsetX, offsetY, clientWidth, clientHeight);
+    return this.calculateEmulatorCoordinates(
+      event.offsetX,
+      event.offsetY,
+      event.target.clientWidth,
+      event.target.clientHeight
+    );
   };
+
 
   /**
    *
@@ -162,34 +150,74 @@ export default class EventHandler extends Component {
    * @returns {{x: number, y: number}}
    */
   calculateTouchEmulatorCoordinates = (event) => {
-    const { clientX, clientY } = event;
-    const { clientWidth, clientHeight } = event.target;
-
-    // TODO: Improve coordinates to handle cases when video element is not centered in the middle
-    // use offsets to get exact coordinates of video (getBoundingClientRect or other method) and do more accurate calculation
-    const offsetX = clientX - (window.innerWidth - clientWidth) / 2;
-    const offsetY = clientY - (window.innerHeight - clientHeight) / 2;
-
-    return this.calculateEmulatorCoordinates(offsetX, offsetY, clientWidth, clientHeight);
+    const elementOffset = event.target.getBoundingClientRect();
+    return this.calculateEmulatorCoordinates(
+      event.clientX - elementOffset.x,
+      event.clientY - elementOffset.y,
+      event.target.clientWidth,
+      event.target.clientHeight
+    );
   };
+
 
   /**
-   * Calculate coordinates for the emulator from client offset coordinates
-   * @param offsetX
-   * @param offsetY
-   * @param clientWidth
-   * @param clientHeight
+   *
+   * @param {number} offsetX
+   * @param {number} offsetY
+   * @param {number} clientWidth
+   * @param {number} clientHeight
    * @returns {{x: number, y: number}}
    */
-  calculateEmulatorCoordinates = (offsetX, offsetY, clientWidth, clientHeight) => {
-    const xEmulatorCoordinate = (offsetX / clientWidth) * this.props.emulatorWidth;
-    const yEmulatorCoordinate = (offsetY / clientHeight) * this.props.emulatorHeight;
-
-    return {
-      x: Math.round(xEmulatorCoordinate),
-      y: Math.round(yEmulatorCoordinate)
+  calculateEmulatorCoordinates(offsetX, offsetY, clientWidth, clientHeight) {
+    /**
+     * Calculation and mapping of the coordinates against the emulator screen is done in following steps:
+     * 1. Calculate where on the screen active area (the area assigned for the stream to be visible on) the
+     *    user click/touch and return it as a percentage value from 0 to 1 in the variable `eventOffset`
+     * 2. Identify if the screen is wider or narrower then the emulator for understanding if we have
+     *    black border on top/bottom or on the sides, the result is saved into `emulatorIsUsingFullHeight`
+     * 3. Dependent if the screen is full height or not the follow steps will be applied:
+     *    A: Calculate `scaleFactor` - percentage of how much space the emulator takes
+     *       compared to existing space in the active area, eg. if emulator takes up 50 of the screen width we get
+     *       a value 0.5 where 25% of the screen on each side is a black border.
+     *    B: Convert the `eventOffset` to the real offset after taking into account the emulator did not took
+     *       the full space that was available for moving user click/touch position inside the emulator area and then calculate the a value from 0 to 1
+     *       within the emulator viewport.
+     *    C: Convert and return the values in percentage to the real pixels where the user clicks on using knowledge about
+     *       exactly how big the emulator screen is.
+     */
+    const { emulatorHeight, emulatorWidth } = this.props;
+    const eventOffset = {
+      x: this.withinInterval(0, offsetX / clientWidth, 1),
+      y: this.withinInterval(0, offsetY / clientHeight, 1)
     };
-  };
+    const emulatorIsUsingFullHeight = emulatorHeight / emulatorWidth > clientHeight / clientWidth;
+    if (emulatorIsUsingFullHeight) {
+      const scaleFactor = (clientHeight * emulatorWidth) / (emulatorHeight * clientWidth);
+      const scaledTo = Math.round(this.withinInterval(0, (eventOffset.x - 0.5) / scaleFactor + 0.5, 1) * emulatorWidth) || 0;
+      return {
+        x: this.withinInterval(1, scaledTo, emulatorWidth),
+        y: this.withinInterval(1, Math.round(eventOffset.y * emulatorHeight) || 0, emulatorHeight)
+      };
+    } else {
+      const scaleFactor = (clientWidth * emulatorHeight) / (emulatorWidth * clientHeight);
+      const scaledTo = Math.round(this.withinInterval(0, (eventOffset.y - 0.5) / scaleFactor + 0.5, 1) * emulatorHeight) || 0;
+      return {
+        x: this.withinInterval(1, Math.round(eventOffset.x * emulatorWidth) || 0, emulatorWidth),
+        y: this.withinInterval(1, scaledTo, emulatorHeight)
+      };
+    }
+  }
+
+  /**
+   * Get a value and truncate it to always be between the min and max value
+   * @param {number} minValue
+   * @param {number} value
+   * @param {number} maxValue
+   * @returns {number}
+   */
+  withinInterval(minValue, value, maxValue) {
+    return Math.max(Math.min(value, maxValue), minValue);
+  }
 
   /**
    *
@@ -201,7 +229,6 @@ export default class EventHandler extends Component {
     request.setX(emulatorCords.x);
     request.setY(emulatorCords.y);
     request.setButtons(mouseButton === 0 ? 1 : 0);
-
     this.sendInput('mouse', request);
   };
 
@@ -387,10 +414,11 @@ export default class EventHandler extends Component {
           padding: '0',
           border: '0',
           display: 'inline-block',
-          width: '100%'
+          width: '100%',
+          height: '100%'
         }}
       >
-        <View {...this.props} deviceHeight={this.state.deviceHeight} deviceWidth={this.state.deviceWidth} />
+        <View {...this.props} />
       </div>
     );
   }

@@ -2,6 +2,7 @@ import axios from 'axios';
 import { getNetworkConnectivity } from './stores/networkConnectivity';
 import { getDeviceInfo } from './stores/deviceInfo';
 import StreamingEvent from './StreamingEvent';
+import buildInfo from './build-info.json';
 
 /**
  * StreamingController is responsible to poll and terminate the edge node.
@@ -11,6 +12,14 @@ import StreamingEvent from './StreamingEvent';
 class StreamingController {
   static get DEFAULT_TIMEOUT() {
     return 30 * 60 * 1000; // 30 minute
+  }
+
+  /**
+   * Get SDK Version
+   * @returns {string}
+   */
+  static get SDK_VERSION() {
+    return buildInfo.tag;
   }
 
   /**
@@ -121,7 +130,7 @@ class StreamingController {
       if (status.endpoint !== undefined) {
         return status.endpoint;
       } else {
-        throw new Error("Can't resolve Stream Endpoint, got: " + JSON.stringify(status));
+        throw new Error('Can\'t resolve Stream Endpoint, got: ' + JSON.stringify(status));
       }
     });
   }
@@ -227,5 +236,6 @@ factory.EVENT_STREAM_PAUSED = StreamingEvent.STREAM_PAUSED;
 factory.EVENT_STREAM_RESUMED = StreamingEvent.STREAM_RESUMED;
 factory.EVENT_EDGE_NODE_CRASHED = StreamingEvent.EDGE_NODE_CRASHED;
 factory.EVENT_REQUIRE_USER_PLAY_INTERACTION = StreamingEvent.REQUIRE_USER_PLAY_INTERACTION;
+factory.SDK_VERSION = StreamingController.SDK_VERSION;
 factory.EVENT_STREAM_READY = StreamingEvent.STREAM_READY;
 export default factory;
