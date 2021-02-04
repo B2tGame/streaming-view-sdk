@@ -169,13 +169,28 @@ export default class EventHandler extends Component {
    * @returns {{x: number, y: number}}
    */
   calculateEmulatorCoordinates(offsetX, offsetY, clientWidth, clientHeight) {
+    /**
+     * Calculation and mapping of the coordinates against the emulator screen is done in following steps:
+     * 1. Calculate where on the screen active area (the area assigned for the stream to be visible on) the
+     *    user click/touch and return it as a percentage value from 0 to 1 in the variable `eventOffset`
+     * 2. Identify if the screen is wider or narrower then the emulator for understanding if we have
+     *    black border on top/bottom or on the sides, the result is saved into `emulatorIsUsingFullHeight`
+     * 3. Dependent if the screen is full height or not the follow steps will be applied:
+     *    A: Calculate `scaleFactor` - percentage of how much space the emulator takes
+     *       compared to existing space in the active area, eg. if emulator takes up 50 of the screen width we get
+     *       a value 0.5 where 25% of the screen on each side is a black border.
+     *    B: Convert the `eventOffset` to the real offset after taking into account the emulator did not took
+     *       the full space that was available for moving user click/touch position inside the emulator area and then calculate the a value from 0 to 1
+     *       within the emulator viewport.
+     *    C: Convert and return the values in percentage to the real pixels where the user clicks on using knowledge about
+     *       exactly how big the emulator screen is.
+     */
     const { emulatorHeight, emulatorWidth } = this.props;
     const eventOffset = {
       x: this.withinInterval(0, offsetX / clientWidth, 1),
       y: this.withinInterval(0, offsetY / clientHeight, 1)
     };
     const emulatorIsUsingFullHeight = emulatorHeight / emulatorWidth > clientHeight / clientWidth;
-    console.log("eventOffset", eventOffset);
     if (emulatorIsUsingFullHeight) {
       const scaleFactor = (clientHeight * emulatorWidth) / (emulatorHeight * clientWidth);
       const scaledTo = Math.round(this.withinInterval(0, (eventOffset.x - 0.5) / scaleFactor + 0.5, 1) * emulatorWidth) || 0;
