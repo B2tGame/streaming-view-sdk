@@ -251,6 +251,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fired when the video stream is available and "play" button can be displayed for the end user
+   * @return {string}
+   */
+  static get STREAM_READY() {
+    return 'stream-ready'
+  }
+
+  /**
    * Event fired when User Event Report is submitted
    * @return {string}
    */
