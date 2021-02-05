@@ -2,8 +2,8 @@ import EventEmitter from 'eventemitter3';
 
 class ExtendedEventEmitter extends EventEmitter {
   emit(event, data) {
-    super.emit(event, data);
     super.emit('event', event, data);
+    super.emit(event, data);
     return this;
   }
 }
