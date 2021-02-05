@@ -2,6 +2,7 @@ import axios from 'axios';
 import { getNetworkConnectivity } from './stores/networkConnectivity';
 import { getDeviceInfo } from './stores/deviceInfo';
 import StreamingEvent from './StreamingEvent';
+import buildInfo from './build-info.json';
 
 /**
  * StreamingController is responsible to poll and terminate the edge node.
@@ -11,6 +12,14 @@ import StreamingEvent from './StreamingEvent';
 class StreamingController {
   static get DEFAULT_TIMEOUT() {
     return 30 * 60 * 1000; // 30 minute
+  }
+
+  /**
+   * Get SDK Version
+   * @returns {string}
+   */
+  static get SDK_VERSION() {
+    return buildInfo.tag;
   }
 
   /**
@@ -97,9 +106,6 @@ class StreamingController {
     return Promise.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(([edgeNodeId, streamEndpoint]) => {
       StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.LOG, { name: 'streaming-controller', action: 'pause' });
       return axios.get(`${streamEndpoint}/emulator-commands/pause`);
-    }).catch(function(error) {
-      console.error('pause(): ', JSON.stringify(error));
-      throw error;
     });
   }
 
@@ -112,9 +118,6 @@ class StreamingController {
     return Promise.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(([edgeNodeId, streamEndpoint]) => {
       StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.LOG, { name: 'streaming-controller', action: 'resume' });
       return axios.get(`${streamEndpoint}/emulator-commands/resume`);
-    }).catch(function(error) {
-      console.error('resume(): ', JSON.stringify(error));
-      throw error;
     });
   }
 
@@ -127,12 +130,8 @@ class StreamingController {
       if (status.endpoint !== undefined) {
         return status.endpoint;
       } else {
-        console.error('getStreamEndpoint: ', JSON.stringify(status));
-        throw new Error("Can't resolve Stream Endpoint, got: " + JSON.stringify(status));
+        throw new Error('Can\'t resolve Stream Endpoint, got: ' + JSON.stringify(status));
       }
-    }).catch(function(error) {
-      console.error('getStreamEndpoint(): ', JSON.stringify(error));
-      throw error;
     });
   }
 
@@ -170,9 +169,6 @@ class StreamingController {
         } else {
           return result.data;
         }
-      }).catch(function(error) {
-        console.error('waitFor -> getStatus: ', JSON.stringify(error));
-        throw error;
       });
     };
 
@@ -195,9 +191,6 @@ class StreamingController {
             } else {
               reject(err);
             }
-          }).catch(function(error) {
-            console.error('retry -> fn: ', JSON.stringify(error));
-            throw error;
           });
         };
         fn();
@@ -214,10 +207,7 @@ class StreamingController {
    * @returns {Promise<object>}
    */
   getDeviceInfo() {
-    return getDeviceInfo(this.getApiEndpoint()).catch(function(error) {
-      console.error('getDeviceInfo: ', JSON.stringify(error));
-      throw error;
-    });
+    return getDeviceInfo(this.getApiEndpoint());
   }
 
   /**
@@ -225,10 +215,7 @@ class StreamingController {
    * @returns {Promise<{}>}
    */
   getConnectivityInfo() {
-    return getNetworkConnectivity().catch(function(error) {
-      console.error('getConnectivityInfo: ', JSON.stringify(error));
-      throw error;
-    });
+    return getNetworkConnectivity();
   }
 }
 
@@ -249,4 +236,6 @@ factory.EVENT_STREAM_PAUSED = StreamingEvent.STREAM_PAUSED;
 factory.EVENT_STREAM_RESUMED = StreamingEvent.STREAM_RESUMED;
 factory.EVENT_EDGE_NODE_CRASHED = StreamingEvent.EDGE_NODE_CRASHED;
 factory.EVENT_REQUIRE_USER_PLAY_INTERACTION = StreamingEvent.REQUIRE_USER_PLAY_INTERACTION;
+factory.SDK_VERSION = StreamingController.SDK_VERSION;
+factory.EVENT_STREAM_READY = StreamingEvent.STREAM_READY;
 export default factory;

@@ -18,12 +18,11 @@ export default class EmulatorWebrtcView extends Component {
     jsep: PropTypes.object,
     /** Volume of the video element, value between 0 and 1.  */
     volume: PropTypes.number,
-    /** The width of the emulator device */
-    deviceWidth: PropTypes.number,
-    /** The height of the emulator device */
-    deviceHeight: PropTypes.number,
+    /** The width of the screen/video feed provided by the emulator */
     emulatorWidth: PropTypes.number,
+    /** The height of the screen/video feed provided by the emulator */
     emulatorHeight: PropTypes.number,
+
     emulatorVersion: PropTypes.string
   };
 
@@ -257,7 +256,10 @@ export default class EmulatorWebrtcView extends Component {
 
     video.srcObject.addTrack(track);
     if (track.kind === 'video') {
-      this.setState({ video: true }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_AVAILABLE));
+      this.setState({ video: true }, () => {
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_AVAILABLE);
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY);
+      });
     }
 
     if (track.kind === 'audio') {
@@ -320,39 +322,20 @@ export default class EmulatorWebrtcView extends Component {
     const { emulatorWidth, emulatorHeight } = this.props;
     const style = {
       margin: '0 auto',
-      visibility: this.state.playing ? 'visible' : 'hidden'
+      visibility: this.state.playing ? 'visible' : 'hidden',
+      width: '100%',
+      height: '100%'
     };
 
-    /*
-     * Optimize video size by comparing aspect ratios of the emulator device and browser window eg. (16/9 > 9/16)
-     * User Screen (Desktop eg. 16:9) - optimized for full-height
-     * ┌─────────┬────────┬─────────┐
-     * │         │        │         |
-     * │ "BLACK" │ STREAM │ "BLACK" │
-     * │         │        │         │
-     * └─────────┴────────┴─────────┘
-     *
-     * User Screen (Phone eg. IPHONE X - 9:19.5) - optimized for full-width
-     * ┌────────────┐
-     * │   "BLACK"  │
-     * ├────────────┤
-     * │            │
-     * │            │
-     * │   STREAM   │
-     * │            │
-     * │            │
-     * ├────────────┤
-     * │   "BLACK"  │
-     * └────────────┘
-     */
-    if (window.innerHeight / window.innerWidth > emulatorHeight / emulatorWidth) {
-      style.width = window.innerWidth + 'px';
-    } else {
-      style.height = window.innerHeight + 'px';
-    }
-
     return (
-      <div>
+      <div style={{
+        display: 'flex',
+        width: '100%',
+        height: '100%',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
         <video
           ref={this.video}
           style={style}

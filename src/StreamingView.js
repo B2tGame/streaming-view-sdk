@@ -24,7 +24,9 @@ export default class StreamingView extends Component {
     turnEndpoint: undefined,
     emulatorWidth: undefined,
     emulatorHeight: undefined,
-    emulatorVersion: undefined
+    emulatorVersion: undefined,
+    height: window.innerHeight + 'px',
+    width: window.innerWidth + 'px'
   };
 
   /**
@@ -47,7 +49,9 @@ export default class StreamingView extends Component {
       enableDebug: PropTypes.bool, // Can't be changed after creation
       internalSession: PropTypes.bool, // Can't be changed after creation
       userClickedPlayAt: PropTypes.number, // Can't be changed after creation
-      maxConnectionRetries: PropTypes.number // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
+      maxConnectionRetries: PropTypes.number, // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
+      height: PropTypes.string,
+      width: PropTypes.string
     };
   }
 
@@ -72,6 +76,7 @@ export default class StreamingView extends Component {
   constructor(props) {
     super(props);
     this.isMountedInView = false;
+
   }
 
   componentDidMount() {
@@ -81,12 +86,13 @@ export default class StreamingView extends Component {
       this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId);
     }
     this.logger = new Logger(enableDebug);
-    this.logger.log(`Latest update: ${buildInfo.tag}`);
+    this.logger.log(`SDK Version: ${buildInfo.tag}`);
     this.measurement = new Measurement(edgeNodeId);
 
     if (onEvent) {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
     }
+    window.addEventListener('resize', this.onResize);
 
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
@@ -154,8 +160,26 @@ export default class StreamingView extends Component {
     if (this.LogQueueService) {
       this.LogQueueService.destroy();
     }
+    window.removeEventListener('resize', this.onResize);
     StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
   }
+
+  /**
+   * Update the state parameter heigth and width when screen size is changeing.
+   */
+  onResize = () => {
+    if (this.onResizeTieout) {
+      clearTimeout(this.onResizeTieout);
+    }
+    this.onResizeTieout = setTimeout(() => {
+      if (this.isMountedInView) {
+        this.setState({
+          height: window.innerHeight + 'px',
+          width: window.innerWidth + 'px'
+        });
+      }
+    }, 50);
+  };
 
   shouldComponentUpdate(nextProps) {
     // List of fields that should not generate into a render operation.
@@ -173,7 +197,7 @@ export default class StreamingView extends Component {
 
     // Do not render if there are only changes in the whitelisted props attributes.
     const hasChanges = Object.keys(StreamingView.PROP_TYPES).filter((key) => nextProps[key] !== this.props[key]);
-    if(hasChanges.length > 0) {
+    if (hasChanges.length > 0) {
       return hasChanges.filter((key) => whiteListedFields.indexOf(key) !== -1).length !== 0;
     } else {
       return true;
@@ -185,7 +209,7 @@ export default class StreamingView extends Component {
    */
   registerUserEventsHandler() {
     // Report user event - stream-loading-time
-    StreamingEvent.edgeNode(this.props.edgeNodeId).once(StreamingEvent.STREAM_VIDEO_PLAYING, () => {
+    StreamingEvent.edgeNode(this.props.edgeNodeId).once(StreamingEvent.STREAM_VIDEO_AVAILABLE, () => {
       const role = this.props.enableControl ? StreamingView.ROLE_PLAYER : StreamingView.ROLE_WATCHER;
       if (this.props.userClickedPlayAt > 0) {
         // Send the stream loading time if we have a user clicked play at props.
@@ -210,25 +234,29 @@ export default class StreamingView extends Component {
   }
 
   render() {
-    const { enableControl, enableFullScreen, view, volume, edgeNodeId } = this.props;
+    const { enableControl, enableFullScreen, view, volume, edgeNodeId, height: propsHeight, width: propsWidth } = this.props;
+    const { height: stateHeight, width: stateWidth } = this.state;
+
     switch (this.state.isReadyStream) {
       case true:
         return (
-          <Emulator
-            uri={this.state.streamEndpoint}
-            turnEndpoint={this.state.turnEndpoint}
-            enableControl={enableControl}
-            enableFullScreen={enableFullScreen}
-            view={view}
-            volume={volume}
-            poll={true}
-            emulatorWidth={this.state.emulatorWidth}
-            emulatorHeight={this.state.emulatorHeight}
-            emulatorVersion={this.state.emulatorVersion}
-            logger={this.logger}
-            edgeNodeId={edgeNodeId}
-            maxConnectionRetries={this.props.maxConnectionRetries}
-          />
+          <div style={{ height: propsHeight || stateHeight, width: propsWidth || stateWidth }}>
+            <Emulator
+              uri={this.state.streamEndpoint}
+              turnEndpoint={this.state.turnEndpoint}
+              enableControl={enableControl}
+              enableFullScreen={enableFullScreen}
+              view={view}
+              volume={volume}
+              poll={true}
+              emulatorWidth={this.state.emulatorWidth}
+              emulatorHeight={this.state.emulatorHeight}
+              emulatorVersion={this.state.emulatorVersion}
+              logger={this.logger}
+              edgeNodeId={edgeNodeId}
+              maxConnectionRetries={this.props.maxConnectionRetries}
+            />
+          </div>
         );
       case false:
         return <p style={{ color: 'white' }}>EdgeNode Stream is unreachable</p>;

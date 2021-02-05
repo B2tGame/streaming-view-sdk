@@ -2,8 +2,8 @@ import EventEmitter from 'eventemitter3';
 
 class ExtendedEventEmitter extends EventEmitter {
   emit(event, data) {
-    super.emit(event, data);
     super.emit('event', event, data);
+    super.emit(event, data);
     return this;
   }
 }
@@ -248,6 +248,14 @@ export default class StreamingEvent {
    */
   static get STREAM_LOADING_TIME() {
     return 'stream-loading-time';
+  }
+
+  /**
+   * Event fired when the video stream is available and "play" button can be displayed for the end user
+   * @return {string}
+   */
+  static get STREAM_READY() {
+    return 'stream-ready'
   }
 
   /**
