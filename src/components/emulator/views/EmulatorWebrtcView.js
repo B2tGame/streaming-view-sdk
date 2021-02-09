@@ -104,6 +104,10 @@ export default class EmulatorWebrtcView extends Component {
     }
   }
 
+  /**
+   * Update volume of the video and mute/un-mute if neccesary
+   * Note: iOS - Safari doesn't support volume attribute, so video can be only muted or un-muted (after user interaction)
+   */
   updateVideoVolume() {
     this.video.current.volume = this.props.volume;
     if (this.props.volume > 0 && this.video.current.muted) {
@@ -339,14 +343,16 @@ export default class EmulatorWebrtcView extends Component {
     };
 
     return (
-      <div style={{
-        display: 'flex',
-        width: '100%',
-        height: '100%',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          width: '100%',
+          height: '100%',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+      >
         <video
           ref={this.video}
           style={style}
