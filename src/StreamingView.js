@@ -196,7 +196,7 @@ export default class StreamingView extends Component {
     // Do not render if there are only changes in the whitelisted props attributes.
     const hasChanges = Object.keys(StreamingView.PROP_TYPES).filter((key) => nextProps[key] !== this.props[key]);
     if (hasChanges.length > 0) {
-      return hasChanges.filter((key) => whiteListedFields.indexOf(key) !== -1).length !== 0;
+      return hasChanges.filter((key) => whiteListedFields.indexOf(key) === -1).length !== 0;
     } else {
       return true;
     }
