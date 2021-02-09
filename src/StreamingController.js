@@ -238,4 +238,5 @@ factory.EVENT_EDGE_NODE_CRASHED = StreamingEvent.EDGE_NODE_CRASHED;
 factory.EVENT_REQUIRE_USER_PLAY_INTERACTION = StreamingEvent.REQUIRE_USER_PLAY_INTERACTION;
 factory.SDK_VERSION = StreamingController.SDK_VERSION;
 factory.EVENT_STREAM_READY = StreamingEvent.STREAM_READY;
+factory.EVENT_VIDEO_CAN_PLAY = StreamingEvent.STREAM_VIDEO_CAN_PLAY;
 export default factory;
