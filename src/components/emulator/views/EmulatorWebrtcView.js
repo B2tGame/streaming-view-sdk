@@ -98,14 +98,29 @@ export default class EmulatorWebrtcView extends Component {
     this.props.jsep.disconnect();
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps) {
+    if (prevProps.volume !== this.props.volume) {
+      this.updateVideoVolume();
+    }
+  }
+
+  /**
+   * Update volume of the video and mute/un-mute if neccesary
+   * Note: iOS - Safari doesn't support volume attribute, so video can be only muted or un-muted (after user interaction)
+   */
+  updateVideoVolume() {
     this.video.current.volume = this.props.volume;
+    if (this.props.volume > 0 && this.video.current.muted) {
+      this.unmuteVideo();
+    } else if (this.props.volume === 0 && this.video.current.muted === false) {
+      this.video.current.muted = true;
+    }
   }
 
   unmuteVideo() {
     // Some devices is automatic unmuting and do a unmute result in broken stream
     // Only change muted stated if required after giving the browser some time to act by it self.
-    if (this.isMountedInView && this.video.current && this.video.current.muted) {
+    if (this.isMountedInView && this.video.current && this.video.current.muted && this.props.volume > 0) {
       setTimeout(() => {
         if (this.video.current.muted) {
           this.video.current.muted = false;
@@ -258,7 +273,6 @@ export default class EmulatorWebrtcView extends Component {
     if (track.kind === 'video') {
       this.setState({ video: true }, () => {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_AVAILABLE);
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY);
       });
     }
 
@@ -286,6 +300,7 @@ export default class EmulatorWebrtcView extends Component {
     }
 
     StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_CAN_PLAY);
+    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY);
 
     if (!this.requireUserInteractionToPlay) {
       if (video.paused) {
@@ -328,18 +343,22 @@ export default class EmulatorWebrtcView extends Component {
     };
 
     return (
-      <div style={{
-        display: 'flex',
-        width: '100%',
-        height: '100%',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          width: '100%',
+          height: '100%',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+      >
         <video
           ref={this.video}
           style={style}
-          muted={true} // Un-muting is done dynamically through ref on userInteraction
+          // Initial muted value, un-muting is done dynamically through ref on userInteraction
+          // Known issue: https://github.com/facebook/react/issues/10389
+          muted={true}
           onContextMenu={this.onContextMenu}
           onCanPlay={this.onCanPlay}
           onPlaying={this.onPlaying}
