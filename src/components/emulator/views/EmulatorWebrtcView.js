@@ -299,6 +299,7 @@ export default class EmulatorWebrtcView extends Component {
       return; // Component was unmounted.
     }
 
+    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_CAN_PLAY);
     StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY);
 
     if (!this.requireUserInteractionToPlay) {
