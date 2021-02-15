@@ -54,6 +54,7 @@ export default class BlackScreenDetector {
     this.canvas = canvas;
     this.emulatorWidth = emulatorWidth;
     this.emulatorHeight = emulatorHeight;
+    // TODO: To be discussed, probably better to use like report after 2 blackscreen?
     this.workingStreamLatestTimestamp = undefined;
     this.recentEvents = [];
   }
@@ -68,6 +69,8 @@ export default class BlackScreenDetector {
     this.monitorInterval = setInterval(() => {
       if (this.pageIsVisible() && this.videoVisibleOnViewport()) {
         this.captureVideoStream();
+      } else {
+        this.workingStreamLatestTimestamp = undefined;
       }
     }, 1000);
   }
@@ -96,10 +99,6 @@ export default class BlackScreenDetector {
       documentHidden = document.webkitHidden;
     }
 
-    if (documentHidden) {
-      this.workingStreamLatestTimestamp = undefined;
-    }
-
     return !documentHidden;
   }
 
@@ -110,9 +109,6 @@ export default class BlackScreenDetector {
   videoVisibleOnViewport() {
     const middleElement = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
     const visibleOnViewport = !!middleElement.closest('.streamingViewSdk');
-    if (!visibleOnViewport) {
-      this.workingStreamLatestTimestamp = undefined;
-    }
 
     return visibleOnViewport;
   }
