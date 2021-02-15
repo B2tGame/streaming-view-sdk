@@ -207,7 +207,7 @@ export default class StreamingView extends Component {
    */
   registerUserEventsHandler() {
     // Report user event - stream-loading-time
-    StreamingEvent.edgeNode(this.props.edgeNodeId).once(StreamingEvent.STREAM_VIDEO_AVAILABLE, () => {
+    StreamingEvent.edgeNode(this.props.edgeNodeId).once(StreamingEvent.STREAM_READY, () => {
       const role = this.props.enableControl ? StreamingView.ROLE_PLAYER : StreamingView.ROLE_WATCHER;
       if (this.props.userClickedPlayAt > 0) {
         // Send the stream loading time if we have a user clicked play at props.
@@ -238,7 +238,7 @@ export default class StreamingView extends Component {
     switch (this.state.isReadyStream) {
       case true:
         return (
-          <div style={{ height: propsHeight || stateHeight, width: propsWidth || stateWidth }}>
+          <div style={{ height: propsHeight || stateHeight, width: propsWidth || stateWidth }} className={'streamingViewSdk'}>
             <Emulator
               uri={this.state.streamEndpoint}
               turnEndpoint={this.state.turnEndpoint}

@@ -203,6 +203,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fires when a black screen occurs on the user viewport
+   * @return {string}
+   */
+  static get STREAM_BLACK_SCREEN() {
+    return 'stream-black-screen';
+  }
+
+  /**
    * Event fired when the user interact with a running stream.
    * @return {string}
    */
