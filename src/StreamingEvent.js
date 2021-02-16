@@ -282,7 +282,6 @@ export default class StreamingEvent {
     return 'moment-event';
   }
 
-
   /**
    * Get EventEmitter for a specific Edge Node Id.
    * This will automatic create a new Event emitter if missing.
