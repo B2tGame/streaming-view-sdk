@@ -300,7 +300,6 @@ export default class EmulatorWebrtcView extends Component {
     }
 
     StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_CAN_PLAY);
-    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY);
 
     if (!this.requireUserInteractionToPlay) {
       if (video.paused) {
