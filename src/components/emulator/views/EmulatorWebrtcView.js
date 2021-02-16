@@ -299,26 +299,35 @@ export default class EmulatorWebrtcView extends Component {
       return; // Component was unmounted.
     }
 
+    const onUserInteractionCallback = () => {
+      this.playVideo();
+      this.unmuteVideo();
+    }
+
     StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_CAN_PLAY);
 
     if (!this.requireUserInteractionToPlay) {
       if (video.paused) {
-        return (video.play() || Promise.resolve('video.play() was not a promise')).catch((error) => {
-          if (error.name === 'NotAllowedError') {
-            // The user agent (browser) or operating system doesn't allow playback of media in the current context or situation.
-            // This may happen, if the browser requires the user to explicitly start media playback by clicking a "play" button.
-            this.requireUserInteractionToPlay = true;
-
-            StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.REQUIRE_USER_PLAY_INTERACTION, () => {
-              this.playVideo();
-            });
-          } else {
-            this.props.logger.error(`Fail to start playing stream due to ${error.name}`, error.message);
-          }
-        });
+        return (video.play() || Promise.resolve('video.play() was not a promise'))
+          .catch((error) => {
+            if (error.name === 'NotAllowedError') {
+              // The user agent (browser) or operating system doesn't allow playback of media in the current context or situation.
+              // This may happen, if the browser requires the user to explicitly start media playback by clicking a "play" button.
+              this.requireUserInteractionToPlay = true;
+              StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.REQUIRE_USER_PLAY_INTERACTION, onUserInteractionCallback);
+            } else {
+              this.props.logger.error(`Fail to start playing stream due to ${error.name}`, error.message);
+            }
+          })
+          .finally(() => {
+            StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
+          });
+      } else {
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
       }
-
       this.props.logger.info('Video stream was already playing');
+    } else {
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
     }
   };
 
