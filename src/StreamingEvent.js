@@ -255,7 +255,7 @@ export default class StreamingEvent {
    * @return {string}
    */
   static get STREAM_READY() {
-    return 'stream-ready'
+    return 'stream-ready';
   }
 
   /**
@@ -273,6 +273,15 @@ export default class StreamingEvent {
   static get USER_STARTS_PLAYING() {
     return 'user-starts-playing';
   }
+
+  /**
+   * Custom moment event send by moment event detector to SDK.
+   * @return {string}
+   */
+  static get MOMENT_EVENT() {
+    return 'moment-event';
+  }
+
 
   /**
    * Get EventEmitter for a specific Edge Node Id.
