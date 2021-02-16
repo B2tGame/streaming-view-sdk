@@ -278,8 +278,8 @@ export default class StreamingEvent {
    * Custom moment event send by moment event detector to SDK.
    * @return {string}
    */
-  static get MOMENT_EVENT() {
-    return 'moment-event';
+  static get MOMENT_DETECTOR_EVENT() {
+    return 'moment-detector-event';
   }
 
   /**

@@ -56,7 +56,7 @@ export default class StreamSocket {
             // Unexpected value
           }
         }
-      } else if (message.name === 'moment-event') {
+      } else if (message.name === 'moment-detector-event') {
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.MOMENT_EVENT, message.payload || {});
       }
     });
