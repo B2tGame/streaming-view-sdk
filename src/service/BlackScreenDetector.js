@@ -1,26 +1,16 @@
 import StreamingEvent from '../StreamingEvent';
 
 export default class BlackScreenDetector {
-
   /**
-   * How many times smaller should the thumbnail screenshot in comparison with the source stream.
+   * Timeout after which black screen should be reported
    * @returns {number}
    */
-  static get CANVAS_SCALE_FACTOR() {
-    return 12;
+  static get THRESHOLD() {
+    return 1500;
   }
 
   /**
-   * How many pixels of the stream border should be used for calculation if the screen is black/gray.
-   * The real pixel position is SCREEN_DETECTOR_OFFSET*CANVAS_SCALE_FACTOR of the origin size video stream.
-   * @returns {number}
-   */
-  static get SCREEN_DETECTOR_OFFSET() {
-    return 2;
-  }
-
-  /**
-   * Number of recent events for black screen reporting
+   * Number of latest events, which should be reported in the BLACK_SCREEN event
    * @return {number}
    */
   static get NUMBER_OF_RECENT_EVENTS() {
@@ -36,44 +26,49 @@ export default class BlackScreenDetector {
       StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT,
       StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT,
       StreamingEvent.WEB_RTC_MEASUREMENT,
-      StreamingEvent.REPORT_MEASUREMENT
+      StreamingEvent.REPORT_MEASUREMENT,
+      StreamingEvent.STREAM_BLACK_SCREEN,
+      StreamingEvent.STREAM_VIDEO_SCREENSHOT
     ];
   }
 
   /**
    *
    * @param {string} edgeNodeId
-   * @param video Reference to HTML Video element
-   * @param canvas Reference to HTML Canvas element
-   * @param {int} emulatorWidth Emulator width in pixels
-   * @param {int} emulatorHeight Emulator height in pixes
+   * @param {string} streamingViewId
    */
-  constructor(edgeNodeId, video, canvas, emulatorWidth, emulatorHeight) {
+  constructor(edgeNodeId, streamingViewId) {
     this.edgeNodeId = edgeNodeId;
-    this.video = video;
-    this.canvas = canvas;
-    this.emulatorWidth = emulatorWidth;
-    this.emulatorHeight = emulatorHeight;
-    // TODO: To be discussed, probably better to use like report after 2 blackscreen?
-    this.workingStreamLatestTimestamp = undefined;
-    this.recentEvents = [];
-  }
-
-  /**
-   * Start black screen monitoring when page and video are visble
-   */
-  startMonitoring() {
-    StreamingEvent.edgeNode(this.edgeNodeId).on('event', this.onEvent);
-
+    this.streamingViewId = streamingViewId;
     this.workingStreamLatestTimestamp = Date.now();
+    this.latestNotVisibleStreamTimestamp = Date.now();
+    this.recentEvents = [];
+
+    StreamingEvent.edgeNode(this.edgeNodeId)
+      .on('event', this.onEvent)
+      .on(StreamingEvent.STREAM_VIDEO_SCREENSHOT, this.onStreamVideoScreenshot);
+
     this.monitorInterval = setInterval(() => {
-      if (this.pageIsVisible() && this.videoVisibleOnViewport()) {
-        this.captureVideoStream();
-      } else {
-        this.workingStreamLatestTimestamp = undefined;
+      if (
+        this.streamIsVisible() &&
+        this.workingStreamLatestTimestamp < Date.now() - BlackScreenDetector.THRESHOLD &&
+        this.latestNotVisibleStreamTimestamp < Date.now() - BlackScreenDetector.THRESHOLD
+      ) {
+        StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_BLACK_SCREEN, {
+          cause: JSON.stringify(this.recentEvents)
+        });
       }
     }, 1000);
   }
+
+  /**
+   * @param {{hasVideo: boolean, borderColor: {red: number, green: number, blue: number}, captureProcessingTime: timestamp, screenshot: ImageData|undefined}} event
+   */
+  onStreamVideoScreenshot = (event) => {
+    if (event.hasVideo) {
+      this.workingStreamLatestTimestamp = Date.now();
+    }
+  };
 
   onEvent = (event, payload) => {
     if (BlackScreenDetector.EVENTS_TO_IGNORE.includes(event) === false) {
@@ -83,6 +78,19 @@ export default class BlackScreenDetector {
       this.recentEvents.push({ event: event, payload: payload });
     }
   };
+
+  /**
+   * Check if stream is visible to the user
+   * @return {boolean}
+   */
+  streamIsVisible() {
+    if (this.pageIsVisible() && this.streamVisibleOnViewport())  {
+      return true;
+    } else {
+      this.latestNotVisibleStreamTimestamp = Date.now();
+      return false;
+    }
+  }
 
   /**
    * Check if webpage is visible for the user by Page Visibility API
@@ -106,113 +114,16 @@ export default class BlackScreenDetector {
    * Detect if Streaming View SDK is visible for the user
    * @return {boolean}
    */
-  videoVisibleOnViewport() {
-    const middleElement = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
-    const visibleOnViewport = !!middleElement.closest('.streamingViewSdk');
-
-    return visibleOnViewport;
-  }
-
-  /**
-   * Test if a color is dark grey (including total black)
-   * @param {{red: number, green: number, blue: number}} pixel
-   * @returns {boolean}
-   */
-  isDarkGrey(pixel) {
-    return (
-      pixel.red < 50 &&
-      pixel.green < 50 &&
-      pixel.blue < 50 &&
-      Math.abs(pixel.red - pixel.green) < 25 &&
-      Math.abs(pixel.green - pixel.blue) < 25 &&
-      Math.abs(pixel.blue - pixel.red) < 25
+  streamVisibleOnViewport() {
+    const rootElement = document.getElementById(this.streamingViewId);
+    const domRect = rootElement.getBoundingClientRect();
+    const topElement = document.elementFromPoint(
+      Math.round(domRect.left + domRect.width / 2),
+      Math.round(domRect.top + domRect.height / 2)
     );
-  }
 
-  /**
-   * @param {ImageData} image
-   * @param {number} offset
-   * @returns {{red: number, green: number, blue: number}}
-   */
-  getPixel(image, offset) {
-    return {
-      red: image.data[offset],
-      green: image.data[offset + 1],
-      blue: image.data[offset + 2]
-    };
-  }
-
-  /**
-   * @param {{red: number, green: number, blue: number}[]} pixels
-   * @returns {{red: number, green: number, blue: number}}
-   */
-  avgColor(pixels) {
-    return {
-      red: Math.round(pixels.reduce((sum, pixel) => sum + pixel.red, 0) / pixels.length),
-      green: Math.round(pixels.reduce((sum, pixel) => sum + pixel.green, 0) / pixels.length),
-      blue: Math.round(pixels.reduce((sum, pixel) => sum + pixel.blue, 0) / pixels.length)
-    };
-  }
-
-  rgbToHex(pixel) {
-    return '#' + ((1 << 24) + (pixel.red << 16) + (pixel.green << 8) + pixel.blue).toString(16).slice(1);
-  }
-
-  /**
-   * Capture the stream <video> element and check if the video stream is a black or grey.
-   * @returns {string}
-   */
-  captureVideoStream() {
-    const captureVideoStreamStartTime = Date.now();
-
-    if (this.canvas.current && this.video.current) {
-      const ctx = this.canvas.current.getContext('2d');
-      ctx.drawImage(
-        this.video.current,
-        0,
-        0,
-        this.emulatorWidth / BlackScreenDetector.CANVAS_SCALE_FACTOR,
-        this.emulatorHeight / BlackScreenDetector.CANVAS_SCALE_FACTOR
-      );
-      const rawImage = ctx.getImageData(
-        0,
-        0,
-        this.emulatorWidth / BlackScreenDetector.CANVAS_SCALE_FACTOR,
-        this.emulatorHeight / BlackScreenDetector.CANVAS_SCALE_FACTOR
-      );
-      const offset = BlackScreenDetector.SCREEN_DETECTOR_OFFSET;
-      const borderPixels = [
-        this.getPixel(rawImage, rawImage.width * offset * 4 + offset * 4), // Top Left
-        this.getPixel(rawImage, rawImage.width * offset * 4 + (rawImage.width / 2) * 4), // Top Middle
-        this.getPixel(rawImage, rawImage.width * offset * 4 + (rawImage.width - offset) * 4), // Top Right
-        this.getPixel(rawImage, rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width - offset) * 4), // Middle Right
-        this.getPixel(rawImage, rawImage.width * (rawImage.height - offset) * 4 + offset * 4), // Bottom Left
-        this.getPixel(rawImage, rawImage.width * (rawImage.height - offset) * 4 + (rawImage.width / 2) * 4), // Bottom Right
-        this.getPixel(rawImage, rawImage.width * (rawImage.height - offset) * 4 + (rawImage.width - offset) * 4), // Bottom Right
-        this.getPixel(rawImage, rawImage.width * (rawImage.height / 2) * 4 + offset * 4) // Middle Left
-      ];
-      const centerPixels = [
-        this.getPixel(rawImage, rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width / 2) * 4) // Center Center
-      ];
-
-      const hasVideo = ![].concat(borderPixels, centerPixels).every((pixel) => this.isDarkGrey(pixel));
-
-      if (hasVideo) {
-        this.workingStreamLatestTimestamp = Date.now();
-      } else if (this.workingStreamLatestTimestamp < Date.now() - 2000) {
-        // Report blackScreen
-        StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_BLACK_SCREEN, {
-          recentEvents: this.recentEvents,
-          captureProcessingTime: Date.now() - captureVideoStreamStartTime,
-          screenshot: this.canvas.current.toDataURL('image/jpeg') // or 'image/png' });
-        });
-
-        this.recentEvents = [];
-      }
-
-      // TODO: let's discuss it @Jesper
-      // StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_SCREENSHOT, {});
-    }
+    // Verify if top element is part of the Streaming View component
+    return !!topElement.closest(`#${CSS.escape(this.streamingViewId)}`);
   }
 
   destroy() {
@@ -220,6 +131,8 @@ export default class BlackScreenDetector {
       clearInterval(this.monitorInterval);
     }
 
-    StreamingEvent.edgeNode(this.edgeNodeId).off('event', this.onEvent);
+    StreamingEvent.edgeNode(this.edgeNodeId)
+      .off('event', this.onEvent)
+      .off(StreamingEvent.STREAM_VIDEO_SCREENSHOT, this.onStreamVideoScreenshot);
   }
 }

@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import StreamingEvent from '../../../StreamingEvent';
-import BlackScreenDetector from '../../../service/BlackScreenDetector';
+import StreamCaptureService from '../../../service/StreamCaptureService';
 
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
@@ -27,24 +27,6 @@ export default class EmulatorWebrtcView extends Component {
     emulatorVersion: PropTypes.string
   };
 
-  /**
-   * How many times smaller should the thumbnail screenshot in comparison with the source stream.
-   * @returns {number}
-   * @constructor
-   */
-  static get CANVAS_SCALE_FACTOR() {
-    return 12;
-  }
-
-  /**
-   * How many pixels of the stream border should be used for calculation if the screen is black/gray.
-   * The real pixel position is SCREEN_DETECTOR_OFFSET*CANVAS_SCALE_FACTOR of the origin size video stream.
-   * @returns {number}
-   */
-  static get SCREEN_DETECTOR_OFFSET() {
-    return 2;
-  }
-
   state = {
     audio: false,
     video: false,
@@ -62,7 +44,7 @@ export default class EmulatorWebrtcView extends Component {
     this.isMountedInView = false;
     this.captureScreenMetaData = [];
     this.requireUserInteractionToPlay = false;
-    this.blackScreenDetector = new BlackScreenDetector(
+    this.streamCaptureService = new StreamCaptureService(
       this.props.edgeNodeId,
       this.video,
       this.canvas,
@@ -76,9 +58,9 @@ export default class EmulatorWebrtcView extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .on(StreamingEvent.STREAM_CONNECTED, this.onConnect)
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
-      .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction)
-      .once(StreamingEvent.STREAM_READY, this.onStreamReady);
+      .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
     this.setState({ video: false, audio: false }, () => this.props.jsep.startStream());
+    // Performing 'health-check' of the stream and reporting events when video is missing
     this.timer = setInterval(() => {
       if (this.requireUserInteractionToPlay) {
         return; // Do not reporting any StreamingEvent.STREAM_VIDEO_MISSING if the stream is waiting for user interaction in order to start the stream.
@@ -86,6 +68,8 @@ export default class EmulatorWebrtcView extends Component {
 
       if (this.isMountedInView && this.video.current && this.video.current.paused) {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
+      } else {
+        this.streamCaptureService.captureScreenshot();
       }
     }, 500);
   }
@@ -98,10 +82,8 @@ export default class EmulatorWebrtcView extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .off(StreamingEvent.STREAM_CONNECTED, this.onConnect)
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
-      .off(StreamingEvent.USER_INTERACTION, this.onUserInteraction)
-      .off(StreamingEvent.STREAM_READY, this.onStreamReady);
+      .off(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
     this.props.jsep.disconnect();
-    this.blackScreenDetector.destroy();
   }
 
   componentDidUpdate(prevProps) {
@@ -128,7 +110,7 @@ export default class EmulatorWebrtcView extends Component {
     // Only change muted stated if required after giving the browser some time to act by it self.
     if (this.isMountedInView && this.video.current && this.video.current.muted && this.props.volume > 0) {
       setTimeout(() => {
-        if (this.isMountedInView && this.video.current && this.video.current.muted) {
+        if (this.video.current.muted) {
           this.video.current.muted = false;
         }
       }, 250);
@@ -161,10 +143,6 @@ export default class EmulatorWebrtcView extends Component {
     if (this.isMountedInView && this.video.current && this.video.current.paused) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
     }
-  };
-
-  onStreamReady = () => {
-    this.blackScreenDetector.startMonitoring();
   };
 
   onDisconnect = () => {
@@ -285,8 +263,8 @@ export default class EmulatorWebrtcView extends Component {
         <canvas
           style={{ display: 'none' }}
           ref={this.canvas}
-          height={emulatorHeight / EmulatorWebrtcView.CANVAS_SCALE_FACTOR}
-          width={emulatorWidth / EmulatorWebrtcView.CANVAS_SCALE_FACTOR}
+          height={emulatorHeight / StreamCaptureService.CANVAS_SCALE_FACTOR}
+          width={emulatorWidth / StreamCaptureService.CANVAS_SCALE_FACTOR}
         />
       </div>
     );
