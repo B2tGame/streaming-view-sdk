@@ -271,7 +271,7 @@ export default class StreamingView extends Component {
           </p>
         );
       default:
-        return this.props.children;
+        return <p>Loading EdgeNode Stream</p>
     }
   }
 }
