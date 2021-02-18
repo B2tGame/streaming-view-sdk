@@ -12,7 +12,6 @@ import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
 import BlackScreenDetector from './service/BlackScreenDetector';
 
-
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
  *
@@ -160,7 +159,7 @@ export default class StreamingView extends Component {
     if (this.streamSocket) {
       this.streamSocket.close();
     }
-    if(this.blackScreenDetector) {
+    if (this.blackScreenDetector) {
       this.blackScreenDetector.destroy();
     }
 
@@ -247,10 +246,7 @@ export default class StreamingView extends Component {
     switch (this.state.isReadyStream) {
       case true:
         return (
-          <div
-            style={{ height: propsHeight || stateHeight, width: propsWidth || stateWidth }}
-            id={this.streamingViewId}
-          >
+          <div style={{ height: propsHeight || stateHeight, width: propsWidth || stateWidth }} id={this.streamingViewId}>
             <Emulator
               uri={this.state.streamEndpoint}
               turnEndpoint={this.state.turnEndpoint}
@@ -269,9 +265,13 @@ export default class StreamingView extends Component {
           </div>
         );
       case false:
-        return <p id={this.streamingViewId} style={{ color: 'white' }}>EdgeNode Stream is unreachable</p>;
+        return (
+          <p id={this.streamingViewId} style={{ color: 'white' }}>
+            EdgeNode Stream is unreachable
+          </p>
+        );
       default:
-        return (this.props.children)
+        return this.props.children;
     }
   }
 }
