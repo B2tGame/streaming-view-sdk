@@ -44,13 +44,7 @@ export default class EmulatorWebrtcView extends Component {
     this.isMountedInView = false;
     this.captureScreenMetaData = [];
     this.requireUserInteractionToPlay = false;
-    this.streamCaptureService = new StreamCaptureService(
-      this.props.edgeNodeId,
-      this.video,
-      this.canvas,
-      this.props.emulatorWidth,
-      this.props.emulatorHeight
-    );
+    this.streamCaptureService = new StreamCaptureService(this.props.edgeNodeId, this.video, this.canvas);
   }
 
   componentDidMount() {
@@ -69,7 +63,7 @@ export default class EmulatorWebrtcView extends Component {
       if (this.isMountedInView && this.video.current && this.video.current.paused) {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
       } else {
-        this.streamCaptureService.captureScreenshot();
+        this.streamCaptureService.captureScreenshot(this.props.emulatorWidth, this.props.emulatorHeight);
       }
     }, 500);
   }
@@ -110,7 +104,7 @@ export default class EmulatorWebrtcView extends Component {
     // Only change muted stated if required after giving the browser some time to act by it self.
     if (this.isMountedInView && this.video.current && this.video.current.muted && this.props.volume > 0) {
       setTimeout(() => {
-        if (this.video.current.muted) {
+        if (this.isMountedInView && this.video.current && this.video.current.muted) {
           this.video.current.muted = false;
         }
       }, 250);

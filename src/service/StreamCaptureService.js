@@ -23,22 +23,20 @@ export default class StreamCaptureService {
    * @param {string} edgeNodeId
    * @param video Reference to HTML Video element
    * @param canvas Reference to HTML Canvas element
-   * @param {int} emulatorWidth Emulator width in pixels
-   * @param {int} emulatorHeight Emulator height in pixes
    */
-  constructor(edgeNodeId, video, canvas, emulatorWidth, emulatorHeight) {
+  constructor(edgeNodeId, video, canvas) {
     this.edgeNodeId = edgeNodeId;
     this.video = video;
     this.canvas = canvas;
-    this.emulatorWidth = emulatorWidth;
-    this.emulatorHeight = emulatorHeight;
   }
 
   /**
    * Capture the stream <video> element and check if the video stream is a black or grey.
+   * @param {int} emulatorWidth Emulator width in pixels
+   * @param {int} emulatorHeight Emulator height in pixes
    * @returns {string}
    */
-  captureScreenshot = () => {
+  captureScreenshot = (emulatorWidth, emulatorHeight) => {
     const captureVideoStreamStartTime = Date.now();
 
     if (this.canvas.current && this.video.current) {
@@ -47,14 +45,14 @@ export default class StreamCaptureService {
         this.video.current,
         0,
         0,
-        this.emulatorWidth / StreamCaptureService.CANVAS_SCALE_FACTOR,
-        this.emulatorHeight / StreamCaptureService.CANVAS_SCALE_FACTOR
+        emulatorWidth / StreamCaptureService.CANVAS_SCALE_FACTOR,
+        emulatorHeight / StreamCaptureService.CANVAS_SCALE_FACTOR
       );
       const rawImage = ctx.getImageData(
         0,
         0,
-        this.emulatorWidth / StreamCaptureService.CANVAS_SCALE_FACTOR,
-        this.emulatorHeight / StreamCaptureService.CANVAS_SCALE_FACTOR
+        emulatorWidth / StreamCaptureService.CANVAS_SCALE_FACTOR,
+        emulatorHeight / StreamCaptureService.CANVAS_SCALE_FACTOR
       );
       const offset = StreamCaptureService.SCREEN_DETECTOR_OFFSET;
       const borderPixels = [

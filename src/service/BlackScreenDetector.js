@@ -1,5 +1,9 @@
 import StreamingEvent from '../StreamingEvent';
 
+/**
+ * Black Screen Detector in regular intervals analysing SDK behaviour with help of video stream screenshots
+ * and reporting detected black screen issues with possible causes to the backend service
+ */
 export default class BlackScreenDetector {
   /**
    * Timeout after which black screen should be reported
@@ -41,7 +45,8 @@ export default class BlackScreenDetector {
     this.edgeNodeId = edgeNodeId;
     this.streamingViewId = streamingViewId;
     this.workingStreamLatestTimestamp = Date.now();
-    this.latestNotVisibleStreamTimestamp = Date.now();
+    // Period to "delay report of black screen" when browser is loading video stream after stream is visible
+    this.notVisibleHoldOffPeriod = 0;
     this.recentEvents = [];
 
     StreamingEvent.edgeNode(this.edgeNodeId)
@@ -49,14 +54,14 @@ export default class BlackScreenDetector {
       .on(StreamingEvent.STREAM_VIDEO_SCREENSHOT, this.onStreamVideoScreenshot);
 
     this.monitorInterval = setInterval(() => {
-      if (
-        this.streamIsVisible() &&
-        this.workingStreamLatestTimestamp < Date.now() - BlackScreenDetector.THRESHOLD &&
-        this.latestNotVisibleStreamTimestamp < Date.now() - BlackScreenDetector.THRESHOLD
-      ) {
-        StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_BLACK_SCREEN, {
-          cause: JSON.stringify(this.recentEvents)
-        });
+      if (this.browserTabIsVisible() && this.streamVisibleOnViewport()) {
+        if (this.workingStreamLatestTimestamp < Date.now() - BlackScreenDetector.THRESHOLD && this.notVisibleHoldOffPeriod < Date.now()) {
+          StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_BLACK_SCREEN, {
+            cause: JSON.stringify(this.recentEvents)
+          });
+        }
+      } else {
+        this.notVisibleHoldOffPeriod = Date.now() + BlackScreenDetector.THRESHOLD;
       }
     }, 1000);
   }
@@ -70,6 +75,11 @@ export default class BlackScreenDetector {
     }
   };
 
+  /**
+   * On event method is used for keeping track of possible causes of the black screens by storing recent events
+   * @param {string} event
+   * @param {{}|undefined} payload
+   */
   onEvent = (event, payload) => {
     if (BlackScreenDetector.EVENTS_TO_IGNORE.includes(event) === false) {
       if (this.recentEvents.length > BlackScreenDetector.NUMBER_OF_RECENT_EVENTS) {
@@ -80,23 +90,10 @@ export default class BlackScreenDetector {
   };
 
   /**
-   * Check if stream is visible to the user
+   * Check if browser tab is visible for the user by Page Visibility API
    * @return {boolean}
    */
-  streamIsVisible() {
-    if (this.pageIsVisible() && this.streamVisibleOnViewport())  {
-      return true;
-    } else {
-      this.latestNotVisibleStreamTimestamp = Date.now();
-      return false;
-    }
-  }
-
-  /**
-   * Check if webpage is visible for the user by Page Visibility API
-   * @return {boolean}
-   */
-  pageIsVisible() {
+  browserTabIsVisible() {
     let documentHidden = true;
     if (typeof document.hidden !== 'undefined') {
       // Opera 12.10 and Firefox 18 and later support
@@ -116,14 +113,18 @@ export default class BlackScreenDetector {
    */
   streamVisibleOnViewport() {
     const rootElement = document.getElementById(this.streamingViewId);
-    const domRect = rootElement.getBoundingClientRect();
-    const topElement = document.elementFromPoint(
-      Math.round(domRect.left + domRect.width / 2),
-      Math.round(domRect.top + domRect.height / 2)
-    );
+    if (rootElement) {
+      const domRect = rootElement.getBoundingClientRect();
+      const topElement = document.elementFromPoint(
+        Math.round(domRect.left + domRect.width / 2),
+        Math.round(domRect.top + domRect.height / 2)
+      );
 
-    // Verify if top element is part of the Streaming View component
-    return !!topElement.closest(`#${CSS.escape(this.streamingViewId)}`);
+      // Verify if top element is part of the Streaming View component
+      return topElement ? !!topElement.closest(`#${CSS.escape(this.streamingViewId)}`) : false;
+    }
+
+    return false;
   }
 
   destroy() {
