@@ -1,0 +1,27 @@
+version: 0.2
+env:
+  git-credential-helper: yes
+phases:
+
+  install:
+    commands:
+       - npm install
+  pre_build:
+    commands:
+       - "git config --global user.email 'dev@appland.se'"
+       - "git config --global user.name 'AWS CodeBuild'"
+       - "git checkout $CODEBUILD_SOURCE_VERSION"
+       - "for i in $(seq 1 99); do if ! git tag | grep \"`date \"+%Y%m%d\"`-$i\" > /dev/null; then date \"+%Y%m%d-$i\" | tee /tmp/build-info; break; fi; done"
+       - 'echo "{\"tag\":\"`cat /tmp/build-info`\"}" | tee src/build-info.json'
+  build:
+    commands:
+       - npm run build
+  post_build:
+    commands:
+       - git add src/build-info.json
+       - git status
+       - "git commit -am \"Build System: Building new release candidate `cat /tmp/build-info`\""
+       - "git tag `cat /tmp/build-info`"
+       - git push --set-upstream origin $CODEBUILD_SOURCE_VERSION
+       - git push origin --tags
+       - "echo \"Build successful, create GIT tag: `cat src/build-info.json`\""
