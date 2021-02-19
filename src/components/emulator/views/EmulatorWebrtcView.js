@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import StreamingEvent from '../../../StreamingEvent';
+import StreamCaptureService from '../../../service/StreamCaptureService';
 
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
@@ -26,24 +27,6 @@ export default class EmulatorWebrtcView extends Component {
     emulatorVersion: PropTypes.string
   };
 
-  /**
-   * How many times smaller should the thumbnail screenshot in comparison with the source stream.
-   * @returns {number}
-   * @constructor
-   */
-  static get CANVAS_SCALE_FACTOR() {
-    return 12;
-  }
-
-  /**
-   * How many pixels of the stream border should be used for calculation if the screen is black/gray.
-   * The real pixel position is SCREEN_DETECTOR_OFFSET*CANVAS_SCALE_FACTOR of the origin size video stream.
-   * @returns {number}
-   */
-  static get SCREEN_DETECTOR_OFFSET() {
-    return 2;
-  }
-
   state = {
     audio: false,
     video: false,
@@ -61,6 +44,7 @@ export default class EmulatorWebrtcView extends Component {
     this.isMountedInView = false;
     this.captureScreenMetaData = [];
     this.requireUserInteractionToPlay = false;
+    this.streamCaptureService = new StreamCaptureService(this.props.edgeNodeId, this.video, this.canvas);
   }
 
   componentDidMount() {
@@ -71,7 +55,6 @@ export default class EmulatorWebrtcView extends Component {
       .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
     this.setState({ video: false, audio: false }, () => this.props.jsep.startStream());
     // Performing 'health-check' of the stream and reporting events when video is missing
-    let timerEventCount = 0;
     this.timer = setInterval(() => {
       if (this.requireUserInteractionToPlay) {
         return; // Do not reporting any StreamingEvent.STREAM_VIDEO_MISSING if the stream is waiting for user interaction in order to start the stream.
@@ -79,9 +62,8 @@ export default class EmulatorWebrtcView extends Component {
 
       if (this.isMountedInView && this.video.current && this.video.current.paused) {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
-      } else if (timerEventCount++ % (timerEventCount < 20 ? 2 : 10) === 0) {
-        // During the session 10 sec, the system capture screen every 1 sec, then after 10 sec, capture screen every 5 sec
-        this.captureVideoStream();
+      } else {
+        this.streamCaptureService.captureScreenshot(this.props.emulatorWidth, this.props.emulatorHeight);
       }
     }, 500);
   }
@@ -122,104 +104,12 @@ export default class EmulatorWebrtcView extends Component {
     // Only change muted stated if required after giving the browser some time to act by it self.
     if (this.isMountedInView && this.video.current && this.video.current.muted && this.props.volume > 0) {
       setTimeout(() => {
-        if (this.video.current.muted) {
+        if (this.isMountedInView && this.video.current && this.video.current.muted) {
           this.video.current.muted = false;
         }
       }, 250);
     }
   }
-
-  /**
-   * Capture the stream <video> element and check if the video stream is a black or grey.
-   * @returns {string}
-   */
-  captureVideoStream = () => {
-    const captureVideoStreamStartTime = Date.now();
-    /**
-     * Test if a color is dark grey (including total black)
-     * @param {{red: number, green: number, blue: number}} pixel
-     * @returns {boolean}
-     */
-    const isDarkGrey = (pixel) => {
-      return (
-        pixel.red < 50 &&
-        pixel.green < 50 &&
-        pixel.blue < 50 &&
-        Math.abs(pixel.red - pixel.green) < 25 &&
-        Math.abs(pixel.green - pixel.blue) < 25 &&
-        Math.abs(pixel.blue - pixel.red) < 25
-      );
-    };
-
-    /**
-     *
-     * @param {ImageData} image
-     * @param {number} offset
-     * @returns {{red: number, green: number, blue: number}}
-     */
-    const getPixel = (image, offset) => {
-      return {
-        red: image.data[offset],
-        green: image.data[offset + 1],
-        blue: image.data[offset + 2]
-      };
-    };
-
-    /**
-     * @param {{red: number, green: number, blue: number}[]} pixels
-     * @returns {{red: number, green: number, blue: number}}
-     */
-    const avgColor = (pixels) => {
-      return {
-        red: Math.round(pixels.reduce((sum, pixel) => sum + pixel.red, 0) / pixels.length),
-        green: Math.round(pixels.reduce((sum, pixel) => sum + pixel.green, 0) / pixels.length),
-        blue: Math.round(pixels.reduce((sum, pixel) => sum + pixel.blue, 0) / pixels.length)
-      };
-    };
-
-    const rgbToHex = (pixel) => {
-      return '#' + ((1 << 24) + (pixel.red << 16) + (pixel.green << 8) + pixel.blue).toString(16).slice(1);
-    };
-
-    if (this.canvas.current && this.video.current) {
-      const ctx = this.canvas.current.getContext('2d');
-      const { emulatorWidth, emulatorHeight } = this.props;
-      ctx.drawImage(
-        this.video.current,
-        0,
-        0,
-        emulatorWidth / EmulatorWebrtcView.CANVAS_SCALE_FACTOR,
-        emulatorHeight / EmulatorWebrtcView.CANVAS_SCALE_FACTOR
-      );
-      const rawImage = ctx.getImageData(
-        0,
-        0,
-        emulatorWidth / EmulatorWebrtcView.CANVAS_SCALE_FACTOR,
-        emulatorHeight / EmulatorWebrtcView.CANVAS_SCALE_FACTOR
-      );
-      const offset = EmulatorWebrtcView.SCREEN_DETECTOR_OFFSET;
-      const borderPixels = [
-        getPixel(rawImage, rawImage.width * offset * 4 + offset * 4), // Top Left
-        getPixel(rawImage, rawImage.width * offset * 4 + (rawImage.width / 2) * 4), // Top Middle
-        getPixel(rawImage, rawImage.width * offset * 4 + (rawImage.width - offset) * 4), // Top Right
-        getPixel(rawImage, rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width - offset) * 4), // Middle Right
-        getPixel(rawImage, rawImage.width * (rawImage.height - offset) * 4 + offset * 4), // Bottom Left
-        getPixel(rawImage, rawImage.width * (rawImage.height - offset) * 4 + (rawImage.width / 2) * 4), // Bottom Right
-        getPixel(rawImage, rawImage.width * (rawImage.height - offset) * 4 + (rawImage.width - offset) * 4), // Bottom Right
-        getPixel(rawImage, rawImage.width * (rawImage.height / 2) * 4 + offset * 4) // Middle Left
-      ];
-      const centerPixels = [
-        getPixel(rawImage, rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width / 2) * 4) // Center Center
-      ];
-
-      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_SCREENSHOT, {
-        hasVideo: ![].concat(borderPixels, centerPixels).every((pixel) => isDarkGrey(pixel)),
-        borderColor: rgbToHex(avgColor(borderPixels)),
-        captureProcessingTime: Date.now() - captureVideoStreamStartTime,
-        screenshot: this.canvas.current.toDataURL('image/jpeg') // or 'image/png'
-      });
-    }
-  };
 
   playVideo = () => {
     const video = this.video.current;
@@ -375,8 +265,8 @@ export default class EmulatorWebrtcView extends Component {
         <canvas
           style={{ display: 'none' }}
           ref={this.canvas}
-          height={emulatorHeight / EmulatorWebrtcView.CANVAS_SCALE_FACTOR}
-          width={emulatorWidth / EmulatorWebrtcView.CANVAS_SCALE_FACTOR}
+          height={emulatorHeight / StreamCaptureService.CANVAS_SCALE_FACTOR}
+          width={emulatorWidth / StreamCaptureService.CANVAS_SCALE_FACTOR}
         />
       </div>
     );

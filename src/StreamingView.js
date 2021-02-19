@@ -3,13 +3,14 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import StreamingEvent from './StreamingEvent';
 import StreamingController from './StreamingController';
+import { v4 as uuid } from 'uuid';
 
 import buildInfo from './build-info.json';
 import Logger from './Logger';
 import StreamSocket from './service/StreamSocket';
 import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
-
+import BlackScreenDetector from './service/BlackScreenDetector';
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
@@ -76,15 +77,18 @@ export default class StreamingView extends Component {
   constructor(props) {
     super(props);
     this.isMountedInView = false;
-
+    this.streamingViewId = uuid();
   }
 
   componentDidMount() {
     this.isMountedInView = true;
     const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, enableDebug, onEvent } = this.props;
     if (!internalSession) {
-      this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId);
+      this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId, this.streamingViewId);
     }
+
+    this.blackScreenDetector = new BlackScreenDetector(edgeNodeId, this.streamingViewId);
+
     this.logger = new Logger(enableDebug);
     this.logger.log(`SDK Version: ${buildInfo.tag}`);
     this.measurement = new Measurement(edgeNodeId);
@@ -155,6 +159,10 @@ export default class StreamingView extends Component {
     if (this.streamSocket) {
       this.streamSocket.close();
     }
+    if (this.blackScreenDetector) {
+      this.blackScreenDetector.destroy();
+    }
+
     if (this.LogQueueService) {
       this.LogQueueService.destroy();
     }
@@ -211,7 +219,7 @@ export default class StreamingView extends Component {
    */
   registerUserEventsHandler() {
     // Report user event - stream-loading-time
-    StreamingEvent.edgeNode(this.props.edgeNodeId).once(StreamingEvent.STREAM_VIDEO_AVAILABLE, () => {
+    StreamingEvent.edgeNode(this.props.edgeNodeId).once(StreamingEvent.STREAM_READY, () => {
       const role = this.props.enableControl ? StreamingView.ROLE_PLAYER : StreamingView.ROLE_WATCHER;
       if (this.props.userClickedPlayAt > 0) {
         // Send the stream loading time if we have a user clicked play at props.
@@ -242,7 +250,7 @@ export default class StreamingView extends Component {
     switch (this.state.isReadyStream) {
       case true:
         return (
-          <div style={{ height: propsHeight || stateHeight, width: propsWidth || stateWidth }}>
+          <div style={{ height: propsHeight || stateHeight, width: propsWidth || stateWidth }} id={this.streamingViewId}>
             <Emulator
               uri={this.state.streamEndpoint}
               turnEndpoint={this.state.turnEndpoint}
@@ -261,9 +269,13 @@ export default class StreamingView extends Component {
           </div>
         );
       case false:
-        return <p style={{ color: 'white' }}>EdgeNode Stream is unreachable</p>;
+        return (
+          <p id={this.streamingViewId} style={{ color: 'white' }}>
+            EdgeNode Stream is unreachable
+          </p>
+        );
       default:
-        return this.props.children;
+        return <p>Loading EdgeNode Stream</p>;
     }
   }
 }
