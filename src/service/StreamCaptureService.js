@@ -74,7 +74,7 @@ export default class StreamCaptureService {
         hasVideo: hasVideo,
         borderColor: this.rgbToHex(this.avgColor(borderPixels)),
         captureProcessingTime: Date.now() - captureVideoStreamStartTime,
-        screenshot: !hasVideo ? this.canvas.current.toDataURL('image/jpeg') : undefined
+        screenshot: this.canvas.current.toDataURL('image/jpeg')
       });
     }
   };
