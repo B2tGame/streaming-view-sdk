@@ -99,6 +99,12 @@ export default class JsepProtocol {
     if (this.streamConnectedTimestamp === undefined) {
       this.streamConnectedTimestamp = Date.now();
     }
+
+    if (event.receiver) {
+      // On supported devices, playoutDelayHint can be used for set a recommended latency of the playback
+      // A low value will come with cost of higher frames drope etc.
+      event.receiver.playoutDelayHint = 0;
+    }
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_CONNECTED, event.track);
   };
 
@@ -167,7 +173,6 @@ export default class JsepProtocol {
       iceTransportPolicy: 'relay'
     };
     this.peerConnection = new RTCPeerConnection(signal.start);
-
     StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
 
     this.peerConnection.addEventListener('track', this._handlePeerConnectionTrack, false);

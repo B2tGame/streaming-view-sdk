@@ -197,8 +197,12 @@ export default class StreamingView extends Component {
     }
 
     if (nextProps.onEvent !== this.props.onEvent) {
-      StreamingEvent.edgeNode(this.props.edgeNodeId).off('event', this.props.onEvent);
-      StreamingEvent.edgeNode(this.props.edgeNodeId).on('event', nextProps.onEvent);
+      if (this.props.onEvent) {
+        StreamingEvent.edgeNode(this.props.edgeNodeId).off('event', this.props.onEvent);
+      }
+      if (nextProps.onEvent) {
+        StreamingEvent.edgeNode(this.props.edgeNodeId).on('event', nextProps.onEvent);
+      }
     }
 
     // Do not render if there are only changes in the whitelisted props attributes.
