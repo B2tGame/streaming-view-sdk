@@ -57,7 +57,7 @@ export default class StreamCaptureService {
       ctx.drawImage(this.video.current, 0, 0, scaledWidth, scaledHeight);
       const rawImage = ctx.getImageData(0, 0, scaledWidth, scaledHeight);
 
-      let pixels = [];
+      const pixels = [];
 
       // Offset is used to avoid corners of the stream video to lower number of faulty video pixels
       for (let y = offset; y < scaledHeight - offset; y = y + StreamCaptureService.SCREEN_PIXEL_RATIO) {
