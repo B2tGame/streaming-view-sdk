@@ -45,6 +45,7 @@ export default class StreamingView extends Component {
       enableFullScreen: PropTypes.bool, // Can be changed dynamically
       view: PropTypes.oneOf(['webrtc', 'png']), // Can't be changed after creation
       volume: PropTypes.number, // Can be changed dynamically, Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
+      muted: PropTypes.bool, // Can be changed dynamically
       onEvent: PropTypes.func, // Can't be changed after creation
       streamQualityRating: PropTypes.number, // Can be changed dynamically
       enableDebug: PropTypes.bool, // Can't be changed after creation
@@ -57,6 +58,14 @@ export default class StreamingView extends Component {
   }
 
   static propTypes = StreamingView.PROP_TYPES;
+
+  static defaultProps = {
+    view: 'webrtc',
+    enableFullScreen: true,
+    enableControl: true,
+    volume: 1.0,
+    muted: false,
+  };
 
   /**
    * Player is a user with enabled control
@@ -244,7 +253,7 @@ export default class StreamingView extends Component {
   }
 
   render() {
-    const { enableControl, enableFullScreen, view, volume, edgeNodeId, height: propsHeight, width: propsWidth } = this.props;
+    const { enableControl, enableFullScreen, view, volume, muted, edgeNodeId, height: propsHeight, width: propsWidth } = this.props;
     const { height: stateHeight, width: stateWidth } = this.state;
 
     switch (this.state.isReadyStream) {
@@ -258,6 +267,7 @@ export default class StreamingView extends Component {
               enableFullScreen={enableFullScreen}
               view={view}
               volume={volume}
+              muted={muted}
               poll={true}
               emulatorWidth={this.state.emulatorWidth}
               emulatorHeight={this.state.emulatorHeight}
@@ -275,9 +285,7 @@ export default class StreamingView extends Component {
           </p>
         );
       default:
-        return (
-          <p style={{ color: 'white' }}>Loading EdgeNode Stream</p>
-        );
+        return <p style={{ color: 'white' }}>Loading EdgeNode Stream</p>;
     }
   }
 }

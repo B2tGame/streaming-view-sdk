@@ -19,11 +19,12 @@ export default class EmulatorWebrtcView extends Component {
     jsep: PropTypes.object,
     /** Volume of the video element, value between 0 and 1.  */
     volume: PropTypes.number,
+    /** Audio is muted or enabled (un-muted) */
+    muted: PropTypes.bool,
     /** The width of the screen/video feed provided by the emulator */
     emulatorWidth: PropTypes.number,
     /** The height of the screen/video feed provided by the emulator */
     emulatorHeight: PropTypes.number,
-
     emulatorVersion: PropTypes.string
   };
 
@@ -31,10 +32,6 @@ export default class EmulatorWebrtcView extends Component {
     audio: false,
     video: false,
     playing: false
-  };
-
-  static defaultProps = {
-    volume: 1.0
   };
 
   constructor(props) {
@@ -82,32 +79,30 @@ export default class EmulatorWebrtcView extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.volume !== this.props.volume) {
-      this.updateVideoVolume();
+      this.updateVideoVolumeProp();
+    }
+
+    if (prevProps.muted !== this.props.muted) {
+      this.updateVideoMutedProp();
     }
   }
 
   /**
-   * Update volume of the video and mute/un-mute if neccesary
-   * Note: iOS - Safari doesn't support volume attribute, so video can be only muted or un-muted (after user interaction)
+   * Update video muted property based on React property, when there is an update
    */
-  updateVideoVolume() {
-    this.video.current.volume = this.props.volume;
-    if (this.props.volume > 0 && this.video.current.muted) {
-      this.unmuteVideo();
-    } else if (this.props.volume === 0 && this.video.current.muted === false) {
-      this.video.current.muted = true;
+  updateVideoMutedProp() {
+    if (this.isMountedInView && this.video.current && this.video.current.muted !== this.props.muted) {
+      this.video.current.muted = this.props.muted;
     }
   }
 
-  unmuteVideo() {
-    // Some devices is automatic unmuting and do a unmute result in broken stream
-    // Only change muted stated if required after giving the browser some time to act by it self.
-    if (this.isMountedInView && this.video.current && this.video.current.muted && this.props.volume > 0) {
-      setTimeout(() => {
-        if (this.isMountedInView && this.video.current && this.video.current.muted) {
-          this.video.current.muted = false;
-        }
-      }, 250);
+  /**
+   * Update video volume property based on React property, when there is an update
+   * Note: iOS - Safari doesn't support volume attribute, so video can be only muted or un-muted (after user interaction)
+   */
+  updateVideoVolumeProp() {
+    if (this.isMountedInView && this.video.current && this.video.current.volume !== this.props.volume) {
+      this.video.current.volume = this.props.volume;
     }
   }
 
@@ -132,8 +127,9 @@ export default class EmulatorWebrtcView extends Component {
       this.playVideo();
     }
 
-    // Un-muting video stream on first user interaction, volume of video stream can be changed dynamically
-    this.unmuteVideo();
+    this.updateVideoMutedProp();
+    this.updateVideoVolumeProp();
+
     if (this.isMountedInView && this.video.current && this.video.current.paused) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
     }
@@ -191,8 +187,9 @@ export default class EmulatorWebrtcView extends Component {
 
     const onUserInteractionCallback = () => {
       this.playVideo();
-      this.unmuteVideo();
-    }
+      this.updateVideoMutedProp();
+      this.updateVideoVolumeProp();
+    };
 
     StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_CAN_PLAY);
 
