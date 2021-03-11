@@ -40,7 +40,9 @@ export default class EventHandler extends Component {
     emulatorHeight: PropTypes.number,
     emulatorVersion: PropTypes.string,
     view: PropTypes.any.isRequired,
-    edgeNodeId: PropTypes.string.isRequired // report events during the streaming view.
+    edgeNodeId: PropTypes.string.isRequired, // report events during the streaming view.
+    volume: PropTypes.number,
+    muted: PropTypes.bool
   };
 
   static defaultProps = {
