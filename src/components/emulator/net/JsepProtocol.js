@@ -1,6 +1,8 @@
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import url from 'url';
 import StreamingEvent from '../../../StreamingEvent';
+import SDP from './SDP';
+
 
 /**
  * This drives the jsep protocol with the emulator, and can be used to
@@ -194,6 +196,9 @@ export default class JsepProtocol {
   _handleSDP = async (signal) => {
     this.peerConnection.setRemoteDescription(new RTCSessionDescription(signal));
     const answer = await this.peerConnection.createAnswer();
+    const sdp = new SDP(answer.sdp);
+    // sdp.setTargetBandwidth(1 * SDP.MEGABIT, 1 * SDP.MEGABIT);
+    answer.sdp = sdp.toString();
     if (answer) {
       this.peerConnection.setLocalDescription(answer);
       this._sendJsep({ sdp: answer });
