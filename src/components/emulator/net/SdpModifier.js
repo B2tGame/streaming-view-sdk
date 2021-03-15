@@ -3,14 +3,14 @@ import * as sdpTransform from 'sdp-transform';
 /**
  * SDP Protocol parser and editor.
  */
-export default class SDP {
+export default class SdpModifier {
 
   static get MEGABIT() {
     return 1024 * 1024;
   }
 
   /**
-   * Create a new SDP instances for modify SDP response before sending it to remote.
+   * Create a new SDP instance for modifying SDP response before sending it to remote.
    * @param {string} sdp
    */
   constructor(sdp) {
