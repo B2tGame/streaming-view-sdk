@@ -1,6 +1,8 @@
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import url from 'url';
 import StreamingEvent from '../../../StreamingEvent';
+import SdpModifier from './SdpModifier';
+
 
 /**
  * This drives the jsep protocol with the emulator, and can be used to
@@ -194,6 +196,11 @@ export default class JsepProtocol {
   _handleSDP = async (signal) => {
     this.peerConnection.setRemoteDescription(new RTCSessionDescription(signal));
     const answer = await this.peerConnection.createAnswer();
+    const sdp = new SdpModifier(answer.sdp);
+    // This will set the target bandwidth usage to 1 mbits/sec for both video and audio stream.
+    // The code is disable for now due to increased latency for everything above the default bandwidth.
+    // sdp.setTargetBandwidth(1 * SDP.MEGABIT, 1 * SDP.MEGABIT);
+    answer.sdp = sdp.toString();
     if (answer) {
       this.peerConnection.setLocalDescription(answer);
       this._sendJsep({ sdp: answer });
