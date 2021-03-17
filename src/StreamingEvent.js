@@ -293,10 +293,18 @@ export default class StreamingEvent {
     return 'moment-detector-event';
   }
 
+  /**
+   * Event emitted when a new edge node is detected by StreamingEvent handler.
+   * @return {string} 
+   */
   static get NEW_EDGE_NODE() {
     return 'new-edge-node';
   }
 
+  /**
+   * Event emitted by StreamingEvent handler when a edge node has been destroyed.
+   * @return {string}
+   */
   static get DESTROY_EDGE_NODE() {
     return 'destroy-edge-node';
   }
