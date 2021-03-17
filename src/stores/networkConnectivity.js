@@ -1,7 +1,6 @@
 import { getDeviceInfo } from './deviceInfo';
 import StreamingEvent from '../StreamingEvent';
 
-
 const axios = require('axios').default;
 const CancelToken = axios.CancelToken;
 
@@ -82,7 +81,7 @@ function getAdvancedMeasurement() {
    */
   const download = (url) => {
     if (StreamingEvent.getEdgeNodes().length) {
-      return Promise.resolve(false); // Abort the test due to we have one or more StreamingView running.
+      return Promise.resolve(false); // Abort the download test because we have one or more StreamingViews running.
     }
 
     let firstByteReceivedAt = undefined;
@@ -114,7 +113,7 @@ function getAdvancedMeasurement() {
           // An executor function receives a cancel function as a parameter
           cancelDownload = canceler;
           if (pendingCancel) {
-            // We can ending up in this case if we try to cancel the measurement before we got the cancel token.
+            // We can end up in this case when we try to cancel the measurement before we receive the cancel token.
             cancelDownload();
           }
         })

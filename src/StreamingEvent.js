@@ -294,7 +294,7 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event emitted when a new edge node is detected by StreamingEvent handler.
+   * Event fired when the new edge node is detected by StreamingEvent handler.
    * @return {string} 
    */
   static get NEW_EDGE_NODE() {
@@ -302,7 +302,7 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event emitted by StreamingEvent handler when a edge node has been destroyed.
+   * Event fired by StreamingEvent when the edge node has been destroyed.
    * @return {string}
    */
   static get DESTROY_EDGE_NODE() {
