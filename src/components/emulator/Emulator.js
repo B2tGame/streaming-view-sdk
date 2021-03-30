@@ -107,6 +107,7 @@ class Emulator extends Component {
   static defaultProps = {
     auth: null,
     poll: false,
+    maxConnectionRetries: Emulator.RELOAD_FAILURE_THRESHOLD
   };
 
   components = {
