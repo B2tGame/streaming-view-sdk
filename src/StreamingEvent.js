@@ -294,8 +294,16 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fired many times during a game session after (re)evaluation of the predicted game experience.
+   * @return {string}
+   */
+  static get PREDICTED_GAME_EXPERIENCE() {
+    return 'predicted-game-experience';
+  }
+
+  /**
    * Event fired when the new edge node is detected by StreamingEvent handler.
-   * @return {string} 
+   * @return {string}
    */
   static get NEW_EDGE_NODE() {
     return 'new-edge-node';
@@ -308,7 +316,6 @@ export default class StreamingEvent {
   static get DESTROY_EDGE_NODE() {
     return 'destroy-edge-node';
   }
-
 
   /**
    * Get EventEmitter for a specific Edge Node Id.

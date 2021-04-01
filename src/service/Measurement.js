@@ -153,11 +153,37 @@ export default class Measurement {
           ? (((report.totalDecodeTime || 0) - this.previousMeasurement.totalDecodeTime) * 1000) / this.measurement.framesDecodedPerSecond
           : 0;
       this.measurement.packetsLostPercent = (report.packetsLost * 100) / report.packetsReceived;
+      this.measurement.predictedGameExperience = this.calculatePredictedGameExperience(
+        ((report.packetsLost - this.previousMeasurement.packetsLost) * 100) /
+          (report.packetsReceived - this.previousMeasurement.packetsReceived)
+      ).toFixed(1);
 
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;
       this.previousMeasurement.totalDecodeTime = report.totalDecodeTime;
+      this.previousMeasurement.packetsLost = report.packetsLost;
+      this.previousMeasurement.packetsReceived = report.packetsReceived;
     }
+  }
+
+  /**
+   * Calculates a predicted game experience value bed on packet lost percent
+   * @param {number} plp Packet lost percent
+   * @return {number}
+   */
+  calculatePredictedGameExperience(plp) {
+    if (plp < 0.001) {
+      plp = 5.0;
+    } else if (plp <= 2.5) {
+      // y = 0.6 * x + 1
+      plp = 0.6 * plp + 1;
+    } else if (plp <= 5) {
+      // y = x
+    } else {
+      plp = 1.0;
+    }
+
+    return plp;
   }
 
   /**

@@ -130,7 +130,7 @@ class StreamingController {
       if (status.endpoint !== undefined) {
         return status.endpoint;
       } else {
-        throw new Error('Can\'t resolve Stream Endpoint, got: ' + JSON.stringify(status));
+        throw new Error("Can't resolve Stream Endpoint, got: " + JSON.stringify(status));
       }
     });
   }
@@ -239,4 +239,6 @@ factory.EVENT_REQUIRE_USER_PLAY_INTERACTION = StreamingEvent.REQUIRE_USER_PLAY_I
 factory.SDK_VERSION = StreamingController.SDK_VERSION;
 factory.EVENT_STREAM_READY = StreamingEvent.STREAM_READY;
 factory.EVENT_MOMENT_DETECTOR_EVENT = StreamingEvent.MOMENT_DETECTOR_EVENT;
+factory.EVENT_PREDICTED_GAME_EXPERIENCE = StreamingEvent.PREDICTED_GAME_EXPERIENCE;
+
 export default factory;
