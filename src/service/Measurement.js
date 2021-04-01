@@ -153,10 +153,13 @@ export default class Measurement {
           ? (((report.totalDecodeTime || 0) - this.previousMeasurement.totalDecodeTime) * 1000) / this.measurement.framesDecodedPerSecond
           : 0;
       this.measurement.packetsLostPercent = (report.packetsLost * 100) / report.packetsReceived;
-      this.measurement.predictedGameExperience = this.calculatePredictedGameExperience(
-        ((report.packetsLost - this.previousMeasurement.packetsLost) * 100) /
-          (report.packetsReceived - this.previousMeasurement.packetsReceived)
-      ).toFixed(1);
+      this.measurement.predictedGameExperience = this.round(
+        this.calculatePredictedGameExperience(
+          ((report.packetsLost - this.previousMeasurement.packetsLost) * 100) /
+            (report.packetsReceived - this.previousMeasurement.packetsReceived)
+        ),
+        1
+      );
 
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;
@@ -184,6 +187,17 @@ export default class Measurement {
     }
 
     return plp;
+  }
+
+  /**
+   * Rounds a value to a given precision
+   * @param {number} value
+   * @param {number} precision Number of decimals to keep
+   * @return {number}
+   */
+  round(value, precision) {
+    const multiplier = Math.pow(10, precision || 0);
+    return Math.round(value * multiplier) / multiplier;
   }
 
   /**
