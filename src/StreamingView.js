@@ -64,7 +64,7 @@ export default class StreamingView extends Component {
     enableFullScreen: true,
     enableControl: true,
     volume: 1.0,
-    muted: false,
+    muted: false
   };
 
   /**
@@ -196,7 +196,7 @@ export default class StreamingView extends Component {
     }, 50);
   };
 
-  shouldComponentUpdate(nextProps) {
+  shouldComponentUpdate(nextProps, nextState) {
     // List of fields that should not generate into a render operation.
     const whiteListedFields = ['streamQualityRating', 'onEvent'];
     if (nextProps.streamQualityRating !== this.props.streamQualityRating) {
@@ -219,7 +219,7 @@ export default class StreamingView extends Component {
     if (hasChanges.length > 0) {
       return hasChanges.filter((key) => whiteListedFields.indexOf(key) === -1).length !== 0;
     } else {
-      return true;
+      return this.state != nextState;
     }
   }
 
