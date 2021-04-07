@@ -4,6 +4,20 @@ import StreamingEvent from '../StreamingEvent';
  * Measurement class is responsible for processing and reporting measurement reports
  */
 export default class Measurement {
+  constructor(edgeNodeId) {
+    this.edgeNodeId = edgeNodeId;
+    this.networkRoundTripTime = 0;
+    this.streamQualityRating = 0;
+    this.previousMeasurement = this.defaultPreviousMeasurement();
+    this.measurement = {};
+
+    StreamingEvent.edgeNode(edgeNodeId)
+      .on(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
+      .on(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
+      .on(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
+      .on(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
+  }
+
   /**
    *
    * @return {string}
@@ -56,20 +70,6 @@ export default class Measurement {
    */
   static get REPORT_LABEL_TOUCH() {
     return 'touch';
-  }
-
-  constructor(edgeNodeId) {
-    this.edgeNodeId = edgeNodeId;
-    this.networkRoundTripTime = 0;
-    this.streamQualityRating = 0;
-    this.previousMeasurement = this.defaultPreviousMeasurement();
-    this.measurement = {};
-
-    StreamingEvent.edgeNode(edgeNodeId)
-      .on(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
-      .on(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
-      .on(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
-      .on(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
   }
 
   destroy() {
@@ -152,12 +152,39 @@ export default class Measurement {
         report.framesDecoded - this.previousMeasurement.framesDecoded !== 0
           ? (((report.totalDecodeTime || 0) - this.previousMeasurement.totalDecodeTime) * 1000) / this.measurement.framesDecodedPerSecond
           : 0;
-      this.measurement.packetsLostPercent = (report.packetsLost * 100) / report.packetsReceived;
+
+      const currentPacketsLost = report.packetsLost - this.previousMeasurement.packetsLost;
+      const currentPacketsReceived = report.packetsReceived - this.previousMeasurement.packetsReceived;
+      const expectedPacketsReceived = currentPacketsLost + currentPacketsReceived;
+      this.measurement.packetsLostPercent = (currentPacketsLost * 100) / expectedPacketsReceived;
+      this.measurement.predictedGameExperience = this.calculatePredictedGameExperience(this.measurement.packetsLostPercent);
 
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;
       this.previousMeasurement.totalDecodeTime = report.totalDecodeTime;
+      this.previousMeasurement.packetsLost = report.packetsLost;
+      this.previousMeasurement.packetsReceived = report.packetsReceived;
     }
+  }
+
+  /**
+   * Calculates a predicted game experience value based on packet lost percent
+   * @param {number} packetLostPercent
+   * @return {number}
+   */
+  calculatePredictedGameExperience(packetLostPercent) {
+    if (packetLostPercent < 0.001) {
+      packetLostPercent = 5.0;
+    } else if (packetLostPercent <= 2.5) {
+      // y = 0.6 * x + 1
+      packetLostPercent = 0.6 * packetLostPercent + 1;
+    } else if (packetLostPercent <= 5) {
+      // y = x
+    } else {
+      packetLostPercent = 1.0;
+    }
+
+    return packetLostPercent;
   }
 
   /**

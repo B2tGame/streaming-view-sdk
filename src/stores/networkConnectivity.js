@@ -1,4 +1,5 @@
 import { getDeviceInfo } from './deviceInfo';
+import StreamingEvent from '../StreamingEvent';
 
 const axios = require('axios').default;
 const CancelToken = axios.CancelToken;
@@ -79,9 +80,16 @@ function getAdvancedMeasurement() {
    * @return {Promise<boolean>}
    */
   const download = (url) => {
+    if (StreamingEvent.getEdgeNodes().length) {
+      return Promise.resolve(false); // Abort the download test because we have one or more StreamingViews running.
+    }
+
     let firstByteReceivedAt = undefined;
     let firstLoadedBytes = undefined;
-    let cancelDownload;
+    let pendingCancel = false;
+    let cancelDownload = () => pendingCancel = true;
+    const onNewEdgeNode = () => cancelDownload();
+    StreamingEvent.once(StreamingEvent.NEW_EDGE_NODE, onNewEdgeNode);
 
     return axios
       .get(url, {
@@ -96,7 +104,7 @@ function getAdvancedMeasurement() {
           } else {
             downloadSpeed = ((loaded - firstLoadedBytes) * 1000) / (dateNow - firstByteReceivedAt); // in bytes/sec
 
-            if (cancelDownload && dateNow >= firstByteReceivedAt + DOWNLOAD_SPEED_RACE_FOR_MS) {
+            if (dateNow >= firstByteReceivedAt + DOWNLOAD_SPEED_RACE_FOR_MS) {
               cancelDownload();
             }
           }
@@ -104,10 +112,17 @@ function getAdvancedMeasurement() {
         cancelToken: new CancelToken(function executor(canceler) {
           // An executor function receives a cancel function as a parameter
           cancelDownload = canceler;
+          if (pendingCancel) {
+            // We can end up in this case when we try to cancel the measurement before we receive the cancel token.
+            cancelDownload();
+          }
         })
       })
       .then(() => true)
-      .catch((err) => err.name !== 'Error');
+      .catch((err) => err.name !== 'Error')
+      .finally(() => {
+        StreamingEvent.off(StreamingEvent.NEW_EDGE_NODE, onNewEdgeNode);
+      });
   };
 
   /**
@@ -144,9 +159,9 @@ function getAdvancedMeasurement() {
     .then(() =>
       downloadSpeed
         ? {
-            downloadSpeed: downloadSpeed,
-            measurementLevel: MEASUREMENT_LEVEL_ADVANCED
-          }
+          downloadSpeed: downloadSpeed,
+          measurementLevel: MEASUREMENT_LEVEL_ADVANCED
+        }
         : {}
     );
 }
