@@ -173,15 +173,16 @@ export default class Measurement {
    * @return {number}
    */
   calculatePredictedGameExperience(packetLostPercent) {
-    if (packetLostPercent < 0.001) {
-      packetLostPercent = 5.0;
-    } else if (packetLostPercent <= 2.5) {
-      // y = 0.6 * x + 1
-      packetLostPercent = 0.6 * packetLostPercent + 1;
-    } else if (packetLostPercent <= 5) {
-      // y = x
-    } else {
+    if (packetLostPercent >= 5) {
       packetLostPercent = 1.0;
+    } else if (packetLostPercent >= 2.5) {
+      // y = 4 - 3/5 * x
+      packetLostPercent = 4 - (3 / 5) * packetLostPercent;
+    } else if (packetLostPercent >= 0) {
+      // y = 5 - x
+      packetLostPercent = 5 - packetLostPercent;
+    } else {
+      packetLostPercent = 5.0;
     }
 
     return packetLostPercent;
