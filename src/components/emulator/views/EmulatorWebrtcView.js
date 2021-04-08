@@ -94,7 +94,7 @@ export default class EmulatorWebrtcView extends Component {
     if (this.isMountedInView && this.video.current && this.video.current.muted !== this.props.muted) {
       const streamIsPaused = this.video.current.paused;
       this.video.current.muted = this.props.muted;
-      // Is video was paused after unmuting, fire unmute error event, mute video and play video
+      // If video was paused after unmuting, fire unmute error event, mute audio and play video
       // https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
       if (streamIsPaused === false && streamIsPaused !== this.video.current.paused) {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_UNMUTE_ERROR);
