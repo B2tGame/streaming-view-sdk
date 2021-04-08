@@ -64,7 +64,7 @@ export default class StreamingView extends Component {
     enableFullScreen: true,
     enableControl: true,
     volume: 1.0,
-    muted: false,
+    muted: false
   };
 
   /**
@@ -106,6 +106,7 @@ export default class StreamingView extends Component {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
     }
     window.addEventListener('resize', this.onResize);
+    window.addEventListener('error', this.onError);
 
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
@@ -128,7 +129,8 @@ export default class StreamingView extends Component {
 
     StreamingController({
       apiEndpoint: apiEndpoint,
-      edgeNodeId: edgeNodeId
+      edgeNodeId: edgeNodeId,
+      internalSession: internalSession
     })
       .then((controller) => controller.getStreamEndpoint())
       .then((streamEndpoint) => {
@@ -176,6 +178,7 @@ export default class StreamingView extends Component {
       this.LogQueueService.destroy();
     }
     window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('error', this.onError);
     StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
   }
 
@@ -196,7 +199,19 @@ export default class StreamingView extends Component {
     }, 50);
   };
 
-  shouldComponentUpdate(nextProps) {
+  /**
+   * Trigger event when error occurs
+   */
+  onError = (error) => {
+    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.ERROR_BROWSER, {
+      message: error.message,
+      filename: error.filename,
+      stack: error.stack
+    });
+    return false;
+  };
+
+  shouldComponentUpdate(nextProps, nextState) {
     // List of fields that should not generate into a render operation.
     const whiteListedFields = ['streamQualityRating', 'onEvent'];
     if (nextProps.streamQualityRating !== this.props.streamQualityRating) {
@@ -219,7 +234,7 @@ export default class StreamingView extends Component {
     if (hasChanges.length > 0) {
       return hasChanges.filter((key) => whiteListedFields.indexOf(key) === -1).length !== 0;
     } else {
-      return true;
+      return this.state !== nextState;
     }
   }
 
