@@ -35,6 +35,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fired when browser error occurs
+   * @return {string}
+   */
+  static get ERROR_BROWSER() {
+    return 'error-browser';
+  }
+
+  /**
    * Event that is fire when the SDK reciving the edge node are ready to accept a connection.
    * @return {string}
    */

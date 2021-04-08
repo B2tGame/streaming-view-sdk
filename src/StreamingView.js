@@ -203,9 +203,10 @@ export default class StreamingView extends Component {
    * Trigger event when error occurs
    */
   onError = (error) => {
-    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.ERROR, {
+    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.ERROR_BROWSER, {
       message: error.message,
-      filename: error.filename
+      filename: error.filename,
+      stack: error.stack
     });
     return false;
   };
