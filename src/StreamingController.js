@@ -27,7 +27,7 @@ class StreamingController {
    * @param {object} props
    * @param {string} props.apiEndpoint
    * @param {string} props.edgeNodeId Optional parameters, require for some of the API.
-   * @param {string} props.internalSession Optional parameters for tell this is a internal session or not.
+   * @param {string} props.internalSession Optional parameter for flagging if the session is internal.
    */
   constructor(props) {
     if (!props.apiEndpoint) {
@@ -146,7 +146,7 @@ class StreamingController {
   }
 
   /**
-   * Internal Session
+   * Determine if the session is internal.
    * @return {boolean}
    */
   isInternalSession() {
