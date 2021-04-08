@@ -35,6 +35,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fired when browser error occurs
+   * @return {string}
+   */
+  static get ERROR_BROWSER() {
+    return 'error-browser';
+  }
+
+  /**
    * Event that is fire when the SDK reciving the edge node are ready to accept a connection.
    * @return {string}
    */
@@ -251,6 +259,14 @@ export default class StreamingEvent {
    */
   static get STREAM_AUDIO_UNAVAILABLE() {
     return 'stream-audio-unavailable';
+  }
+
+  /**
+   * Event fired when the audio unmute action paused the video
+   * @return {string}
+   */
+  static get STREAM_AUDIO_UNMUTE_ERROR() {
+    return 'stream-audio-unmute-error';
   }
 
   /**

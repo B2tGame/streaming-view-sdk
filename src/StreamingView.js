@@ -106,6 +106,7 @@ export default class StreamingView extends Component {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
     }
     window.addEventListener('resize', this.onResize);
+    window.addEventListener('error', this.onError);
 
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
@@ -177,6 +178,7 @@ export default class StreamingView extends Component {
       this.LogQueueService.destroy();
     }
     window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('error', this.onError);
     StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
   }
 
@@ -195,6 +197,18 @@ export default class StreamingView extends Component {
         });
       }
     }, 50);
+  };
+
+  /**
+   * Trigger event when error occurs
+   */
+  onError = (error) => {
+    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.ERROR_BROWSER, {
+      message: error.message,
+      filename: error.filename,
+      stack: error.stack
+    });
+    return false;
   };
 
   shouldComponentUpdate(nextProps, nextState) {
