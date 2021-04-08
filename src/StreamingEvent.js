@@ -254,7 +254,7 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event fired when the audio unmute was blocked by a browser
+   * Event fired when the audio unmute action paused the video
    * @return {string}
    */
   static get STREAM_AUDIO_UNMUTE_ERROR() {
