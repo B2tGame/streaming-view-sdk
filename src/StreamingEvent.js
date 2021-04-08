@@ -254,6 +254,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fired when the audio unmute was blocked by a browser
+   * @return {string}
+   */
+  static get STREAM_AUDIO_UNMUTE_ERROR() {
+    return 'stream-audio-unmute-error';
+  }
+
+  /**
    * Report that should be sent up to the backend from user clicked play until stream video is playing
    * @return {string}
    */
