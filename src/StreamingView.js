@@ -219,7 +219,7 @@ export default class StreamingView extends Component {
     if (hasChanges.length > 0) {
       return hasChanges.filter((key) => whiteListedFields.indexOf(key) === -1).length !== 0;
     } else {
-      return this.state != nextState;
+      return this.state !== nextState;
     }
   }
 
