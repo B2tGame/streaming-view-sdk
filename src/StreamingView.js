@@ -128,7 +128,8 @@ export default class StreamingView extends Component {
 
     StreamingController({
       apiEndpoint: apiEndpoint,
-      edgeNodeId: edgeNodeId
+      edgeNodeId: edgeNodeId,
+      internalSession: internalSession
     })
       .then((controller) => controller.getStreamEndpoint())
       .then((streamEndpoint) => {

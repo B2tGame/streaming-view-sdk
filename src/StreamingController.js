@@ -27,6 +27,7 @@ class StreamingController {
    * @param {object} props
    * @param {string} props.apiEndpoint
    * @param {string} props.edgeNodeId Optional parameters, require for some of the API.
+   * @param {string} props.internalSession Optional parameters for tell this is a internal session or not.
    */
   constructor(props) {
     if (!props.apiEndpoint) {
@@ -34,6 +35,7 @@ class StreamingController {
     }
     this.apiEndpoint = props.apiEndpoint;
     this.edgeNodeId = props.edgeNodeId || undefined;
+    this.internalSession = props.internalSession || false;
   }
 
   /**
@@ -130,7 +132,7 @@ class StreamingController {
       if (status.endpoint !== undefined) {
         return status.endpoint;
       } else {
-        throw new Error("Can't resolve Stream Endpoint, got: " + JSON.stringify(status));
+        throw new Error('Can\'t resolve Stream Endpoint, got: ' + JSON.stringify(status));
       }
     });
   }
@@ -141,6 +143,14 @@ class StreamingController {
    */
   getApiEndpoint() {
     return this.apiEndpoint;
+  }
+
+  /**
+   * Internal Session
+   * @return {boolean}
+   */
+  isInternalSession() {
+    return this.internalSession;
   }
 
   /**
@@ -198,7 +208,8 @@ class StreamingController {
     };
 
     return this.getEdgeNodeId().then((edgeNodeId) => {
-      return retry(() => getStatus(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}?wait=1`, 5000), timeout);
+      const internalSession = this.isInternalSession() ? '&internal=true' : '';
+      return retry(() => getStatus(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}?wait=1${internalSession}`, 5000), timeout);
     });
   }
 
