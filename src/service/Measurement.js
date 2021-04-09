@@ -86,6 +86,10 @@ export default class Measurement {
 
   onRoundTripTimeMeasurement = (networkRoundTripTime) => {
     this.networkRoundTripTime = networkRoundTripTime;
+    this.measurement.jitter = Math.abs(this.previousMeasurement.networkRoundTripTime - networkRoundTripTime);
+
+    this.previousMeasurement.networkRoundTripTime = networkRoundTripTime;
+
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
   };
 
@@ -110,6 +114,9 @@ export default class Measurement {
       framesDropped: null,
       messagesSentMouse: 0,
       messagesSentTouch: 0,
+      packetsLost: 0,
+      packetsReceived: 0,
+      networkRoundTripTime: 0,
       measureAt: Date.now()
     };
   }
@@ -158,6 +165,11 @@ export default class Measurement {
       const expectedPacketsReceived = currentPacketsLost + currentPacketsReceived;
       this.measurement.packetsLostPercent = (currentPacketsLost * 100) / expectedPacketsReceived;
       this.measurement.predictedGameExperience = this.calculatePredictedGameExperience(this.measurement.packetsLostPercent);
+      this.measurement.mos = this.calculateMosValue(
+        this.networkRoundTripTime,
+        this.measurement.jitter,
+        this.measurement.packetsLostPercent
+      );
 
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;
@@ -186,6 +198,19 @@ export default class Measurement {
     }
 
     return packetLostPercent;
+  }
+
+  /**
+   * Calculates MOS value based on on round trip time, jitter and packets lost.
+   * @param rtt
+   * @param jitter
+   * @param packetsLost
+   * @return {number} MOS value
+   */
+  calculateMosValue(rtt, jitter, packetsLost = 0) {
+    const effectiveLatency = rtt * 2 + jitter * 2 + 10;
+    const r = (effectiveLatency < 160 ? 93.2 - effectiveLatency / 40 : 93.2 - (effectiveLatency - 120) / 10) - packetsLost * 0.025;
+    return r < 0 ? 1 : 1 + 0.035 * r + 0.000007 * r * (r - 60) * (100 - r);
   }
 
   /**
