@@ -208,7 +208,7 @@ class StreamingController {
     };
 
     return this.getEdgeNodeId().then((edgeNodeId) => {
-      const internalSession = this.isInternalSession() ? '&internal=true' : '';
+      const internalSession = this.isInternalSession() ? '&internal=1' : '';
       return retry(() => getStatus(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}?wait=1${internalSession}`, 5000), timeout);
     });
   }
