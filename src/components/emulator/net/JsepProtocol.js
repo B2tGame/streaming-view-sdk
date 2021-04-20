@@ -1,6 +1,8 @@
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import url from 'url';
 import StreamingEvent from '../../../StreamingEvent';
+import SdpModifier from './SdpModifier';
+
 
 /**
  * This drives the jsep protocol with the emulator, and can be used to
@@ -99,6 +101,12 @@ export default class JsepProtocol {
     if (this.streamConnectedTimestamp === undefined) {
       this.streamConnectedTimestamp = Date.now();
     }
+
+    if (event.receiver) {
+      // On supported devices, playoutDelayHint can be used for set a recommended latency of the playback
+      // A low value will come with cost of higher frames drope etc.
+      event.receiver.playoutDelayHint = 0;
+    }
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_CONNECTED, event.track);
   };
 
@@ -167,7 +175,6 @@ export default class JsepProtocol {
       iceTransportPolicy: 'relay'
     };
     this.peerConnection = new RTCPeerConnection(signal.start);
-
     StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
 
     this.peerConnection.addEventListener('track', this._handlePeerConnectionTrack, false);
@@ -189,6 +196,11 @@ export default class JsepProtocol {
   _handleSDP = async (signal) => {
     this.peerConnection.setRemoteDescription(new RTCSessionDescription(signal));
     const answer = await this.peerConnection.createAnswer();
+    const sdp = new SdpModifier(answer.sdp);
+    // This will set the target bandwidth usage to 1 mbits/sec for both video and audio stream.
+    // The code is disable for now due to increased latency for everything above the default bandwidth.
+    // sdp.setTargetBandwidth(1 * SDP.MEGABIT, 1 * SDP.MEGABIT);
+    answer.sdp = sdp.toString();
     if (answer) {
       this.peerConnection.setLocalDescription(answer);
       this._sendJsep({ sdp: answer });

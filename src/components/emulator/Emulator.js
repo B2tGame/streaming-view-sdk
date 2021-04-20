@@ -82,6 +82,8 @@ class Emulator extends Component {
     auth: PropTypes.object,
     /** Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100% */
     volume: PropTypes.number,
+    /** Audio is muted or enabled (un-muted) */
+    muted: PropTypes.bool,
     /** The underlying view used to display the emulator, one of ["webrtc", "png"] */
     view: PropTypes.oneOf(['webrtc', 'png']),
     /** True if polling should be used, only set this to true if you are using the go webgrpc proxy. */
@@ -103,12 +105,8 @@ class Emulator extends Component {
   };
 
   static defaultProps = {
-    view: 'webrtc',
     auth: null,
     poll: false,
-    volume: 1.0,
-    enableFullScreen: true,
-    enableControl: true,
     maxConnectionRetries: Emulator.RELOAD_FAILURE_THRESHOLD
   };
 
@@ -221,7 +219,7 @@ class Emulator extends Component {
   }
 
   render() {
-    const { view, poll, volume, enableFullScreen, enableControl, uri, emulatorWidth, emulatorHeight, emulatorVersion } = this.props;
+    const { view, poll, volume, muted, enableFullScreen, enableControl, uri, emulatorWidth, emulatorHeight, emulatorVersion } = this.props;
     return (
       <EventHandler
         key={this.state.streamingConnectionId}
@@ -234,6 +232,7 @@ class Emulator extends Component {
         jsep={this.jsep}
         poll={poll}
         volume={volume}
+        muted={muted}
         onAudioStateChange={this.onAudioStateChange}
         enableFullScreen={enableFullScreen}
         enableControl={enableControl}

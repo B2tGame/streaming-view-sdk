@@ -1,5 +1,8 @@
 import EventEmitter from 'eventemitter3';
 
+/**
+ * Extend Event Emitter with an emit that always send the event to 'event' target
+ */
 class ExtendedEventEmitter extends EventEmitter {
   emit(event, data) {
     super.emit('event', event, data);
@@ -29,6 +32,14 @@ export default class StreamingEvent {
    */
   static get ERROR() {
     return 'error';
+  }
+
+  /**
+   * Event fired when browser error occurs
+   * @return {string}
+   */
+  static get ERROR_BROWSER() {
+    return 'error-browser';
   }
 
   /**
@@ -251,6 +262,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fired when the audio unmute action paused the video
+   * @return {string}
+   */
+  static get STREAM_AUDIO_UNMUTE_ERROR() {
+    return 'stream-audio-unmute-error';
+  }
+
+  /**
    * Report that should be sent up to the backend from user clicked play until stream video is playing
    * @return {string}
    */
@@ -291,6 +310,30 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fired many times during a game session after (re)evaluation of the predicted game experience.
+   * @return {string}
+   */
+  static get PREDICTED_GAME_EXPERIENCE() {
+    return 'predicted-game-experience';
+  }
+
+  /**
+   * Event fired when the new edge node is detected by StreamingEvent handler.
+   * @return {string}
+   */
+  static get NEW_EDGE_NODE() {
+    return 'new-edge-node';
+  }
+
+  /**
+   * Event fired by StreamingEvent when the edge node has been destroyed.
+   * @return {string}
+   */
+  static get DESTROY_EDGE_NODE() {
+    return 'destroy-edge-node';
+  }
+
+  /**
    * Get EventEmitter for a specific Edge Node Id.
    * This will automatic create a new Event emitter if missing.
    * @param {string} edgeNodeId
@@ -299,8 +342,17 @@ export default class StreamingEvent {
   static edgeNode(edgeNodeId) {
     if (edgeNodeEventEmitter[edgeNodeId] === undefined) {
       edgeNodeEventEmitter[edgeNodeId] = new ExtendedEventEmitter();
+      this.emit(StreamingEvent.NEW_EDGE_NODE, edgeNodeId);
     }
     return edgeNodeEventEmitter[edgeNodeId];
+  }
+
+  /**
+   * Get list of edge nodes.
+   * @return {string[]}
+   */
+  static getEdgeNodes() {
+    return Object.keys(edgeNodeEventEmitter);
   }
 
   /**
@@ -311,9 +363,10 @@ export default class StreamingEvent {
    */
   static destroyEdgeNode(edgeNodeId) {
     const emitter = edgeNodeEventEmitter[edgeNodeId];
-    edgeNodeEventEmitter[edgeNodeId] = undefined;
     if (emitter) {
+      delete edgeNodeEventEmitter[edgeNodeId];
       emitter.removeAllListeners();
+      this.emit(StreamingEvent.DESTROY_EDGE_NODE, edgeNodeId);
     }
   }
 
@@ -324,6 +377,7 @@ export default class StreamingEvent {
    */
   static on(event, callback) {
     globalEventEmitter.on(event, callback);
+    return this;
   }
 
   /**
@@ -333,6 +387,7 @@ export default class StreamingEvent {
    */
   static once(event, callback) {
     globalEventEmitter.once(event, callback);
+    return this;
   }
 
   /**
@@ -342,6 +397,7 @@ export default class StreamingEvent {
    */
   static off(event, callback) {
     globalEventEmitter.off(event, callback);
+    return this;
   }
 
   /**

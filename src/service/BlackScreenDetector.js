@@ -32,7 +32,8 @@ export default class BlackScreenDetector {
       StreamingEvent.WEB_RTC_MEASUREMENT,
       StreamingEvent.REPORT_MEASUREMENT,
       StreamingEvent.STREAM_BLACK_SCREEN,
-      StreamingEvent.STREAM_VIDEO_SCREENSHOT
+      StreamingEvent.STREAM_VIDEO_SCREENSHOT,
+      StreamingEvent.MOMENT_DETECTOR_EVENT
     ];
   }
 

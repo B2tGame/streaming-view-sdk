@@ -20,6 +20,16 @@ export default class StreamCaptureService {
   }
 
   /**
+   * Ratio used for defining how many pixels should be analysed from the screenshot. Ratio 3 will
+   * use every 3th pixel from axis x and y means that ~11% of image pixel will be analysed.
+   * Image 36x64 = 2304 pixels, with ratio 3 (36/3)x(64/3) = 256 pixels to be analysed
+   * @return {number}
+   */
+  static get SCREEN_PIXEL_RATIO() {
+    return 3;
+  }
+
+  /**
    * @param {string} edgeNodeId
    * @param video Reference to HTML Video element
    * @param canvas Reference to HTML Canvas element
@@ -38,46 +48,45 @@ export default class StreamCaptureService {
    */
   captureScreenshot = (emulatorWidth, emulatorHeight) => {
     const captureVideoStreamStartTime = Date.now();
+    const scaledWidth = emulatorWidth / StreamCaptureService.CANVAS_SCALE_FACTOR;
+    const scaledHeight = emulatorHeight / StreamCaptureService.CANVAS_SCALE_FACTOR;
+    const offset = StreamCaptureService.SCREEN_DETECTOR_OFFSET;
 
     if (this.canvas.current && this.video.current) {
       const ctx = this.canvas.current.getContext('2d');
-      ctx.drawImage(
-        this.video.current,
-        0,
-        0,
-        emulatorWidth / StreamCaptureService.CANVAS_SCALE_FACTOR,
-        emulatorHeight / StreamCaptureService.CANVAS_SCALE_FACTOR
-      );
-      const rawImage = ctx.getImageData(
-        0,
-        0,
-        emulatorWidth / StreamCaptureService.CANVAS_SCALE_FACTOR,
-        emulatorHeight / StreamCaptureService.CANVAS_SCALE_FACTOR
-      );
-      const offset = StreamCaptureService.SCREEN_DETECTOR_OFFSET;
-      const borderPixels = [
-        this.getPixel(rawImage, rawImage.width * offset * 4 + offset * 4), // Top Left
-        this.getPixel(rawImage, rawImage.width * offset * 4 + (rawImage.width / 2) * 4), // Top Middle
-        this.getPixel(rawImage, rawImage.width * offset * 4 + (rawImage.width - offset) * 4), // Top Right
-        this.getPixel(rawImage, rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width - offset) * 4), // Middle Right
-        this.getPixel(rawImage, rawImage.width * (rawImage.height - offset) * 4 + offset * 4), // Bottom Left
-        this.getPixel(rawImage, rawImage.width * (rawImage.height - offset) * 4 + (rawImage.width / 2) * 4), // Bottom Right
-        this.getPixel(rawImage, rawImage.width * (rawImage.height - offset) * 4 + (rawImage.width - offset) * 4), // Bottom Right
-        this.getPixel(rawImage, rawImage.width * (rawImage.height / 2) * 4 + offset * 4) // Middle Left
-      ];
-      const centerPixels = [
-        this.getPixel(rawImage, rawImage.width * (rawImage.height / 2) * 4 + (rawImage.width / 2) * 4) // Center Center
-      ];
+      ctx.drawImage(this.video.current, 0, 0, scaledWidth, scaledHeight);
+      const rawImage = ctx.getImageData(0, 0, scaledWidth, scaledHeight);
 
-      const hasVideo = ![].concat(borderPixels, centerPixels).every((pixel) => this.isDarkGrey(pixel));
+      const pixels = [];
+
+      // Offset is used to avoid corners of the stream video to lower number of faulty video pixels
+      for (let y = offset; y < scaledHeight - offset; y = y + StreamCaptureService.SCREEN_PIXEL_RATIO) {
+        for (let x = offset; x < scaledWidth - offset; x = x + StreamCaptureService.SCREEN_PIXEL_RATIO) {
+          // rawImage including RGBA color values, where A is alpha channel, which specifies the opacity for a color
+          pixels.push(this.getPixel(rawImage, (y * (scaledWidth - offset) + x) * 4));
+        }
+      }
+
+      const averagePixelColor = this.avgColor(pixels);
+      const hasVideo = !pixels.every((pixel) => this.isDarkGrey(pixel) && this.isSameColor(averagePixelColor, pixel));
+
       StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_SCREENSHOT, {
         hasVideo: hasVideo,
-        borderColor: this.rgbToHex(this.avgColor(borderPixels)),
         captureProcessingTime: Date.now() - captureVideoStreamStartTime,
-        screenshot: !hasVideo ? this.canvas.current.toDataURL('image/jpeg') : undefined
+        screenshot: this.canvas.current.toDataURL('image/jpeg')
       });
     }
   };
+
+  /**
+   * Check if color of pixel is "same", there is a tolerance of 15 - from RGB color model
+   * @param {{red: number, green: number, blue: number}} pixel1
+   * @param {{red: number, green: number, blue: number}} pixel2
+   * @return {boolean}
+   */
+  isSameColor(pixel1, pixel2) {
+    return Math.abs(pixel1.red - pixel2.red) < 15 && Math.abs(pixel1.green - pixel2.green) < 15 && Math.abs(pixel1.blue - pixel2.blue) < 15;
+  }
 
   /**
    * Test if a color is dark grey (including total black)

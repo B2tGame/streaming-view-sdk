@@ -57,7 +57,7 @@ export default class StreamSocket {
           }
         }
       } else if (message.name === 'moment-detector-event') {
-        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.MOMENT_EVENT, message.payload || {});
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.MOMENT_DETECTOR_EVENT, message.payload || {});
       }
     });
     // Send measurement report to the backend.

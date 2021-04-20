@@ -45,6 +45,7 @@ export default class StreamingView extends Component {
       enableFullScreen: PropTypes.bool, // Can be changed dynamically
       view: PropTypes.oneOf(['webrtc', 'png']), // Can't be changed after creation
       volume: PropTypes.number, // Can be changed dynamically, Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
+      muted: PropTypes.bool, // Can be changed dynamically
       onEvent: PropTypes.func, // Can't be changed after creation
       streamQualityRating: PropTypes.number, // Can be changed dynamically
       enableDebug: PropTypes.bool, // Can't be changed after creation
@@ -57,6 +58,14 @@ export default class StreamingView extends Component {
   }
 
   static propTypes = StreamingView.PROP_TYPES;
+
+  static defaultProps = {
+    view: 'webrtc',
+    enableFullScreen: true,
+    enableControl: true,
+    volume: 1.0,
+    muted: false
+  };
 
   /**
    * Player is a user with enabled control
@@ -97,6 +106,7 @@ export default class StreamingView extends Component {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
     }
     window.addEventListener('resize', this.onResize);
+    window.addEventListener('error', this.onError);
 
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
@@ -119,7 +129,8 @@ export default class StreamingView extends Component {
 
     StreamingController({
       apiEndpoint: apiEndpoint,
-      edgeNodeId: edgeNodeId
+      edgeNodeId: edgeNodeId,
+      internalSession: internalSession
     })
       .then((controller) => controller.getStreamEndpoint())
       .then((streamEndpoint) => {
@@ -167,6 +178,7 @@ export default class StreamingView extends Component {
       this.LogQueueService.destroy();
     }
     window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('error', this.onError);
     StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
   }
 
@@ -187,7 +199,19 @@ export default class StreamingView extends Component {
     }, 50);
   };
 
-  shouldComponentUpdate(nextProps) {
+  /**
+   * Trigger event when error occurs
+   */
+  onError = (error) => {
+    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.ERROR_BROWSER, {
+      message: error.message,
+      filename: error.filename,
+      stack: error.stack
+    });
+    return false;
+  };
+
+  shouldComponentUpdate(nextProps, nextState) {
     // List of fields that should not generate into a render operation.
     const whiteListedFields = ['streamQualityRating', 'onEvent'];
     if (nextProps.streamQualityRating !== this.props.streamQualityRating) {
@@ -197,8 +221,12 @@ export default class StreamingView extends Component {
     }
 
     if (nextProps.onEvent !== this.props.onEvent) {
-      StreamingEvent.edgeNode(this.props.edgeNodeId).off('event', this.props.onEvent);
-      StreamingEvent.edgeNode(this.props.edgeNodeId).on('event', nextProps.onEvent);
+      if (this.props.onEvent) {
+        StreamingEvent.edgeNode(this.props.edgeNodeId).off('event', this.props.onEvent);
+      }
+      if (nextProps.onEvent) {
+        StreamingEvent.edgeNode(this.props.edgeNodeId).on('event', nextProps.onEvent);
+      }
     }
 
     // Do not render if there are only changes in the whitelisted props attributes.
@@ -206,7 +234,7 @@ export default class StreamingView extends Component {
     if (hasChanges.length > 0) {
       return hasChanges.filter((key) => whiteListedFields.indexOf(key) === -1).length !== 0;
     } else {
-      return true;
+      return this.state !== nextState;
     }
   }
 
@@ -240,7 +268,7 @@ export default class StreamingView extends Component {
   }
 
   render() {
-    const { enableControl, enableFullScreen, view, volume, edgeNodeId, height: propsHeight, width: propsWidth } = this.props;
+    const { enableControl, enableFullScreen, view, volume, muted, edgeNodeId, height: propsHeight, width: propsWidth } = this.props;
     const { height: stateHeight, width: stateWidth } = this.state;
 
     switch (this.state.isReadyStream) {
@@ -254,6 +282,7 @@ export default class StreamingView extends Component {
               enableFullScreen={enableFullScreen}
               view={view}
               volume={volume}
+              muted={muted}
               poll={true}
               emulatorWidth={this.state.emulatorWidth}
               emulatorHeight={this.state.emulatorHeight}
@@ -271,7 +300,7 @@ export default class StreamingView extends Component {
           </p>
         );
       default:
-        return <p>Loading EdgeNode Stream</p>;
+        return <p style={{ color: 'white' }}>Loading EdgeNode Stream</p>;
     }
   }
 }

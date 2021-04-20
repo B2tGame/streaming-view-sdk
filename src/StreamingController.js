@@ -27,6 +27,7 @@ class StreamingController {
    * @param {object} props
    * @param {string} props.apiEndpoint
    * @param {string} props.edgeNodeId Optional parameters, require for some of the API.
+   * @param {string} props.internalSession Optional parameter for flagging if the session is internal.
    */
   constructor(props) {
     if (!props.apiEndpoint) {
@@ -34,6 +35,7 @@ class StreamingController {
     }
     this.apiEndpoint = props.apiEndpoint;
     this.edgeNodeId = props.edgeNodeId || undefined;
+    this.internalSession = props.internalSession || false;
   }
 
   /**
@@ -155,6 +157,14 @@ class StreamingController {
   }
 
   /**
+   * Determine if the session is internal.
+   * @return {boolean}
+   */
+  isInternalSession() {
+    return this.internalSession;
+  }
+
+  /**
    * Wait for the edge node to be ready before the promise will resolve.
    * @param {number} timeout Max duration the waitFor should wait before reject with an timeout exception.
    * @returns {Promise<{status: string, endpoint: string}>}
@@ -209,7 +219,8 @@ class StreamingController {
     };
 
     return this.getEdgeNodeId().then((edgeNodeId) => {
-      return retry(() => getStatus(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}?wait=1`, 5000), timeout);
+      const internalSession = this.isInternalSession() ? '&internal=1' : '';
+      return retry(() => getStatus(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}?wait=1${internalSession}`, 5000), timeout);
     });
   }
 
@@ -250,4 +261,6 @@ factory.EVENT_REQUIRE_USER_PLAY_INTERACTION = StreamingEvent.REQUIRE_USER_PLAY_I
 factory.SDK_VERSION = StreamingController.SDK_VERSION;
 factory.EVENT_STREAM_READY = StreamingEvent.STREAM_READY;
 factory.EVENT_MOMENT_DETECTOR_EVENT = StreamingEvent.MOMENT_DETECTOR_EVENT;
+factory.EVENT_PREDICTED_GAME_EXPERIENCE = StreamingEvent.PREDICTED_GAME_EXPERIENCE;
+
 export default factory;
