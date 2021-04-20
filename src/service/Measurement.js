@@ -65,7 +65,7 @@ class PredictGameExperience {
     highRoundTripTimeGain = 150,
     highRoundTripTimeLowerThreshold = 0.5,
     risingEdgeCountGain = 0.7, // 0.6
-    risingEdgeCountPower = 1.25, // 1.25
+    risingEdgeCountPower = 1.25,
     finalGain = 1.1
   ) {
     this.sampleSize = sampleSize;
@@ -230,10 +230,6 @@ export default class Measurement {
 
   onRoundTripTimeMeasurement = (networkRoundTripTime) => {
     this.networkRoundTripTime = networkRoundTripTime;
-    this.measurement.jitter = Math.abs(this.previousMeasurement.networkRoundTripTime - networkRoundTripTime);
-
-    this.previousMeasurement.networkRoundTripTime = networkRoundTripTime;
-
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
   };
 
@@ -312,11 +308,6 @@ export default class Measurement {
         this.networkRoundTripTime,
         this.measurement.packetsLostPercent
       );
-      this.measurement.mos = this.calculateMosValue(
-        this.networkRoundTripTime,
-        this.measurement.jitter,
-        this.measurement.packetsLostPercent
-      );
 
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;
@@ -327,41 +318,7 @@ export default class Measurement {
   }
 
   /**
-   * Calculates a predicted game experience value based on packet lost percent
-   * @param {number} packetLostPercent
-   * @return {number}
-   */
-  calculatePredictedGameExperienceBasic(packetLostPercent) {
-    if (packetLostPercent >= 5) {
-      packetLostPercent = 1.0;
-    } else if (packetLostPercent >= 2.5) {
-      // y = 4 - 3/5 * x
-      packetLostPercent = 4 - (3 / 5) * packetLostPercent;
-    } else if (packetLostPercent >= 0) {
-      // y = 5 - x
-      packetLostPercent = 5 - packetLostPercent;
-    } else {
-      packetLostPercent = 5.0;
-    }
-
-    return packetLostPercent;
-  }
-
-  /**
-   * Calculates MOS value based on on round trip time, jitter and packets lost.
-   * @param rtt
-   * @param jitter
-   * @param packetsLost
-   * @return {number} MOS value
-   */
-  calculateMosValue(rtt, jitter, packetsLost = 0) {
-    const effectiveLatency = rtt * 2 + jitter * 2 + 10;
-    const r = (effectiveLatency < 160 ? 93.2 - effectiveLatency / 40 : 93.2 - (effectiveLatency - 120) / 10) - packetsLost * 0.025;
-    return r < 0 ? 1 : 1 + 0.035 * r + 0.000007 * r * (r - 60) * (100 - r);
-  }
-
-  /**
-   * Calculates a predicted game experience value based on packet lost percent
+   * Calculates a predicted game experience value based on rtt and packet lost percent
    * @param {number} rtt
    * @param {number} packetLostPercent
    * @return {number}
