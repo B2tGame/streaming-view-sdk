@@ -264,6 +264,24 @@ export default class StreamingView extends Component {
         value: 1,
         message: `User event - ${StreamingEvent.USER_STARTS_PLAYING}: Video is playing.`
       });
+
+      StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_AUDIO_CODEC, (codec) => {
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.USER_EVENT_REPORT, {
+          role: role,
+          eventType: StreamingEvent.STREAM_AUDIO_CODEC,
+          value: codec,
+          message: `Audio codec - ${StreamingEvent.STREAM_AUDIO_CODEC}: ${codec}`
+        });
+      });
+      
+      StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_VIDEO_CODEC, (codec) => {
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.USER_EVENT_REPORT, {
+          role: role,
+          eventType: StreamingEvent.STREAM_VIDEO_CODEC,
+          value: codec,
+          message: `User event - ${StreamingEvent.STREAM_VIDEO_CODEC}: ${codec}.`
+        });
+      });
     });
   }
 
