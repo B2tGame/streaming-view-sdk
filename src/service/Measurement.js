@@ -256,7 +256,6 @@ export default class Measurement {
       messagesSentTouch: 0,
       packetsLost: 0,
       packetsReceived: 0,
-      networkRoundTripTime: 0,
       measureAt: Date.now()
     };
   }
@@ -328,7 +327,7 @@ export default class Measurement {
       this.predictGameExperience = new PredictGameExperience();
     }
 
-    return this.predictGameExperience.predict(parseFloat(rtt), parseFloat(packetLostPercent));
+    return this.predictGameExperience.predict(rtt, packetLostPercent);
   }
 
   /**
