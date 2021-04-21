@@ -270,7 +270,7 @@ export default class StreamingView extends Component {
           role: role,
           eventType: StreamingEvent.STREAM_AUDIO_CODEC,
           value: codec,
-          message: `Audio codec - ${StreamingEvent.STREAM_AUDIO_CODEC}: ${codec}`
+          message: `User event - ${StreamingEvent.STREAM_AUDIO_CODEC}: ${codec}`
         });
       });
       
