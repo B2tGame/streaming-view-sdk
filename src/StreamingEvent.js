@@ -222,6 +222,22 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fires on first user interaction with audio codec
+   * @return {string}
+   */
+  static get STREAM_AUDIO_CODEC() {
+    return 'stream-audio-codec';
+  }
+
+  /**
+   * Event fires on first user interaction with video codec
+   * @return {string}
+   */
+  static get STREAM_VIDEO_CODEC() {
+    return 'stream-video-codec';
+  }
+
+  /**
    * Event fired when the user interact with a running stream.
    * @return {string}
    */

@@ -231,6 +231,19 @@ export default class EmulatorWebrtcView extends Component {
     this.requireUserInteractionToPlay = false;
     this.setState({ playing: true });
     StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_PLAYING);
+
+    this.props.jsep.peerConnection.getStats().then((stats) => {
+      stats.forEach((report) => {
+        if (report.type === 'inbound-rtp') {
+          const codec = (stats.get(report.codecId) || {}).mimeType;
+          if (report.kind === 'audio' && codec) {
+            StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_CODEC, codec.replace('audio/', ''));
+          } else if (report.kind === 'video' && codec) {
+            StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_CODEC, codec.replace('video/', ''));
+          }
+        }
+      });
+    });
   };
 
   onContextMenu = (e) => {
