@@ -165,7 +165,6 @@ export default class Measurement {
   /**
    *
    * @return {string}
-   * @constructor
    */
   static get REPORT_TYPE_INBOUND_RTP() {
     return 'inbound-rtp';
@@ -174,7 +173,6 @@ export default class Measurement {
   /**
    *
    * @return {string}
-   * @constructor
    */
   static get REPORT_TYPE_TRACK() {
     return 'track';
@@ -183,7 +181,6 @@ export default class Measurement {
   /**
    *
    * @return {string}
-   * @constructor
    */
   static get REPORT_TYPE_DATA_CHANNEL() {
     return 'data-channel';
@@ -192,7 +189,6 @@ export default class Measurement {
   /**
    *
    * @return {string}
-   * @constructor
    */
   static get REPORT_TYPE_CANDIDATE_PAIR() {
     return 'candidate-pair';
@@ -201,7 +197,6 @@ export default class Measurement {
   /**
    *
    * @return {string}
-   * @constructor
    */
   static get REPORT_KIND_VIDEO() {
     return 'video';
@@ -210,7 +205,6 @@ export default class Measurement {
   /**
    *
    * @return {string}
-   * @constructor
    */
   static get REPORT_LABEL_MOUSE() {
     return 'mouse';
@@ -219,7 +213,6 @@ export default class Measurement {
   /**
    *
    * @return {string}
-   * @constructor
    */
   static get REPORT_LABEL_TOUCH() {
     return 'touch';
@@ -278,7 +271,6 @@ export default class Measurement {
     this.measurement.measureDuration = (this.measurement.measureAt - this.previousMeasurement.measureAt) / 1000;
     // Process all reports and collect measurement data
     stats.forEach((report) => {
-      //TODO: candidate-pair, currentRoundTripTime
       this.processInboundRtpVideoReport(report);
       this.processTrackVideoReport(report);
       this.processDataChannelMouseReport(report);
@@ -328,7 +320,7 @@ export default class Measurement {
   }
 
   /**
-   * Process candidate-pair video report to fetch framesDecodedPerSecond, bytesReceivedPerSecond and videoProcessing
+   * Process candidate-pair report to fetch currentRoundTripTime
    * @param report
    */
   processCandidatePairReport(report) {

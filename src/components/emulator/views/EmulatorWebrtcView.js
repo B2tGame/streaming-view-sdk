@@ -235,8 +235,6 @@ export default class EmulatorWebrtcView extends Component {
     this.props.jsep.peerConnection.getStats().then((stats) => {
       stats.forEach((report) => {
         if (report.type === 'inbound-rtp') {
-            //TODO: candidate-pair
-
           const codec = (stats.get(report.codecId) || {}).mimeType;
           if (report.kind === 'audio' && codec) {
             StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_CODEC, codec.replace('audio/', ''));
