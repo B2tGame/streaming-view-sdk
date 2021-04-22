@@ -194,6 +194,15 @@ export default class Measurement {
    * @return {string}
    * @constructor
    */
+  static get REPORT_TYPE_CANDIDATE_PAIR() {
+    return 'candidate-pair';
+  }
+
+  /**
+   *
+   * @return {string}
+   * @constructor
+   */
   static get REPORT_KIND_VIDEO() {
     return 'video';
   }
@@ -269,10 +278,12 @@ export default class Measurement {
     this.measurement.measureDuration = (this.measurement.measureAt - this.previousMeasurement.measureAt) / 1000;
     // Process all reports and collect measurement data
     stats.forEach((report) => {
+      //TODO: candidate-pair, currentRoundTripTime
       this.processInboundRtpVideoReport(report);
       this.processTrackVideoReport(report);
       this.processDataChannelMouseReport(report);
       this.processDataChannelTouchReport(report);
+      this.processCandidatePairReport(report);
     });
     this.previousMeasurement.measureAt = this.measurement.measureAt;
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
@@ -313,6 +324,16 @@ export default class Measurement {
       this.previousMeasurement.totalDecodeTime = report.totalDecodeTime;
       this.previousMeasurement.packetsLost = report.packetsLost;
       this.previousMeasurement.packetsReceived = report.packetsReceived;
+    }
+  }
+
+  /**
+   * Process candidate-pair video report to fetch framesDecodedPerSecond, bytesReceivedPerSecond and videoProcessing
+   * @param report
+   */
+  processCandidatePairReport(report) {
+    if (report.type === Measurement.REPORT_TYPE_CANDIDATE_PAIR && report.writable === true) {
+      this.measurement.candidatePairRoundTripTime = report.currentRoundTripTime * 1000;
     }
   }
 
