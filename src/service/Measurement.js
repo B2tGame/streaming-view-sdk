@@ -165,7 +165,6 @@ export default class Measurement {
   /**
    *
    * @return {string}
-   * @constructor
    */
   static get REPORT_TYPE_INBOUND_RTP() {
     return 'inbound-rtp';
@@ -174,7 +173,6 @@ export default class Measurement {
   /**
    *
    * @return {string}
-   * @constructor
    */
   static get REPORT_TYPE_TRACK() {
     return 'track';
@@ -183,7 +181,6 @@ export default class Measurement {
   /**
    *
    * @return {string}
-   * @constructor
    */
   static get REPORT_TYPE_DATA_CHANNEL() {
     return 'data-channel';
@@ -192,7 +189,14 @@ export default class Measurement {
   /**
    *
    * @return {string}
-   * @constructor
+   */
+  static get REPORT_TYPE_CANDIDATE_PAIR() {
+    return 'candidate-pair';
+  }
+
+  /**
+   *
+   * @return {string}
    */
   static get REPORT_KIND_VIDEO() {
     return 'video';
@@ -201,7 +205,6 @@ export default class Measurement {
   /**
    *
    * @return {string}
-   * @constructor
    */
   static get REPORT_LABEL_MOUSE() {
     return 'mouse';
@@ -210,7 +213,6 @@ export default class Measurement {
   /**
    *
    * @return {string}
-   * @constructor
    */
   static get REPORT_LABEL_TOUCH() {
     return 'touch';
@@ -273,6 +275,7 @@ export default class Measurement {
       this.processTrackVideoReport(report);
       this.processDataChannelMouseReport(report);
       this.processDataChannelTouchReport(report);
+      this.processCandidatePairReport(report);
     });
     this.previousMeasurement.measureAt = this.measurement.measureAt;
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
@@ -313,6 +316,16 @@ export default class Measurement {
       this.previousMeasurement.totalDecodeTime = report.totalDecodeTime;
       this.previousMeasurement.packetsLost = report.packetsLost;
       this.previousMeasurement.packetsReceived = report.packetsReceived;
+    }
+  }
+
+  /**
+   * Process candidate-pair report to fetch currentRoundTripTime
+   * @param report
+   */
+  processCandidatePairReport(report) {
+    if (report.type === Measurement.REPORT_TYPE_CANDIDATE_PAIR && report.writable === true) {
+      this.measurement.webrtcCurrentRoundTripTime = report.currentRoundTripTime * 1000;
     }
   }
 
