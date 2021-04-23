@@ -325,7 +325,7 @@ export default class Measurement {
    */
   processCandidatePairReport(report) {
     if (report.type === Measurement.REPORT_TYPE_CANDIDATE_PAIR && report.writable === true) {
-      this.measurement.candidatePairRoundTripTime = report.currentRoundTripTime * 1000;
+      this.measurement.webrtcCurrentRoundTripTime = report.currentRoundTripTime * 1000;
     }
   }
 
