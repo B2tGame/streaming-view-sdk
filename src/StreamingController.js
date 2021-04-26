@@ -112,6 +112,17 @@ class StreamingController {
   }
 
   /**
+   * Resets the current moment.
+   * @returns {Promise<*>}
+   */
+  resetMoment() {
+    return Promise.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(([edgeNodeId, streamEndpoint]) => {
+      StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.LOG, { name: 'streaming-controller', action: 'resetMoment' });
+      return axios.get(`${streamEndpoint}/emulator-commands/reset`);
+    });
+  }
+
+  /**
    * Sends the pause command to the supervisor.
    * This is used to resume a paused emulator.
    * @returns {Promise<*>}
