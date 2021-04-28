@@ -313,6 +313,7 @@ export default class Measurement {
       const currentPacketsLost = report.packetsLost - this.previousMeasurement.packetsLost;
       const currentPacketsReceived = report.packetsReceived - this.previousMeasurement.packetsReceived;
       const expectedPacketsReceived = currentPacketsLost + currentPacketsReceived;
+
       this.measurement.packetsLostPercent = (currentPacketsLost * 100) / expectedPacketsReceived;
       this.measurement.predictedGameExperience = this.calculatePredictedGameExperience(
         this.networkRoundTripTime,
