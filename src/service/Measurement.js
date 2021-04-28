@@ -280,6 +280,14 @@ export default class Measurement {
     this.previousMeasurement.measureAt = this.measurement.measureAt;
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
 
+    // If predictedGameExperience is defined, report it as a float with 1 decimal
+    if (this.measurement.predictedGameExperience) {
+      StreamingEvent.edgeNode(this.edgeNodeId).emit(
+        StreamingEvent.PREDICTED_GAME_EXPERIENCE,
+        Math.round(this.measurement.predictedGameExperience * 10) / 10
+      );
+    }
+
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REPORT_MEASUREMENT, {
       networkRoundTripTime: this.networkRoundTripTime,
       extra: this.measurement
@@ -306,21 +314,12 @@ export default class Measurement {
       const currentPacketsReceived = report.packetsReceived - this.previousMeasurement.packetsReceived;
       const expectedPacketsReceived = currentPacketsLost + currentPacketsReceived;
       this.measurement.packetsLostPercent = (currentPacketsLost * 100) / expectedPacketsReceived;
-      const predictedGameExperience = this.calculatePredictedGameExperience(this.networkRoundTripTime, this.measurement.packetsLostPercent);
-      this.measurement.predictedGameExperience = predictedGameExperience;
+      this.measurement.predictedGameExperience = this.calculatePredictedGameExperience(this.networkRoundTripTime, this.measurement.packetsLostPercent);;
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;
       this.previousMeasurement.totalDecodeTime = report.totalDecodeTime;
       this.previousMeasurement.packetsLost = report.packetsLost;
       this.previousMeasurement.packetsReceived = report.packetsReceived;
-
-      // Report PREDICTED_GAME_EXPERIENCE as a float with 1 decimal
-      if (predictedGameExperience) {
-        StreamingEvent.edgeNode(this.edgeNodeId).emit(
-          StreamingEvent.PREDICTED_GAME_EXPERIENCE,
-          Math.round(predictedGameExperience * 10) / 10
-        );
-      }
     }
   }
 
