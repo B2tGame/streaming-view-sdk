@@ -306,16 +306,21 @@ export default class Measurement {
       const currentPacketsReceived = report.packetsReceived - this.previousMeasurement.packetsReceived;
       const expectedPacketsReceived = currentPacketsLost + currentPacketsReceived;
       this.measurement.packetsLostPercent = (currentPacketsLost * 100) / expectedPacketsReceived;
-      this.measurement.predictedGameExperience = this.calculatePredictedGameExperience(
-        this.networkRoundTripTime,
-        this.measurement.packetsLostPercent
-      );
-
+      const predictedGameExperience = this.calculatePredictedGameExperience(this.networkRoundTripTime, this.measurement.packetsLostPercent);
+      this.measurement.predictedGameExperience = predictedGameExperience;
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;
       this.previousMeasurement.totalDecodeTime = report.totalDecodeTime;
       this.previousMeasurement.packetsLost = report.packetsLost;
       this.previousMeasurement.packetsReceived = report.packetsReceived;
+
+      // Report PREDICTED_GAME_EXPERIENCE as a float with 1 decimal
+      if (predictedGameExperience) {
+        StreamingEvent.edgeNode(this.edgeNodeId).emit(
+          StreamingEvent.PREDICTED_GAME_EXPERIENCE,
+          Math.round(predictedGameExperience * 10) / 10
+        );
+      }
     }
   }
 
