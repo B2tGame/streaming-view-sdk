@@ -152,6 +152,7 @@ export default class Measurement {
     this.edgeNodeId = edgeNodeId;
     this.networkRoundTripTime = 0;
     this.streamQualityRating = 0;
+    this.numberOfBlackScreens = 0;
     this.previousMeasurement = this.defaultPreviousMeasurement();
     this.measurement = {};
 
@@ -159,6 +160,7 @@ export default class Measurement {
       .on(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
       .on(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
       .on(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
+      .on(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
   }
 
@@ -223,11 +225,16 @@ export default class Measurement {
       .off(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
       .off(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
       .off(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
+      .off(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
   }
 
   onStreamQualityRating = (rating) => {
     this.streamQualityRating = rating.streamQualityRating;
+  };
+
+  onStreamBlackScreen = () => {
+    this.numberOfBlackScreens += 1;
   };
 
   onRoundTripTimeMeasurement = (networkRoundTripTime) => {
@@ -279,12 +286,14 @@ export default class Measurement {
     });
     this.previousMeasurement.measureAt = this.measurement.measureAt;
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
+    this.measurement.numberOfBlackScreens = this.numberOfBlackScreens || 0;
 
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REPORT_MEASUREMENT, {
       networkRoundTripTime: this.networkRoundTripTime,
       extra: this.measurement
     });
     this.measurement = {};
+    this.numberOfBlackScreens = 0;
   }
 
   /**
