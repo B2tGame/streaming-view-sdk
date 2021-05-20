@@ -262,5 +262,6 @@ factory.SDK_VERSION = StreamingController.SDK_VERSION;
 factory.EVENT_STREAM_READY = StreamingEvent.STREAM_READY;
 factory.EVENT_MOMENT_DETECTOR_EVENT = StreamingEvent.MOMENT_DETECTOR_EVENT;
 factory.EVENT_PREDICTED_GAME_EXPERIENCE = StreamingEvent.PREDICTED_GAME_EXPERIENCE;
+factory.EVENT_STREAM_TERMINATED = StreamingEvent.STREAM_TERMINATED;
 
 export default factory;
