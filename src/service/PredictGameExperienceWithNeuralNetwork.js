@@ -91,7 +91,6 @@ export default class PredictGameExperienceWithNeuralNetwork extends PredictGameE
   /**
    * Predict the current game experience
    * @param {number} roundTripTime
-   * @param {number } packageLostPercentage
    * @return {undefined|number}
    */
   predict(roundTripTime) {
@@ -112,13 +111,3 @@ export default class PredictGameExperienceWithNeuralNetwork extends PredictGameE
     }
   }
 }
-
-// const validation = require('./validation-data-set.json');
-// const nn = new PredictGameExperienceWithNeuralNetwork(require('./models/b540f780-9367-427c-8b05-232cebb9ec49'));
-// console.log('RTT\tExpertScore\tPredictedScore');
-// console.time('predict');
-// for (let set of validation) {
-//   const result = nn.predict(set.RTT, 0);
-//   console.log(`${set.RTT}\t${set.Score}\t${result}`);
-// }
-// console.timeEnd('predict');

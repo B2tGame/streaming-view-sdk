@@ -150,7 +150,7 @@ export default class Measurement {
     if (this.measurement.predictedGameExperience) {
       StreamingEvent.edgeNode(this.edgeNodeId).emit(
         StreamingEvent.PREDICTED_GAME_EXPERIENCE,
-        Math.round(this.measurement.predictedGameExperience.n1 * 10) / 10
+        Math.round(this.measurement.predictedGameExperience.neural1 * 10) / 10
       );
     }
 
@@ -208,28 +208,20 @@ export default class Measurement {
    * Calculates a predicted game experience value based on rtt and packet lost percent
    * @param {number} rtt
    * @param {number} packetLostPercent
-   * @return {number}
+   * @return {{alpha: number, neural1:number}}
    */
   calculatePredictedGameExperience(rtt, packetLostPercent) {
-    console.time('PredictedGameExperience-total');
     if (this.predictGameExperience === undefined) {
       this.predictGameExperience = {
-        // 'a' stands for alpha
-        a: new PredictGameExperience(),
-        // 'n1' stands for neural algorithm #1
-        n1: new PredictGameExperienceWithNeuralNetwork(require('./neural-network-models/b540f780-9367-427c-8b05-232cebb9ec49'))
+        alpha: new PredictGameExperience(),
+        neural1: new PredictGameExperienceWithNeuralNetwork(require('./neural-network-models/b540f780-9367-427c-8b05-232cebb9ec49'))
       };
     }
 
-    const resp = Object.keys(this.predictGameExperience).reduce((predictedGameExperience, algorithm) => {
-      console.time(`PredictedGameExperience-alg-${algorithm}`);
+    return Object.keys(this.predictGameExperience).reduce((predictedGameExperience, algorithm) => {
       predictedGameExperience[algorithm] = this.predictGameExperience[algorithm].predict(rtt, packetLostPercent);
-      console.timeEnd(`PredictedGameExperience-alg-${algorithm}`);
       return predictedGameExperience;
     }, {});
-    console.timeEnd('PredictedGameExperience-total');
-
-    return resp;
   }
 
   /**
