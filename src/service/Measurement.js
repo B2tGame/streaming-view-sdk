@@ -218,9 +218,9 @@ export default class Measurement {
       };
     }
 
-    return Object.keys(this.predictGameExperience).reduce((predictedGameExperience, algorithm) => {
-      predictedGameExperience[algorithm] = this.predictGameExperience[algorithm].predict(rtt, packetLostPercent);
-      return predictedGameExperience;
+    return Object.keys(this.predictGameExperience).reduce((result, algorithm) => {
+      result[algorithm] = this.predictGameExperience[algorithm].predict(rtt, packetLostPercent);
+      return result;
     }, {});
   }
 
