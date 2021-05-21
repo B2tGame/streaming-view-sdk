@@ -1,148 +1,6 @@
 import StreamingEvent from '../StreamingEvent';
-
-/**
- * RollingWindow class
- */
-class RollingWindow {
-  constructor(sampleSize) {
-    this.sampleSize = sampleSize;
-    this.values = [];
-  }
-
-  add(value) {
-    this.values.push(value);
-    if (this.values.length > this.sampleSize) {
-      this.values.shift();
-    }
-  }
-
-  getValues() {
-    return this.values;
-  }
-
-  getLastValue() {
-    return this.values[this.values.length - 1];
-  }
-}
-
-/**
- * RisingEdgeDetector class
- */
-class RisingEdgeDetector {
-  constructor() {
-    this.isHigh = false;
-  }
-
-  next(value, threshold) {
-    if (value > threshold) {
-      if (!this.isHigh) {
-        this.isHigh = true;
-        return 1;
-      } else {
-        return 0;
-      }
-    } else {
-      this.isHigh = false;
-      return 0;
-    }
-  }
-}
-
-/**
- * PredictGameExperience class
- */
-class PredictGameExperience {
-  constructor(
-    sampleSize = 10,
-    risingEdgeThreshold = 2.8,
-    longTermSampleSizeMultiplier = 4,
-    predictGameExperienceSampleSizeMultiple = 1.5,
-    averageDetectionUpperRange = 0.25,
-    stabilizationThreshold = 0.2,
-    roundTripTimeRisingEdgeScore = 1.5, // 1
-    packageLostPercentageRisingEdgeScore = 0, // 0.8
-    maxRisingEdgeScore = 1.5,
-    highRoundTripTimeGain = 150,
-    highRoundTripTimeLowerThreshold = 0.5,
-    risingEdgeCountGain = 0.7, // 0.6
-    risingEdgeCountPower = 1.25,
-    finalGain = 1.1
-  ) {
-    this.sampleSize = sampleSize;
-    this.averageDetectionUpperRange = averageDetectionUpperRange;
-    this.risingEdgeThreshold = risingEdgeThreshold;
-    this.stabilizationThreshold = stabilizationThreshold;
-    this.roundTripTimeRisingEdgeScore = roundTripTimeRisingEdgeScore;
-    this.packageLostPercentageRisingEdgeScore = packageLostPercentageRisingEdgeScore;
-    this.maxRisingEdgeScore = maxRisingEdgeScore;
-    this.highRoundTripTimeGain = highRoundTripTimeGain;
-    this.highRoundTripTimeLowerThreshold = highRoundTripTimeLowerThreshold;
-    this.risingEdgeCountGain = risingEdgeCountGain;
-    this.risingEdgeCountPower = risingEdgeCountPower;
-    this.finalGain = finalGain;
-
-    this.roundTripTimeLong = new RollingWindow(sampleSize * longTermSampleSizeMultiplier);
-    this.roundTripTimeShort = new RollingWindow(sampleSize);
-    this.roundTripTime = new RollingWindow(sampleSize * longTermSampleSizeMultiplier);
-    this.roundTripTimeRisingEdgeDetector = new RisingEdgeDetector();
-    this.roundTripTimeRisingEdge = new RollingWindow(sampleSize);
-
-    this.packageLostPercentage = new RollingWindow(sampleSize * longTermSampleSizeMultiplier);
-    this.packageLostPercentageRisingEdgeDetector = new RisingEdgeDetector();
-    this.packageLostPercentageRisingEdge = new RollingWindow(sampleSize);
-
-    this.predictGameExperience = new RollingWindow(sampleSize * predictGameExperienceSampleSizeMultiple);
-    this.count = 0;
-  }
-
-  predict(roundTripTime, packageLostPercentage) {
-    this.count++;
-    this.roundTripTimeLong.add(roundTripTime);
-    this.roundTripTimeShort.add(roundTripTime);
-    this.packageLostPercentage.add(packageLostPercentage);
-
-    const roundTripTimeAverage = this.averageRange(this.roundTripTimeLong.getValues(), 0, this.averageDetectionUpperRange);
-    const packageLostPercentageAverage = this.averageRange(this.packageLostPercentage.getValues(), 0, this.averageDetectionUpperRange);
-    this.roundTripTimeRisingEdge.add(
-      Math.min(
-        this.roundTripTimeRisingEdgeDetector.next(roundTripTime, roundTripTimeAverage * this.risingEdgeThreshold) *
-          this.roundTripTimeRisingEdgeScore +
-          this.packageLostPercentageRisingEdgeDetector.next(
-            packageLostPercentage,
-            packageLostPercentageAverage * this.risingEdgeThreshold
-          ) *
-            this.packageLostPercentageRisingEdgeScore,
-        this.maxRisingEdgeScore
-      )
-    );
-    this.packageLostPercentageRisingEdge.add(
-      this.packageLostPercentageRisingEdgeDetector.next(packageLostPercentage, packageLostPercentageAverage * this.risingEdgeThreshold)
-    );
-    const risingEdgeCount = this.sum(this.roundTripTimeRisingEdge.getValues());
-    this.predictGameExperience.add(
-      5 -
-        Math.pow(risingEdgeCount * this.risingEdgeCountGain, this.risingEdgeCountPower) * this.finalGain +
-        Math.min(this.highRoundTripTimeLowerThreshold - this.average(this.roundTripTimeShort.getValues()) / this.highRoundTripTimeGain, 0)
-    );
-
-    return this.count < this.sampleSize
-      ? undefined
-      : Math.min(Math.max(this.averageRange(this.predictGameExperience.getValues(), 0, this.stabilizationThreshold), 1), 5);
-  }
-
-  averageRange(dataset, lowerBound = 0, upperBound = 1) {
-    const data = [...dataset].sort((a, b) => (a < b ? -1 : 1));
-    return this.average(data.slice(Math.round((data.length - 1) * lowerBound), Math.round((data.length - 1) * upperBound)));
-  }
-
-  average(dataset) {
-    return dataset.reduce((a, b) => a + b, 0) / dataset.length || 0;
-  }
-
-  sum(dataset) {
-    return dataset.reduce((a, b) => a + b, 0);
-  }
-}
+import PredictGameExperience from './PredictGameExperience';
+import PredictGameExperienceWithNeuralNetwork from './PredictGameExperienceWithNeuralNetwork';
 
 /**
  * Measurement class is responsible for processing and reporting measurement reports
@@ -152,6 +10,7 @@ export default class Measurement {
     this.edgeNodeId = edgeNodeId;
     this.networkRoundTripTime = 0;
     this.streamQualityRating = 0;
+    this.numberOfBlackScreens = 0;
     this.previousMeasurement = this.defaultPreviousMeasurement();
     this.measurement = {};
 
@@ -159,6 +18,7 @@ export default class Measurement {
       .on(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
       .on(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
       .on(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
+      .on(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
   }
 
@@ -223,11 +83,16 @@ export default class Measurement {
       .off(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
       .off(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
       .off(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
+      .off(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
   }
 
   onStreamQualityRating = (rating) => {
     this.streamQualityRating = rating.streamQualityRating;
+  };
+
+  onStreamBlackScreen = () => {
+    this.numberOfBlackScreens += 1;
   };
 
   onRoundTripTimeMeasurement = (networkRoundTripTime) => {
@@ -279,12 +144,13 @@ export default class Measurement {
     });
     this.previousMeasurement.measureAt = this.measurement.measureAt;
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
+    this.measurement.numberOfBlackScreens = this.numberOfBlackScreens || 0;
 
     // If predictedGameExperience is defined, report it as a float with 1 decimal
     if (this.measurement.predictedGameExperience) {
       StreamingEvent.edgeNode(this.edgeNodeId).emit(
         StreamingEvent.PREDICTED_GAME_EXPERIENCE,
-        Math.round(this.measurement.predictedGameExperience * 10) / 10
+        Math.round(this.measurement.predictedGameExperience.neural1 * 10) / 10
       );
     }
 
@@ -293,6 +159,7 @@ export default class Measurement {
       extra: this.measurement
     });
     this.measurement = {};
+    this.numberOfBlackScreens = 0;
   }
 
   /**
@@ -341,14 +208,20 @@ export default class Measurement {
    * Calculates a predicted game experience value based on rtt and packet lost percent
    * @param {number} rtt
    * @param {number} packetLostPercent
-   * @return {number}
+   * @return {{alpha: number, neural1:number}}
    */
   calculatePredictedGameExperience(rtt, packetLostPercent) {
     if (this.predictGameExperience === undefined) {
-      this.predictGameExperience = new PredictGameExperience();
+      this.predictGameExperience = {
+        alpha: new PredictGameExperience(),
+        neural1: new PredictGameExperienceWithNeuralNetwork(require('./neural-network-models/b540f780-9367-427c-8b05-232cebb9ec49'))
+      };
     }
 
-    return this.predictGameExperience.predict(rtt, packetLostPercent);
+    return Object.keys(this.predictGameExperience).reduce((result, algorithm) => {
+      result[algorithm] = this.predictGameExperience[algorithm].predict(rtt, packetLostPercent);
+      return result;
+    }, {});
   }
 
   /**

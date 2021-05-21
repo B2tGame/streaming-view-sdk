@@ -117,7 +117,10 @@ class StreamingController {
    */
   resetMoment() {
     return Promise.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(([edgeNodeId, streamEndpoint]) => {
-      StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.LOG, { name: 'streaming-controller', action: 'resetMoment' });
+      StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.LOG, {
+        name: 'streaming-controller',
+        action: 'resetMoment'
+      });
       return axios.get(`${streamEndpoint}/emulator-commands/reset`);
     });
   }
@@ -143,7 +146,7 @@ class StreamingController {
       if (status.endpoint !== undefined) {
         return status.endpoint;
       } else {
-        throw new Error('Can\'t resolve Stream Endpoint, got: ' + JSON.stringify(status));
+        throw new Error("Can't resolve Stream Endpoint, got: " + JSON.stringify(status));
       }
     });
   }
@@ -220,7 +223,10 @@ class StreamingController {
 
     return this.getEdgeNodeId().then((edgeNodeId) => {
       const internalSession = this.isInternalSession() ? '&internal=1' : '';
-      return retry(() => getStatus(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}?wait=1${internalSession}`, 5000), timeout);
+      return retry(
+        () => getStatus(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}?wait=1${internalSession}`, 5000),
+        timeout
+      );
     });
   }
 
