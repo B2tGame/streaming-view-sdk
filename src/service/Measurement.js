@@ -150,7 +150,7 @@ export default class Measurement {
     if (this.measurement.predictedGameExperience) {
       StreamingEvent.edgeNode(this.edgeNodeId).emit(
         StreamingEvent.PREDICTED_GAME_EXPERIENCE,
-        Math.round(this.measurement.predictedGameExperience.neural1 * 10) / 10
+        Math.round(this.measurement.predictedGameExperience.alpha * 10) / 10
       );
     }
 
