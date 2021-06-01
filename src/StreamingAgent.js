@@ -4,6 +4,10 @@ import { measureNetworkConnectivity, resetNetworkConnectivity } from './stores/n
 import { getDeviceInfo, resetDeviceInfo } from './stores/deviceInfo';
 import Logger from './Logger';
 
+//TODO: add webrtc measurements also here. (without edge-node-id)
+// use device info to get host
+// multi connection from different clients
+
 /**
  * StreamingAgent class is responsible for running necessary background tasks for the Streaming Service
  *

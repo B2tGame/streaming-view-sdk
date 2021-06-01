@@ -87,7 +87,7 @@ function getAdvancedMeasurement() {
     let firstByteReceivedAt = undefined;
     let firstLoadedBytes = undefined;
     let pendingCancel = false;
-    let cancelDownload = () => pendingCancel = true;
+    let cancelDownload = () => (pendingCancel = true);
     const onNewEdgeNode = () => cancelDownload();
     StreamingEvent.once(StreamingEvent.NEW_EDGE_NODE, onNewEdgeNode);
 
@@ -159,9 +159,9 @@ function getAdvancedMeasurement() {
     .then(() =>
       downloadSpeed
         ? {
-          downloadSpeed: downloadSpeed,
-          measurementLevel: MEASUREMENT_LEVEL_ADVANCED
-        }
+            downloadSpeed: downloadSpeed,
+            measurementLevel: MEASUREMENT_LEVEL_ADVANCED
+          }
         : {}
     );
 }
@@ -180,6 +180,10 @@ function measureNetworkConnectivity(browserConnection = undefined) {
     .then(() => getBasicMeasurement())
     .then((basicMeasurement) => {
       networkConnectivity = { ...networkConnectivity, ...basicMeasurement };
+    })
+    .then(() => {
+      //networkConnectivity = { ...networkConnectivity, ...basicMeasurement };
+      return;
     })
     .then(
       () =>

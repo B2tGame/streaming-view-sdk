@@ -70,9 +70,16 @@ export default class StreamingEvent {
    * Event of network RTT with payload {number} in millisecond
    * @return {string}
    */
-
   static get ROUND_TRIP_TIME_MEASUREMENT() {
     return 'round-trip-time-measurement';
+  }
+
+  /**
+   * Event of webrtc RTT with payload {number} in millisecond
+   * @return {string}
+   */
+  static get WEBRTC_ROUND_TRIP_TIME_MEASUREMENT() {
+    return 'webrtc-round-trip-time-measurement';
   }
 
   /**

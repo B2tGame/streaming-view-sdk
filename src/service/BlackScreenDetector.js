@@ -28,6 +28,7 @@ export default class BlackScreenDetector {
   static get EVENTS_TO_IGNORE() {
     return [
       StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT,
+      StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT,
       StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT,
       StreamingEvent.WEB_RTC_MEASUREMENT,
       StreamingEvent.REPORT_MEASUREMENT,
