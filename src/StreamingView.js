@@ -112,12 +112,13 @@ export default class StreamingView extends Component {
     this.blackScreenDetector = new BlackScreenDetector(edgeNodeId, this.streamingViewId);
 
     this.logger = new Logger(enableDebug);
-    this.logger.log(`SDK Version: ${buildInfo.tag}`);
     this.measurement = new Measurement(edgeNodeId);
 
     if (onEvent) {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
     }
+
+    this.logger.log(`SDK Version: ${buildInfo.tag}`);
     window.addEventListener('resize', this.onResize);
     window.addEventListener('error', this.onError);
 
