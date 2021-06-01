@@ -1,12 +1,12 @@
 import StreamingEvent from '../StreamingEvent';
-import WebrtcConnectionClient from './WebrtcConnectionClient';
+import WebRtcConnectionClient from './WebRtcConnectionClient';
 
 //TODO: reconnect on connection lost
 
 /**
- * Webrtc connection and communicate with the backend
+ * WebRtc connection and communicate with the backend
  */
-export default class StreamWebrtc {
+export default class StreamWebRtc {
   static get DATA_CHANNEL_NAME() {
     return 'streaming-webrtc-server';
   }
@@ -25,10 +25,10 @@ export default class StreamWebrtc {
     this.edgeNodeId = edgeNodeId;
 
     this.peerConnection = undefined;
-    new WebrtcConnectionClient()
+    new WebRtcConnectionClient()
       .createConnection({
         beforeAnswer: this.beforeAnswer,
-        host: StreamWebrtc.SERVER_HOST
+        host: StreamWebRtc.SERVER_HOST
       })
       .then((peerConnection) => {
         this.peerConnection = peerConnection;
@@ -55,7 +55,7 @@ export default class StreamWebrtc {
     }
 
     function onDataChannel({ channel }) {
-      if (channel.label !== StreamWebrtc.DATA_CHANNEL_NAME) {
+      if (channel.label !== StreamWebRtc.DATA_CHANNEL_NAME) {
         return;
       }
 

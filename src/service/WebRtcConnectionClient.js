@@ -4,7 +4,7 @@ const { RTCSessionDescription } = require('wrtc');
 
 const TIME_TO_HOST_CANDIDATES = 1000;
 
-export default class WebrtcConnectionClient {
+export default class WebRtcConnectionClient {
   constructor(options = {}) {
     this.options = {
       RTCPeerConnection: DefaultRTCPeerConnection,

@@ -8,7 +8,7 @@ import { v4 as uuid } from 'uuid';
 import buildInfo from './build-info.json';
 import Logger from './Logger';
 import StreamSocket from './service/StreamSocket';
-import StreamWebrtc from './service/StreamWebrtc';
+import StreamWebRtc from './service/StreamWebRtc';
 import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
 import BlackScreenDetector from './service/BlackScreenDetector';
@@ -121,8 +121,7 @@ export default class StreamingView extends Component {
     window.addEventListener('resize', this.onResize);
     window.addEventListener('error', this.onError);
 
-    console.log('========================================================================', { pingInterval });
-    this.streamWebrtc = new StreamWebrtc(pingInterval, edgeNodeId);
+    this.streamWebRtc = new StreamWebRtc(pingInterval, edgeNodeId);
 
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
@@ -186,8 +185,8 @@ export default class StreamingView extends Component {
     if (this.streamSocket) {
       this.streamSocket.close();
     }
-    if (this.streamWebrtc) {
-      this.streamWebrtc.close();
+    if (this.streamWebRtc) {
+      this.streamWebRtc.close();
     }
     if (this.blackScreenDetector) {
       this.blackScreenDetector.destroy();
