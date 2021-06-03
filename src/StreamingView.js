@@ -122,7 +122,8 @@ export default class StreamingView extends Component {
     window.addEventListener('resize', this.onResize);
     window.addEventListener('error', this.onError);
 
-    this.streamWebRtc = new StreamWebRtc(pingInterval, edgeNodeId);
+    console.log('apiEndpoint:', { apiEndpoint });
+    this.streamWebRtc = new StreamWebRtc(StreamWebRtc.SERVER_HOST, pingInterval);
 
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
@@ -155,6 +156,9 @@ export default class StreamingView extends Component {
         return internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
       })
       .then((streamEndpoint) => {
+        //TODO: use streamEndpoint to extract host
+        // console.log('streamEndpoint:', { streamEndpoint });
+
         if (!this.isMountedInView) {
           this.logger.log('Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.

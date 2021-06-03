@@ -17,24 +17,34 @@ export default class StreamWebRtc {
   }
 
   /**
+   * @param {string} host
    * @param {number} pingInterval
    * @param {string|undefined} edgeNodeId
    */
-  constructor(pingInterval = 500, edgeNodeId = undefined) {
+  constructor(host, pingInterval = 500, edgeNodeId = undefined) {
+    this.host = host;
     this.pingInterval = pingInterval;
     this.edgeNodeId = edgeNodeId;
+
+    console.log('debug StreamWebRtc START', {
+      host: this.host,
+      pingInterval: this.pingInterval,
+      edgeNodeId: this.edgeNodeId
+    });
 
     this.peerConnection = undefined;
     new WebRtcConnectionClient()
       .createConnection({
         beforeAnswer: this.beforeAnswer,
-        host: StreamWebRtc.SERVER_HOST
+        host: this.host
       })
       .then((peerConnection) => {
         this.peerConnection = peerConnection;
       });
 
-    StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.close);
+    if (this.edgeNodeId) {
+      StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.close);
+    }
   }
 
   beforeAnswer = (peerConnection) => {
@@ -43,18 +53,26 @@ export default class StreamWebRtc {
     let sequenceId = 0;
     const pingInterval = this.pingInterval;
 
-    function onMessage({ data }) {
+    const onMessage = ({ data }) => {
       const { type, timestamp, sequenceId } = JSON.parse(data);
       console.log({ type, timestamp, sequenceId });
       if (type === 'pong') {
         const sendTime = Math.trunc(timestamp);
         const rtt = Date.now() - sendTime;
         console.log({ rtt: rtt });
-        StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
-      }
-    }
 
-    function onDataChannel({ channel }) {
+        // console.log('debug 1');
+        if (this.edgeNodeId) {
+          console.log('debug 2', { host: this.host, edgeNodeId: this.edgeNodeId });
+          StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
+        } else {
+          // console.log('debug 3', { host: this.host, edgeNodeId: this.edgeNodeId });
+          StreamingEvent.edge(this.host).emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
+        }
+      }
+    };
+
+    const onDataChannel = ({ channel }) => {
       if (channel.label !== StreamWebRtc.DATA_CHANNEL_NAME) {
         return;
       }
@@ -71,7 +89,7 @@ export default class StreamWebRtc {
           })
         );
       }, pingInterval);
-    }
+    };
 
     peerConnection.addEventListener('datachannel', onDataChannel);
 
@@ -95,7 +113,9 @@ export default class StreamWebRtc {
   close = () => {
     if (this.peerConnection) {
       this.peerConnection.close();
-      StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.STREAM_UNREACHABLE, this.close);
+      if (this.edgeNodeId) {
+        StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.STREAM_UNREACHABLE, this.close);
+      }
       this.peerConnection = undefined;
     }
   };

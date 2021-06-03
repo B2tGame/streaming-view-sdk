@@ -12,6 +12,7 @@ class ExtendedEventEmitter extends EventEmitter {
 }
 
 const globalEventEmitter = new ExtendedEventEmitter();
+const edgeEventEmitter = {};
 const edgeNodeEventEmitter = {};
 
 /**
@@ -341,6 +342,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fired when the new edge is detected by StreamingEvent handler.
+   * @return {string}
+   */
+  static get NEW_EDGE() {
+    return 'new-edge';
+  }
+
+  /**
    * Event fired when the new edge node is detected by StreamingEvent handler.
    * @return {string}
    */
@@ -358,7 +367,7 @@ export default class StreamingEvent {
 
   /**
    * Get EventEmitter for a specific Edge Node Id.
-   * This will automatic create a new Event emitter if missing.
+   * This will automatically create a new Event emitter if missing.
    * @param {string} edgeNodeId
    * @return {EventEmitter}
    */
@@ -368,6 +377,20 @@ export default class StreamingEvent {
       this.emit(StreamingEvent.NEW_EDGE_NODE, edgeNodeId);
     }
     return edgeNodeEventEmitter[edgeNodeId];
+  }
+
+  /**
+   * Get EventEmitter for a specific Edge.
+   * This will automatically create a new Event emitter if missing.
+   * @param {string} edgeId
+   * @return {EventEmitter}
+   */
+  static edge(edgeId) {
+    if (edgeEventEmitter[edgeId] === undefined) {
+      edgeEventEmitter[edgeId] = new ExtendedEventEmitter();
+      this.emit(StreamingEvent.NEW_EDGE, edgeId);
+    }
+    return edgeEventEmitter[edgeId];
   }
 
   /**
@@ -430,6 +453,11 @@ export default class StreamingEvent {
    */
   static emit(event, data) {
     globalEventEmitter.emit(event, data);
+    for (let edgeId in edgeEventEmitter) {
+      if (edgeEventEmitter[edgeId]) {
+        edgeEventEmitter[edgeId].emit(event, data);
+      }
+    }
     for (let edgeNodeId in edgeNodeEventEmitter) {
       if (edgeNodeEventEmitter[edgeNodeId]) {
         edgeNodeEventEmitter[edgeNodeId].emit(event, data);

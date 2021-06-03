@@ -1,5 +1,6 @@
 import { getDeviceInfo } from './deviceInfo';
 import StreamingEvent from '../StreamingEvent';
+import StreamWebRtc from '../service/StreamWebRtc';
 
 const axios = require('axios').default;
 const CancelToken = axios.CancelToken;
@@ -12,15 +13,22 @@ const DELAY_DEVICE_INFO_MS = 3000;
 const ADVANCED_MEASUREMENT_TIMEOUT = 5000;
 const DOWNLOAD_SPEED_RACE_FOR_MS = 2000;
 const DOWNLOAD_DATASOURCE_NAME = 'random4000x4000.jpg';
+// const WEBRTC_PATH = '/webrtc';
 
 const defaultNetworkConnectivity = {
   roundTripTime: undefined,
+  webrtcRoundTripTime: undefined,
   downloadSpeed: undefined,
   recommendedRegion: undefined,
   measurementLevel: undefined
 };
 let networkConnectivity = { ...defaultNetworkConnectivity };
 let downloadSpeed = undefined; // in Mbps
+let webrtcRoundTripTimeValues = undefined;
+let webrtcRoundTripTimeStats = {
+  mean: undefined,
+  standardDeviation: undefined
+};
 
 /**
  * Reset all network connectivity data
@@ -42,7 +50,7 @@ function convertMbitToBytes(downloadSpeed) {
 }
 
 /**
- * Get Browser measurement attributes, designed to be used in getBrowserMeasurement.
+ * Get Browser measurement attributes
  * @param browserConnection NetworkInformation from the browser
  * @return {Promise<{roundTripTime: number|undefined, downloadSpeed: number|undefined, measurementLevel: string|undefined}>}
  */
@@ -136,30 +144,87 @@ function getAdvancedMeasurement() {
     }
 
     const edge = availableEdges.shift();
-    const url = edge.url + '?_=' + Math.random(); // add a cache break query param to avoid speed measurement distorsion
+    const url = `${edge.endpoint}/${DOWNLOAD_DATASOURCE_NAME}?_=${Math.random()}`; // add a cache break query param to avoid speed measurement distorsion
     networkConnectivity.recommendedRegion = edge.edgeRegion;
 
-    return download(url).then((successfull) => (successfull ? successfull : downloadManager(availableEdges)));
+    return download(url).then((successful) => (successful ? successful : downloadManager(availableEdges)));
+  };
+
+  /**
+   * @param {number} webrtcRtt
+   */
+  const onWebRtcRoundTripTimeMeasurement = (webrtcRtt) => {
+    webrtcRoundTripTimeValues.push(webrtcRtt);
+  };
+
+  /**
+   * @param {number[]} values
+   * @return {{mean: number, standardDeviation: number}}
+   */
+  const calculateStats = (values) => {
+    const result = { mean: 0, standardDeviation: 0 };
+    const n = values.length;
+    if (n < 1) {
+      return result;
+    }
+
+    result.mean = values.reduce((a, b) => a + b, 0) / n;
+    result.standardDeviation = Math.sqrt(values.reduce((cum, item) => cum + Math.pow(item - result.mean, 2), 0) / n);
+
+    return result;
+  };
+
+  /**
+   * Recursive function to manage webrtc rtt measurement and fallback case.
+   * @param {[]} availableEdges Array of possible speed test urls
+   * @return {Promise<boolean>}
+   */
+  const webrtcManager = (availableEdges) => {
+    if (availableEdges.length === 0) {
+      return Promise.resolve(false);
+    }
+
+    // const edge = availableEdges.shift();
+    // const url = edge.endpoint + WEBRTC_PATH;
+    const url = StreamWebRtc.SERVER_HOST;
+
+    return new Promise((resolve) => {
+      console.log('WebRtc connect to:', url);
+
+      const streamWebRtc = new StreamWebRtc(url, 100);
+      webrtcRoundTripTimeValues = [];
+      StreamingEvent.edge(url).on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
+
+      setTimeout(() => {
+        webrtcRoundTripTimeStats = calculateStats(webrtcRoundTripTimeValues);
+        console.log('webrtcRoundTripTimeStats:', webrtcRoundTripTimeStats);
+        StreamingEvent.edge(url).off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
+        streamWebRtc.close();
+        resolve(true);
+      }, ADVANCED_MEASUREMENT_TIMEOUT);
+    }).then((successful) => (successful ? successful : webrtcManager(availableEdges)));
   };
 
   return getDeviceInfo()
-    .then((deviceInfo) =>
-      downloadManager(
-        ((deviceInfo || {}).recommendation || []).reduce((output, rec) => {
-          rec.measurementEndpoints.map((endpoint) =>
-            output.push({
-              url: `${endpoint}/${DOWNLOAD_DATASOURCE_NAME}`,
-              edgeRegion: rec.edgeRegion
-            })
-          );
-          return output;
-        }, [])
-      )
-    )
+    .then((deviceInfo) => {
+      const availableEdges = ((deviceInfo || {}).recommendation || []).reduce((output, rec) => {
+        rec.measurementEndpoints.map((endpoint) =>
+          output.push({
+            endpoint: endpoint,
+            edgeRegion: rec.edgeRegion
+          })
+        );
+        return output;
+      }, []);
+
+      return Promise.all([downloadManager([...availableEdges]), webrtcManager([...availableEdges])]);
+    })
     .then(() =>
       downloadSpeed
         ? {
             downloadSpeed: downloadSpeed,
+            webrtcRoundTripTime: webrtcRoundTripTimeStats.mean,
+            webrtcRoundTripTimeStandardDeviation: webrtcRoundTripTimeStats.standardDeviation,
             measurementLevel: MEASUREMENT_LEVEL_ADVANCED
           }
         : {}
@@ -181,10 +246,6 @@ function measureNetworkConnectivity(browserConnection = undefined) {
     .then((basicMeasurement) => {
       networkConnectivity = { ...networkConnectivity, ...basicMeasurement };
     })
-    .then(() => {
-      //networkConnectivity = { ...networkConnectivity, ...basicMeasurement };
-      return;
-    })
     .then(
       () =>
         new Promise(
@@ -192,6 +253,7 @@ function measureNetworkConnectivity(browserConnection = undefined) {
         )
     )
     .then((advancedMeasurement) => {
+      console.log('advancedMeasurement', advancedMeasurement);
       networkConnectivity = { ...networkConnectivity, ...advancedMeasurement };
     })
     .then(() => networkConnectivity);
