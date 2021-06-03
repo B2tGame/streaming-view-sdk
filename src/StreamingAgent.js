@@ -2,12 +2,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { measureNetworkConnectivity, resetNetworkConnectivity } from './stores/networkConnectivity';
 import { getDeviceInfo, resetDeviceInfo } from './stores/deviceInfo';
-// import StreamWebRtc from './service/StreamWebRtc';
 import Logger from './Logger';
-
-//TODO: add webrtc measurements also here. (without edge-node-id)
-// use device info to get host
-// multi connection from different clients
 
 /**
  * StreamingAgent class is responsible for running necessary background tasks for the Streaming Service
@@ -38,7 +33,6 @@ export default class StreamingAgent extends Component {
     this.connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
     this.connection.onchange = () => this.onConnectivityUpdate();
     this.onConnectivityUpdate();
-    // this.streamWebRtc = new StreamWebRtc(undefined, this.props.pingInterval);
   }
 
   componentWillUnmount() {
@@ -50,9 +44,6 @@ export default class StreamingAgent extends Component {
     if (prevProps.apiEndpoint !== this.props.apiEndpoint) {
       this.onConnectivityUpdate();
     }
-    // if (this.streamWebRtc) {
-    //   this.streamWebRtc.close();
-    // }
   }
 
   clearStoresCache() {
