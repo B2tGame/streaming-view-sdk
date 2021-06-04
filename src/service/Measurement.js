@@ -1,6 +1,7 @@
 import StreamingEvent from '../StreamingEvent';
 import PredictGameExperience from './PredictGameExperience';
 import PredictGameExperienceWithNeuralNetwork from './PredictGameExperienceWithNeuralNetwork';
+import StreamWebRtc from './StreamWebRtc';
 
 /**
  * Measurement class is responsible for processing and reporting measurement reports
@@ -14,14 +15,24 @@ export default class Measurement {
     this.numberOfBlackScreens = 0;
     this.previousMeasurement = this.defaultPreviousMeasurement();
     this.measurement = {};
+    this.webRtcHost = undefined;
 
     StreamingEvent.edgeNode(edgeNodeId)
       .on(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
-      .on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement)
       .on(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
       .on(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
       .on(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
+  }
+
+  /**
+   * @param {string} webRtcHost
+   * @param {number} webRtcHost
+   */
+  initWebRtc(webRtcHost, pingInterval) {
+    this.webRtcHost = webRtcHost;
+    this.streamWebRtc = new StreamWebRtc(webRtcHost, pingInterval);
+    StreamingEvent.edge(this.webRtcHost).on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
   }
 
   /**
@@ -83,11 +94,15 @@ export default class Measurement {
   destroy() {
     StreamingEvent.edgeNode(this.edgeNodeId)
       .off(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
-      .off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement)
       .off(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
       .off(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
       .off(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
+
+    if (this.webRtcHost) {
+      StreamingEvent.edge(this.webRtcHost).off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
+      this.streamWebRtc.close();
+    }
   }
 
   onStreamQualityRating = (rating) => {

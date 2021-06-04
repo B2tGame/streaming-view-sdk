@@ -4,14 +4,14 @@ import PropTypes from 'prop-types';
 import StreamingEvent from './StreamingEvent';
 import StreamingController from './StreamingController';
 import { v4 as uuid } from 'uuid';
-
 import buildInfo from './build-info.json';
 import Logger from './Logger';
 import StreamSocket from './service/StreamSocket';
-import StreamWebRtc from './service/StreamWebRtc';
 import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
 import BlackScreenDetector from './service/BlackScreenDetector';
+
+const urlParse = require('url-parse');
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
@@ -123,7 +123,6 @@ export default class StreamingView extends Component {
     window.addEventListener('error', this.onError);
 
     console.log('apiEndpoint:', { apiEndpoint });
-    this.streamWebRtc = new StreamWebRtc(StreamWebRtc.SERVER_HOST, pingInterval);
 
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
@@ -156,8 +155,7 @@ export default class StreamingView extends Component {
         return internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
       })
       .then((streamEndpoint) => {
-        //TODO: use streamEndpoint to extract host
-        // console.log('streamEndpoint:', { streamEndpoint });
+        this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, pingInterval);
 
         if (!this.isMountedInView) {
           this.logger.log('Cancel action due to view is not mounted.');
@@ -189,9 +187,6 @@ export default class StreamingView extends Component {
     }
     if (this.streamSocket) {
       this.streamSocket.close();
-    }
-    if (this.streamWebRtc) {
-      this.streamWebRtc.close();
     }
     if (this.blackScreenDetector) {
       this.blackScreenDetector.destroy();

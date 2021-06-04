@@ -1,8 +1,6 @@
 import StreamingEvent from '../StreamingEvent';
 import WebRtcConnectionClient from './WebRtcConnectionClient';
 
-//TODO: reconnect on connection lost
-
 /**
  * WebRtc connection and communicate with the backend
  */
@@ -22,15 +20,10 @@ export default class StreamWebRtc {
    * @param {string|undefined} edgeNodeId
    */
   constructor(host, pingInterval = 500, edgeNodeId = undefined) {
-    this.host = host;
+    this.host = StreamWebRtc.SERVER_HOST; // host;
     this.pingInterval = pingInterval;
     this.edgeNodeId = edgeNodeId;
-
-    console.log('debug StreamWebRtc START', {
-      host: this.host,
-      pingInterval: this.pingInterval,
-      edgeNodeId: this.edgeNodeId
-    });
+    //TODO: consider to drop edgeNodeId!
 
     this.peerConnection = undefined;
     new WebRtcConnectionClient()
@@ -81,33 +74,32 @@ export default class StreamWebRtc {
       dataChannel.addEventListener('message', onMessage);
 
       interval = setInterval(() => {
-        dataChannel.send(
-          JSON.stringify({
-            type: 'ping',
-            timestamp: Date.now(),
-            sequenceId: sequenceId++ // auto incremental counter to follow if the order of the packages are in the correct order
-          })
-        );
+        if (this.peerConnection && this.peerConnection.connectionState === 'connected') {
+          dataChannel.send(
+            JSON.stringify({
+              type: 'ping',
+              timestamp: Date.now(),
+              sequenceId: sequenceId++ // auto incremental counter to follow if the order of the packages are in the correct order
+            })
+          );
+        }
       }, pingInterval);
     };
 
-    peerConnection.addEventListener('datachannel', onDataChannel);
-
-    // This is a hack so that we can get a callback when the
-    // RTCPeerConnection is closed. In the future, we can subscribe to
-    // "connectionstatechange" events.
-    //TODO: check this.peerConnection.addEventListener('connectionstatechange', this._handlePeerConnectionStateChange, false);
-    //TODO: check JsepProtocol._handlePeerConnectionStateChange
-    const { close } = peerConnection;
-    peerConnection.close = function () {
-      if (dataChannel) {
-        dataChannel.removeEventListener('message', onMessage);
+    const onConnectionStateChange = () => {
+      if (peerConnection.connectionState === 'disconnected') {
+        if (dataChannel) {
+          dataChannel.removeEventListener('message', onMessage);
+        }
+        if (interval) {
+          clearInterval(interval);
+        }
+        peerConnection.removeEventListener('connectionstatechange', onConnectionStateChange);
       }
-      if (interval) {
-        clearInterval(interval);
-      }
-      return close.apply(this, arguments);
     };
+
+    peerConnection.addEventListener('datachannel', onDataChannel);
+    peerConnection.addEventListener('connectionstatechange', onConnectionStateChange);
   };
 
   close = () => {

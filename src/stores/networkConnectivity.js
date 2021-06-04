@@ -13,7 +13,6 @@ const DELAY_DEVICE_INFO_MS = 3000;
 const ADVANCED_MEASUREMENT_TIMEOUT = 5000;
 const DOWNLOAD_SPEED_RACE_FOR_MS = 2000;
 const DOWNLOAD_DATASOURCE_NAME = 'random4000x4000.jpg';
-// const WEBRTC_PATH = '/webrtc';
 
 const defaultNetworkConnectivity = {
   roundTripTime: undefined,
@@ -184,21 +183,20 @@ function getAdvancedMeasurement() {
       return Promise.resolve(false);
     }
 
-    // const edge = availableEdges.shift();
-    // const url = edge.endpoint + WEBRTC_PATH;
-    const url = StreamWebRtc.SERVER_HOST;
+    const edge = availableEdges.shift();
+    const webRtcHost = `${edge.endpoint}/webrtc`;
 
     return new Promise((resolve) => {
-      console.log('WebRtc connect to:', url);
+      console.log('WebRtc connect to:', webRtcHost);
 
-      const streamWebRtc = new StreamWebRtc(url, 100);
+      const streamWebRtc = new StreamWebRtc(webRtcHost, 100);
       webrtcRoundTripTimeValues = [];
-      StreamingEvent.edge(url).on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
+      StreamingEvent.edge(webRtcHost).on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
 
       setTimeout(() => {
         webrtcRoundTripTimeStats = calculateStats(webrtcRoundTripTimeValues);
         console.log('webrtcRoundTripTimeStats:', webrtcRoundTripTimeStats);
-        StreamingEvent.edge(url).off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
+        StreamingEvent.edge(webRtcHost).off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
         streamWebRtc.close();
         resolve(true);
       }, ADVANCED_MEASUREMENT_TIMEOUT);

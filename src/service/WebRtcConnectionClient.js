@@ -40,17 +40,15 @@ export default class WebRtcConnectionClient {
     const { RTCPeerConnection } = this.options;
     const peerConnection = new RTCPeerConnection(options);
 
-    // This is a hack so that we can get a callback when the
-    // RTCPeerConnection is closed. In the future, we can subscribe to
-    // "connectionstatechange" events.
-    //TODO: check this.peerConnection.addEventListener('connectionstatechange', this._handlePeerConnectionStateChange, false);
-    //TODO: check JsepProtocol._handlePeerConnectionStateChange
-    peerConnection.close = function () {
-      axios.delete(`${host}/connections/${id}`).catch((error) => {
-        console.log(error);
-      });
-      return RTCPeerConnection.prototype.close.apply(this, arguments);
+    const onConnectionStateChange = () => {
+      if (peerConnection.connectionState === 'disconnected') {
+        axios.delete(`${host}/connections/${id}`).catch((error) => {
+          console.log(error);
+        });
+        peerConnection.removeEventListener('connectionstatechange', onConnectionStateChange);
+      }
     };
+    peerConnection.addEventListener('connectionstatechange', onConnectionStateChange);
 
     return peerConnection;
   };
