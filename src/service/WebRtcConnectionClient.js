@@ -69,7 +69,6 @@ export default class WebRtcConnectionClient {
     const { host } = createOptions;
     let remotePeerConnectionId = undefined;
     let peerConnection = undefined;
-
     return axios
       .post(`${host}/connections`)
       .then((response) => {
