@@ -1,3 +1,4 @@
+const urlParse = require('url-parse');
 const axios = require('axios').default;
 const DefaultRTCPeerConnection = require('wrtc').RTCPeerConnection;
 const { RTCSessionDescription } = require('wrtc');
@@ -19,24 +20,30 @@ export default class WebRtcConnectionClient {
   }
 
   /**
+   * Get Ice configuration from emulator hostname
+   * @returns {any|{urls: string[], credential: string, username: string}}
+   */
+  getIceConfiguration(host) {
+    const hostname = urlParse(host).hostname;
+    const endpoint = `turn:${hostname}:3478`;
+
+    return {
+      urls: [`${endpoint}?transport=udp`, `${endpoint}?transport=tcp`],
+      username: 'webclient',
+      credential: 'webclient',
+      ttl: 86400
+    };
+  }
+
+  /**
    *
    * @param {string} host
    * @param {string} id
    */
   createPeerConnection = (host, id) => {
-    //TODO: find out how to handle proxy case
     const options = { sdpSemantics: 'unified-plan' };
-    if (window.location.search === '?proxy') {
-      options.iceServers = [
-        {
-          username: '1615555670:appland',
-          credential: 'dYgxMHKLcGSjRTRhvPFXDn2YSPY=',
-          ttl: 86400,
-          urls: ['turn:143.131.179.76:36995?transport=udp']
-        }
-      ];
-      options.iceTransportPolicy = 'relay';
-    }
+    options.iceServers = [this.getIceConfiguration(host)];
+    options.iceTransportPolicy = 'relay';
     const { RTCPeerConnection } = this.options;
     const peerConnection = new RTCPeerConnection(options);
 

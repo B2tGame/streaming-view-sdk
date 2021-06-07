@@ -9,18 +9,13 @@ export default class StreamWebRtc {
     return 'streaming-webrtc-server';
   }
 
-  static get SERVER_HOST() {
-    return 'http://192.168.38.104:5022';
-    // return 'http://localhost:5022';
-  }
-
   /**
    * @param {string} host
    * @param {number} pingInterval
    * @param {string|undefined} edgeNodeId
    */
   constructor(host, pingInterval = 500, edgeNodeId = undefined) {
-    this.host = StreamWebRtc.SERVER_HOST; // host;
+    this.host = host;
     this.pingInterval = pingInterval;
     this.edgeNodeId = edgeNodeId;
     //TODO: consider to drop edgeNodeId!
@@ -32,6 +27,7 @@ export default class StreamWebRtc {
         host: this.host
       })
       .then((peerConnection) => {
+        console.log('DEBUG peer connection:', peerConnection);
         this.peerConnection = peerConnection;
       });
 
@@ -74,6 +70,7 @@ export default class StreamWebRtc {
       dataChannel.addEventListener('message', onMessage);
 
       interval = setInterval(() => {
+        console.log('DEBUG:', { host: this.host, peerConnection: peerConnection });
         if (this.peerConnection && this.peerConnection.connectionState === 'connected') {
           dataChannel.send(
             JSON.stringify({
@@ -87,6 +84,7 @@ export default class StreamWebRtc {
     };
 
     const onConnectionStateChange = () => {
+      console.log('onConnectionStateChange -> connectionState=', peerConnection.connectionState);
       if (peerConnection.connectionState === 'disconnected') {
         if (dataChannel) {
           dataChannel.removeEventListener('message', onMessage);
