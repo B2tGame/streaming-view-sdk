@@ -388,8 +388,6 @@ export default class StreamingEvent {
    * @return {EventEmitter}
    */
   static edge(edgeId) {
-    //TODO: delete this hack
-    //edgeId = StreamWebRtc.SERVER_HOST;
     if (edgeEventEmitter[edgeId] === undefined) {
       edgeEventEmitter[edgeId] = new ExtendedEventEmitter();
       this.emit(StreamingEvent.NEW_EDGE, edgeId);

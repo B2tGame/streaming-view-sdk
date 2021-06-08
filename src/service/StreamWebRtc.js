@@ -26,7 +26,6 @@ export default class StreamWebRtc {
         host: this.host
       })
       .then((peerConnection) => {
-        console.log('DEBUG peer connection:', peerConnection);
         this.peerConnection = peerConnection;
       });
 
@@ -43,7 +42,7 @@ export default class StreamWebRtc {
 
     const onMessage = ({ data }) => {
       const { type, timestamp, sequenceId } = JSON.parse(data);
-      console.log("Pong", { type, timestamp, sequenceId });
+      console.log('Pong', { type, timestamp, sequenceId });
       if (type === 'pong') {
         const sendTime = Math.trunc(timestamp);
         const rtt = Date.now() - sendTime;
