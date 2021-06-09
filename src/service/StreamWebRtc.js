@@ -67,15 +67,15 @@ export default class StreamWebRtc {
       dataChannel = channel;
       dataChannel.addEventListener('message', onMessage);
       interval = setInterval(() => {
-        // if (this.peerConnection && this.peerConnection.connectionState === 'connected') {
-        dataChannel.send(
-          JSON.stringify({
-            type: 'ping',
-            timestamp: Date.now(),
-            sequenceId: sequenceId++ // auto incremental counter to follow if the order of the packages are in the correct order
-          })
-        );
-        // }
+        if (dataChannel.readyState === 'open') {
+          dataChannel.send(
+            JSON.stringify({
+              type: 'ping',
+              timestamp: Date.now(),
+              sequenceId: sequenceId++ // auto incremental counter to follow if the order of the packages are in the correct order
+            })
+          );
+        }
       }, pingInterval);
     };
 
