@@ -42,13 +42,19 @@ export default class StreamWebRtc {
 
     const onMessage = ({ data }) => {
       const { type, timestamp, sequenceId } = JSON.parse(data);
-      console.log('Pong', { type, timestamp, sequenceId });
+      console.log('pong', { type, timestamp, sequenceId });
       if (type === 'pong') {
         const sendTime = Math.trunc(timestamp);
         const rtt = Date.now() - sendTime;
+
+        console.log({ rtt: rtt });
+        console.log('debug 1');
+
         if (this.edgeNodeId) {
+          console.log('debug 2', { host: this.host, edgeNodeId: this.edgeNodeId });
           StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
         } else {
+          console.log('debug 3', { host: this.host, edgeNodeId: this.edgeNodeId });
           StreamingEvent.edge(this.host).emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
         }
       }
@@ -61,6 +67,7 @@ export default class StreamWebRtc {
       dataChannel = channel;
       dataChannel.addEventListener('message', onMessage);
       interval = setInterval(() => {
+        // if (this.peerConnection && this.peerConnection.connectionState === 'connected') {
         dataChannel.send(
           JSON.stringify({
             type: 'ping',
@@ -68,6 +75,7 @@ export default class StreamWebRtc {
             sequenceId: sequenceId++ // auto incremental counter to follow if the order of the packages are in the correct order
           })
         );
+        // }
       }, pingInterval);
     };
 

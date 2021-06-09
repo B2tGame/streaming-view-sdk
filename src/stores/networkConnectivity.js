@@ -184,8 +184,8 @@ function getAdvancedMeasurement() {
     }
 
     const edge = availableEdges.shift();
-    const webRtcHost = `${edge.endpoint}/webrtc`;
-
+    // const webRtcHost = `${edge.endpoint}/webrtc`;
+    const webRtcHost = 'http://localhost:5022';
     return new Promise((resolve) => {
       console.log('WebRtc connect to:', webRtcHost);
 

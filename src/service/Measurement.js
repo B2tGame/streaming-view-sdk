@@ -27,7 +27,7 @@ export default class Measurement {
 
   /**
    * @param {string} webRtcHost
-   * @param {number} webRtcHost
+   * @param {number} pingInterval
    */
   initWebRtc(webRtcHost, pingInterval) {
     this.webRtcHost = webRtcHost;

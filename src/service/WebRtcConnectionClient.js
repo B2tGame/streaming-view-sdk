@@ -42,8 +42,8 @@ export default class WebRtcConnectionClient {
    */
   createPeerConnection = (host, id) => {
     const options = { sdpSemantics: 'unified-plan' };
-    options.iceServers = [this.getIceConfiguration(host)];
-    options.iceTransportPolicy = 'relay';
+    //options.iceServers = [this.getIceConfiguration(host)];
+    //options.iceTransportPolicy = 'relay';
     const { RTCPeerConnection } = this.options;
     const peerConnection = new RTCPeerConnection(options);
 
