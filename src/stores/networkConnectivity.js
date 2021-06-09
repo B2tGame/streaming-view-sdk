@@ -183,7 +183,7 @@ function getAdvancedMeasurement() {
       return Promise.resolve(false);
     }
 
-    const edge = availableEdges.shift();
+    // const edge = availableEdges.shift();
     // const webRtcHost = `${edge.endpoint}/webrtc`;
     const webRtcHost = 'http://localhost:5022';
     return new Promise((resolve) => {
@@ -191,12 +191,12 @@ function getAdvancedMeasurement() {
 
       const streamWebRtc = new StreamWebRtc(webRtcHost, 100);
       webrtcRoundTripTimeValues = [];
-      StreamingEvent.edge(webRtcHost).on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
+      StreamingEvent.edgeWorker(webRtcHost).on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
 
       setTimeout(() => {
         webrtcRoundTripTimeStats = calculateStats(webrtcRoundTripTimeValues);
         console.log('webrtcRoundTripTimeStats:', webrtcRoundTripTimeStats);
-        StreamingEvent.edge(webRtcHost).off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
+        StreamingEvent.edgeWorker(webRtcHost).off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
         streamWebRtc.close();
         resolve(true);
       }, ADVANCED_MEASUREMENT_TIMEOUT);

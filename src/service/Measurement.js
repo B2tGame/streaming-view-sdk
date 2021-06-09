@@ -31,8 +31,10 @@ export default class Measurement {
    */
   initWebRtc(webRtcHost, pingInterval) {
     this.webRtcHost = webRtcHost;
-    this.streamWebRtc = new StreamWebRtc(webRtcHost, pingInterval);
-    StreamingEvent.edge(this.webRtcHost).on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
+    this.streamWebRtc = new StreamWebRtc(webRtcHost, pingInterval, this.edgeNodeId);
+    StreamingEvent.edgeWorker(this.webRtcHost).on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
+
+    //StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
   }
 
   /**
@@ -100,7 +102,14 @@ export default class Measurement {
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
 
     if (this.webRtcHost) {
-      StreamingEvent.edge(this.webRtcHost).off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
+      StreamingEvent.edgeWorker(this.webRtcHost).off(
+        StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT,
+        this.onWebRtcRoundTripTimeMeasurement
+      );
+      // StreamingEvent.edgeNode(this.edgeNodeId).off(
+      //   StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT,
+      //   this.onWebRtcRoundTripTimeMeasurement
+      // );
       this.streamWebRtc.close();
     }
   }
@@ -121,6 +130,7 @@ export default class Measurement {
   onWebRtcRoundTripTimeMeasurement = (webrtcRoundTripTime) => {
     this.webrtcRoundTripTime = webrtcRoundTripTime;
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT);
+    // StreamingEvent.edgeWorker(this.webRtcHost).emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT);
   };
 
   onWebRtcMeasurement = (stats) => {

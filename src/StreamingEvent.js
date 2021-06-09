@@ -14,7 +14,7 @@ class ExtendedEventEmitter extends EventEmitter {
 }
 
 const globalEventEmitter = new ExtendedEventEmitter();
-const edgeEventEmitter = {};
+const edgeWorkerEventEmitter = {};
 const edgeNodeEventEmitter = {};
 
 /**
@@ -46,7 +46,7 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event that is fire when the SDK reciving the edge node are ready to accept a connection.
+   * Event that is fire when the SDK receiving the edge node are ready to accept a connection.
    * @return {string}
    */
   static get EDGE_NODE_READY_TO_ACCEPT_CONNECTION() {
@@ -272,7 +272,7 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event fired when the audio is available and can be unmuted.
+   * Event fired when the audio is available and can be un-muted.
    * @return {string}
    */
   static get STREAM_AUDIO_AVAILABLE() {
@@ -344,11 +344,11 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event fired when the new edge is detected by StreamingEvent handler.
+   * Event fired when the new edgeWorker is detected by StreamingEvent handler.
    * @return {string}
    */
-  static get NEW_EDGE() {
-    return 'new-edge';
+  static get NEW_EDGE_WORKER() {
+    return 'new-edge-worker';
   }
 
   /**
@@ -382,17 +382,17 @@ export default class StreamingEvent {
   }
 
   /**
-   * Get EventEmitter for a specific Edge.
+   * Get EventEmitter for a specific Edge Worker.
    * This will automatically create a new Event emitter if missing.
-   * @param {string} edgeId
+   * @param {string} edgeWorkerId
    * @return {EventEmitter}
    */
-  static edge(edgeId) {
-    if (edgeEventEmitter[edgeId] === undefined) {
-      edgeEventEmitter[edgeId] = new ExtendedEventEmitter();
-      this.emit(StreamingEvent.NEW_EDGE, edgeId);
+  static edgeWorker(edgeWorkerId) {
+    if (edgeWorkerEventEmitter[edgeWorkerId] === undefined) {
+      edgeWorkerEventEmitter[edgeWorkerId] = new ExtendedEventEmitter();
+      this.emit(StreamingEvent.NEW_EDGE_WORKER, edgeWorkerId);
     }
-    return edgeEventEmitter[edgeId];
+    return edgeWorkerEventEmitter[edgeWorkerId];
   }
 
   /**
@@ -455,11 +455,13 @@ export default class StreamingEvent {
    */
   static emit(event, data) {
     globalEventEmitter.emit(event, data);
-    for (let edgeId in edgeEventEmitter) {
-      if (edgeEventEmitter[edgeId]) {
-        edgeEventEmitter[edgeId].emit(event, data);
+
+    for (let edgeWorkerId in edgeWorkerEventEmitter) {
+      if (edgeWorkerEventEmitter[edgeWorkerId]) {
+        edgeWorkerEventEmitter[edgeWorkerId].emit(event, data);
       }
     }
+
     for (let edgeNodeId in edgeNodeEventEmitter) {
       if (edgeNodeEventEmitter[edgeNodeId]) {
         edgeNodeEventEmitter[edgeNodeId].emit(event, data);

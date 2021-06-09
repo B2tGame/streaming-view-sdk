@@ -18,7 +18,6 @@ export default class StreamWebRtc {
     this.host = host;
     this.pingInterval = pingInterval;
     this.edgeNodeId = edgeNodeId;
-    //TODO: consider to drop edgeNodeId!
     this.peerConnection = undefined;
     new WebRtcConnectionClient()
       .createConnection({
@@ -35,8 +34,8 @@ export default class StreamWebRtc {
   }
 
   beforeAnswer = (peerConnection) => {
-    let dataChannel = null;
-    let interval = null;
+    let dataChannel = undefined;
+    let interval = undefined;
     let sequenceId = 0;
     const pingInterval = this.pingInterval;
 
@@ -48,14 +47,11 @@ export default class StreamWebRtc {
         const rtt = Date.now() - sendTime;
 
         console.log({ rtt: rtt });
-        console.log('debug 1');
 
         if (this.edgeNodeId) {
-          console.log('debug 2', { host: this.host, edgeNodeId: this.edgeNodeId });
           StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
         } else {
-          console.log('debug 3', { host: this.host, edgeNodeId: this.edgeNodeId });
-          StreamingEvent.edge(this.host).emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
+          StreamingEvent.edgeWorker(this.host).emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
         }
       }
     };

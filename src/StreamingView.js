@@ -122,8 +122,6 @@ export default class StreamingView extends Component {
     window.addEventListener('resize', this.onResize);
     window.addEventListener('error', this.onError);
 
-    console.log('apiEndpoint:', { apiEndpoint });
-
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
       .once(StreamingEvent.STREAM_TERMINATED, () => {
