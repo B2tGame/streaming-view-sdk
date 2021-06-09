@@ -1,29 +1,17 @@
 const urlParse = require('url-parse');
 const axios = require('axios').default;
-const DefaultRTCPeerConnection = require('wrtc').RTCPeerConnection;
+const RTCPeerConnection = require('wrtc').RTCPeerConnection;
 const { RTCSessionDescription } = require('wrtc');
 
-const TIME_TO_HOST_CANDIDATES = 1000;
-
+/**
+ * WebRtcConnectionClient class to handle Web RTC client connections
+ */
 export default class WebRtcConnectionClient {
-  constructor(options = {}) {
-    this.options = {
-      RTCPeerConnection: DefaultRTCPeerConnection,
-      clearTimeout,
-      host: '',
-      setTimeout,
-      timeToHostCandidates: TIME_TO_HOST_CANDIDATES,
-      ...options
-    };
-
-    return this;
-  }
-
   /**
    * Get Ice configuration from emulator hostname
    * @returns {any|{urls: string[], credential: string, username: string}}
    */
-  getIceConfiguration(host) {
+  static getIceConfiguration = (host) => {
     const hostname = urlParse(host).hostname;
     const endpoint = `turn:${hostname}:3478`;
 
@@ -33,18 +21,17 @@ export default class WebRtcConnectionClient {
       credential: 'webclient',
       ttl: 86400
     };
-  }
+  };
 
   /**
    *
    * @param {string} host
    * @param {string} id
    */
-  createPeerConnection = (host, id) => {
+  static createPeerConnection = (host, id) => {
     const options = { sdpSemantics: 'unified-plan' };
-    //options.iceServers = [this.getIceConfiguration(host)];
+    //options.iceServers = [WebRtcConnectionClient.getIceConfiguration(host)];
     //options.iceTransportPolicy = 'relay';
-    const { RTCPeerConnection } = this.options;
     const peerConnection = new RTCPeerConnection(options);
 
     const onConnectionStateChange = () => {
@@ -60,13 +47,13 @@ export default class WebRtcConnectionClient {
     return peerConnection;
   };
 
-  createConnection = (options = {}) => {
+  static createConnection = (options = {}) => {
     const createOptions = {
       beforeAnswer() {},
       stereo: false,
       ...options
     };
-    const { host } = createOptions;
+    const { host, beforeAnswer } = createOptions;
     let remotePeerConnectionId = undefined;
     let peerConnection = undefined;
     return axios
@@ -74,10 +61,10 @@ export default class WebRtcConnectionClient {
       .then((response) => {
         const remotePeerConnection = response.data || {};
         remotePeerConnectionId = remotePeerConnection.id;
-        peerConnection = this.createPeerConnection(host, remotePeerConnectionId);
+        peerConnection = WebRtcConnectionClient.createPeerConnection(host, remotePeerConnectionId);
         return peerConnection.setRemoteDescription(remotePeerConnection.localDescription);
       })
-      .then(() => createOptions.beforeAnswer(peerConnection))
+      .then(() => beforeAnswer(peerConnection))
       .then(() => peerConnection.createAnswer())
       .then((originalAnswer) =>
         peerConnection.setLocalDescription(

@@ -2,7 +2,7 @@ import StreamingEvent from '../StreamingEvent';
 import WebRtcConnectionClient from './WebRtcConnectionClient';
 
 /**
- * WebRtc connection and communicate with the backend
+ * StreamWebRtc is a WebRtc connection class to communicate with the backend
  */
 export default class StreamWebRtc {
   static get DATA_CHANNEL_NAME() {
@@ -19,14 +19,13 @@ export default class StreamWebRtc {
     this.pingInterval = pingInterval;
     this.edgeNodeId = edgeNodeId;
     this.peerConnection = undefined;
-    new WebRtcConnectionClient()
-      .createConnection({
-        beforeAnswer: this.beforeAnswer,
-        host: this.host
-      })
-      .then((peerConnection) => {
-        this.peerConnection = peerConnection;
-      });
+
+    WebRtcConnectionClient.createConnection({
+      beforeAnswer: this.beforeAnswer,
+      host: this.host
+    }).then((peerConnection) => {
+      this.peerConnection = peerConnection;
+    });
 
     if (this.edgeNodeId) {
       StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.close);
