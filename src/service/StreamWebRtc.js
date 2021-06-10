@@ -75,7 +75,6 @@ export default class StreamWebRtc {
     };
 
     const onConnectionStateChange = () => {
-      console.log('onConnectionStateChange -> connectionState=', peerConnection.connectionState);
       if (peerConnection.connectionState === 'disconnected') {
         if (dataChannel) {
           dataChannel.removeEventListener('message', onMessage);

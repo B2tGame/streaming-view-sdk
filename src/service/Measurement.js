@@ -207,6 +207,7 @@ export default class Measurement {
         this.webrtcRoundTripTime,
         this.measurement.packetsLostPercent
       );
+      this.measurement.webrtcRoundTripTime = this.webrtcRoundTripTime;
 
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;
