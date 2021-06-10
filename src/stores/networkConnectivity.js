@@ -184,13 +184,11 @@ function getAdvancedMeasurement() {
       return Promise.resolve(false);
     }
 
-    // const edge = availableEdges.shift();
-    // const webRtcHost = `${edge.endpoint}/webrtc`;
-    const webRtcHost = 'http://localhost:5022';
+    const edge = availableEdges.shift();
+    const webRtcHost = `${edge.endpoint}/webrtc`;
     return new Promise((resolve, reject) => {
       try {
         console.log('WebRtc connect to:', webRtcHost);
-
         const streamWebRtc = new StreamWebRtc(webRtcHost, 100);
 
         setTimeout(() => {
