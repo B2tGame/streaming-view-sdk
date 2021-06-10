@@ -13,6 +13,7 @@ import Logger from './Logger';
 export default class StreamingAgent extends Component {
   static propTypes = {
     apiEndpoint: PropTypes.string.isRequired,
+    pingInterval: PropTypes.number,
     enableDebug: PropTypes.bool,
     internalSession: PropTypes.bool
   };

@@ -43,7 +43,7 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event that is fire when the SDK reciving the edge node are ready to accept a connection.
+   * Event that is fire when the SDK receiving the edge node are ready to accept a connection.
    * @return {string}
    */
   static get EDGE_NODE_READY_TO_ACCEPT_CONNECTION() {
@@ -70,9 +70,24 @@ export default class StreamingEvent {
    * Event of network RTT with payload {number} in millisecond
    * @return {string}
    */
-
   static get ROUND_TRIP_TIME_MEASUREMENT() {
     return 'round-trip-time-measurement';
+  }
+
+  /**
+   * Event of webrtc client connected
+   * @return {string}
+   */
+  static get WEBRTC_CLIENT_CONNECTED() {
+    return 'webrtc-client-connected';
+  }
+
+  /**
+   * Event of webrtc RTT with payload {number} in millisecond
+   * @return {string}
+   */
+  static get WEBRTC_ROUND_TRIP_TIME_MEASUREMENT() {
+    return 'webrtc-round-trip-time-measurement';
   }
 
   /**
@@ -262,7 +277,7 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event fired when the audio is available and can be unmuted.
+   * Event fired when the audio is available and can be un-muted.
    * @return {string}
    */
   static get STREAM_AUDIO_AVAILABLE() {
@@ -334,6 +349,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fired when the new edgeWorker is detected by StreamingEvent handler.
+   * @return {string}
+   */
+  static get NEW_EDGE_WORKER() {
+    return 'new-edge-worker';
+  }
+
+  /**
    * Event fired when the new edge node is detected by StreamingEvent handler.
    * @return {string}
    */
@@ -351,7 +374,7 @@ export default class StreamingEvent {
 
   /**
    * Get EventEmitter for a specific Edge Node Id.
-   * This will automatic create a new Event emitter if missing.
+   * This will automatically create a new Event emitter if missing.
    * @param {string} edgeNodeId
    * @return {EventEmitter}
    */
@@ -423,6 +446,7 @@ export default class StreamingEvent {
    */
   static emit(event, data) {
     globalEventEmitter.emit(event, data);
+
     for (let edgeNodeId in edgeNodeEventEmitter) {
       if (edgeNodeEventEmitter[edgeNodeId]) {
         edgeNodeEventEmitter[edgeNodeId].emit(event, data);

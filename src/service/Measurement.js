@@ -1,6 +1,7 @@
 import StreamingEvent from '../StreamingEvent';
 import PredictGameExperience from './PredictGameExperience';
 import PredictGameExperienceWithNeuralNetwork from './PredictGameExperienceWithNeuralNetwork';
+import StreamWebRtc from './StreamWebRtc';
 
 /**
  * Measurement class is responsible for processing and reporting measurement reports
@@ -9,10 +10,12 @@ export default class Measurement {
   constructor(edgeNodeId) {
     this.edgeNodeId = edgeNodeId;
     this.networkRoundTripTime = 0;
+    this.webrtcRoundTripTime = 0;
     this.streamQualityRating = 0;
     this.numberOfBlackScreens = 0;
     this.previousMeasurement = this.defaultPreviousMeasurement();
     this.measurement = {};
+    this.webRtcHost = undefined;
 
     StreamingEvent.edgeNode(edgeNodeId)
       .on(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
@@ -20,6 +23,17 @@ export default class Measurement {
       .on(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
       .on(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
+  }
+
+  /**
+   * @param {string} webRtcHost
+   * @param {number} pingInterval
+   */
+  initWebRtc(webRtcHost, pingInterval) {
+    this.webRtcHost = webRtcHost;
+    this.streamWebRtc = new StreamWebRtc(webRtcHost, pingInterval);
+    this.streamWebRtc.on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
+    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
   }
 
   /**
@@ -85,6 +99,12 @@ export default class Measurement {
       .off(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
       .off(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
+
+    if (this.streamWebRtc) {
+      StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
+      this.streamWebRtc.off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
+      this.streamWebRtc.close();
+    }
   }
 
   onStreamQualityRating = (rating) => {
@@ -98,6 +118,10 @@ export default class Measurement {
   onRoundTripTimeMeasurement = (networkRoundTripTime) => {
     this.networkRoundTripTime = networkRoundTripTime;
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
+  };
+
+  onWebRtcRoundTripTimeMeasurement = (webrtcRoundTripTime) => {
+    this.webrtcRoundTripTime = webrtcRoundTripTime;
   };
 
   onWebRtcMeasurement = (stats) => {
@@ -182,9 +206,10 @@ export default class Measurement {
       const expectedPacketsReceived = currentPacketsLost + currentPacketsReceived;
       this.measurement.packetsLostPercent = (currentPacketsLost * 100) / expectedPacketsReceived;
       this.measurement.predictedGameExperience = this.calculatePredictedGameExperience(
-        this.networkRoundTripTime,
+        this.webrtcRoundTripTime,
         this.measurement.packetsLostPercent
       );
+      this.measurement.webrtcRoundTripTime = this.webrtcRoundTripTime;
 
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;

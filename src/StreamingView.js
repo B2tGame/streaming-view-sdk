@@ -4,13 +4,14 @@ import PropTypes from 'prop-types';
 import StreamingEvent from './StreamingEvent';
 import StreamingController from './StreamingController';
 import { v4 as uuid } from 'uuid';
-
 import buildInfo from './build-info.json';
 import Logger from './Logger';
 import StreamSocket from './service/StreamSocket';
 import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
 import BlackScreenDetector from './service/BlackScreenDetector';
+
+const urlParse = require('url-parse');
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
@@ -53,7 +54,8 @@ export default class StreamingView extends Component {
       userClickedPlayAt: PropTypes.number, // Can't be changed after creation
       maxConnectionRetries: PropTypes.number, // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
       height: PropTypes.string,
-      width: PropTypes.string
+      width: PropTypes.string,
+      pingInterval: PropTypes.number
     };
   }
 
@@ -64,7 +66,8 @@ export default class StreamingView extends Component {
     enableFullScreen: true,
     enableControl: true,
     volume: 1.0,
-    muted: false
+    muted: false,
+    pingInterval: 500
   };
 
   /**
@@ -91,7 +94,17 @@ export default class StreamingView extends Component {
 
   componentDidMount() {
     this.isMountedInView = true;
-    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, enableDebug, onEvent } = this.props;
+    const {
+      apiEndpoint,
+      edgeNodeId,
+      userId,
+      edgeNodeEndpoint,
+      internalSession,
+      turnEndpoint,
+      enableDebug,
+      onEvent,
+      pingInterval
+    } = this.props;
     if (!internalSession) {
       this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId, this.streamingViewId);
     }
@@ -135,11 +148,13 @@ export default class StreamingView extends Component {
     })
       .then((controller) => controller.getStreamEndpoint())
       .then((streamEndpoint) => {
-        // if the SDK are in internal session mode and a value has been pass to edge node endpoint use that value insted of the
+        // if the SDK are in internal session mode and a value has been pass to edge node endpoint use that value instead of the
         // public endpoint received from Service Coordinator.
         return internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
       })
       .then((streamEndpoint) => {
+        this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, pingInterval);
+
         if (!this.isMountedInView) {
           this.logger.log('Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
