@@ -14,7 +14,6 @@ class ExtendedEventEmitter extends EventEmitter {
 }
 
 const globalEventEmitter = new ExtendedEventEmitter();
-const edgeWorkerEventEmitter = {};
 const edgeNodeEventEmitter = {};
 
 /**
@@ -75,6 +74,14 @@ export default class StreamingEvent {
    */
   static get ROUND_TRIP_TIME_MEASUREMENT() {
     return 'round-trip-time-measurement';
+  }
+
+  /**
+   * Event of webrtc client connected
+   * @return {string}
+   */
+  static get WEBRTC_CLIENT_CONNECTED() {
+    return 'webrtc-client-connected';
   }
 
   /**
@@ -382,20 +389,6 @@ export default class StreamingEvent {
   }
 
   /**
-   * Get EventEmitter for a specific Edge Worker.
-   * This will automatically create a new Event emitter if missing.
-   * @param {string} edgeWorkerId
-   * @return {EventEmitter}
-   */
-  static edgeWorker(edgeWorkerId) {
-    if (edgeWorkerEventEmitter[edgeWorkerId] === undefined) {
-      edgeWorkerEventEmitter[edgeWorkerId] = new ExtendedEventEmitter();
-      this.emit(StreamingEvent.NEW_EDGE_WORKER, edgeWorkerId);
-    }
-    return edgeWorkerEventEmitter[edgeWorkerId];
-  }
-
-  /**
    * Get list of edge nodes.
    * @return {string[]}
    */
@@ -455,12 +448,6 @@ export default class StreamingEvent {
    */
   static emit(event, data) {
     globalEventEmitter.emit(event, data);
-
-    for (let edgeWorkerId in edgeWorkerEventEmitter) {
-      if (edgeWorkerEventEmitter[edgeWorkerId]) {
-        edgeWorkerEventEmitter[edgeWorkerId].emit(event, data);
-      }
-    }
 
     for (let edgeNodeId in edgeNodeEventEmitter) {
       if (edgeNodeEventEmitter[edgeNodeId]) {

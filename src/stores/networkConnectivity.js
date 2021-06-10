@@ -10,6 +10,7 @@ const MEASUREMENT_LEVEL_BASIC = 'basic';
 const MEASUREMENT_LEVEL_ADVANCED = 'advanced';
 
 const DELAY_DEVICE_INFO_MS = 3000;
+const WEBRTC_TIME_TO_CONNECTED = 10000;
 const ADVANCED_MEASUREMENT_TIMEOUT = 5000;
 const DOWNLOAD_SPEED_RACE_FOR_MS = 2000;
 const DOWNLOAD_DATASOURCE_NAME = 'random4000x4000.jpg';
@@ -186,20 +187,37 @@ function getAdvancedMeasurement() {
     // const edge = availableEdges.shift();
     // const webRtcHost = `${edge.endpoint}/webrtc`;
     const webRtcHost = 'http://localhost:5022';
-    return new Promise((resolve) => {
-      console.log('WebRtc connect to:', webRtcHost);
+    return new Promise((resolve, reject) => {
+      try {
+        console.log('WebRtc connect to:', webRtcHost);
 
-      const streamWebRtc = new StreamWebRtc(webRtcHost, 100);
-      webrtcRoundTripTimeValues = [];
-      StreamingEvent.edgeWorker(webRtcHost).on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
+        const streamWebRtc = new StreamWebRtc(webRtcHost, 100);
 
-      setTimeout(() => {
-        webrtcRoundTripTimeStats = calculateStats(webrtcRoundTripTimeValues);
-        console.log('webrtcRoundTripTimeStats:', webrtcRoundTripTimeStats);
-        StreamingEvent.edgeWorker(webRtcHost).off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
-        streamWebRtc.close();
-        resolve(true);
-      }, ADVANCED_MEASUREMENT_TIMEOUT);
+        setTimeout(() => {
+          reject(false);
+        }, WEBRTC_TIME_TO_CONNECTED);
+
+        const onWebRtcClientConnected = () => {
+          webrtcRoundTripTimeValues = [];
+          setTimeout(() => {
+            webrtcRoundTripTimeStats = calculateStats(webrtcRoundTripTimeValues);
+            console.log('webrtcRoundTripTimeStats:', webrtcRoundTripTimeStats);
+
+            streamWebRtc
+              .off(StreamingEvent.WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected)
+              .off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement)
+              .close();
+
+            resolve(true);
+          }, ADVANCED_MEASUREMENT_TIMEOUT);
+        };
+
+        streamWebRtc
+          .on(StreamingEvent.WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected)
+          .on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
+      } catch (e) {
+        reject(false);
+      }
     }).then((successful) => (successful ? successful : webrtcManager(availableEdges)));
   };
 
@@ -251,7 +269,6 @@ function measureNetworkConnectivity(browserConnection = undefined) {
         )
     )
     .then((advancedMeasurement) => {
-      console.log('advancedMeasurement', advancedMeasurement);
       networkConnectivity = { ...networkConnectivity, ...advancedMeasurement };
     })
     .then(() => networkConnectivity);

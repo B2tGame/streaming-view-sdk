@@ -22,8 +22,7 @@ export default class Measurement {
       .on(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
       .on(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
       .on(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
-      .on(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected)
-      .on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
+      .on(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
   }
 
   /**
@@ -33,6 +32,8 @@ export default class Measurement {
   initWebRtc(webRtcHost, pingInterval) {
     this.webRtcHost = webRtcHost;
     this.streamWebRtc = new StreamWebRtc(webRtcHost, pingInterval, this.edgeNodeId);
+    this.streamWebRtc.on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
+    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
   }
 
   /**
@@ -97,10 +98,11 @@ export default class Measurement {
       .off(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
       .off(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
       .off(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
-      .off(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected)
-      .off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
+      .off(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
 
-    if (this.webRtcHost) {
+    if (this.streamWebRtc) {
+      StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
+      this.streamWebRtc.off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
       this.streamWebRtc.close();
     }
   }

@@ -1,10 +1,11 @@
+import EventEmitter from 'eventemitter3';
 import StreamingEvent from '../StreamingEvent';
 import WebRtcConnectionClient from './WebRtcConnectionClient';
 
 /**
  * StreamWebRtc is a WebRtc connection class to communicate with the backend
  */
-export default class StreamWebRtc {
+export default class StreamWebRtc extends EventEmitter {
   static get DATA_CHANNEL_NAME() {
     return 'streaming-webrtc-server';
   }
@@ -15,6 +16,8 @@ export default class StreamWebRtc {
    * @param {string|undefined} edgeNodeId
    */
   constructor(host, pingInterval = 500, edgeNodeId = undefined) {
+    super();
+
     this.host = host;
     this.pingInterval = pingInterval;
     this.edgeNodeId = edgeNodeId;
@@ -26,10 +29,6 @@ export default class StreamWebRtc {
     }).then((peerConnection) => {
       this.peerConnection = peerConnection;
     });
-
-    if (this.edgeNodeId) {
-      StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.close);
-    }
   }
 
   beforeAnswer = (peerConnection) => {
@@ -39,19 +38,11 @@ export default class StreamWebRtc {
     const pingInterval = this.pingInterval;
 
     const onMessage = ({ data }) => {
-      const { type, timestamp, sequenceId } = JSON.parse(data);
-      console.log('pong', { type, timestamp, sequenceId });
+      const { type, timestamp } = JSON.parse(data);
       if (type === 'pong') {
         const sendTime = Math.trunc(timestamp);
         const rtt = Date.now() - sendTime;
-
-        console.log({ rtt: rtt });
-
-        if (this.edgeNodeId) {
-          StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
-        } else {
-          StreamingEvent.edgeWorker(this.host).emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
-        }
+        this.emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
       }
     };
 
@@ -67,7 +58,7 @@ export default class StreamWebRtc {
             JSON.stringify({
               type: 'ping',
               timestamp: Date.now(),
-              sequenceId: sequenceId++ // auto incremental counter to follow if the order of the packages are in the correct order
+              sequenceId: sequenceId++ // incremental counter to be able to detect out of order or lost packages
             })
           );
         }
@@ -75,14 +66,20 @@ export default class StreamWebRtc {
     };
 
     const onConnectionStateChange = () => {
-      if (peerConnection.connectionState === 'disconnected') {
-        if (dataChannel) {
-          dataChannel.removeEventListener('message', onMessage);
-        }
-        if (interval) {
-          clearInterval(interval);
-        }
-        peerConnection.removeEventListener('connectionstatechange', onConnectionStateChange);
+      switch (peerConnection.connectionState) {
+        case 'disconnected':
+          if (dataChannel) {
+            dataChannel.removeEventListener('message', onMessage);
+          }
+          if (interval) {
+            clearInterval(interval);
+          }
+          peerConnection.removeEventListener('connectionstatechange', onConnectionStateChange);
+          break;
+        case 'connected':
+          this.emit(StreamingEvent.WEBRTC_CLIENT_CONNECTED);
+          break;
+        default:
       }
     };
 
@@ -93,9 +90,6 @@ export default class StreamWebRtc {
   close = () => {
     if (this.peerConnection) {
       this.peerConnection.close();
-      if (this.edgeNodeId) {
-        StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.STREAM_UNREACHABLE, this.close);
-      }
       this.peerConnection = undefined;
     }
   };
