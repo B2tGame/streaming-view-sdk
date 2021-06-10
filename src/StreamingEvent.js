@@ -1,7 +1,5 @@
 import EventEmitter from 'eventemitter3';
 
-// import StreamWebRtc from './service/StreamWebRtc';
-
 /**
  * Extend Event Emitter with an emit that always send the event to 'event' target
  */

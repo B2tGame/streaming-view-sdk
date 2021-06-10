@@ -13,14 +13,12 @@ export default class StreamWebRtc extends EventEmitter {
   /**
    * @param {string} host
    * @param {number} pingInterval
-   * @param {string|undefined} edgeNodeId
    */
-  constructor(host, pingInterval = 500, edgeNodeId = undefined) {
+  constructor(host, pingInterval = 500) {
     super();
 
     this.host = host;
     this.pingInterval = pingInterval;
-    this.edgeNodeId = edgeNodeId;
     this.peerConnection = undefined;
 
     WebRtcConnectionClient.createConnection({
