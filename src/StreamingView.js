@@ -153,9 +153,7 @@ export default class StreamingView extends Component {
         return internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
       })
       .then((streamEndpoint) => {
-        //TODO: delete this
-        this.measurement.initWebRtc('http://localhost:5022', pingInterval);
-        //this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, pingInterval);
+        this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, pingInterval);
 
         if (!this.isMountedInView) {
           this.logger.log('Cancel action due to view is not mounted.');
