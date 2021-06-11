@@ -11,6 +11,7 @@ export default class Measurement {
     this.edgeNodeId = edgeNodeId;
     this.networkRoundTripTime = 0;
     this.webrtcRoundTripTime = 0;
+    this.webrtcRoundTripTimeValues = [];
     this.streamQualityRating = 0;
     this.numberOfBlackScreens = 0;
     this.previousMeasurement = this.defaultPreviousMeasurement();
@@ -121,7 +122,7 @@ export default class Measurement {
   };
 
   onWebRtcRoundTripTimeMeasurement = (webrtcRoundTripTime) => {
-    this.webrtcRoundTripTime = webrtcRoundTripTime;
+    this.webrtcRoundTripTimeValues.push(webrtcRoundTripTime);
   };
 
   onWebRtcMeasurement = (stats) => {
@@ -205,8 +206,10 @@ export default class Measurement {
       const currentPacketsReceived = report.packetsReceived - this.previousMeasurement.packetsReceived;
       const expectedPacketsReceived = currentPacketsLost + currentPacketsReceived;
       this.measurement.packetsLostPercent = (currentPacketsLost * 100) / expectedPacketsReceived;
+      this.webrtcRoundTripTime = StreamWebRtc.calculateRoundTripTimeStats(this.webrtcRoundTripTimeValues).rtt;
+      this.webrtcRoundTripTimeValues = [];
       this.measurement.predictedGameExperience = this.calculatePredictedGameExperience(
-        this.webrtcRoundTripTime,
+        this.networkRoundTripTime,
         this.measurement.packetsLostPercent
       );
       this.measurement.webrtcRoundTripTime = this.webrtcRoundTripTime;

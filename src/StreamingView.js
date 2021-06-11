@@ -67,7 +67,7 @@ export default class StreamingView extends Component {
     enableControl: true,
     volume: 1.0,
     muted: false,
-    pingInterval: 500
+    pingInterval: 100
   };
 
   /**

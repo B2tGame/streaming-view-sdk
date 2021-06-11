@@ -24,7 +24,7 @@ const defaultNetworkConnectivity = {
 };
 let networkConnectivity = { ...defaultNetworkConnectivity };
 let downloadSpeed = undefined; // in Mbps
-let webrtcRoundTripTimeValues = undefined;
+let webrtcRoundTripTimeValues = [];
 let webrtcRoundTripTimeStats = {
   mean: undefined,
   standardDeviation: undefined
@@ -158,23 +158,6 @@ function getAdvancedMeasurement() {
   };
 
   /**
-   * @param {number[]} values
-   * @return {{mean: number, standardDeviation: number}}
-   */
-  const calculateStats = (values) => {
-    const result = { mean: 0, standardDeviation: 0 };
-    const n = values.length;
-    if (n < 1) {
-      return result;
-    }
-
-    result.mean = values.reduce((a, b) => a + b, 0) / n;
-    result.standardDeviation = Math.sqrt(values.reduce((cum, item) => cum + Math.pow(item - result.mean, 2), 0) / n);
-
-    return result;
-  };
-
-  /**
    * Recursive function to manage webrtc rtt measurement and fallback case.
    * @param {[]} availableEdges Array of possible speed test urls
    * @return {Promise<boolean>}
@@ -198,8 +181,7 @@ function getAdvancedMeasurement() {
         const onWebRtcClientConnected = () => {
           webrtcRoundTripTimeValues = [];
           setTimeout(() => {
-            webrtcRoundTripTimeStats = calculateStats(webrtcRoundTripTimeValues);
-            console.log('webrtcRoundTripTimeStats:', webrtcRoundTripTimeStats);
+            webrtcRoundTripTimeStats = StreamWebRtc.calculateRoundTripTimeStats(webrtcRoundTripTimeValues);
 
             streamWebRtc
               .off(StreamingEvent.WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected)
@@ -237,7 +219,7 @@ function getAdvancedMeasurement() {
       downloadSpeed
         ? {
             downloadSpeed: downloadSpeed,
-            webrtcRoundTripTime: webrtcRoundTripTimeStats.mean,
+            webrtcRoundTripTime: webrtcRoundTripTimeStats.rtt,
             webrtcRoundTripTimeStandardDeviation: webrtcRoundTripTimeStats.standardDeviation,
             measurementLevel: MEASUREMENT_LEVEL_ADVANCED
           }
