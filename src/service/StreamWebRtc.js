@@ -85,6 +85,23 @@ export default class StreamWebRtc extends EventEmitter {
     peerConnection.addEventListener('connectionstatechange', onConnectionStateChange);
   };
 
+  /**
+   * Calculates mean rtt and standard deviation values for the given input
+   * @param {number[]} values
+   * @return {{rtt: number, standardDeviation: number}}
+   */
+  static calculateRoundTripTimeStats = (values) => {
+    const result = { rtt: 0, standardDeviation: 0 };
+    const n = values.length;
+    if (n < 1) {
+      return result;
+    }
+    result.rtt = values.reduce((a, b) => a + b, 0) / n;
+    result.standardDeviation = Math.sqrt(values.reduce((cum, item) => cum + Math.pow(item - result.rtt, 2), 0) / n);
+
+    return result;
+  };
+
   close = () => {
     if (this.peerConnection) {
       this.peerConnection.close();
