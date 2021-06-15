@@ -97,6 +97,12 @@ export default class PredictGameExperience extends PredictGameExperienceBase {
     this.count = 0;
   }
 
+  /**
+   *
+   * @param {number} roundTripTime
+   * @param {number} packageLostPercentage
+   * @return {undefined|number}
+   */
   predict(roundTripTime, packageLostPercentage) {
     this.count++;
     this.roundTripTimeLong.add(roundTripTime);
