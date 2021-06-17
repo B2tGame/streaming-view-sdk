@@ -146,7 +146,7 @@ const getAdvancedMeasurement = () => {
     }
 
     const edge = availableEdges.shift();
-    const url = `${edge.endpoint}/${DOWNLOAD_DATASOURCE_NAME}?_=${Math.random()}`; // add a cache break query param to avoid speed measurement distorsion
+    const url = `${edge.endpoint}/${DOWNLOAD_DATASOURCE_NAME}?_=${Math.random()}`; // add a cache break query param to avoid speed measurement distortion
     networkConnectivity.recommendedRegion = edge.edgeRegion;
 
     return download(url).then((successful) => (successful ? successful : downloadManager(availableEdges)));
@@ -158,7 +158,6 @@ const getAdvancedMeasurement = () => {
   const onWebRtcRoundTripTimeMeasurement = (webrtcRtt) => {
     webrtcRoundTripTimeValues.push(webrtcRtt);
     predictedGameExperience = Measurement.calculatePredictedGameExperience(webrtcRtt, 0)[Measurement.PREDICTED_GAME_EXPERIENCE_DEFAULT];
-    console.log({ predictedGameExperience });
   };
 
   /**
@@ -167,53 +166,44 @@ const getAdvancedMeasurement = () => {
    * @return {Promise<boolean>}
    */
   const webrtcManager = (availableEdges) => {
-    console.log('debug 1', availableEdges);
     if (availableEdges.length === 0) {
-      console.log('debug 2');
       return Promise.resolve(false);
     }
 
     const edge = availableEdges.shift();
     const webRtcHost = `${edge.endpoint}/webrtc`;
+    console.log('WebRtc connect to:', webRtcHost);
+
     return new Promise((resolve, reject) => {
+      let streamWebRtc = undefined;
+      const onWebRtcClientConnected = () => {
+        webrtcRoundTripTimeValues = [];
+        setTimeout(() => stopMeasurement(), ADVANCED_MEASUREMENT_TIMEOUT);
+      };
+      const stopMeasurement = (closeAction = undefined) => {
+        if (webrtcRoundTripTimeValues.length > 0) {
+          webrtcRoundTripTimeStats = StreamWebRtc.calculateRoundTripTimeStats(webrtcRoundTripTimeValues);
+        }
+        streamWebRtc
+          .off(StreamingEvent.WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected)
+          .off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement)
+          .close();
+
+        if (closeAction) {
+          closeAction();
+        } else {
+          resolve(webrtcRoundTripTimeValues.length > 0);
+        }
+      };
+
       try {
-        console.log('WebRtc connect to:', webRtcHost);
-        const streamWebRtc = new StreamWebRtc(webRtcHost, 100);
-
-        setTimeout(() => {
-          console.log('debug 3, webrtcRoundTripTimeValues:', webrtcRoundTripTimeValues);
-          if (webrtcRoundTripTimeValues.length > 0) {
-            console.log('debug 4 - resolve true');
-            webrtcRoundTripTimeStats = StreamWebRtc.calculateRoundTripTimeStats(webrtcRoundTripTimeValues);
-            resolve(true);
-          } else {
-            console.log('debug 5 - reject false');
-            reject(false);
-          }
-        }, WEBRTC_TIME_TO_CONNECTED);
-
-        const onWebRtcClientConnected = () => {
-          webrtcRoundTripTimeValues = [];
-          setTimeout(() => {
-            webrtcRoundTripTimeStats = StreamWebRtc.calculateRoundTripTimeStats(webrtcRoundTripTimeValues);
-
-            streamWebRtc
-              .off(StreamingEvent.WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected)
-              .off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement)
-              .close();
-
-            resolve(true);
-          }, ADVANCED_MEASUREMENT_TIMEOUT);
-        };
-
-        console.log('debug start');
-
+        streamWebRtc = new StreamWebRtc(webRtcHost);
+        setTimeout(() => stopMeasurement(), WEBRTC_TIME_TO_CONNECTED);
         streamWebRtc
           .on(StreamingEvent.WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected)
           .on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
       } catch (e) {
-        console.log('debug 22', e);
-        reject(false);
+        stopMeasurement(() => reject(false));
       }
     }).then((successful) => (successful ? successful : webrtcManager(availableEdges)));
   };

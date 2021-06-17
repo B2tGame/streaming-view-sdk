@@ -10,6 +10,7 @@ import StreamSocket from './service/StreamSocket';
 import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
 import BlackScreenDetector from './service/BlackScreenDetector';
+import StreamWebRtc from './service/StreamWebRtc';
 
 const urlParse = require('url-parse');
 
@@ -67,7 +68,7 @@ export default class StreamingView extends Component {
     enableControl: true,
     volume: 1.0,
     muted: false,
-    pingInterval: 100
+    pingInterval: StreamWebRtc.WEBRTC_PING_INTERVAL
   };
 
   /**
