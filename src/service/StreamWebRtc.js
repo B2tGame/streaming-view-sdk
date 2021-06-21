@@ -18,14 +18,6 @@ export default class StreamWebRtc extends EventEmitter {
     return 25;
   }
 
-  set pingInterval(pingInterval) {
-    this._pingInterval = pingInterval;
-  }
-
-  get pingInterval() {
-    return this._pingInterval;
-  }
-
   /**
    * @param {string} host
    * @param {number} pingInterval
