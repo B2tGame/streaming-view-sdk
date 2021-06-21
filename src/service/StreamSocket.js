@@ -7,6 +7,14 @@ import io from 'socket.io-client';
  */
 export default class StreamSocket {
   /**
+   * Returns Web Socket ping interval number in ms.
+   * @return {number}
+   */
+  static get WEBSOCKET_PING_INTERVAL() {
+    return 250;
+  }
+
+  /**
    * @param {string} edgeNodeId
    * @param {string} streamEndpoint
    * @param {string} userId
