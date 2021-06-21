@@ -2,6 +2,7 @@ import StreamingEvent from '../StreamingEvent';
 import PredictGameExperience from './PredictGameExperience';
 import PredictGameExperienceWithNeuralNetwork from './PredictGameExperienceWithNeuralNetwork';
 import StreamWebRtc from './StreamWebRtc';
+import StreamSocket from './StreamSocket';
 
 /**
  * Measurement class is responsible for processing and reporting measurement reports
@@ -35,6 +36,9 @@ export default class Measurement {
     this.streamWebRtc = new StreamWebRtc(webRtcHost, pingInterval);
     this.streamWebRtc.on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
     StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
+    setInterval(() => {
+      StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
+    }, StreamSocket.WEBSOCKET_PING_INTERVAL);
   }
 
   /**
@@ -150,7 +154,6 @@ export default class Measurement {
 
   onRoundTripTimeMeasurement = (networkRoundTripTime) => {
     this.networkRoundTripTime = networkRoundTripTime;
-    StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
   };
 
   onWebRtcRoundTripTimeMeasurement = (webrtcRoundTripTime) => {
@@ -199,6 +202,7 @@ export default class Measurement {
       this.processDataChannelTouchReport(report);
       this.processCandidatePairReport(report);
     });
+    this.processWebRtcRoundTripTimeStats();
     this.previousMeasurement.measureAt = this.measurement.measureAt;
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
     this.measurement.numberOfBlackScreens = this.numberOfBlackScreens || 0;
@@ -238,20 +242,22 @@ export default class Measurement {
       const currentPacketsReceived = report.packetsReceived - this.previousMeasurement.packetsReceived;
       const expectedPacketsReceived = currentPacketsLost + currentPacketsReceived;
       this.measurement.packetsLostPercent = (currentPacketsLost * 100) / expectedPacketsReceived;
-      this.webrtcRoundTripTime = StreamWebRtc.calculateRoundTripTimeStats(this.webrtcRoundTripTimeValues).rtt;
-      this.webrtcRoundTripTimeValues = [];
-      this.measurement.predictedGameExperience = Measurement.calculatePredictedGameExperience(
-        this.networkRoundTripTime,
-        this.measurement.packetsLostPercent
-      );
-      this.measurement.webrtcRoundTripTime = this.webrtcRoundTripTime;
-
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;
       this.previousMeasurement.totalDecodeTime = report.totalDecodeTime;
       this.previousMeasurement.packetsLost = report.packetsLost;
       this.previousMeasurement.packetsReceived = report.packetsReceived;
     }
+  }
+
+  processWebRtcRoundTripTimeStats() {
+    this.webrtcRoundTripTime = StreamWebRtc.calculateRoundTripTimeStats(this.webrtcRoundTripTimeValues).rtt;
+    this.webrtcRoundTripTimeValues = [];
+    this.measurement.predictedGameExperience = Measurement.calculatePredictedGameExperience(
+      this.networkRoundTripTime,
+      this.measurement.packetsLostPercent
+    );
+    this.measurement.webrtcRoundTripTime = this.webrtcRoundTripTime;
   }
 
   /**
