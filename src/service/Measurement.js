@@ -2,6 +2,7 @@ import StreamingEvent from '../StreamingEvent';
 import PredictGameExperience from './PredictGameExperience';
 import PredictGameExperienceWithNeuralNetwork from './PredictGameExperienceWithNeuralNetwork';
 import StreamWebRtc from './StreamWebRtc';
+import StreamSocket from './StreamSocket';
 
 /**
  * Measurement class is responsible for processing and reporting measurement reports
@@ -35,6 +36,9 @@ export default class Measurement {
     this.streamWebRtc = new StreamWebRtc(webRtcHost, pingInterval);
     this.streamWebRtc.on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
     StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
+    setInterval(() => {
+      StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
+    }, StreamSocket.WEBSOCKET_PING_INTERVAL);
   }
 
   /**
@@ -93,6 +97,38 @@ export default class Measurement {
     return 'touch';
   }
 
+  /**
+   *
+   * @return {string}
+   */
+  static get PREDICTED_GAME_EXPERIENCE_ALPHA() {
+    return 'alpha';
+  }
+
+  /**
+   *
+   * @return {string}
+   */
+  static get PREDICTED_GAME_EXPERIENCE_NEURAL1() {
+    return 'neural1';
+  }
+
+  /**
+   *
+   * @return {string}
+   */
+  static get PREDICTED_GAME_EXPERIENCE_DEFAULT() {
+    return Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA;
+  }
+
+  /**
+   *
+   * @return {string[]}
+   */
+  static get PREDICTED_GAME_EXPERIENCE_ALGORITHMS() {
+    return [Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA, Measurement.PREDICTED_GAME_EXPERIENCE_NEURAL1];
+  }
+
   destroy() {
     StreamingEvent.edgeNode(this.edgeNodeId)
       .off(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
@@ -118,7 +154,6 @@ export default class Measurement {
 
   onRoundTripTimeMeasurement = (networkRoundTripTime) => {
     this.networkRoundTripTime = networkRoundTripTime;
-    StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
   };
 
   onWebRtcRoundTripTimeMeasurement = (webrtcRoundTripTime) => {
@@ -167,6 +202,7 @@ export default class Measurement {
       this.processDataChannelTouchReport(report);
       this.processCandidatePairReport(report);
     });
+    this.processWebRtcRoundTripTimeStats();
     this.previousMeasurement.measureAt = this.measurement.measureAt;
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
     this.measurement.numberOfBlackScreens = this.numberOfBlackScreens || 0;
@@ -175,7 +211,7 @@ export default class Measurement {
     if (this.measurement.predictedGameExperience) {
       StreamingEvent.edgeNode(this.edgeNodeId).emit(
         StreamingEvent.PREDICTED_GAME_EXPERIENCE,
-        Math.round(this.measurement.predictedGameExperience.alpha * 10) / 10
+        Math.round(this.measurement.predictedGameExperience[Measurement.PREDICTED_GAME_EXPERIENCE_DEFAULT] * 10) / 10
       );
     }
 
@@ -206,20 +242,22 @@ export default class Measurement {
       const currentPacketsReceived = report.packetsReceived - this.previousMeasurement.packetsReceived;
       const expectedPacketsReceived = currentPacketsLost + currentPacketsReceived;
       this.measurement.packetsLostPercent = (currentPacketsLost * 100) / expectedPacketsReceived;
-      this.webrtcRoundTripTime = StreamWebRtc.calculateRoundTripTimeStats(this.webrtcRoundTripTimeValues).rtt;
-      this.webrtcRoundTripTimeValues = [];
-      this.measurement.predictedGameExperience = this.calculatePredictedGameExperience(
-        this.networkRoundTripTime,
-        this.measurement.packetsLostPercent
-      );
-      this.measurement.webrtcRoundTripTime = this.webrtcRoundTripTime;
-
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;
       this.previousMeasurement.totalDecodeTime = report.totalDecodeTime;
       this.previousMeasurement.packetsLost = report.packetsLost;
       this.previousMeasurement.packetsReceived = report.packetsReceived;
     }
+  }
+
+  processWebRtcRoundTripTimeStats() {
+    this.webrtcRoundTripTime = StreamWebRtc.calculateRoundTripTimeStats(this.webrtcRoundTripTimeValues).rtt;
+    this.webrtcRoundTripTimeValues = [];
+    this.measurement.predictedGameExperience = Measurement.calculatePredictedGameExperience(
+      this.networkRoundTripTime,
+      this.measurement.packetsLostPercent
+    );
+    this.measurement.webrtcRoundTripTime = this.webrtcRoundTripTime;
   }
 
   /**
@@ -236,18 +274,19 @@ export default class Measurement {
    * Calculates a predicted game experience value based on rtt and packet lost percent
    * @param {number} rtt
    * @param {number} packetLostPercent
-   * @return {{alpha: number, neural1:number}}
+   * @return {{Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA: undefined|number, Measurement.PREDICTED_GAME_EXPERIENCE_NEURAL1: undefined|number}}
    */
-  calculatePredictedGameExperience(rtt, packetLostPercent) {
-    if (this.predictGameExperience === undefined) {
-      this.predictGameExperience = {
-        alpha: new PredictGameExperience(),
-        neural1: new PredictGameExperienceWithNeuralNetwork(require('./neural-network-models/b540f780-9367-427c-8b05-232cebb9ec49'))
-      };
+  static calculatePredictedGameExperience(rtt, packetLostPercent) {
+    if (Measurement.predictGameExperience === undefined) {
+      Measurement.predictGameExperience = {};
+      Measurement.predictGameExperience[Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA] = new PredictGameExperience();
+      Measurement.predictGameExperience[Measurement.PREDICTED_GAME_EXPERIENCE_NEURAL1] = new PredictGameExperienceWithNeuralNetwork(
+        require('./neural-network-models/b540f780-9367-427c-8b05-232cebb9ec49')
+      );
     }
 
-    return Object.keys(this.predictGameExperience).reduce((result, algorithm) => {
-      result[algorithm] = this.predictGameExperience[algorithm].predict(rtt, packetLostPercent);
+    return Measurement.PREDICTED_GAME_EXPERIENCE_ALGORITHMS.reduce((result, algorithm) => {
+      result[algorithm] = Measurement.predictGameExperience[algorithm].predict(rtt, packetLostPercent);
       return result;
     }, {});
   }
