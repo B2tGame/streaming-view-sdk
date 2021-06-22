@@ -216,14 +216,14 @@ export default class EmulatorWebrtcView extends Component {
             }
           })
           .finally(() => {
-            StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
+            StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_WEBRTC_READY, onUserInteractionCallback);
           });
       } else {
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_WEBRTC_READY, onUserInteractionCallback);
       }
       this.props.logger.info('Video stream was already playing');
     } else {
-      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_WEBRTC_READY, onUserInteractionCallback);
     }
   };
 

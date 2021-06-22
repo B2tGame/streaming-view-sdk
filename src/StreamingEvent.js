@@ -9,6 +9,27 @@ class ExtendedEventEmitter extends EventEmitter {
     super.emit(event, data);
     return this;
   }
+
+  /**
+   * When one or more events were received at least once.
+   * @param {string[]} events List of one or more events to wait in before calling the callback.
+   * @param {function} callback Callback, argument list data payload for each event in the same order as the events list
+   */
+  on(events, callback) {
+    if(!Array.isArray(events)) {
+      return super.on(events, callback)
+    } else {
+      const eventData = {};
+      super.on('event', (event, data) => {
+        if (events.includes(event)) {
+          eventData[event] = data || undefined;
+          if (Object.keys(eventData).length === events.length) {
+            callback(events.map((e) => eventData[e]));
+          }
+        }
+      });
+    }
+  }
 }
 
 const globalEventEmitter = new ExtendedEventEmitter();
@@ -309,7 +330,25 @@ export default class StreamingEvent {
   }
 
   /**
-   * Event fired when the video stream is available and "play" button can be displayed for the end user
+   * Event fired when the webrtc video stream is available and can be played by the browser
+   * @return {string}
+   */
+  static get STREAM_WEBRTC_READY() {
+    return 'stream-webrtc-ready';
+  }
+
+
+  /**
+   * Event fired when the emulator is ready and first input lag fix has been applied.
+   * @return {string}
+   */
+  static get STREAM_EMULATOR_READY() {
+    return 'stream-emulator-ready';
+  }
+
+  /**
+   * Event fired when the video stream is available and "play" button can be displayed for the end user,
+   * this will only happen after both STREAM_WEBRTC_READY and STREAM_EMULATOR_READY has been received.
    * @return {string}
    */
   static get STREAM_READY() {
@@ -376,7 +415,7 @@ export default class StreamingEvent {
    * Get EventEmitter for a specific Edge Node Id.
    * This will automatically create a new Event emitter if missing.
    * @param {string} edgeNodeId
-   * @return {EventEmitter}
+   * @return {ExtendedEventEmitter}
    */
   static edgeNode(edgeNodeId) {
     if (edgeNodeEventEmitter[edgeNodeId] === undefined) {

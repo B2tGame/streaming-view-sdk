@@ -23,6 +23,20 @@ class StreamingController {
   }
 
   /**
+   * Wait until the edge node reach a ready state.
+   */
+  static get WAIT_FOR_READY() {
+    return 'ready';
+  }
+
+  /**
+   * Wait until the edge node receiving an endpoint independent of the ready state.
+   */
+  static get WAIT_FOR_ENDPOINT() {
+    return 'endpoint';
+  }
+
+  /**
    *
    * @param {object} props
    * @param {string} props.apiEndpoint
@@ -164,7 +178,7 @@ class StreamingController {
       if (status.endpoint !== undefined) {
         return status.endpoint;
       } else {
-        throw new Error("Can't resolve Stream Endpoint, got: " + JSON.stringify(status));
+        throw new Error('Can\'t resolve Stream Endpoint, got: ' + JSON.stringify(status));
       }
     });
   }
@@ -187,10 +201,11 @@ class StreamingController {
 
   /**
    * Wait for the edge node to be ready before the promise will resolve.
+   * @param {StreamingController.WAIT_FOR_READY|StreamingController.WAIT_FOR_ENDPOINT} waitFor Define the exit criteria for what to wait for.
    * @param {number} timeout Max duration the waitFor should wait before reject with an timeout exception.
    * @returns {Promise<{status: string, endpoint: string}>}
    */
-  waitFor(timeout = StreamingController.DEFAULT_TIMEOUT) {
+  waitFor(waitFor = StreamingController.WAIT_FOR_READY, timeout = StreamingController.DEFAULT_TIMEOUT) {
     let isQueuedEventFire = false;
     /**
      * Get the status of the edge node.
@@ -200,7 +215,8 @@ class StreamingController {
      */
     const getStatus = (uri, timeout) => {
       return axios.get(uri, { timeout: timeout }).then((result) => {
-        if (result.data.state === 'pending') {
+        const stillWaiting = (waitFor === StreamingController.WAIT_FOR_READY && result.data.state === 'pending') || (waitFor === StreamingController.WAIT_FOR_ENDPOINT && result.data.endpoint === undefined);
+        if (stillWaiting) {
           if (result.data.queued && !isQueuedEventFire) {
             isQueuedEventFire = true;
             if (this.edgeNodeId) {
@@ -287,5 +303,7 @@ factory.EVENT_STREAM_READY = StreamingEvent.STREAM_READY;
 factory.EVENT_MOMENT_DETECTOR_EVENT = StreamingEvent.MOMENT_DETECTOR_EVENT;
 factory.EVENT_PREDICTED_GAME_EXPERIENCE = StreamingEvent.PREDICTED_GAME_EXPERIENCE;
 factory.EVENT_STREAM_TERMINATED = StreamingEvent.STREAM_TERMINATED;
+factory.WAIT_FOR_READY = StreamingController.WAIT_FOR_READY;
+factory.WAIT_FOR_ENDPOINT = StreamingController.WAIT_FOR_ENDPOINT;
 
 export default factory;
