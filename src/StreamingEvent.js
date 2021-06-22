@@ -21,8 +21,7 @@ class ExtendedEventEmitter extends EventEmitter {
       if (events.includes(event)) {
         buffer[event] = data || undefined;
         if (Object.keys(buffer).length === events.length) {
-          const output = events.map((e) => buffer[e]);
-          callback(output);
+          callback(events.map((e) => buffer[e]));
         }
       }
     });

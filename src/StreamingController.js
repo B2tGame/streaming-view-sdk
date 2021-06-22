@@ -216,7 +216,6 @@ class StreamingController {
     const getStatus = (uri, timeout) => {
       return axios.get(uri, { timeout: timeout }).then((result) => {
         const stillWaiting = (waitUntil === StreamingController.WAIT_FOR_READY && result.data.state === 'pending') || (waitUntil === StreamingController.WAIT_FOR_ENDPOINT && result.data.endpoint === undefined);
-        console.log("getStatus", waitUntil, stillWaiting, result.data);
         if (stillWaiting) {
           if (result.data.queued && !isQueuedEventFire) {
             isQueuedEventFire = true;
