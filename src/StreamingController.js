@@ -104,9 +104,15 @@ class StreamingController {
     return Promise.all([this.getApiEndpoint(), this.getConnectivityInfo()])
       .then(([apiEndpoint, connectivityInfo]) => {
         const encodedConnectivityInfo = encodeURIComponent(JSON.stringify(connectivityInfo));
-        return axios.get(`${apiEndpoint}/api/streaming-games/predicted-game-experience?connectivity-info=${encodedConnectivityInfo}`);
+        return Promise.all([
+          connectivityInfo,
+          axios.get(`${apiEndpoint}/api/streaming-games/predicted-game-experience?connectivity-info=${encodedConnectivityInfo}`)
+        ]);
       })
-      .then((result) => (result.data || {}).apps || []);
+      .then(([connectivityInfo, result]) => ({
+        apps: (result.data || {}).apps || [],
+        measurementLevel: connectivityInfo.measurementLevel
+      }));
   }
 
   /**
@@ -178,7 +184,7 @@ class StreamingController {
       if (status.endpoint !== undefined) {
         return status.endpoint;
       } else {
-        throw new Error('Can\'t resolve Stream Endpoint, got: ' + JSON.stringify(status));
+        throw new Error("Can't resolve Stream Endpoint, got: " + JSON.stringify(status));
       }
     });
   }
@@ -215,7 +221,9 @@ class StreamingController {
      */
     const getStatus = (uri, timeout) => {
       return axios.get(uri, { timeout: timeout }).then((result) => {
-        const stillWaiting = (waitFor === StreamingController.WAIT_FOR_READY && result.data.state === 'pending') || (waitFor === StreamingController.WAIT_FOR_ENDPOINT && result.data.endpoint === undefined);
+        const stillWaiting =
+          (waitFor === StreamingController.WAIT_FOR_READY && result.data.state === 'pending') ||
+          (waitFor === StreamingController.WAIT_FOR_ENDPOINT && result.data.endpoint === undefined);
         if (stillWaiting) {
           if (result.data.queued && !isQueuedEventFire) {
             isQueuedEventFire = true;
