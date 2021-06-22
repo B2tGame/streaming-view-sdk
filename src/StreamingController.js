@@ -201,11 +201,11 @@ class StreamingController {
 
   /**
    * Wait for the edge node to be ready before the promise will resolve.
-   * @param {StreamingController.WAIT_FOR_READY|StreamingController.WAIT_FOR_ENDPOINT} waitUntil Define the end crederia for what to wait for.
+   * @param {StreamingController.WAIT_FOR_READY|StreamingController.WAIT_FOR_ENDPOINT} waitFor Define the exit criteria for what to wait for.
    * @param {number} timeout Max duration the waitFor should wait before reject with an timeout exception.
    * @returns {Promise<{status: string, endpoint: string}>}
    */
-  waitFor(waitUntil = StreamingController.WAIT_FOR_READY, timeout = StreamingController.DEFAULT_TIMEOUT) {
+  waitFor(waitFor = StreamingController.WAIT_FOR_READY, timeout = StreamingController.DEFAULT_TIMEOUT) {
     let isQueuedEventFire = false;
     /**
      * Get the status of the edge node.
@@ -215,7 +215,7 @@ class StreamingController {
      */
     const getStatus = (uri, timeout) => {
       return axios.get(uri, { timeout: timeout }).then((result) => {
-        const stillWaiting = (waitUntil === StreamingController.WAIT_FOR_READY && result.data.state === 'pending') || (waitUntil === StreamingController.WAIT_FOR_ENDPOINT && result.data.endpoint === undefined);
+        const stillWaiting = (waitFor === StreamingController.WAIT_FOR_READY && result.data.state === 'pending') || (waitFor === StreamingController.WAIT_FOR_ENDPOINT && result.data.endpoint === undefined);
         if (stillWaiting) {
           if (result.data.queued && !isQueuedEventFire) {
             isQueuedEventFire = true;
