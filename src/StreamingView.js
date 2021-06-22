@@ -142,7 +142,7 @@ export default class StreamingView extends Component {
           emulatorVersion: configuration.emulatorVersion
         });
       })
-      .when([StreamingEvent.STREAM_WEBRTC_READY, StreamingEvent.STREAM_EMULATOR_READY], ([onUserInteractionCallback]) => {
+      .on([StreamingEvent.STREAM_WEBRTC_READY, StreamingEvent.STREAM_EMULATOR_READY], ([onUserInteractionCallback]) => {
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
       })
 

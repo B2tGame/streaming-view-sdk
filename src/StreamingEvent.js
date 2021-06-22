@@ -11,20 +11,24 @@ class ExtendedEventEmitter extends EventEmitter {
   }
 
   /**
-   * When one or more event has at last been received once.
-   * @param {string[]} events List of events to wait in before calling the callback.
-   * @param {function} callback Callback, argument list will be same order as the events.
+   * When one or more events were received at least once.
+   * @param {string[]} events List of one or more events to wait in before calling the callback.
+   * @param {function} callback Callback, argument list data payload for each event in the same order as the events list
    */
-  when(events, callback) {
-    const buffer = {};
-    super.on('event', (event, data) => {
-      if (events.includes(event)) {
-        buffer[event] = data || undefined;
-        if (Object.keys(buffer).length === events.length) {
-          callback(events.map((e) => buffer[e]));
+  on(events, callback) {
+    if(!Array.isArray(events)) {
+      return super.on(events, callback)
+    } else {
+      const eventData = {};
+      super.on('event', (event, data) => {
+        if (events.includes(event)) {
+          eventData[event] = data || undefined;
+          if (Object.keys(eventData).length === events.length) {
+            callback(events.map((e) => eventData[e]));
+          }
         }
-      }
-    });
+      });
+    }
   }
 }
 
