@@ -11,10 +11,18 @@ export default class StreamWebRtc extends EventEmitter {
   }
 
   /**
+   * Returns WebRtc ping interval number in ms.
+   * @return {number}
+   */
+  static get WEBRTC_PING_INTERVAL() {
+    return 25;
+  }
+
+  /**
    * @param {string} host
    * @param {number} pingInterval
    */
-  constructor(host, pingInterval = 500) {
+  constructor(host, pingInterval = StreamWebRtc.WEBRTC_PING_INTERVAL) {
     super();
 
     this.host = host;
@@ -91,15 +99,15 @@ export default class StreamWebRtc extends EventEmitter {
    * @return {{rtt: number, standardDeviation: number}}
    */
   static calculateRoundTripTimeStats = (values) => {
-    const result = { rtt: 0, standardDeviation: 0 };
+    const stats = { rtt: 0, standardDeviation: 0 };
     const n = values.length;
     if (n < 1) {
-      return result;
+      return stats;
     }
-    result.rtt = values.reduce((a, b) => a + b, 0) / n;
-    result.standardDeviation = Math.sqrt(values.reduce((cum, item) => cum + Math.pow(item - result.rtt, 2), 0) / n);
+    stats.rtt = values.reduce((a, b) => a + b, 0) / n;
+    stats.standardDeviation = Math.sqrt(values.reduce((cum, item) => cum + Math.pow(item - stats.rtt, 2), 0) / n);
 
-    return result;
+    return stats;
   };
 
   close = () => {

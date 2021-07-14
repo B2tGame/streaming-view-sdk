@@ -102,7 +102,7 @@ Run shell script:
 ```
 ./build-sdk.sh
 ```
-
+   
 ### Last Commit Id of merged Google repository
 
 [d9aa985ab40790050dd8c28ce34d8e05cb386750](https://github.com/google/android-emulator-webrtc/commit/d9aa985ab40790050dd8c28ce34d8e05cb386750)

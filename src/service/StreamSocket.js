@@ -7,6 +7,14 @@ import io from 'socket.io-client';
  */
 export default class StreamSocket {
   /**
+   * Returns Web Socket ping interval number in ms.
+   * @return {number}
+   */
+  static get WEBSOCKET_PING_INTERVAL() {
+    return 250;
+  }
+
+  /**
    * @param {string} edgeNodeId
    * @param {string} streamEndpoint
    * @param {string} userId
@@ -58,6 +66,8 @@ export default class StreamSocket {
         }
       } else if (message.name === 'moment-detector-event') {
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.MOMENT_DETECTOR_EVENT, message.payload || {});
+      } else if (message.name === 'emulator-stream' && message.ready) {
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_EMULATOR_READY);
       }
     });
     // Send measurement report to the backend.

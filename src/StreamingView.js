@@ -10,6 +10,7 @@ import StreamSocket from './service/StreamSocket';
 import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
 import BlackScreenDetector from './service/BlackScreenDetector';
+import StreamWebRtc from './service/StreamWebRtc';
 
 const urlParse = require('url-parse');
 
@@ -67,7 +68,7 @@ export default class StreamingView extends Component {
     enableControl: true,
     volume: 1.0,
     muted: false,
-    pingInterval: 100
+    pingInterval: StreamWebRtc.WEBRTC_PING_INTERVAL
   };
 
   /**
@@ -90,6 +91,7 @@ export default class StreamingView extends Component {
     super(props);
     this.isMountedInView = false;
     this.streamingViewId = uuid();
+    this.emulatorIsReady = false;
   }
 
   componentDidMount() {
@@ -139,14 +141,18 @@ export default class StreamingView extends Component {
           emulatorHeight: configuration.emulatorHeight,
           emulatorVersion: configuration.emulatorVersion
         });
-      });
+      })
+      .on([StreamingEvent.STREAM_WEBRTC_READY, StreamingEvent.STREAM_EMULATOR_READY], ([onUserInteractionCallback]) => {
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
+      })
 
     StreamingController({
       apiEndpoint: apiEndpoint,
       edgeNodeId: edgeNodeId,
       internalSession: internalSession
     })
-      .then((controller) => controller.getStreamEndpoint())
+      .then((controller) => controller.waitFor(StreamingController.WAIT_FOR_ENDPOINT))
+      .then((state) => state.endpoint)
       .then((streamEndpoint) => {
         // if the SDK are in internal session mode and a value has been pass to edge node endpoint use that value instead of the
         // public endpoint received from Service Coordinator.
@@ -154,7 +160,6 @@ export default class StreamingView extends Component {
       })
       .then((streamEndpoint) => {
         this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, pingInterval);
-
         if (!this.isMountedInView) {
           this.logger.log('Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
@@ -197,7 +202,6 @@ export default class StreamingView extends Component {
     window.removeEventListener('error', this.onError);
     StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
   }
-
   /**
    * Update the state parameter heigth and width when screen size is changeing.
    */
