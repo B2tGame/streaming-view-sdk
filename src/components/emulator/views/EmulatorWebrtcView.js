@@ -153,6 +153,45 @@ export default class EmulatorWebrtcView extends Component {
     }
   };
 
+  isFrameRateGoodEnough(maxAttempts, currentFps, prevFps) {
+    return maxAttempts <= 0 || currentFps > 20 || (prevFps && currentFps > 10 && Math.abs(currentFps - prevFps) < 10);
+  }
+
+  waitForAcceptableFrameRate(video, onUserInteractionCallback, maxAttempts = 20, prevFps = 0, prevPresentedFrames = 0, prevMediaTime = 0) {
+    if (typeof video.requestVideoFrameCallback !== "undefined") {
+      // Chrome & chromium & android webviews
+      video.requestVideoFrameCallback((time, metadata) => {
+        const mediaTime = metadata.mediaTime - (prevMediaTime || 0)
+        const presentedFrames = metadata.presentedFrames - (prevPresentedFrames || 0)
+        const currentFps = (presentedFrames || 1) / (mediaTime || 1)
+  
+        if (this.isFrameRateGoodEnough(maxAttempts, currentFps, prevFps)) {
+          StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
+        } else {
+          setTimeout(() => {
+            this.waitForAcceptableFrameRate(video, onUserInteractionCallback, maxAttempts - 1, prevFps, metadata.presentedFrames, metadata.mediaTime);
+          }, 70);
+        }
+      });
+    } else if (video.webkitDecodedFrameCount || video.mozDecodedFrames) {
+      const currentTime = new Date().getTime();
+      const deltaTime = (currentTime - prevMediaTime) / 1000;
+      const decodedFrames = video.webkitDecodedFrameCount ? video.webkitDecodedFrameCount : video.mozDecodedFrames;
+      const fps = (decodedFrames - prevPresentedFrames) / (deltaTime || 1);
+
+      if (this.isFrameRateGoodEnough(maxAttempts, fps, prevFps)) {
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
+      } else {
+        setTimeout(() => {
+          this.waitForAcceptableFrameRate(video,  onUserInteractionCallback, maxAttempts - 1, fps, decodedFrames, currentTime);
+        }, 70);
+      }
+    } else {
+      // IPhone
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
+    }
+  }
+
   onConnect = (track) => {
     const video = this.video.current;
     if (!video) {
@@ -216,14 +255,14 @@ export default class EmulatorWebrtcView extends Component {
             }
           })
           .finally(() => {
-            StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_WEBRTC_READY, onUserInteractionCallback);
+            this.waitForAcceptableFrameRate(video, onUserInteractionCallback);
           });
       } else {
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_WEBRTC_READY, onUserInteractionCallback);
+        this.waitForAcceptableFrameRate(video, onUserInteractionCallback);
       }
       this.props.logger.info('Video stream was already playing');
     } else {
-      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_WEBRTC_READY, onUserInteractionCallback);
+      this.waitForAcceptableFrameRate(video, onUserInteractionCallback);
     }
   };
 
