@@ -166,7 +166,7 @@ export default class EmulatorWebrtcView extends Component {
         const currentFps = (presentedFrames || 1) / (mediaTime || 1)
   
         if (this.isFrameRateGoodEnough(maxAttempts, currentFps, prevFps)) {
-          StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
+          StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_WEBRTC_READY, onUserInteractionCallback);
         } else {
           setTimeout(() => {
             this.waitForAcceptableFrameRate(video, onUserInteractionCallback, maxAttempts - 1, prevFps, metadata.presentedFrames, metadata.mediaTime);
@@ -180,7 +180,7 @@ export default class EmulatorWebrtcView extends Component {
       const fps = (decodedFrames - prevPresentedFrames) / (deltaTime || 1);
 
       if (this.isFrameRateGoodEnough(maxAttempts, fps, prevFps)) {
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_WEBRTC_READY, onUserInteractionCallback);
       } else {
         setTimeout(() => {
           this.waitForAcceptableFrameRate(video,  onUserInteractionCallback, maxAttempts - 1, fps, decodedFrames, currentTime);
@@ -188,7 +188,7 @@ export default class EmulatorWebrtcView extends Component {
       }
     } else {
       // IPhone
-      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_WEBRTC_READY, onUserInteractionCallback);
     }
   }
 
