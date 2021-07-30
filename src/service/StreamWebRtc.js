@@ -28,7 +28,7 @@ export default class StreamWebRtc extends EventEmitter {
     this.host = host;
     this.pingInterval = pingInterval;
     this.peerConnection = undefined;
-    this.bytesReceivedPerSecond = undefined;
+    this.bytesRequested = undefined;
 
     WebRtcConnectionClient.createConnection({
       beforeAnswer: this.beforeAnswer,
