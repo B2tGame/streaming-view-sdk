@@ -28,6 +28,7 @@ export default class StreamWebRtc extends EventEmitter {
     this.host = host;
     this.pingInterval = pingInterval;
     this.peerConnection = undefined;
+    this.bytesReceivedPerSecond = undefined;
 
     WebRtcConnectionClient.createConnection({
       beforeAnswer: this.beforeAnswer,
@@ -64,6 +65,7 @@ export default class StreamWebRtc extends EventEmitter {
             JSON.stringify({
               type: 'ping',
               timestamp: Date.now(),
+              bytesRequested: this.bytesRequested,
               sequenceId: sequenceId++ // incremental counter to be able to detect out of order or lost packages
             })
           );
@@ -115,5 +117,13 @@ export default class StreamWebRtc extends EventEmitter {
       this.peerConnection.close();
       this.peerConnection = undefined;
     }
+  };
+
+  /**
+   * Sets the value of bytesRequested based on bytesReceivedPerSecond
+   * @param {number} bytesReceivedPerSecond
+   */
+  setBytesRequested = (bytesReceivedPerSecond) => {
+    this.bytesRequested = Math.round((bytesReceivedPerSecond * this.pingInterval) / 1000);
   };
 }

@@ -247,6 +247,10 @@ export default class Measurement {
       this.previousMeasurement.totalDecodeTime = report.totalDecodeTime;
       this.previousMeasurement.packetsLost = report.packetsLost;
       this.previousMeasurement.packetsReceived = report.packetsReceived;
+
+      if (this.streamWebRtc) {
+        this.streamWebRtc.setBytesRequested(this.measurement.bytesReceivedPerSecond);
+      }
     }
   }
 

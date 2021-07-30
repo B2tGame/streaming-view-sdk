@@ -144,7 +144,7 @@ export default class StreamingView extends Component {
       })
       .on([StreamingEvent.STREAM_WEBRTC_READY, StreamingEvent.STREAM_EMULATOR_READY], ([onUserInteractionCallback]) => {
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
-      })
+      });
 
     StreamingController({
       apiEndpoint: apiEndpoint,
@@ -202,6 +202,7 @@ export default class StreamingView extends Component {
     window.removeEventListener('error', this.onError);
     StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
   }
+
   /**
    * Update the state parameter heigth and width when screen size is changeing.
    */
