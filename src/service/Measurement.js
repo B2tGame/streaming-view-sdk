@@ -170,19 +170,21 @@ export default class Measurement {
 
   /**
    * Return default values for previous measurement
-   * @return {{messagesSentMouse: number, bytesReceived: number, framesReceived: number, messagesSentTouch: number, measureAt: number, totalDecodeTime: number, framesDecoded: number, framesDropped: null}}
+   * @return {{ messagesSentMouse: number, bytesReceived: number, framesReceived: number, messagesSentTouch: number, measureAt: number, totalDecodeTime: number, totalInterFrameDelay: number, framesDecoded: number, framesDropped: null, jitter: null}}
    */
   defaultPreviousMeasurement() {
     return {
       framesDecoded: 0,
       bytesReceived: 0,
       totalDecodeTime: 0,
+      totalInterFrameDelay: 0,
       framesReceived: 0,
       framesDropped: null,
       messagesSentMouse: 0,
       messagesSentTouch: 0,
       packetsLost: 0,
       packetsReceived: 0,
+      jitter: null,
       measureAt: Date.now()
     };
   }
@@ -237,16 +239,32 @@ export default class Measurement {
         report.framesDecoded - this.previousMeasurement.framesDecoded !== 0
           ? (((report.totalDecodeTime || 0) - this.previousMeasurement.totalDecodeTime) * 1000) / this.measurement.framesDecodedPerSecond
           : 0;
+      this.measurement.totalDecodeTimePerSecond =
+        Math.round(((report.totalDecodeTime - this.previousMeasurement.totalDecodeTime) / this.measurement.measureDuration) * 1000) / 1000;
+      this.measurement.totalInterFrameDelayPerSecond =
+        Math.round(
+          ((report.totalInterFrameDelay - this.previousMeasurement.totalInterFrameDelay) / this.measurement.measureDuration) * 1000
+        ) / 1000;
 
       const currentPacketsLost = report.packetsLost - this.previousMeasurement.packetsLost;
       const currentPacketsReceived = report.packetsReceived - this.previousMeasurement.packetsReceived;
       const expectedPacketsReceived = currentPacketsLost + currentPacketsReceived;
       this.measurement.packetsLostPercent = (currentPacketsLost * 100) / expectedPacketsReceived;
+      this.measurement.jitter = report.jitter;
+      this.measurement.totalDecodeTimePerFramesDecodedInMs =
+        Math.round(
+          ((report.totalDecodeTime - this.previousMeasurement.totalDecodeTime) /
+            (report.framesDecoded - this.previousMeasurement.framesDecoded)) *
+            1000000
+        ) / 1000;
+
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;
       this.previousMeasurement.totalDecodeTime = report.totalDecodeTime;
+      this.previousMeasurement.totalInterFrameDelay = report.totalInterFrameDelay;
       this.previousMeasurement.packetsLost = report.packetsLost;
       this.previousMeasurement.packetsReceived = report.packetsReceived;
+      this.previousMeasurement.jitter = report.jitter;
     }
   }
 
