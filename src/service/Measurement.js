@@ -13,6 +13,7 @@ export default class Measurement {
     this.networkRoundTripTime = 0;
     this.webrtcRoundTripTime = 0;
     this.webrtcRoundTripTimeValues = [];
+    this.totalSquaredInterFrameDelayValues = [];
     this.streamQualityRating = 0;
     this.numberOfBlackScreens = 0;
     this.previousMeasurement = this.defaultPreviousMeasurement();
@@ -170,7 +171,7 @@ export default class Measurement {
 
   /**
    * Return default values for previous measurement
-   * @return {{ messagesSentMouse: number, bytesReceived: number, framesReceived: number, messagesSentTouch: number, measureAt: number, totalDecodeTime: number, totalInterFrameDelay: number, framesDecoded: number, framesDropped: null, jitter: null}}
+   * @return {{ messagesSentMouse: number, bytesReceived: number, framesReceived: number, messagesSentTouch: number, measureAt: number, totalDecodeTime: number, totalInterFrameDelay: number, totalSquaredInterFrameDelay: number, framesDecoded: number, framesDropped: null, jitter: null}}
    */
   defaultPreviousMeasurement() {
     return {
@@ -178,6 +179,7 @@ export default class Measurement {
       bytesReceived: 0,
       totalDecodeTime: 0,
       totalInterFrameDelay: 0,
+      totalSquaredInterFrameDelay: 0,
       framesReceived: 0,
       framesDropped: null,
       messagesSentMouse: 0,
@@ -257,16 +259,35 @@ export default class Measurement {
             (report.framesDecoded - this.previousMeasurement.framesDecoded)) *
             1000000
         ) / 1000;
+      this.totalSquaredInterFrameDelayValues.push(
+        (report.totalSquaredInterFrameDelay - this.previousMeasurement.totalSquaredInterFrameDelay) * 1000
+      );
+      this.measurement.interFrameDelayStDevInMs = Measurement.calculateStandardDeviation(this.totalSquaredInterFrameDelayValues);
 
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;
       this.previousMeasurement.totalDecodeTime = report.totalDecodeTime;
-      this.previousMeasurement.totalInterFrameDelay = report.totalInterFrameDelay;
+      this.previousMeasurement.totalSquaredInterFrameDelay = report.totalSquaredInterFrameDelay;
       this.previousMeasurement.packetsLost = report.packetsLost;
       this.previousMeasurement.packetsReceived = report.packetsReceived;
       this.previousMeasurement.jitter = report.jitter;
     }
   }
+
+  /**
+   * Calculates standard deviation value for the given input
+   * @param {number[]} values
+   * @return {number} Standard deviation value
+   */
+  static calculateStandardDeviation = (values) => {
+    const n = values.length;
+    if (n < 1) {
+      return 0;
+    }
+    const avg = values.reduce((a, b) => a + b, 0) / n;
+
+    return Math.sqrt(values.reduce((cum, item) => cum + Math.pow(item - avg, 2), 0) / n);
+  };
 
   processWebRtcRoundTripTimeStats() {
     this.webrtcRoundTripTime = StreamWebRtc.calculateRoundTripTimeStats(this.webrtcRoundTripTimeValues).rtt;
