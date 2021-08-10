@@ -267,6 +267,7 @@ export default class Measurement {
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;
       this.previousMeasurement.totalDecodeTime = report.totalDecodeTime;
+      this.previousMeasurement.totalInterFrameDelay = report.totalInterFrameDelay;
       this.previousMeasurement.totalSquaredInterFrameDelay = report.totalSquaredInterFrameDelay;
       this.previousMeasurement.packetsLost = report.packetsLost;
       this.previousMeasurement.packetsReceived = report.packetsReceived;
