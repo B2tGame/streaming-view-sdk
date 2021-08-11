@@ -200,6 +200,10 @@ export default class JsepProtocol {
     // This will set the target bandwidth usage to 1 mbits/sec for both video and audio stream.
     // The code is disable for now due to increased latency for everything above the default bandwidth.
     // sdp.setTargetBandwidth(1 * SDP.MEGABIT, 1 * SDP.MEGABIT);
+
+    // This will force the system to only using one of the listed codecs for the video stream.
+    // sdp.restrictVideoCodec(['VP9']);
+
     answer.sdp = sdp.toString();
     if (answer) {
       this.peerConnection.setLocalDescription(answer);
