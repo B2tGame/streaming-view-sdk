@@ -34,6 +34,20 @@ export default class SdpModifier {
   }
 
   /**
+   * Restrict what video codec that can be used.
+   * @param {string[]} approvedList, List of approved video codec to be used.
+   */
+  restrictVideoCodec(approvedList) {
+    const video = this.sdp.media.find((media) => media.type === 'video');
+    const approvedRTP = video.rtp.filter((rtp) => approvedList.includes(rtp.codec));
+    const ids = approvedRTP.map((rtp) => rtp.payload);
+    video.rtp = approvedRTP;
+    video.fmtp = video.fmtp.filter((fmtp) => ids.includes(fmtp.payload));
+    video.rtcpFb = video.rtcpFb.filter((fmtp) => ids.includes(fmtp.payload));
+    video.payloads = ids.join(' ');
+  }
+
+  /**
    * Get a SDP in plain text format.
    * @return {string}
    */
