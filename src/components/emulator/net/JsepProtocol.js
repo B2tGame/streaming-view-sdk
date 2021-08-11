@@ -202,7 +202,7 @@ export default class JsepProtocol {
     // sdp.setTargetBandwidth(1 * SDP.MEGABIT, 1 * SDP.MEGABIT);
 
     // This will force the system to only using one of the listed codecs for the video stream.
-    sdp.restrictVideoCodec(['VP9']);
+    // sdp.restrictVideoCodec(['VP9']);
 
     answer.sdp = sdp.toString();
     if (answer) {
