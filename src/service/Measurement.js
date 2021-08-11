@@ -13,7 +13,6 @@ export default class Measurement {
     this.networkRoundTripTime = 0;
     this.webrtcRoundTripTime = 0;
     this.webrtcRoundTripTimeValues = [];
-    this.totalSquaredInterFrameDelayValues = [];
     this.streamQualityRating = 0;
     this.numberOfBlackScreens = 0;
     this.previousMeasurement = this.defaultPreviousMeasurement();
@@ -215,7 +214,7 @@ export default class Measurement {
     if (this.measurement.predictedGameExperience) {
       StreamingEvent.edgeNode(this.edgeNodeId).emit(
         StreamingEvent.PREDICTED_GAME_EXPERIENCE,
-        Math.round(this.measurement.predictedGameExperience[Measurement.PREDICTED_GAME_EXPERIENCE_DEFAULT] * 10) / 10
+        Measurement.roundToDecimals(this.measurement.predictedGameExperience[Measurement.PREDICTED_GAME_EXPERIENCE_DEFAULT], 1)
       );
     }
 
@@ -241,29 +240,25 @@ export default class Measurement {
         report.framesDecoded - this.previousMeasurement.framesDecoded !== 0
           ? (((report.totalDecodeTime || 0) - this.previousMeasurement.totalDecodeTime) * 1000) / this.measurement.framesDecodedPerSecond
           : 0;
-      this.measurement.totalDecodeTimePerSecond =
-        Math.round(((report.totalDecodeTime - this.previousMeasurement.totalDecodeTime) / this.measurement.measureDuration) * 1000) / 1000;
-      this.measurement.totalInterFrameDelayPerSecond =
-        Math.round(
-          ((report.totalInterFrameDelay - this.previousMeasurement.totalInterFrameDelay) / this.measurement.measureDuration) * 1000
-        ) / 1000;
+      this.measurement.totalDecodeTimePerSecond = Measurement.roundToDecimals(
+        (report.totalDecodeTime - this.previousMeasurement.totalDecodeTime) / this.measurement.measureDuration
+      );
+      this.measurement.totalInterFrameDelayPerSecond = Measurement.roundToDecimals(
+        (report.totalInterFrameDelay - this.previousMeasurement.totalInterFrameDelay) / this.measurement.measureDuration
+      );
 
       const currentPacketsLost = report.packetsLost - this.previousMeasurement.packetsLost;
       const currentPacketsReceived = report.packetsReceived - this.previousMeasurement.packetsReceived;
       const expectedPacketsReceived = currentPacketsLost + currentPacketsReceived;
       this.measurement.packetsLostPercent = (currentPacketsLost * 100) / expectedPacketsReceived;
       this.measurement.jitter = report.jitter;
-      this.measurement.totalDecodeTimePerFramesDecodedInMs =
-        Math.round(
-          ((report.totalDecodeTime - this.previousMeasurement.totalDecodeTime) /
-            (report.framesDecoded - this.previousMeasurement.framesDecoded)) *
-            1000000
-        ) / 1000;
-      this.totalSquaredInterFrameDelayValues.push(
-        (report.totalSquaredInterFrameDelay - this.previousMeasurement.totalSquaredInterFrameDelay) * 1000
+      this.measurement.totalDecodeTimePerFramesDecodedInMs = Measurement.roundToDecimals(
+        ((report.totalDecodeTime - this.previousMeasurement.totalDecodeTime) /
+          (report.framesDecoded - this.previousMeasurement.framesDecoded)) *
+          1000
       );
-      this.measurement.interFrameDelayStandardDeviationInMs = Measurement.calculateStandardDeviation(
-        this.totalSquaredInterFrameDelayValues
+      this.measurement.interFrameDelayStandardDeviationInMs = Measurement.roundToDecimals(
+        Measurement.calculateStandardDeviation(report, this.previousMeasurement)
       );
 
       this.previousMeasurement.framesDecoded = report.framesDecoded;
@@ -279,17 +274,34 @@ export default class Measurement {
 
   /**
    * Calculates standard deviation value for the given input
-   * @param {number[]} values
-   * @return {number} Standard deviation value
+   * @param {{}} currentStats
+   * @param {{}} previousStats
+   * @return {number|undefined} Standard deviation value
    */
-  static calculateStandardDeviation = (values) => {
-    const n = values.length;
-    if (n < 1) {
-      return 0;
+  static calculateStandardDeviation = (currentStats, previousStats) => {
+    const deltaCount = currentStats.framesDecoded - previousStats.framesDecoded;
+    if (deltaCount <= 0) {
+      return undefined;
     }
-    const avg = values.reduce((a, b) => a + b, 0) / n;
 
-    return Math.sqrt(values.reduce((cum, item) => cum + Math.pow(item - avg, 2), 0) / n);
+    const deltaSquaredSum = currentStats.totalSquaredInterFrameDelay - previousStats.totalSquaredInterFrameDelay;
+    const deltaSum = currentStats.totalInterFrameDelay - previousStats.totalInterFrameDelay;
+    const variance = (deltaSquaredSum - Math.pow(deltaSum, 2) / deltaCount) / deltaCount;
+    if (variance < 0) {
+      return undefined;
+    }
+    return Math.sqrt(variance) * 1000;
+  };
+
+  /**
+   * Round a given number to a specified decimals
+   * @param {number} value The value to round
+   * @param {number} decimals Number of decimals to round to, defaults to 3.
+   * @return {number} The rounded value
+   */
+  static roundToDecimals = (value, decimals = 3) => {
+    const multiplier = Math.pow(10, decimals);
+    return Math.round(value * multiplier) / multiplier;
   };
 
   processWebRtcRoundTripTimeStats() {
