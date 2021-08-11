@@ -262,7 +262,9 @@ export default class Measurement {
       this.totalSquaredInterFrameDelayValues.push(
         (report.totalSquaredInterFrameDelay - this.previousMeasurement.totalSquaredInterFrameDelay) * 1000
       );
-      this.measurement.interFrameDelayStDevInMs = Measurement.calculateStandardDeviation(this.totalSquaredInterFrameDelayValues);
+      this.measurement.interFrameDelayStandardDeviationInMs = Measurement.calculateStandardDeviation(
+        this.totalSquaredInterFrameDelayValues
+      );
 
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;
