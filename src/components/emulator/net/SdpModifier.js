@@ -34,7 +34,7 @@ export default class SdpModifier {
   }
 
   /**
-   * Restrict what video codec that can be used.
+   * Restrict what video codec can be used.
    * @param {string[]} approvedList, List of approved video codec to be used.
    */
   restrictVideoCodec(approvedList) {

@@ -68,8 +68,8 @@ export default class StreamCaptureService {
       }
 
       // Find and get the color of the middle pixel of the screen (center).
-      const centerPixelOffset = ((scaledHeight*scaledWidth/2) + (scaledWidth/2)) * 4;
-      const centerPixelColor = this.rgbToHex(this.getPixel(rawImage, centerPixelOffset))
+      const centerPixelOffset = ((scaledHeight * scaledWidth / 2) + (scaledWidth / 2)) * 4;
+      const centerPixelColor = this.rgbToHex(this.getPixel(rawImage, centerPixelOffset));
 
       const averagePixelColor = this.avgColor(pixels);
       const hasVideo = !pixels.every((pixel) => this.isDarkGrey(pixel) && this.isSameColor(averagePixelColor, pixel));
@@ -78,7 +78,7 @@ export default class StreamCaptureService {
         hasVideo: hasVideo,
         captureProcessingTime: Date.now() - captureVideoStreamStartTime,
         screenshot: this.canvas.current.toDataURL('image/jpeg'),
-        centerPixelColor: centerPixelColor,
+        centerPixelColor: centerPixelColor
       });
     }
   };
