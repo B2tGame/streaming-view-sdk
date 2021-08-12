@@ -169,6 +169,7 @@ const getAdvancedMeasurement = () => {
     if (availableEdges.length === 0) {
       return Promise.resolve(false);
     }
+    return Promise.resolve(false);
 
     const edge = availableEdges.shift();
     const webRtcHost = `${edge.endpoint}/webrtc`;
@@ -197,6 +198,7 @@ const getAdvancedMeasurement = () => {
       };
 
       try {
+
         streamWebRtc = new StreamWebRtc(webRtcHost);
         setTimeout(() => stopMeasurement(), WEBRTC_TIME_TO_CONNECTED);
         streamWebRtc

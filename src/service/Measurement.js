@@ -18,6 +18,7 @@ export default class Measurement {
     this.previousMeasurement = this.defaultPreviousMeasurement();
     this.measurement = {};
     this.webRtcHost = undefined;
+    this.streamWebRtc = undefined;
 
     StreamingEvent.edgeNode(edgeNodeId)
       .on(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
@@ -33,9 +34,9 @@ export default class Measurement {
    */
   initWebRtc(webRtcHost, pingInterval) {
     this.webRtcHost = webRtcHost;
-    this.streamWebRtc = new StreamWebRtc(webRtcHost, pingInterval);
-    this.streamWebRtc.on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
-    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
+    // this.streamWebRtc = new StreamWebRtc(webRtcHost, pingInterval);
+    // this.streamWebRtc.on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
+    // StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
     setInterval(() => {
       StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
     }, StreamSocket.WEBSOCKET_PING_INTERVAL);

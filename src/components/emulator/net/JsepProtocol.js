@@ -172,7 +172,7 @@ export default class JsepProtocol {
   _handleStart = (signal) => {
     signal.start = {
       iceServers: [this.getIceConfiguration()],
-      iceTransportPolicy: 'relay'
+      // iceTransportPolicy: 'relay'
     };
     this.peerConnection = new RTCPeerConnection(signal.start);
     StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
@@ -194,6 +194,8 @@ export default class JsepProtocol {
   };
 
   _handleSDP = async (signal) => {
+    // 13.53.80.205
+
     this.peerConnection.setRemoteDescription(new RTCSessionDescription(signal));
     const answer = await this.peerConnection.createAnswer();
     const sdp = new SdpModifier(answer.sdp);
@@ -214,7 +216,16 @@ export default class JsepProtocol {
   };
 
   _handleCandidate = (signal) => {
-    this.peerConnection.addIceCandidate(new RTCIceCandidate(signal));
+
+    // 13.53.80.205
+    if(signal.candidate.indexOf('13.53.80.205') !== -1) {
+
+      console.log("signal approved", signal);
+      this.peerConnection.addIceCandidate(new RTCIceCandidate(signal));
+    } else {
+      console.log("signal discard", signal);
+
+    }
   };
 
   _handleJsepMessage = (message) => {
