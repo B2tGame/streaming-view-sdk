@@ -3,7 +3,6 @@ import url from 'url';
 import StreamingEvent from '../../../StreamingEvent';
 import SdpModifier from './SdpModifier';
 
-
 /**
  * This drives the jsep protocol with the emulator, and can be used to
  * send key/mouse/touch events to the emulator. Events will be send
@@ -105,7 +104,7 @@ export default class JsepProtocol {
     if (event.receiver) {
       // On supported devices, playoutDelayHint can be used for set a recommended latency of the playback
       // A low value will come with cost of higher frames drope etc.
-      event.receiver.playoutDelayHint = 0;
+      event.receiver.playoutDelayHint = 0.05;
     }
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_CONNECTED, event.track);
   };
