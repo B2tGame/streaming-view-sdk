@@ -104,7 +104,7 @@ export default class JsepProtocol {
     if (event.receiver) {
       // On supported devices, playoutDelayHint can be used for set a recommended latency of the playback
       // A low value will come with cost of higher frames drope etc.
-      event.receiver.playoutDelayHint = 0.05;
+      event.receiver.playoutDelayHint = 0.001;
     }
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_CONNECTED, event.track);
   };
