@@ -126,6 +126,31 @@ export default class JsepProtocol {
         //The RTCPeerConnection is closed.
         this.disconnect();
         break;
+      case 'connected': {
+        const senders = (this.peerConnection.getSenders ? this.peerConnection.getSenders() : []);
+        const iceTransport = ((senders[0] || {}).transport || {}).iceTransport || {};
+        const candidatePair = iceTransport.getSelectedCandidatePair ? iceTransport.getSelectedCandidatePair() : {};
+        const protocol = (candidatePair.local || {}).protocol || undefined;
+        let connection = undefined;
+        switch ((candidatePair.local || {}).type) {
+          case 'relay': {
+            connection = 'relay';
+            break;
+          }
+          case 'srflx': {
+            connection = 'direct';
+            break;
+          }
+        }
+        StreamingEvent.edgeNode(this.edgeNodeId).emit(
+          StreamingEvent.PEER_CONNECTION_SELECTED,
+          {
+            connection: connection,
+            protocol: protocol
+          }
+        );
+        break;
+      }
       default:
     }
   };
