@@ -217,8 +217,11 @@ export default class JsepProtocol {
 
   _handleCandidate = (signal) => {
 
-    // 13.53.80.205
-    if(signal.candidate.indexOf('13.53.80.205') !== -1) {
+    // 13.53.80.205 - Jesper
+    // 16.170.52.187 - Daniel
+
+    // http://localhost:3000/#/?edgeNodeMode=snapshot&host=https%3A%2F%2Fip16-170-52-187.appland-worker.com%3A4443&volume=1&muted=0&enableFullScreen=0&enableInfoHeader=1&enableControl=1&ratingType=rating-disabled&continueGame=false
+    if(signal.candidate.indexOf('16.170.52.187') !== -1) {
 
       console.log("signal approved", signal);
       this.peerConnection.addIceCandidate(new RTCIceCandidate(signal));
