@@ -130,6 +130,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fired when the peer connection has been selected and the system know how it is connected to the backend.
+   * @returns {string}
+   */
+  static get PEER_CONNECTION_SELECTED() {
+    return 'peer-connection-selected';
+  }
+
+  /**
    * Event fired when the stream is connected to the backend and the consumer receiving a video stream.
    * @returns {string}
    */
