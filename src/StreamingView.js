@@ -338,7 +338,7 @@ export default class StreamingView extends Component {
           </p>
         );
       default:
-        return <p style={{ color: 'white' }}>Loading EdgeNode Stream</p>;
+        return <p style={{ color: 'white' }}  className={'streaming-view-loading-edge-node'}>Loading EdgeNode Stream</p>;
     }
   }
 }
