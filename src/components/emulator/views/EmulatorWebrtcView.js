@@ -194,6 +194,14 @@ export default class EmulatorWebrtcView extends Component {
       return; // Component was unmounted.
     }
 
+    // This code snippet allow us to detect and calculate the amount of time the stream is buffed/delayed on client side between received to displayed for consumer.
+    // const requestVideoFrameCallback = (now, metadata) => {
+    //   console.log(metadata.presentationTime - metadata.receiveTime);
+    //   video.requestVideoFrameCallback(requestVideoFrameCallback);
+    // };
+    // video.requestVideoFrameCallback(requestVideoFrameCallback);
+
+
     const onUserInteractionCallback = () => {
       this.playVideo();
       this.updateVideoMutedProp();
