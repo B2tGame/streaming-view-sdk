@@ -3,6 +3,7 @@ import PredictGameExperience from './PredictGameExperience';
 import PredictGameExperienceWithNeuralNetwork from './PredictGameExperienceWithNeuralNetwork';
 import StreamWebRtc from './StreamWebRtc';
 import StreamSocket from './StreamSocket';
+import Metric from './Metric';
 
 /**
  * Measurement class is responsible for processing and reporting measurement reports
@@ -25,6 +26,15 @@ export default class Measurement {
       .on(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
       .on(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
+
+    this.metricsFramesDecodedPerSecond = new Metric();
+    this.metricsInterFrameDelayStandardDeviation = new Metric();
+
+    setInterval(() => {
+      // getReferenceTime
+      console.log('current fps avg:', this.metricsFramesDecodedPerSecond.getMetric(Metric.CURRENT));
+      this.metricsInterFrameDelayStandardDeviation = new Metric();
+    }, 1000);
   }
 
   /**
@@ -269,6 +279,9 @@ export default class Measurement {
       this.previousMeasurement.packetsLost = report.packetsLost;
       this.previousMeasurement.packetsReceived = report.packetsReceived;
       this.previousMeasurement.jitter = report.jitter;
+
+      this.metricsFramesDecodedPerSecond.inject(this.measurement.framesDecodedPerSecond);
+      this.metricsInterFrameDelayStandardDeviation.inject(this.measurement.interFrameDelayStandardDeviationInMs);
     }
   }
 
