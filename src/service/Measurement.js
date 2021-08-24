@@ -19,22 +19,18 @@ export default class Measurement {
     this.previousMeasurement = this.defaultPreviousMeasurement();
     this.measurement = {};
     this.webRtcHost = undefined;
-
+    this.metricsFramesDecodedPerSecond = new Metric();
+    this.metricsInterFrameDelayStandardDeviation = new Metric();
     StreamingEvent.edgeNode(edgeNodeId)
       .on(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
       .on(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
       .on(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
       .on(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
-      .on(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
+      .on(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected)
+      .on(StreamingEvent.STREAM_TERMINATED, this.onStreamTerminated)
+      .on(StreamingEvent.STREAM_RESUMED, this.onStreamResumed)
+      .on(StreamingEvent.EMULATOR_CONFIGURATION, this.onEmulatorConfiguration);
 
-    this.metricsFramesDecodedPerSecond = new Metric();
-    this.metricsInterFrameDelayStandardDeviation = new Metric();
-
-    setInterval(() => {
-      // getReferenceTime
-      console.log('current fps avg:', this.metricsFramesDecodedPerSecond.getMetric(Metric.CURRENT));
-      this.metricsInterFrameDelayStandardDeviation = new Metric();
-    }, 1000);
   }
 
   /**
@@ -145,7 +141,10 @@ export default class Measurement {
       .off(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
       .off(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
       .off(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
-      .off(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
+      .off(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected)
+      .off(StreamingEvent.STREAM_RESUMED, this.onStreamResumed)
+      .off(StreamingEvent.EMULATOR_CONFIGURATION, this.onEmulatorConfiguration)
+      .off(StreamingEvent.STREAM_TERMINATED, this.onStreamTerminated);
 
     if (this.streamWebRtc) {
       StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
@@ -176,6 +175,66 @@ export default class Measurement {
 
   onStreamDisconnected = () => {
     this.previousMeasurement = this.defaultPreviousMeasurement();
+  };
+
+
+  onStreamTerminated = () => {
+    console.log('metric', 'onStreamTerminated');
+    const framesDecodedPerSecondStart = this.metricsFramesDecodedPerSecond.getMetric(Metric.START);
+    const interFrameDelayStandardDeviationStart = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.START);
+    const framesDecodedPerSecondBeginning = this.metricsFramesDecodedPerSecond.getMetric(Metric.BEGINNING);
+    const interFrameDelayStandardDeviationBeginning = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.BEGINNING);
+    const framesDecodedPerSecondCurrent = this.metricsFramesDecodedPerSecond.getMetric(Metric.CURRENT);
+    const interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.CURRENT);
+
+    if (framesDecodedPerSecondStart < 40 && framesDecodedPerSecondBeginning < 40 && framesDecodedPerSecondCurrent > 45 && interFrameDelayStandardDeviationStart > 10) {
+      console.log('metric', 'Long slow motion detected!');
+    } else if (framesDecodedPerSecondStart < 40 && framesDecodedPerSecondBeginning > 45 && interFrameDelayStandardDeviationStart > 10) {
+      console.log('metric', 'Short slow motion detected!');
+    } else if (framesDecodedPerSecondStart > 50 && framesDecodedPerSecondBeginning > 45 && framesDecodedPerSecondCurrent > 45 && interFrameDelayStandardDeviationStart < 10) {
+      console.log('metric', 'No slow motion detected!');
+    } else {
+      // TODO; Detect constitent ongoing slowdone, eg always low frame rate.
+      // then reclassify this as a medim slow down.
+      console.log('metric', 'general slow down detected');
+    }
+
+    console.log('metric', {
+      classiflication: "",
+      fps:
+        {
+          start: framesDecodedPerSecondStart,
+          beginning: framesDecodedPerSecondBeginning,
+          current: framesDecodedPerSecondCurrent
+
+        },
+      interFrameDelayStandardDeviation: {
+        start: interFrameDelayStandardDeviationStart,
+        beginning: interFrameDelayStandardDeviationBeginning,
+        current: interFrameDelayStandardDeviationCurrent,
+      }
+    });
+
+  };
+
+  onStreamResumed = () => {
+    if (!this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
+      this.metricsFramesDecodedPerSecond.setReferenceTime();
+    }
+    if (!this.metricsInterFrameDelayStandardDeviation.hasReferenceTime()) {
+      this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
+    }
+  };
+
+  onEmulatorConfiguration = (payload) => {
+    if (payload.state !== 'paused') {
+      if (!this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
+        this.metricsFramesDecodedPerSecond.setReferenceTime();
+      }
+      if (!this.metricsInterFrameDelayStandardDeviation.hasReferenceTime()) {
+        this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
+      }
+    }
   };
 
   /**
@@ -265,7 +324,7 @@ export default class Measurement {
       this.measurement.totalDecodeTimePerFramesDecodedInMs = Measurement.roundToDecimals(
         ((report.totalDecodeTime - this.previousMeasurement.totalDecodeTime) /
           (report.framesDecoded - this.previousMeasurement.framesDecoded)) *
-          1000
+        1000
       );
       this.measurement.interFrameDelayStandardDeviationInMs = Measurement.roundToDecimals(
         Measurement.calculateStandardDeviation(report, this.previousMeasurement)

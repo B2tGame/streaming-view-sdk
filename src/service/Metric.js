@@ -67,12 +67,30 @@ export default class Metric {
     }
   }
 
+  /**
+   * Get if reference time has been set or not.
+   * @return {boolean}
+   */
+  hasReferenceTime() {
+    return this.refTimestamp !== undefined;
+  }
+
+  /**
+   * Get the current time against the reference time
+   * @param timestamp
+   * @return {number}
+   */
   getReferenceTime(timestamp = undefined) {
     return (timestamp || Date.now()) - this.refTimestamp;
   }
 
+  /**
+   * Inject a new value to the metric.
+   * @param {number} value
+   * @param {number|undefined} timestamp Timestamp to acts as the zero reference timestamp, default to current time.
+   */
   inject(value, timestamp = undefined) {
-    if (this.refTimestamp !== undefined) {
+    if (Number.isFinite(value) && this.refTimestamp !== undefined) {
       const currentTimestamp = this.getReferenceTime(timestamp);
 
       for (let item of Metric.ALL_METRICS) {
@@ -80,7 +98,7 @@ export default class Metric {
         if (item.mode === 'start') {
           if (item.start <= currentTimestamp && item.end >= currentTimestamp) {
             const metric = this.metrics[item.id];
-            metric.firstValueTime = metric.firstValueTime === undefined ? currentTimestamp : metric;
+            metric.firstValueTime = metric.firstValueTime === undefined ? currentTimestamp : metric.firstValueTime;
             metric.lastValueTime = currentTimestamp;
             metric.sum += value;
             metric.count += 1;
@@ -88,8 +106,9 @@ export default class Metric {
         } else if (item.mode === 'end') {
           const metric = this.metrics[item.id];
           metric.raw.push({ timestamp: currentTimestamp, value: value });
-          metric.raw = metric.raw.filter((rec) => (currentTimestamp - rec.currentTimestamp) < -item.start);
-          metric.firstValueTime = metric.firstValueTime === undefined ? currentTimestamp : metric;
+
+          metric.raw = metric.raw.filter((rec) => (currentTimestamp - rec.timestamp) < -item.start);
+          metric.firstValueTime = metric.firstValueTime === undefined ? currentTimestamp : metric.firstValueTime;
           metric.lastValueTime = currentTimestamp;
           metric.count = metric.raw.length;
         }
@@ -112,10 +131,10 @@ export default class Metric {
       } else if (key.mode === 'end') {
         const currentTimestamp = this.getReferenceTime(timestamp);
         const metrics = metric.raw
-          .filter((rec) => (currentTimestamp - rec.currentTimestamp) <= -key.start)
-          .filter((rec) => (currentTimestamp - rec.currentTimestamp) >= -key.end)
+          .filter((rec) => (currentTimestamp - rec.timestamp) <= -key.start)
+          .filter((rec) => (currentTimestamp - rec.timestamp) >= -key.end)
           .map((rec) => rec.value);
-        return metrics.reduce((a, b) => a + b, 0) / metrics;
+        return metrics.reduce((a, b) => a + b, 0) / metrics.length;
       }
     }
     return undefined;
