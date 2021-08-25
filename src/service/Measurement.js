@@ -353,6 +353,7 @@ export default class Measurement {
 
       this.metricsFramesDecodedPerSecond.inject(this.measurement.framesDecodedPerSecond);
       this.metricsInterFrameDelayStandardDeviation.inject(this.measurement.interFrameDelayStandardDeviationInMs);
+      this.framesDecodedPerSecondHistogram.inject(this.measurement.framesDecodedPerSecond);
     }
   }
 
