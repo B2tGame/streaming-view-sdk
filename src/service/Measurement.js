@@ -187,29 +187,89 @@ export default class Measurement {
 
   onStreamTerminated = () => {
     const framesDecodedPerSecondStart = this.metricsFramesDecodedPerSecond.getMetric(Metric.START);
-    const interFrameDelayStandardDeviationStart = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.START);
     const framesDecodedPerSecondBeginning = this.metricsFramesDecodedPerSecond.getMetric(Metric.BEGINNING);
-    const interFrameDelayStandardDeviationBeginning = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.BEGINNING);
+    const framesDecodedPerSecondOverall = this.metricsFramesDecodedPerSecond.getMetric(Metric.OVERALL);
     const framesDecodedPerSecondCurrent = this.metricsFramesDecodedPerSecond.getMetric(Metric.CURRENT);
+
+    const interFrameDelayStandardDeviationStart = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.START);
+    const interFrameDelayStandardDeviationBeginning = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.BEGINNING);
+    const interFrameDelayStandardDeviationOverall = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.OVERALL);
     const interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.CURRENT);
 
+
     const classification = () => {
-      if (framesDecodedPerSecondStart < 45 && framesDecodedPerSecondBeginning < 45 && framesDecodedPerSecondCurrent < 45) {
-        return 'consistent-slow-motion-detected';
-      }
-      if (framesDecodedPerSecondStart < 40 && framesDecodedPerSecondBeginning < 40 && framesDecodedPerSecondCurrent > 45 && interFrameDelayStandardDeviationStart > 12.5) {
-        return 'very-long-slow-motion-detected';
-      }
-
-      if (framesDecodedPerSecondStart < 40 && framesDecodedPerSecondBeginning > 45 && interFrameDelayStandardDeviationStart > 10) {
-        return 'short-slow-motion-detected';
-      }
-
-      if (framesDecodedPerSecondStart > 50 && framesDecodedPerSecondBeginning > 45 && framesDecodedPerSecondCurrent > 45 && interFrameDelayStandardDeviationStart < 15) {
+      // overall no issue was detected
+      if (
+        framesDecodedPerSecondStart > 45 &&
+        framesDecodedPerSecondBeginning > 45 &&
+        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 &&
+        interFrameDelayStandardDeviationStart < 15 &&
+        interFrameDelayStandardDeviationBeginning < 15 &&
+        (interFrameDelayStandardDeviationOverall || 0) < 15
+      ) {
         return 'no-slow-motion-detected';
       }
 
-      return 'long-slow-motion-detected';
+      // consistent low fps over the whole session.
+      if (
+        framesDecodedPerSecondStart < 45 &&
+        framesDecodedPerSecondBeginning < 45 &&
+        (framesDecodedPerSecondOverall || 0) < 45
+      ) {
+        return 'consistent-slow-motion-detected';
+      }
+
+      // consistent high inter frame delay standard deviation over the whole game session.
+      if (
+        interFrameDelayStandardDeviationStart > 15 &&
+        interFrameDelayStandardDeviationBeginning > 15 &&
+        (interFrameDelayStandardDeviationOverall || Number.MAX_VALUE) > 15
+      ) {
+        return 'consistent-slow-motion-detected';
+      }
+
+      // slow start due to low fps in start
+      if (
+        framesDecodedPerSecondStart < 45 &&
+        framesDecodedPerSecondBeginning > 45 &&
+        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 &&
+        interFrameDelayStandardDeviationBeginning < 15
+      ) {
+        return 'slow-start-detected';
+      }
+
+      // slow start due to high inter frame delay std dev in start
+      if (
+        interFrameDelayStandardDeviationStart > 15 &&
+        interFrameDelayStandardDeviationBeginning < 15 &&
+        (interFrameDelayStandardDeviationOverall || 0) < 15 &&
+        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45
+      ) {
+        return 'slow-start-detected';
+      }
+
+
+      // slow start due to low fps in beginning
+      if (
+        framesDecodedPerSecondStart < 45 &&
+        framesDecodedPerSecondBeginning < 45 &&
+        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 &&
+        (interFrameDelayStandardDeviationOverall || 0) < 15
+      ) {
+        return 'slow-beginning-detected';
+      }
+
+      // slow start due to high inter frame delay std dev in beginning
+      if (
+        interFrameDelayStandardDeviationStart > 15 &&
+        interFrameDelayStandardDeviationBeginning > 15 &&
+        (interFrameDelayStandardDeviationOverall || 0) < 15 &&
+        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45
+      ) {
+        return 'slow-beginning-detected';
+      }
+
+      return 'no-classification-detected';
     };
 
     StreamingEvent.edgeNode(this.edgeNodeId)
@@ -217,16 +277,19 @@ export default class Measurement {
         StreamingEvent.CLASSIFICATION_REPORT,
         {
           classification: classification(),
+          duration: this.metricsFramesDecodedPerSecond.getReferenceTime(),
           framesDecodedPerSecond: {
-            start: framesDecodedPerSecondStart,
-            beginning: framesDecodedPerSecondBeginning,
-            current: framesDecodedPerSecondCurrent,
+            start: Measurement.roundToDecimals(framesDecodedPerSecondStart),
+            beginning: Measurement.roundToDecimals(framesDecodedPerSecondBeginning),
+            overall: Measurement.roundToDecimals(framesDecodedPerSecondOverall),
+            current: Measurement.roundToDecimals(framesDecodedPerSecondCurrent),
             histogram: this.framesDecodedPerSecondHistogram.getMetric()
           },
           interFrameDelayStandardDeviation: {
-            start: interFrameDelayStandardDeviationStart,
-            beginning: interFrameDelayStandardDeviationBeginning,
-            current: interFrameDelayStandardDeviationCurrent
+            start: Measurement.roundToDecimals(interFrameDelayStandardDeviationStart),
+            beginning: Measurement.roundToDecimals(interFrameDelayStandardDeviationBeginning),
+            overall: Measurement.roundToDecimals(interFrameDelayStandardDeviationOverall),
+            current: Measurement.roundToDecimals(interFrameDelayStandardDeviationCurrent)
           }
         }
       );
@@ -386,8 +449,12 @@ export default class Measurement {
    * @return {number} The rounded value
    */
   static roundToDecimals = (value, decimals = 3) => {
-    const multiplier = Math.pow(10, decimals);
-    return Math.round(value * multiplier) / multiplier;
+    if (value !== undefined) {
+      const multiplier = Math.pow(10, decimals);
+      return Math.round(value * multiplier) / multiplier;
+    } else {
+      return undefined;
+    }
   };
 
   processWebRtcRoundTripTimeStats() {

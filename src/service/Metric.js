@@ -10,7 +10,7 @@ export default class Metric {
       start: 0,
       end: 2000,
       mode: 'start',
-      requiredWindow: 1500
+      requiredWindow: 1250
     };
   }
 
@@ -24,10 +24,24 @@ export default class Metric {
       start: 2000,
       end: 7000,
       mode: 'start',
-      requiredWindow: 4500
+      requiredWindow: 4000
     };
   }
 
+
+  /**
+   * The avg data over time 2000 to 7000ms
+   * @constructor
+   */
+  static get OVERALL() {
+    return {
+      id: 'overall',
+      start: 4500,
+      end: 24 * 60 * 60 * 1000, // 24 hours
+      mode: 'start',
+      requiredWindow: 4500
+    };
+  }
 
   static get CURRENT() {
     return {
@@ -41,7 +55,7 @@ export default class Metric {
 
 
   static get ALL_METRICS() {
-    return [Metric.START, Metric.BEGINNING, Metric.CURRENT];
+    return [Metric.START, Metric.BEGINNING, Metric.OVERALL, Metric.CURRENT];
   }
 
   constructor() {
