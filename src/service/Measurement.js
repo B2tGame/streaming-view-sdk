@@ -196,7 +196,6 @@ export default class Measurement {
     const interFrameDelayStandardDeviationOverall = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.OVERALL);
     const interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.CURRENT);
 
-
     const classification = () => {
       // overall no issue was detected
       if (
@@ -228,27 +227,6 @@ export default class Measurement {
         return 'consistent-slow-motion-detected';
       }
 
-      // slow start due to low fps in start
-      if (
-        framesDecodedPerSecondStart < 45 &&
-        framesDecodedPerSecondBeginning > 45 &&
-        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 &&
-        interFrameDelayStandardDeviationBeginning < 15
-      ) {
-        return 'slow-start-detected';
-      }
-
-      // slow start due to high inter frame delay std dev in start
-      if (
-        interFrameDelayStandardDeviationStart > 15 &&
-        interFrameDelayStandardDeviationBeginning < 15 &&
-        (interFrameDelayStandardDeviationOverall || 0) < 15 &&
-        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45
-      ) {
-        return 'slow-start-detected';
-      }
-
-
       // slow start due to low fps in beginning
       if (
         framesDecodedPerSecondStart < 45 &&
@@ -267,6 +245,27 @@ export default class Measurement {
         (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45
       ) {
         return 'slow-beginning-detected';
+      }
+
+      // slow start due to low fps in start
+      if (
+        framesDecodedPerSecondStart < 45 &&
+        framesDecodedPerSecondBeginning > 45 &&
+        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 &&
+        interFrameDelayStandardDeviationBeginning < 15
+      ) {
+        return 'slow-start-detected';
+      }
+
+
+      // slow start due to high inter frame delay std dev in start
+      if (
+        interFrameDelayStandardDeviationStart > 15 &&
+        interFrameDelayStandardDeviationBeginning < 15 &&
+        (interFrameDelayStandardDeviationOverall || 0) < 15 &&
+        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45
+      ) {
+        return 'slow-start-detected';
       }
 
       return 'no-classification-detected';
