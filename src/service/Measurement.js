@@ -9,8 +9,14 @@ import Metric from './Metric';
  * Measurement class is responsible for processing and reporting measurement reports
  */
 export default class Measurement {
-  constructor(edgeNodeId) {
+  /**
+   *
+   * @param {string} edgeNodeId
+   * @param {Logger} logger
+   */
+  constructor(edgeNodeId, logger) {
     this.edgeNodeId = edgeNodeId;
+    this.logger = logger;
     this.networkRoundTripTime = 0;
     this.webrtcRoundTripTime = 0;
     this.webrtcRoundTripTimeValues = [];
@@ -179,7 +185,6 @@ export default class Measurement {
 
 
   onStreamTerminated = () => {
-    console.log('metric', 'onStreamTerminated');
     const framesDecodedPerSecondStart = this.metricsFramesDecodedPerSecond.getMetric(Metric.START);
     const interFrameDelayStandardDeviationStart = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.START);
     const framesDecodedPerSecondBeginning = this.metricsFramesDecodedPerSecond.getMetric(Metric.BEGINNING);
@@ -187,34 +192,39 @@ export default class Measurement {
     const framesDecodedPerSecondCurrent = this.metricsFramesDecodedPerSecond.getMetric(Metric.CURRENT);
     const interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.CURRENT);
 
-    if (framesDecodedPerSecondStart < 40 && framesDecodedPerSecondBeginning < 40 && framesDecodedPerSecondCurrent > 45 && interFrameDelayStandardDeviationStart > 10) {
-      console.log('metric', 'Long slow motion detected!');
-    } else if (framesDecodedPerSecondStart < 40 && framesDecodedPerSecondBeginning > 45 && interFrameDelayStandardDeviationStart > 10) {
-      console.log('metric', 'Short slow motion detected!');
-    } else if (framesDecodedPerSecondStart > 50 && framesDecodedPerSecondBeginning > 45 && framesDecodedPerSecondCurrent > 45 && interFrameDelayStandardDeviationStart < 10) {
-      console.log('metric', 'No slow motion detected!');
-    } else {
-      // TODO; Detect constitent ongoing slowdone, eg always low frame rate.
-      // then reclassify this as a medim slow down.
-      console.log('metric', 'general slow down detected');
-    }
+    const classification = () => {
+      if (framesDecodedPerSecondStart < 45 && framesDecodedPerSecondBeginning < 45 && framesDecodedPerSecondCurrent < 45) {
+        return 'consistent-slow-motion-detected';
+      }
+      if (framesDecodedPerSecondStart < 40 && framesDecodedPerSecondBeginning < 40 && framesDecodedPerSecondCurrent > 45 && interFrameDelayStandardDeviationStart > 10) {
+        return 'long-slow-motion-detected';
+      }
 
-    console.log('metric', {
-      classiflication: "",
-      fps:
-        {
+      if (framesDecodedPerSecondStart < 40 && framesDecodedPerSecondBeginning > 45 && interFrameDelayStandardDeviationStart > 10) {
+        return 'short-slow-motion-detected';
+      }
+
+      if (framesDecodedPerSecondStart > 50 && framesDecodedPerSecondBeginning > 45 && framesDecodedPerSecondCurrent > 45 && interFrameDelayStandardDeviationStart < 10) {
+        return 'no-slow-motion-detected';
+      }
+      return 'medium-slow-motion-detected';
+    };
+
+    this.logger.info(
+      'metric', {
+        classification: classification(),
+        fps: {
           start: framesDecodedPerSecondStart,
           beginning: framesDecodedPerSecondBeginning,
           current: framesDecodedPerSecondCurrent
-
         },
-      interFrameDelayStandardDeviation: {
-        start: interFrameDelayStandardDeviationStart,
-        beginning: interFrameDelayStandardDeviationBeginning,
-        current: interFrameDelayStandardDeviationCurrent,
+        interFrameDelayStandardDeviation: {
+          start: interFrameDelayStandardDeviationStart,
+          beginning: interFrameDelayStandardDeviationBeginning,
+          current: interFrameDelayStandardDeviationCurrent
+        }
       }
-    });
-
+    );
   };
 
   onStreamResumed = () => {
