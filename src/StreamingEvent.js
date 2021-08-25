@@ -420,6 +420,15 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fired at the end of the stream with the collected measurement report
+   * @return {string}
+   */
+  static get CLASSIFICATION_REPORT() {
+    return 'classification-report';
+  }
+
+
+  /**
    * Get EventEmitter for a specific Edge Node Id.
    * This will automatically create a new Event emitter if missing.
    * @param {string} edgeNodeId

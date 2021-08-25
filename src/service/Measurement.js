@@ -3,11 +3,17 @@ import PredictGameExperience from './PredictGameExperience';
 import PredictGameExperienceWithNeuralNetwork from './PredictGameExperienceWithNeuralNetwork';
 import StreamWebRtc from './StreamWebRtc';
 import StreamSocket from './StreamSocket';
+import Metric from './Metric';
+import FramePerSecondHistogram from './FramePerSecondHistogram';
 
 /**
  * Measurement class is responsible for processing and reporting measurement reports
  */
 export default class Measurement {
+  /**
+   *
+   * @param {string} edgeNodeId
+   */
   constructor(edgeNodeId) {
     this.edgeNodeId = edgeNodeId;
     this.networkRoundTripTime = 0;
@@ -18,13 +24,21 @@ export default class Measurement {
     this.previousMeasurement = this.defaultPreviousMeasurement();
     this.measurement = {};
     this.webRtcHost = undefined;
+    this.metricsFramesDecodedPerSecond = new Metric();
+    this.metricsInterFrameDelayStandardDeviation = new Metric();
+    this.framesDecodedPerSecondHistogram = new FramePerSecondHistogram();
+
 
     StreamingEvent.edgeNode(edgeNodeId)
       .on(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
       .on(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
       .on(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
       .on(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
-      .on(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
+      .on(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected)
+      .on(StreamingEvent.STREAM_TERMINATED, this.onStreamTerminated)
+      .on(StreamingEvent.STREAM_RESUMED, this.onStreamResumed)
+      .on(StreamingEvent.EMULATOR_CONFIGURATION, this.onEmulatorConfiguration);
+
   }
 
   /**
@@ -135,7 +149,10 @@ export default class Measurement {
       .off(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
       .off(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
       .off(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
-      .off(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected);
+      .off(StreamingEvent.STREAM_DISCONNECTED, this.onStreamDisconnected)
+      .off(StreamingEvent.STREAM_RESUMED, this.onStreamResumed)
+      .off(StreamingEvent.EMULATOR_CONFIGURATION, this.onEmulatorConfiguration)
+      .off(StreamingEvent.STREAM_TERMINATED, this.onStreamTerminated);
 
     if (this.streamWebRtc) {
       StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
@@ -166,6 +183,71 @@ export default class Measurement {
 
   onStreamDisconnected = () => {
     this.previousMeasurement = this.defaultPreviousMeasurement();
+  };
+
+  onStreamTerminated = () => {
+    const framesDecodedPerSecondStart = this.metricsFramesDecodedPerSecond.getMetric(Metric.START);
+    const interFrameDelayStandardDeviationStart = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.START);
+    const framesDecodedPerSecondBeginning = this.metricsFramesDecodedPerSecond.getMetric(Metric.BEGINNING);
+    const interFrameDelayStandardDeviationBeginning = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.BEGINNING);
+    const framesDecodedPerSecondCurrent = this.metricsFramesDecodedPerSecond.getMetric(Metric.CURRENT);
+    const interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.CURRENT);
+
+    const classification = () => {
+      if (framesDecodedPerSecondStart < 45 && framesDecodedPerSecondBeginning < 45 && framesDecodedPerSecondCurrent < 45) {
+        return 'consistent-slow-motion-detected';
+      }
+      if (framesDecodedPerSecondStart < 40 && framesDecodedPerSecondBeginning < 40 && framesDecodedPerSecondCurrent > 45 && interFrameDelayStandardDeviationStart > 10) {
+        return 'very-long-slow-motion-detected';
+      }
+
+      if (framesDecodedPerSecondStart < 40 && framesDecodedPerSecondBeginning > 45 && interFrameDelayStandardDeviationStart > 10) {
+        return 'short-slow-motion-detected';
+      }
+
+      if (framesDecodedPerSecondStart > 50 && framesDecodedPerSecondBeginning > 45 && framesDecodedPerSecondCurrent > 45 && interFrameDelayStandardDeviationStart < 10) {
+        return 'no-slow-motion-detected';
+      }
+
+      return 'long-slow-motion-detected';
+    };
+
+    StreamingEvent.edgeNode(this.edgeNodeId)
+      .emit(
+        StreamingEvent.CLASSIFICATION_REPORT,
+        {
+          classification: classification(),
+          framesDecodedPerSecond: {
+            start: framesDecodedPerSecondStart,
+            beginning: framesDecodedPerSecondBeginning,
+            current: framesDecodedPerSecondCurrent,
+            histogram: this.framesDecodedPerSecondHistogram.getMetric()
+          },
+          interFrameDelayStandardDeviation: {
+            start: interFrameDelayStandardDeviationStart,
+            beginning: interFrameDelayStandardDeviationBeginning,
+            current: interFrameDelayStandardDeviationCurrent
+          }
+        }
+      );
+  };
+
+  onStreamResumed = () => {
+    if (!this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
+      this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
+      this.metricsFramesDecodedPerSecond.setReferenceTime();
+      this.framesDecodedPerSecondHistogram.addSeparator();
+    }
+  };
+
+  onEmulatorConfiguration = (payload) => {
+    if (payload.state !== 'paused') {
+      if (!this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
+        this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
+        this.metricsFramesDecodedPerSecond.setReferenceTime();
+        this.framesDecodedPerSecondHistogram.addSeparator();
+      }
+    }
   };
 
   /**
@@ -255,7 +337,7 @@ export default class Measurement {
       this.measurement.totalDecodeTimePerFramesDecodedInMs = Measurement.roundToDecimals(
         ((report.totalDecodeTime - this.previousMeasurement.totalDecodeTime) /
           (report.framesDecoded - this.previousMeasurement.framesDecoded)) *
-          1000
+        1000
       );
       this.measurement.interFrameDelayStandardDeviationInMs = Measurement.roundToDecimals(
         Measurement.calculateStandardDeviation(report, this.previousMeasurement)
@@ -269,6 +351,10 @@ export default class Measurement {
       this.previousMeasurement.packetsLost = report.packetsLost;
       this.previousMeasurement.packetsReceived = report.packetsReceived;
       this.previousMeasurement.jitter = report.jitter;
+
+      this.metricsFramesDecodedPerSecond.inject(this.measurement.framesDecodedPerSecond);
+      this.metricsInterFrameDelayStandardDeviation.inject(this.measurement.interFrameDelayStandardDeviationInMs);
+      this.framesDecodedPerSecondHistogram.inject(this.measurement.framesDecodedPerSecond);
     }
   }
 
