@@ -423,8 +423,8 @@ export default class StreamingEvent {
    * Event fired at the end of the stream with the collected measurement report
    * @return {string}
    */
-  static get MEASUREMENT_REPORT() {
-    return 'measurement-report';
+  static get CLASSIFICATION_REPORT() {
+    return 'classification-report';
   }
 
 

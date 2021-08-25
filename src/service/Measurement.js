@@ -213,7 +213,7 @@ export default class Measurement {
 
     StreamingEvent.edgeNode(this.edgeNodeId)
       .emit(
-        StreamingEvent.MEASUREMENT_REPORT,
+        StreamingEvent.CLASSIFICATION_REPORT,
         {
           classification: classification(),
           fps: {
