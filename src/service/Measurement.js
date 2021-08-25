@@ -4,6 +4,7 @@ import PredictGameExperienceWithNeuralNetwork from './PredictGameExperienceWithN
 import StreamWebRtc from './StreamWebRtc';
 import StreamSocket from './StreamSocket';
 import Metric from './Metric';
+import FramePerSecondHistogram from './FramePerSecondHistogram';
 
 /**
  * Measurement class is responsible for processing and reporting measurement reports
@@ -12,11 +13,9 @@ export default class Measurement {
   /**
    *
    * @param {string} edgeNodeId
-   * @param {Logger} logger
    */
-  constructor(edgeNodeId, logger) {
+  constructor(edgeNodeId) {
     this.edgeNodeId = edgeNodeId;
-    this.logger = logger;
     this.networkRoundTripTime = 0;
     this.webrtcRoundTripTime = 0;
     this.webrtcRoundTripTimeValues = [];
@@ -27,6 +26,9 @@ export default class Measurement {
     this.webRtcHost = undefined;
     this.metricsFramesDecodedPerSecond = new Metric();
     this.metricsInterFrameDelayStandardDeviation = new Metric();
+    this.framesDecodedPerSecondHistogram = new FramePerSecondHistogram();
+
+
     StreamingEvent.edgeNode(edgeNodeId)
       .on(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
       .on(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
@@ -183,7 +185,6 @@ export default class Measurement {
     this.previousMeasurement = this.defaultPreviousMeasurement();
   };
 
-
   onStreamTerminated = () => {
     const framesDecodedPerSecondStart = this.metricsFramesDecodedPerSecond.getMetric(Metric.START);
     const interFrameDelayStandardDeviationStart = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.START);
@@ -210,39 +211,40 @@ export default class Measurement {
       return 'medium-slow-motion-detected';
     };
 
-    this.logger.info(
-      'metric', {
-        classification: classification(),
-        fps: {
-          start: framesDecodedPerSecondStart,
-          beginning: framesDecodedPerSecondBeginning,
-          current: framesDecodedPerSecondCurrent
-        },
-        interFrameDelayStandardDeviation: {
-          start: interFrameDelayStandardDeviationStart,
-          beginning: interFrameDelayStandardDeviationBeginning,
-          current: interFrameDelayStandardDeviationCurrent
+    StreamingEvent.edgeNode(this.edgeNodeId)
+      .emit(
+        StreamingEvent.MEASUREMENT_REPORT,
+        {
+          classification: classification(),
+          fps: {
+            start: framesDecodedPerSecondStart,
+            beginning: framesDecodedPerSecondBeginning,
+            current: framesDecodedPerSecondCurrent,
+            histogram: this.framesDecodedPerSecondHistogram.getMetric()
+          },
+          interFrameDelayStandardDeviation: {
+            start: interFrameDelayStandardDeviationStart,
+            beginning: interFrameDelayStandardDeviationBeginning,
+            current: interFrameDelayStandardDeviationCurrent
+          }
         }
-      }
-    );
+      );
   };
 
   onStreamResumed = () => {
     if (!this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
-      this.metricsFramesDecodedPerSecond.setReferenceTime();
-    }
-    if (!this.metricsInterFrameDelayStandardDeviation.hasReferenceTime()) {
       this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
+      this.metricsFramesDecodedPerSecond.setReferenceTime();
+      this.framesDecodedPerSecondHistogram.addSeparator();
     }
   };
 
   onEmulatorConfiguration = (payload) => {
     if (payload.state !== 'paused') {
       if (!this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
-        this.metricsFramesDecodedPerSecond.setReferenceTime();
-      }
-      if (!this.metricsInterFrameDelayStandardDeviation.hasReferenceTime()) {
         this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
+        this.metricsFramesDecodedPerSecond.setReferenceTime();
+        this.framesDecodedPerSecondHistogram.addSeparator();
       }
     }
   };
