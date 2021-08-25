@@ -197,6 +197,12 @@ export default class Measurement {
     const interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.CURRENT);
 
     const classification = () => {
+
+      // Unsupported device, for now only chrome is supported
+      if (framesDecodedPerSecondStart === undefined || interFrameDelayStandardDeviationStart === undefined) {
+        return 'unsupported-device';
+      }
+
       // overall no issue was detected
       if (
         framesDecodedPerSecondStart > 45 &&
@@ -267,6 +273,15 @@ export default class Measurement {
       ) {
         return 'slow-start-detected';
       }
+
+
+      // consistent low fps or high inter frame delay std dev over the session.
+      if (
+        framesDecodedPerSecondOverall < 45 || interFrameDelayStandardDeviationOverall > 15
+      ) {
+        return 'consistent-slow-motion-detected';
+      }
+
 
       return 'no-classification-detected';
     };
