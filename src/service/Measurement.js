@@ -198,7 +198,7 @@ export default class Measurement {
         return 'consistent-slow-motion-detected';
       }
       if (framesDecodedPerSecondStart < 40 && framesDecodedPerSecondBeginning < 40 && framesDecodedPerSecondCurrent > 45 && interFrameDelayStandardDeviationStart > 10) {
-        return 'long-slow-motion-detected';
+        return 'very-long-slow-motion-detected';
       }
 
       if (framesDecodedPerSecondStart < 40 && framesDecodedPerSecondBeginning > 45 && interFrameDelayStandardDeviationStart > 10) {
@@ -208,7 +208,8 @@ export default class Measurement {
       if (framesDecodedPerSecondStart > 50 && framesDecodedPerSecondBeginning > 45 && framesDecodedPerSecondCurrent > 45 && interFrameDelayStandardDeviationStart < 10) {
         return 'no-slow-motion-detected';
       }
-      return 'medium-slow-motion-detected';
+
+      return 'long-slow-motion-detected';
     };
 
     StreamingEvent.edgeNode(this.edgeNodeId)
@@ -216,7 +217,7 @@ export default class Measurement {
         StreamingEvent.CLASSIFICATION_REPORT,
         {
           classification: classification(),
-          fps: {
+          framesDecodedPerSecond: {
             start: framesDecodedPerSecondStart,
             beginning: framesDecodedPerSecondBeginning,
             current: framesDecodedPerSecondCurrent,
