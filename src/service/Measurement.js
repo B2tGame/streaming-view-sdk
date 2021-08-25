@@ -197,7 +197,7 @@ export default class Measurement {
       if (framesDecodedPerSecondStart < 45 && framesDecodedPerSecondBeginning < 45 && framesDecodedPerSecondCurrent < 45) {
         return 'consistent-slow-motion-detected';
       }
-      if (framesDecodedPerSecondStart < 40 && framesDecodedPerSecondBeginning < 40 && framesDecodedPerSecondCurrent > 45 && interFrameDelayStandardDeviationStart > 10) {
+      if (framesDecodedPerSecondStart < 40 && framesDecodedPerSecondBeginning < 40 && framesDecodedPerSecondCurrent > 45 && interFrameDelayStandardDeviationStart > 12.5) {
         return 'very-long-slow-motion-detected';
       }
 
@@ -205,7 +205,7 @@ export default class Measurement {
         return 'short-slow-motion-detected';
       }
 
-      if (framesDecodedPerSecondStart > 50 && framesDecodedPerSecondBeginning > 45 && framesDecodedPerSecondCurrent > 45 && interFrameDelayStandardDeviationStart < 10) {
+      if (framesDecodedPerSecondStart > 50 && framesDecodedPerSecondBeginning > 45 && framesDecodedPerSecondCurrent > 45 && interFrameDelayStandardDeviationStart < 15) {
         return 'no-slow-motion-detected';
       }
 
