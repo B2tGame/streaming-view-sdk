@@ -314,13 +314,14 @@ export default class Measurement {
   };
 
   onEmulatorConfiguration = (payload) => {
-    if (payload.state !== 'paused') {
-      if (!this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
-        this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
-        this.metricsFramesDecodedPerSecond.setReferenceTime();
-        this.framesDecodedPerSecondHistogram.addSeparator();
-      }
-    }
+    return false; // TODO; restore
+    // if (payload.state !== 'paused') {
+    //   if (!this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
+    //     this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
+    //     this.metricsFramesDecodedPerSecond.setReferenceTime();
+    //     this.framesDecodedPerSecondHistogram.addSeparator();
+    //   }
+    // }
   };
 
   /**
