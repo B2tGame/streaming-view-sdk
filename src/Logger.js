@@ -4,12 +4,30 @@ import StreamingEvent from './StreamingEvent';
  * Logger class for logging to browser console.
  */
 export default class Logger {
+
   /**
-   *
-   * @param {boolean} enableDebug Enable displaying logs in the browser console. Default to true.
+   * Get if global verbose mode is enable or disabled.
+   * @return {boolean}
    */
-  constructor(enableDebug = true) {
-    this.enableDebug = enableDebug;
+  static isVerboseEnabled() {
+    return (window || {}).applandStreamingVerboseModeEnabled || false;
+  }
+
+  /**
+   * Enable global verbose mode to console
+   * @return {boolean}
+   */
+  static enableVerboseMode() {
+    (window || {}).applandStreamingVerboseModeEnabled = true;
+    return Logger.isVerboseEnabled();
+  }
+
+  /**
+   * Disable global verbose mode to console
+   * @return {boolean}
+   */
+  static disabledVerboseMode() {
+    return Logger.isVerboseEnabled();
   }
 
   /**
@@ -18,7 +36,7 @@ export default class Logger {
    * @param {*[]} args
    */
   logOutput(type, ...args) {
-    if (this.enableDebug) {
+    if (Logger.isVerboseEnabled()) {
       console[type]('Streaming SDK:', ...args);
     }
     StreamingEvent.emit(StreamingEvent.LOG, { type: type, data: args });

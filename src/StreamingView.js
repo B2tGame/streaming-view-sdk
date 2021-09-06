@@ -50,7 +50,6 @@ export default class StreamingView extends Component {
       muted: PropTypes.bool, // Can be changed dynamically
       onEvent: PropTypes.func, // Can't be changed after creation
       streamQualityRating: PropTypes.number, // Can be changed dynamically
-      enableDebug: PropTypes.bool, // Can't be changed after creation
       internalSession: PropTypes.bool, // Can't be changed after creation
       userClickedPlayAt: PropTypes.number, // Can't be changed after creation
       maxConnectionRetries: PropTypes.number, // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
@@ -103,7 +102,6 @@ export default class StreamingView extends Component {
       edgeNodeEndpoint,
       internalSession,
       turnEndpoint,
-      enableDebug,
       onEvent,
       pingInterval
     } = this.props;
@@ -113,7 +111,7 @@ export default class StreamingView extends Component {
 
     this.blackScreenDetector = new BlackScreenDetector(edgeNodeId, this.streamingViewId);
 
-    this.logger = new Logger(enableDebug);
+    this.logger = new Logger();
     this.measurement = new Measurement(edgeNodeId);
 
     if (onEvent) {

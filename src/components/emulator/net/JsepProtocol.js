@@ -141,6 +141,9 @@ export default class JsepProtocol {
             connection = 'direct';
             break;
           }
+          default: {
+            // no action
+          }
         }
         StreamingEvent.edgeNode(this.edgeNodeId).emit(
           StreamingEvent.PEER_CONNECTION_SELECTED,
@@ -151,7 +154,9 @@ export default class JsepProtocol {
         );
         break;
       }
-      default:
+      default: {
+        // no action
+      }
     }
   };
 
