@@ -209,13 +209,10 @@ export default class JsepProtocol {
   };
 
   onRequestWebRtcMeasurement = () => {
-    // Report only when user is connected for more than 1.5 second for avoiding wrong measurement during the initialization of connection
-    if (this.peerConnection && Date.now() - this.streamConnectedTimestamp > 1500) {
       this.peerConnection
         .getStats()
         .then((stats) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, stats))
         .catch((err) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err));
-    }
   };
 
   _handleSDP = async (signal) => {
