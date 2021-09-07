@@ -38,10 +38,11 @@ export default class EmulatorWebrtcView extends Component {
     super(props);
     this.video = React.createRef();
     this.canvas = React.createRef();
+    this.canvasTouch = React.createRef();
     this.isMountedInView = false;
     this.captureScreenMetaData = [];
     this.requireUserInteractionToPlay = false;
-    this.streamCaptureService = new StreamCaptureService(this.props.edgeNodeId, this.video, this.canvas);
+    this.streamCaptureService = new StreamCaptureService(this.props.edgeNodeId, this.video, this.canvas, this.canvasTouch);
   }
 
   componentDidMount() {
@@ -49,7 +50,8 @@ export default class EmulatorWebrtcView extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .on(StreamingEvent.STREAM_CONNECTED, this.onConnect)
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
-      .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
+      .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction)
+      .on(StreamingEvent.TOUCH_START, this.onTouchStart);
     this.setState({ video: false, audio: false }, () => this.props.jsep.startStream());
     // Performing 'health-check' of the stream and reporting events when video is missing
     this.timer = setInterval(() => {
@@ -73,7 +75,8 @@ export default class EmulatorWebrtcView extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .off(StreamingEvent.STREAM_CONNECTED, this.onConnect)
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
-      .off(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
+      .off(StreamingEvent.USER_INTERACTION, this.onUserInteraction)
+      .off(StreamingEvent.TOUCH_START, this.onTouchStart);
     this.props.jsep.disconnect();
   }
 
@@ -142,6 +145,24 @@ export default class EmulatorWebrtcView extends Component {
     if (this.isMountedInView && this.video.current && this.video.current.paused) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
     }
+  };
+
+  onTouchStart = (event) => {
+    if (this.touchTimer !== undefined) {
+      clearInterval(this.touchTimer);
+    }
+
+    this.touchTimer = setInterval((startTime, giveUpAfter) => {
+      const foundCircle = this.streamCaptureService.captureTouch(event.x, event.y);
+      if (foundCircle) {
+        console.log("Found circle: ", foundCircle, new Date().getTime() - startTime, "ms");
+        clearInterval(this.touchTimer);
+      }
+      if (new Date().getTime() > startTime + giveUpAfter) {
+        console.log("Did not find circle within the alloted time");
+        clearInterval(this.touchTimer);
+      }
+    }, 1, new Date().getTime(), 1000);
   };
 
   onDisconnect = () => {
@@ -278,6 +299,19 @@ export default class EmulatorWebrtcView extends Component {
           alignItems: 'center'
         }}
       >
+      <canvas
+        style={{ display: 'none' }}
+        ref={this.canvasTouch}
+        style={{
+          position: 'fixed',
+          margin: 'auto',
+          width: '50%',
+          width: '27',
+          height: '27',
+        }}
+        height="27"
+        width="27"
+      />
         <video
           ref={this.video}
           style={style}

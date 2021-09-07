@@ -112,6 +112,15 @@ export default class StreamingEvent {
     return 'error-browser';
   }
 
+
+  /**
+   * Event fired when a touch has started
+   * @return {string}
+   */
+   static get TOUCH_START() {
+    return 'touch-start';
+  }
+
   /**
    * Event that is fire when the SDK receiving the edge node are ready to accept a connection.
    * @return {string}

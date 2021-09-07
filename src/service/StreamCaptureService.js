@@ -33,12 +33,121 @@ export default class StreamCaptureService {
    * @param {string} edgeNodeId
    * @param video Reference to HTML Video element
    * @param canvas Reference to HTML Canvas element
+   * @param canvas Reference to HTML CanvasTouch element
    */
-  constructor(edgeNodeId, video, canvas) {
+  constructor(edgeNodeId, video, canvas, canvasTouch) {
     this.edgeNodeId = edgeNodeId;
     this.video = video;
     this.canvas = canvas;
+    this.canvasTouch = canvasTouch;
   }
+
+  /**
+   * Capture the stream <video> element and check if the there is a circle at x y.
+   * @param {int} x coordinate of first click
+   * @param {int} y coordinate of first click
+   * @returns {boolean}
+   */
+   captureTouch = (x, y) => {
+    if (this.canvasTouch.current && this.video.current) {
+      const canvasWidth = this.canvasTouch.current.width;
+
+      const ctx = this.canvasTouch.current.getContext('2d');
+
+      ctx.drawImage(this.video.current, x + 1 - canvasWidth / 2, y + 1 - canvasWidth / 2, canvasWidth, canvasWidth, 0, 0, canvasWidth, canvasWidth);
+
+      var frame = ctx.getImageData(0, 0, canvasWidth, canvasWidth);
+      var length = frame.data.length;
+  
+      for (let i = 0; i < length; i += 4) {
+        const red = frame.data[i + 0];
+        const green = frame.data[i + 1];
+        const blue = frame.data[i + 2];
+
+        frame.data[i] = (red + green + blue) / 3;
+        frame.data[i+1] = (red + green + blue) / 3;
+        frame.data[i+2] = (red + green + blue) / 3;
+      }
+      ctx.putImageData(frame, 0, 0);
+
+
+      const rawImage = ctx.getImageData(0, 0, canvasWidth, canvasWidth);
+      this.pixelData = ctx.getImageData(0,0,canvasWidth, canvasWidth);
+
+      ctx.clearRect(0, 0, canvasWidth, canvasWidth);
+
+      this.ctxDimensions = {};
+      this.ctxDimensions.width = canvasWidth;
+      this.ctxDimensions.height = canvasWidth;
+
+      this.edgeDetection(ctx, canvasWidth, canvasWidth);
+
+      frame = ctx.getImageData(0, 0, canvasWidth, canvasWidth);
+      length = frame.data.length;
+  
+      const radius = 11;
+      var hits = 0;
+      const points = new Set()
+
+      for (let angle = 0; angle < 360; angle+=6) {
+        var xa = Math.round(radius * Math.sin(Math.PI * 2 * angle / 360) + canvasWidth / 2);
+        var ya = Math.round(radius * Math.cos(Math.PI * 2 * angle / 360) + canvasWidth / 2);
+
+        if (!points.has(xa + ya * canvasWidth)) {
+          const value = frame.data[(xa + ya * canvasWidth) * 4];
+          if (value !== undefined && value > 0) {
+            hits += 1;
+          }
+          
+          points.add(xa + ya * canvasWidth);
+        }
+      }
+
+      return hits / points.size > 0.5;
+    }
+   }
+
+   edgeDetection = function(ctx, canvasWidth) {
+    this.threshold = 30;
+
+     for (let y = 0; y < this.pixelData.height; y++) {
+       for (let x = 0; x < this.pixelData.width; x++) {
+         const index = (x + y * canvasWidth) * 4;
+         const pixel = this.pixelData.data[index + 2];
+
+         const left = this.pixelData.data[index - 4];
+         const right = this.pixelData.data[index + 4];
+         const top = this.pixelData.data[index - (canvasWidth * 4)];
+         const bottom = this.pixelData.data[index + (canvasWidth * 4)];
+
+         if (pixel > left + this.threshold) {
+           this.plotPoint(ctx, x, y);
+         } else if (pixel < left - this.threshold) {
+           this.plotPoint(ctx, x, y);
+         } else if (pixel > right + this.threshold) {
+           this.plotPoint(ctx, x, y);
+         } else if (pixel < right - this.threshold) {
+           this.plotPoint(ctx, x, y);
+         } else if (pixel > top + this.threshold) {
+           this.plotPoint(ctx, x, y);
+         } else if (pixel < top - this.threshold) {
+           this.plotPoint(ctx, x, y);
+         } else if (pixel > bottom + this.threshold) {
+           this.plotPoint(ctx, x, y);
+         } else if (pixel < bottom - this.threshold) {
+           this.plotPoint(ctx, x, y);
+         }
+       }
+     }
+  }
+  
+  plotPoint = function(ctx, x,y){
+      ctx.beginPath();
+      ctx.arc(x, y, 0.5, 0, 2 * Math.PI, false);
+      ctx.fillStyle = '#FF0000';
+      ctx.fill();
+      ctx.beginPath();
+  };
 
   /**
    * Capture the stream <video> element and check if the video stream is a black or grey.
