@@ -39,7 +39,7 @@ class ExtendedEventEmitter extends EventEmitter {
    */
   emit(event, data) {
     if (Logger.isVerboseEnabled() && event !== StreamingEvent.LOG) {
-      // Event all event except for the StreamingEvent.LOG since that has already been logged out .
+      // Emit all events except for StreamingEvent.LOG since that has been logged out already.
       console.info('Streaming SDK:', event, data);
     }
     this.invokeTestFrameworkRawEventCallback(event, data);
