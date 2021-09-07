@@ -27,6 +27,7 @@ export default class Logger {
    * @return {boolean}
    */
   static disabledVerboseMode() {
+    (window || {}).applandStreamingVerboseModeEnabled = false;
     return Logger.isVerboseEnabled();
   }
 
