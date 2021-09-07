@@ -42,13 +42,12 @@ class ExtendedEventEmitter extends EventEmitter {
       // Event all event except for the StreamingEvent.LOG since that has already been logged out .
       console.info('Streaming SDK:', event, data);
     }
-
     this.invokeTestFrameworkRawEventCallback(event, data);
     return this._emit(event, data);
   }
 
   /**
-   * Private version of the emit, should not be called outside this cllass
+   * Private version of the emit, should not be called outside this file
    * @param {string} event
    * @param {*} data
    * @return {ExtendedEventEmitter}
