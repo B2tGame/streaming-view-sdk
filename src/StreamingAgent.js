@@ -14,13 +14,12 @@ export default class StreamingAgent extends Component {
   static propTypes = {
     apiEndpoint: PropTypes.string.isRequired,
     pingInterval: PropTypes.number,
-    enableDebug: PropTypes.bool,
     internalSession: PropTypes.bool
   };
 
   constructor(props) {
     super(props);
-    this.logger = new Logger(this.props.enableDebug);
+    this.logger = new Logger();
     this.connection = {};
   }
 

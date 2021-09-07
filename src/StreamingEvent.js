@@ -1,10 +1,59 @@
 import EventEmitter from 'eventemitter3';
+import Logger from './Logger';
 
 /**
  * Extend Event Emitter with an emit that always send the event to 'event' target
  */
 class ExtendedEventEmitter extends EventEmitter {
+
+  /**
+   * @param {string} edgeNodeId
+   */
+  constructor(edgeNodeId = undefined) {
+    super();
+    this.edgeNodeId = edgeNodeId;
+  }
+
+  /**
+   * Check if a debug method called applandStreamingRawEventCallback exist, if so invoke it with the raw event data.
+   * Example implementation in puppeteer test framework.
+   * ```
+   * await browser.page().exposeFunction('applandStreamingRawEventCallback', (edgeNodeId, event, data) => {
+   *   console.log(edgeNodeId, event, data);
+   * });
+   * ```
+   * @param {string} type
+   * @param {*} event
+   */
+  invokeTestFrameworkRawEventCallback(type, event) {
+    if ((window || {}).applandStreamingRawEventCallback) {
+      (window || {}).applandStreamingRawEventCallback(this.edgeNodeId, type, event);
+    }
+  }
+
+  /**
+   * Event an event
+   * @param {string} event
+   * @param {*} data
+   * @return {ExtendedEventEmitter}
+   */
   emit(event, data) {
+    if (Logger.isVerboseEnabled() && event !== StreamingEvent.LOG) {
+      // Emit all events except for StreamingEvent.LOG since that has been logged out already.
+      console.info('Streaming SDK:', event, data);
+    }
+    this.invokeTestFrameworkRawEventCallback(event, data);
+    return this._emit(event, data);
+  }
+
+  /**
+   * Private version of the emit, should not be called outside this file
+   * @param {string} event
+   * @param {*} data
+   * @return {ExtendedEventEmitter}
+   * @private
+   */
+  _emit(event, data) {
     super.emit('event', event, data);
     super.emit(event, data);
     return this;
@@ -16,8 +65,8 @@ class ExtendedEventEmitter extends EventEmitter {
    * @param {function} callback Callback, argument list data payload for each event in the same order as the events list
    */
   on(events, callback) {
-    if(!Array.isArray(events)) {
-      return super.on(events, callback)
+    if (!Array.isArray(events)) {
+      return super.on(events, callback);
     } else {
       const eventData = {};
       super.on('event', (event, data) => {
@@ -436,7 +485,7 @@ export default class StreamingEvent {
    */
   static edgeNode(edgeNodeId) {
     if (edgeNodeEventEmitter[edgeNodeId] === undefined) {
-      edgeNodeEventEmitter[edgeNodeId] = new ExtendedEventEmitter();
+      edgeNodeEventEmitter[edgeNodeId] = new ExtendedEventEmitter(edgeNodeId);
       this.emit(StreamingEvent.NEW_EDGE_NODE, edgeNodeId);
     }
     return edgeNodeEventEmitter[edgeNodeId];
@@ -502,10 +551,9 @@ export default class StreamingEvent {
    */
   static emit(event, data) {
     globalEventEmitter.emit(event, data);
-
     for (let edgeNodeId in edgeNodeEventEmitter) {
       if (edgeNodeEventEmitter[edgeNodeId]) {
-        edgeNodeEventEmitter[edgeNodeId].emit(event, data);
+        edgeNodeEventEmitter[edgeNodeId]._emit(event, data);
       }
     }
   }
