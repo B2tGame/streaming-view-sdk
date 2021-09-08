@@ -25,5 +25,5 @@ phases:
        - git push --set-upstream origin $CODEBUILD_SOURCE_VERSION
        - git push origin --tags
        - "echo \"Build successful, create GIT tag: `cat src/build-info.json`\""
-       - "cd ../rob0ui"
+       - "cd ../"
        - ls -lsha
