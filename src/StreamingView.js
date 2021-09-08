@@ -142,7 +142,7 @@ export default class StreamingView extends Component {
       })
       .on([StreamingEvent.STREAM_WEBRTC_READY, StreamingEvent.STREAM_EMULATOR_READY], ([onUserInteractionCallback]) => {
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
-      })
+      });
 
     StreamingController({
       apiEndpoint: apiEndpoint,
@@ -182,8 +182,14 @@ export default class StreamingView extends Component {
   }
 
   componentWillUnmount() {
-    this.logger.info("StreamingView: componentWillUnmount");
+    this.logger.info('StreamingView component will unmount', {
+      measurement: this.measurement ? "destroy": "not-exists",
+      websocket: this.streamSocket ? "destroy": "not-exists",
+      blackScreenDetector: this.blackScreenDetector ? "destroy": "not-exists",
+      logQueueService: this.LogQueueService ? "destroy": "not-exists"
+    });
     this.isMountedInView = false;
+
     if (this.measurement) {
       this.measurement.destroy();
     }
@@ -193,16 +199,16 @@ export default class StreamingView extends Component {
     if (this.blackScreenDetector) {
       this.blackScreenDetector.destroy();
     }
-
     if (this.LogQueueService) {
-      setTimeout(() => {
-        this.LogQueueService.destroy();
-      }, 100);
+      this.LogQueueService.destroy();
     }
     window.removeEventListener('resize', this.onResize);
     window.removeEventListener('error', this.onError);
-    StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
+    setTimeout(() => {
+      StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
+    }, 500)
   }
+
   /**
    * Update the state parameter heigth and width when screen size is changeing.
    */
@@ -339,7 +345,7 @@ export default class StreamingView extends Component {
           </p>
         );
       default:
-        return <p style={{ color: 'white' }}  className={'streaming-view-loading-edge-node'}>Loading EdgeNode Stream</p>;
+        return <p style={{ color: 'white' }} className={'streaming-view-loading-edge-node'}>Loading EdgeNode Stream</p>;
     }
   }
 }
