@@ -27,7 +27,7 @@ export default class Measurement {
     this.metricsFramesDecodedPerSecond = new Metric();
     this.metricsInterFrameDelayStandardDeviation = new Metric();
     this.framesDecodedPerSecondHistogram = new FramePerSecondHistogram();
-
+    this.isClassificationReportCreated = false;
 
     StreamingEvent.edgeNode(edgeNodeId)
       .on(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
@@ -153,7 +153,7 @@ export default class Measurement {
       .off(StreamingEvent.STREAM_RESUMED, this.onStreamResumed)
       .off(StreamingEvent.EMULATOR_CONFIGURATION, this.onEmulatorConfiguration)
       .off(StreamingEvent.STREAM_TERMINATED, this.onStreamTerminated);
-
+    this.createClassificationReport();
     if (this.streamWebRtc) {
       StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
       this.streamWebRtc.off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
@@ -186,6 +186,15 @@ export default class Measurement {
   };
 
   onStreamTerminated = () => {
+    this.createClassificationReport();
+  };
+
+  createClassificationReport() {
+    if (this.isClassificationReportCreated) {
+      return;
+    }
+    this.isClassificationReportCreated = true;
+
     const framesDecodedPerSecondStart = this.metricsFramesDecodedPerSecond.getMetric(Metric.START);
     const framesDecodedPerSecondBeginning = this.metricsFramesDecodedPerSecond.getMetric(Metric.BEGINNING);
     const framesDecodedPerSecondOverall = this.metricsFramesDecodedPerSecond.getMetric(Metric.OVERALL);
@@ -303,7 +312,7 @@ export default class Measurement {
           }
         }
       );
-  };
+  }
 
   onStreamResumed = () => {
     if (!this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
