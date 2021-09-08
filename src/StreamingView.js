@@ -182,6 +182,7 @@ export default class StreamingView extends Component {
   }
 
   componentWillUnmount() {
+    this.logger.info("StreamingView: componentWillUnmount");
     this.isMountedInView = false;
     if (this.measurement) {
       this.measurement.destroy();

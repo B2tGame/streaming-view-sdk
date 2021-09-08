@@ -24,6 +24,7 @@ export default class Measurement {
     this.previousMeasurement = this.defaultPreviousMeasurement();
     this.measurement = {};
     this.webRtcHost = undefined;
+    this.webRtcIntervalHandler = undefined;
     this.metricsFramesDecodedPerSecond = new Metric();
     this.metricsInterFrameDelayStandardDeviation = new Metric();
     this.framesDecodedPerSecondHistogram = new FramePerSecondHistogram();
@@ -50,7 +51,7 @@ export default class Measurement {
     this.streamWebRtc = new StreamWebRtc(webRtcHost, pingInterval);
     this.streamWebRtc.on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
     StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
-    setInterval(() => {
+    this.webRtcIntervalHandler = setInterval(() => {
       StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
     }, StreamSocket.WEBSOCKET_PING_INTERVAL);
   }
@@ -154,6 +155,10 @@ export default class Measurement {
       .off(StreamingEvent.EMULATOR_CONFIGURATION, this.onEmulatorConfiguration)
       .off(StreamingEvent.STREAM_TERMINATED, this.onStreamTerminated);
     this.createClassificationReport();
+    if (this.webRtcIntervalHandler) {
+      clearInterval(this.webRtcIntervalHandler);
+      this.webRtcIntervalHandler = undefined;
+    }
     if (this.streamWebRtc) {
       StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
       this.streamWebRtc.off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
