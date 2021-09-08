@@ -13,9 +13,11 @@ export default class Measurement {
   /**
    *
    * @param {string} edgeNodeId
+   * @param {Logger} logger
    */
-  constructor(edgeNodeId) {
+  constructor(edgeNodeId, logger) {
     this.edgeNodeId = edgeNodeId;
+    this.logger = logger;
     this.networkRoundTripTime = 0;
     this.webrtcRoundTripTime = 0;
     this.webrtcRoundTripTimeValues = [];
@@ -145,6 +147,7 @@ export default class Measurement {
   }
 
   destroy() {
+    this.logger.info("measurement module is destroyed");
     StreamingEvent.edgeNode(this.edgeNodeId)
       .off(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
       .off(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
@@ -196,8 +199,10 @@ export default class Measurement {
 
   createClassificationReport() {
     if (this.isClassificationReportCreated) {
+      this.logger.info("classification report already created");
       return;
     }
+    this.logger.info("create classification report");
     this.isClassificationReportCreated = true;
 
     const framesDecodedPerSecondStart = this.metricsFramesDecodedPerSecond.getMetric(Metric.START);

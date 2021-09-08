@@ -112,7 +112,7 @@ export default class StreamingView extends Component {
     this.blackScreenDetector = new BlackScreenDetector(edgeNodeId, this.streamingViewId);
 
     this.logger = new Logger();
-    this.measurement = new Measurement(edgeNodeId);
+    this.measurement = new Measurement(edgeNodeId, this.logger);
 
     if (onEvent) {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
@@ -183,10 +183,10 @@ export default class StreamingView extends Component {
 
   componentWillUnmount() {
     this.logger.info('StreamingView component will unmount', {
-      measurement: this.measurement ? "destroy": "not-exists",
-      websocket: this.streamSocket ? "destroy": "not-exists",
-      blackScreenDetector: this.blackScreenDetector ? "destroy": "not-exists",
-      logQueueService: this.LogQueueService ? "destroy": "not-exists"
+      measurement: this.measurement ? "should-be-destroy": "skip",
+      websocket: this.streamSocket ? "should-be-destroy": "skip",
+      blackScreenDetector: this.blackScreenDetector ? "should-be-destroy": "skip",
+      logQueueService: this.LogQueueService ? "should-be-destroy": "skip"
     });
     this.isMountedInView = false;
 
