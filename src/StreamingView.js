@@ -112,7 +112,7 @@ export default class StreamingView extends Component {
     this.blackScreenDetector = new BlackScreenDetector(edgeNodeId, this.streamingViewId);
 
     this.logger = new Logger();
-    this.measurement = new Measurement(edgeNodeId);
+    this.measurement = new Measurement(edgeNodeId, this.logger);
 
     if (onEvent) {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
@@ -142,7 +142,7 @@ export default class StreamingView extends Component {
       })
       .on([StreamingEvent.STREAM_WEBRTC_READY, StreamingEvent.STREAM_EMULATOR_READY], ([onUserInteractionCallback]) => {
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
-      })
+      });
 
     StreamingController({
       apiEndpoint: apiEndpoint,
@@ -182,7 +182,14 @@ export default class StreamingView extends Component {
   }
 
   componentWillUnmount() {
+    this.logger.info('StreamingView component will unmount', {
+      measurement: this.measurement ? "should-be-destroy": "skip",
+      websocket: this.streamSocket ? "should-be-destroy": "skip",
+      blackScreenDetector: this.blackScreenDetector ? "should-be-destroy": "skip",
+      logQueueService: this.LogQueueService ? "should-be-destroy": "skip"
+    });
     this.isMountedInView = false;
+
     if (this.measurement) {
       this.measurement.destroy();
     }
@@ -192,14 +199,16 @@ export default class StreamingView extends Component {
     if (this.blackScreenDetector) {
       this.blackScreenDetector.destroy();
     }
-
     if (this.LogQueueService) {
       this.LogQueueService.destroy();
     }
     window.removeEventListener('resize', this.onResize);
     window.removeEventListener('error', this.onError);
-    StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
+    setTimeout(() => {
+      StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
+    }, 500)
   }
+
   /**
    * Update the state parameter heigth and width when screen size is changeing.
    */
@@ -336,7 +345,7 @@ export default class StreamingView extends Component {
           </p>
         );
       default:
-        return <p style={{ color: 'white' }}  className={'streaming-view-loading-edge-node'}>Loading EdgeNode Stream</p>;
+        return <p style={{ color: 'white' }} className={'streaming-view-loading-edge-node'}>Loading EdgeNode Stream</p>;
     }
   }
 }

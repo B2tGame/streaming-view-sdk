@@ -202,6 +202,7 @@ class Emulator extends Component {
    * @param {string} cause
    */
   reload(cause) {
+    this.props.logger.info("stream not working, request reload");
     if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
       this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
       if (this.reloadCount >= this.props.maxConnectionRetries) {
