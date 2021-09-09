@@ -138,8 +138,8 @@ export default class Metric {
    * @return {number}
    */
   getMetric(key, timestamp = undefined) {
+    console.log("getMetric", JSON.stringify(key));
     const metric = key && key.id ? this.metrics[key.id] : undefined;
-    console.log("getMetric", key);
     if (metric && (metric.lastValueTime - metric.firstValueTime) >= key.requiredWindow) {
       if (key.mode === 'start') {
         return metric.sum / metric.count;
