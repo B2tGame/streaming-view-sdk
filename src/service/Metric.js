@@ -138,17 +138,19 @@ export default class Metric {
    * @return {number}
    */
   getMetric(key, timestamp = undefined) {
-    const metric = key && key.id ? this.metrics[key.id] : undefined;
-    if (metric && (metric.lastValueTime - metric.firstValueTime) >= key.requiredWindow) {
-      if (key.mode === 'start') {
-        return metric.sum / metric.count;
-      } else if (key.mode === 'end') {
-        const currentTimestamp = this.getReferenceTime(timestamp);
-        const metrics = metric.raw
-          .filter((rec) => (currentTimestamp - rec.timestamp) <= -key.start)
-          .filter((rec) => (currentTimestamp - rec.timestamp) >= -key.end)
-          .map((rec) => rec.value);
-        return metrics.reduce((a, b) => a + b, 0) / metrics.length;
+    if (key && key.id && this.hasReferenceTime()) {
+      const metric = this.metrics[key.id];
+      if (metric && (metric.lastValueTime - metric.firstValueTime) >= key.requiredWindow) {
+        if (key.mode === 'start') {
+          return metric.sum / metric.count;
+        } else if (key.mode === 'end') {
+          const currentTimestamp = this.getReferenceTime(timestamp);
+          const metrics = metric.raw
+            .filter((rec) => (currentTimestamp - rec.timestamp) <= -key.start)
+            .filter((rec) => (currentTimestamp - rec.timestamp) >= -key.end)
+            .map((rec) => rec.value);
+          return metrics.reduce((a, b) => a + b, 0) / metrics.length;
+        }
       }
     }
     return undefined;
