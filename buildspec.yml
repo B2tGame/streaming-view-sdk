@@ -12,7 +12,8 @@ phases:
        - "git config --global user.name 'AWS CodeBuild'"
        - "git checkout $CODEBUILD_SOURCE_VERSION"
        - "for i in $(seq 1 99); do if ! git tag | grep \"`date \"+%Y%m%d\"`-$i\" > /dev/null; then date \"+%Y%m%d-$i\" | tee /tmp/build-info; break; fi; done"
-       - 'echo "{\"tag\":\"`cat /tmp/build-info`\"}" | tee src/build-info.json'
+       - export TAG=`cat /tmp/build-info`
+       - 'echo "{\"tag\":\"$TAG\"}" | tee src/build-info.json'
   build:
     commands:
        - npm run build
@@ -20,10 +21,15 @@ phases:
     commands:
        - git add src/build-info.json
        - git status
-       - "git commit -am \"Build System: Building new release candidate `cat /tmp/build-info`\""
-       - "git tag `cat /tmp/build-info`"
+       - "git commit -am \"Build System: Building new release candidate $TAG\""
+       - git tag $TAG
        - git push --set-upstream origin $CODEBUILD_SOURCE_VERSION
        - git push origin --tags
-       - "echo \"Build successful, create GIT tag: `cat src/build-info.json`\""
-       - "cd $CODEBUILD_SRC_DIR_rob0ui"
-       - ls -lsha
+       - cd $CODEBUILD_SRC_DIR_rob0ui
+       - export PACKAGE="git+https://appland-node@bitbucket.org/appland/streaming-view-sdk.git";
+       - "jq --arg \"FULL_PACKAGE\" \"$PACKAGE#$TAG\" '.dependencies.\"streaming-view-sdk\" = $FULL_PACKAGE' package.json > package.json.tmp"
+       - mv package.json.tmp package.json
+       - "jq --arg \"FULL_PACKAGE\" \"$PACKAGE#$TAG\" '.packages.\"\".dependencies.\"streaming-view-sdk\" = $FULL_PACKAGE' package-lock.json | jq --arg \"FULL_PACKAGE\" \"$PACKAGE#$TAG\" '.packages.\"node_modules/streaming-view-sdk\".resolved = $FULL_PACKAGE' | jq --arg \"FULL_PACKAGE\" \"$PACKAGE#$CODEBUILD_RESOLVED_SOURCE_VERSION\" '.dependencies.\"streaming-view-sdk\".version = $FULL_PACKAGE' | jq --arg \"FULL_PACKAGE\" \"streaming-view-sdk@$PACKAGE#$TAG\" '.dependencies.\"streaming-view-sdk\".from = $FULL_PACKAGE' > package-lock.json.tmp"
+       - mv package-lock.json.tmp package-lock.json
+       - git diff
+       - "echo \"Build successful, create GIT tag: $TAG\""
