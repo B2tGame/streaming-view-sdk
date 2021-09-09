@@ -17,15 +17,16 @@ phases:
   build:
     commands:
        - npm run build
-  post_build:
-    commands:
        - git add src/build-info.json
        - git status
        - "git commit -am \"Build System: Building new release candidate $TAG\""
        - git tag $TAG
        - git push --set-upstream origin $CODEBUILD_SOURCE_VERSION
        - git push origin --tags
+  post_build:
+    commands:
        - cd $CODEBUILD_SRC_DIR_rob0ui
+       - "git checkout $CODEBUILD_SOURCE_VERSION_rob0ui"
        - export PACKAGE="git+https://appland-node@bitbucket.org/appland/streaming-view-sdk.git";
        - "jq --arg \"FULL_PACKAGE\" \"$PACKAGE#$TAG\" '.dependencies.\"streaming-view-sdk\" = $FULL_PACKAGE' package.json > package.json.tmp"
        - mv package.json.tmp package.json
@@ -33,5 +34,5 @@ phases:
        - mv package-lock.json.tmp package-lock.json
        - git diff
        - "git commit -am \"Build System: Update of the Appland SDK version $TAG\""
-       - "test \"$UPDATE_SDK_ON_ROB0_APPLAND_UI\" = 'true' && git push || echo 'skip update of the Rob0 Appland UI'"
+       - "test \"$UPDATE_SDK_ON_ROB0_APPLAND_UI\" = 'true' && git push --set-upstream origin $CODEBUILD_SOURCE_VERSION_rob0ui || echo 'skip update of the Rob0 Appland UI'"
        - "echo \"Build successful, create GIT tag: $TAG\""
