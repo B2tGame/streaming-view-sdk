@@ -32,7 +32,6 @@ phases:
        - mv package.json.tmp package.json
        - "jq --arg \"FULL_PACKAGE\" \"$PACKAGE#$TAG\" '.packages.\"\".dependencies.\"streaming-view-sdk\" = $FULL_PACKAGE' package-lock.json | jq --arg \"FULL_PACKAGE\" \"$PACKAGE#$CODEBUILD_RESOLVED_SOURCE_VERSION\" '.packages.\"node_modules/streaming-view-sdk\".resolved = $FULL_PACKAGE' | jq --arg \"FULL_PACKAGE\" \"$PACKAGE#$CODEBUILD_RESOLVED_SOURCE_VERSION\" '.dependencies.\"streaming-view-sdk\".version = $FULL_PACKAGE' | jq --arg \"FULL_PACKAGE\" \"streaming-view-sdk@$PACKAGE#$TAG\" '.dependencies.\"streaming-view-sdk\".from = $FULL_PACKAGE' > package-lock.json.tmp"
        - mv package-lock.json.tmp package-lock.json
-       - git diff
        - "git commit -am \"Build System: Update of the Appland SDK version $TAG\""
        - "test \"$UPDATE_SDK_ON_ROB0_APPLAND_UI\" = 'true' && git push --set-upstream origin $CODEBUILD_SOURCE_VERSION_rob0ui || echo 'skip update of the Rob0 Appland UI'"
        - "echo \"Build successful, create GIT tag: $TAG\""
