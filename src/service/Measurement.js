@@ -15,8 +15,9 @@ export default class Measurement {
    * @param {string} edgeNodeId
    * @param {Logger} logger
    */
-  constructor(edgeNodeId, logger) {
+  constructor(edgeNodeId, streamingViewId, logger) {
     this.edgeNodeId = edgeNodeId;
+    this.streamingViewId = streamingViewId;
     this.logger = logger;
     this.networkRoundTripTime = 0;
     this.webrtcRoundTripTime = 0;
@@ -204,34 +205,14 @@ export default class Measurement {
     }
     this.logger.info('create classification report');
     this.isClassificationReportCreated = true;
-    console.log("createClassificationReport:1");
-
     const framesDecodedPerSecondStart = this.metricsFramesDecodedPerSecond.getMetric(Metric.START);
-    console.log("createClassificationReport:2");
-
     const framesDecodedPerSecondBeginning = this.metricsFramesDecodedPerSecond.getMetric(Metric.BEGINNING);
-    console.log("createClassificationReport:3");
-
     const framesDecodedPerSecondOverall = this.metricsFramesDecodedPerSecond.getMetric(Metric.OVERALL);
-    console.log("createClassificationReport:4");
-
     const framesDecodedPerSecondCurrent = this.metricsFramesDecodedPerSecond.getMetric(Metric.CURRENT);
-    console.log("createClassificationReport:5");
-
-
     const interFrameDelayStandardDeviationStart = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.START);
-    console.log("createClassificationReport:6");
-
     const interFrameDelayStandardDeviationBeginning = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.BEGINNING);
-    console.log("createClassificationReport:7");
-
     const interFrameDelayStandardDeviationOverall = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.OVERALL);
-    console.log("createClassificationReport:8");
-
     const interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.CURRENT);
-    console.log("createClassificationReport:9");
-
-
     const classification = () => {
       // Unsupported device, for now only chrome is supported
       if (framesDecodedPerSecondStart === undefined || interFrameDelayStandardDeviationStart === undefined) {
@@ -317,7 +298,6 @@ export default class Measurement {
 
       return 'no-classification-detected';
     };
-    console.log("createClassificationReport:10");
 
     StreamingEvent.edgeNode(this.edgeNodeId)
       .emit(
@@ -325,6 +305,7 @@ export default class Measurement {
         {
           classification: classification(),
           duration: this.metricsFramesDecodedPerSecond.getReferenceTime(),
+          streamingViewId: this.streamingViewId,
           framesDecodedPerSecond: {
             start: Measurement.roundToDecimals(framesDecodedPerSecondStart),
             beginning: Measurement.roundToDecimals(framesDecodedPerSecondBeginning),
