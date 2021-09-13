@@ -57,17 +57,17 @@ export default class StreamCaptureService {
 
     if (this.canvasTouch.current && this.video.current) {
       const canvasWidth = this.canvasTouch.current.width;
+      const canvasHeight = this.canvasTouch.current.height;
 
       const ctx = this.canvasTouch.current.getContext('2d');
       ctx.clearRect(0, 0, ctx.width, ctx.height);
-      ctx.drawImage(this.video.current, x + 1 - canvasWidth / 2, y + 1 - canvasWidth / 2, canvasWidth, canvasWidth, 0, 0, canvasWidth, canvasWidth);
+      ctx.drawImage(this.video.current, x + 1 - canvasWidth / 2, y + 1 - canvasHeight / 2, canvasWidth, canvasHeight, 0, 0, canvasWidth, canvasHeight);
 
-      var frame = ctx.getImageData(0, 0, canvasWidth, canvasWidth);
-      var length = frame.data.length;
-
+      let frame = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      let length = frame.data.length;
       
       for (let i = 0; i < length; i += 4) {
-        // Greyscale the click area
+        // Greyscale the click areas blue channel
         const red = frame.data[i + 0];
         const green = frame.data[i + 1];
         const blue = frame.data[i + 2];
@@ -77,38 +77,30 @@ export default class StreamCaptureService {
 
         if (indexX < 0 || emulatorWidth < indexX ||
           indexY < 0 || emulatorHeight < indexY) {
-          frame.data[i] = 0;
-          frame.data[i + 1] = 0;
           frame.data[i + 2] = 0;
         } else {
-          frame.data[i] = (red + green + blue) / 3;
-          frame.data[i + 1] = (red + green + blue) / 3;
           frame.data[i + 2] = (red + green + blue) / 3;
         }
       }
 
-      ctx.putImageData(frame, 0, 0);
-
-      const pixelData = ctx.getImageData(0, 0, canvasWidth, canvasWidth);
-
-      ctx.clearRect(0, 0, canvasWidth, canvasWidth);
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
       this.ctxDimensions = {};
       this.ctxDimensions.width = canvasWidth;
-      this.ctxDimensions.height = canvasWidth;
+      this.ctxDimensions.height = canvasHeight;
 
-      this.edgeDetection(ctx, canvasWidth, pixelData);
+      this.edgeDetection(ctx, canvasWidth, frame);
 
-      frame = ctx.getImageData(0, 0, canvasWidth, canvasWidth);
+      frame = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
       length = frame.data.length;
 
       const radius = 11;
-      var hits = 0;
+      let hits = 0;
       const points = new Set()
 
       for (let angle = 0; angle < 360; angle += 6) {
-        var xa = Math.round(radius * Math.sin(Math.PI * 2 * angle / 360) + canvasWidth / 2);
-        var ya = Math.round(radius * Math.cos(Math.PI * 2 * angle / 360) + canvasWidth / 2);
+        let xa = Math.round(radius * Math.sin(Math.PI * 2 * angle / 360) + canvasWidth / 2);
+        let ya = Math.round(radius * Math.cos(Math.PI * 2 * angle / 360) + canvasWidth / 2);
 
         if (!points.has(xa + ya * canvasWidth)) {
           const value = frame.data[(xa + ya * canvasWidth) * 4];
@@ -124,6 +116,14 @@ export default class StreamCaptureService {
     }
   }
 
+  /**
+   * Detects edges by checking each pixels surrounding pixels difference. And if an edge is detected draw
+   * that edge in a canvas for later analysis.
+   * 
+   * @param {*} ctx The canvas context on which to draw the edges that are detected
+   * @param {*} canvasWidth The width of the canvas
+   * @param {*} pixelData The pixel data to use to determine where edges are located
+   */
   edgeDetection = function (ctx, canvasWidth, pixelData) {
     // Defines how aggresivly the edgedetector should classify an edge
     const threshold = 30;
@@ -159,6 +159,12 @@ export default class StreamCaptureService {
     }
   }
 
+  /**
+   * Draw a point at a given coordinate
+   * @param {*} ctx Canvas on which to draw
+   * @param {*} x The x coordinate to draw at
+   * @param {*} y The y coordinate to draw at
+   */
   plotPoint = function (ctx, x, y) {
     ctx.beginPath();
     ctx.arc(x, y, 0.5, 0, 2 * Math.PI, false);

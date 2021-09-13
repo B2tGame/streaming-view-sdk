@@ -114,7 +114,7 @@ export default class StreamingEvent {
 
 
   /**
-   * Event fired when a touch has started
+   * Event fired when a touch or click has started
    * @return {string}
    */
    static get TOUCH_START() {
