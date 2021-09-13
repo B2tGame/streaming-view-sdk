@@ -322,8 +322,8 @@ export default class EmulatorWebrtcView extends Component {
         <canvas
           style={{ display: 'none' }}
           ref={this.canvasTouch}
-          height="27"
-          width="27"
+          height='23'
+          width='23'
         />
       </div>
     );

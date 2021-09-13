@@ -60,7 +60,6 @@ export default class StreamCaptureService {
       const canvasHeight = this.canvasTouch.current.height;
 
       const ctx = this.canvasTouch.current.getContext('2d');
-      ctx.clearRect(0, 0, ctx.width, ctx.height);
       ctx.drawImage(this.video.current, x + 1 - canvasWidth / 2, y + 1 - canvasHeight / 2, canvasWidth, canvasHeight, 0, 0, canvasWidth, canvasHeight);
 
       let frame = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
@@ -84,21 +83,17 @@ export default class StreamCaptureService {
       }
 
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-      this.ctxDimensions = {};
-      this.ctxDimensions.width = canvasWidth;
-      this.ctxDimensions.height = canvasHeight;
-
       this.edgeDetection(ctx, canvasWidth, frame);
 
       frame = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
-      length = frame.data.length;
 
       const radius = 11;
       let hits = 0;
       const points = new Set()
 
       for (let angle = 0; angle < 360; angle += 6) {
+        // Sum up the points on the circle that is marked as having an edge
+        
         let xa = Math.round(radius * Math.sin(Math.PI * 2 * angle / 360) + canvasWidth / 2);
         let ya = Math.round(radius * Math.cos(Math.PI * 2 * angle / 360) + canvasWidth / 2);
 
