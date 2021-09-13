@@ -302,19 +302,6 @@ export default class EmulatorWebrtcView extends Component {
           alignItems: 'center'
         }}
       >
-      <canvas
-        style={{ display: 'none' }}
-        ref={this.canvasTouch}
-        style={{
-          position: 'fixed',
-          margin: 'auto',
-          width: '50%',
-          width: '27',
-          height: '27',
-        }}
-        height="27"
-        width="27"
-      />
         <video
           ref={this.video}
           style={style}
@@ -331,6 +318,12 @@ export default class EmulatorWebrtcView extends Component {
           ref={this.canvas}
           height={emulatorHeight / StreamCaptureService.CANVAS_SCALE_FACTOR}
           width={emulatorWidth / StreamCaptureService.CANVAS_SCALE_FACTOR}
+        />
+        <canvas
+          style={{ display: 'none' }}
+          ref={this.canvasTouch}
+          height="27"
+          width="27"
         />
       </div>
     );
