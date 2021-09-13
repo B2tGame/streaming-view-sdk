@@ -3,11 +3,14 @@ import React, { Component } from 'react';
 import StreamingEvent from '../../../StreamingEvent';
 import StreamCaptureService from '../../../service/StreamCaptureService';
 
+const rttMeasurementTimeout = 1000; 
+
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
  * establish the video streams.
  */
 export default class EmulatorWebrtcView extends Component {
+
   static propTypes = {
     /** gRPC Endpoint where we can reach the emulator. */
     uri: PropTypes.string.isRequired,
@@ -153,16 +156,16 @@ export default class EmulatorWebrtcView extends Component {
     }
 
     this.touchTimer = setInterval((startTime, giveUpAfter) => {
-      const foundCircle = this.streamCaptureService.captureTouch(event.x, event.y);
+      const foundCircle = this.streamCaptureService.detectTouch(event.x, event.y, this.props.emulatorWidth, this.props.emulatorHeight);
       if (foundCircle) {
-        console.log("Found circle: ", foundCircle, new Date().getTime() - startTime, "ms");
+        const rtt = new Date().getTime() - startTime;
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT, {rtt: rtt});
         clearInterval(this.touchTimer);
       }
       if (new Date().getTime() > startTime + giveUpAfter) {
-        console.log("Did not find circle within the alloted time");
         clearInterval(this.touchTimer);
       }
-    }, 1, new Date().getTime(), 1000);
+    }, 1, new Date().getTime(), rttMeasurementTimeout);
   };
 
   onDisconnect = () => {

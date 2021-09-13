@@ -122,6 +122,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fired when a new RTT value based on a touch has been detected
+   * @return {string}
+   */
+   static get TOUCH_RTT() {
+    return 'touch-rtt';
+  }
+
+  /**
    * Event that is fire when the SDK receiving the edge node are ready to accept a connection.
    * @return {string}
    */
