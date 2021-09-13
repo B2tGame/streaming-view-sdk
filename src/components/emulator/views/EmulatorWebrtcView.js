@@ -3,11 +3,14 @@ import React, { Component } from 'react';
 import StreamingEvent from '../../../StreamingEvent';
 import StreamCaptureService from '../../../service/StreamCaptureService';
 
+const rttMeasurementTimeout = 1000; 
+
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
  * establish the video streams.
  */
 export default class EmulatorWebrtcView extends Component {
+
   static propTypes = {
     /** gRPC Endpoint where we can reach the emulator. */
     uri: PropTypes.string.isRequired,
@@ -38,10 +41,11 @@ export default class EmulatorWebrtcView extends Component {
     super(props);
     this.video = React.createRef();
     this.canvas = React.createRef();
+    this.canvasTouch = React.createRef();
     this.isMountedInView = false;
     this.captureScreenMetaData = [];
     this.requireUserInteractionToPlay = false;
-    this.streamCaptureService = new StreamCaptureService(this.props.edgeNodeId, this.video, this.canvas);
+    this.streamCaptureService = new StreamCaptureService(this.props.edgeNodeId, this.video, this.canvas, this.canvasTouch);
   }
 
   componentDidMount() {
@@ -49,7 +53,8 @@ export default class EmulatorWebrtcView extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .on(StreamingEvent.STREAM_CONNECTED, this.onConnect)
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
-      .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
+      .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction)
+      .on(StreamingEvent.TOUCH_START, this.onTouchStart);
     this.setState({ video: false, audio: false }, () => this.props.jsep.startStream());
     // Performing 'health-check' of the stream and reporting events when video is missing
     this.timer = setInterval(() => {
@@ -73,7 +78,8 @@ export default class EmulatorWebrtcView extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .off(StreamingEvent.STREAM_CONNECTED, this.onConnect)
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
-      .off(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
+      .off(StreamingEvent.USER_INTERACTION, this.onUserInteraction)
+      .off(StreamingEvent.TOUCH_START, this.onTouchStart);
     this.props.jsep.disconnect();
   }
 
@@ -142,6 +148,24 @@ export default class EmulatorWebrtcView extends Component {
     if (this.isMountedInView && this.video.current && this.video.current.paused) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
     }
+  };
+
+  onTouchStart = (event) => {
+    if (this.touchTimer !== undefined) {
+      clearInterval(this.touchTimer);
+    }
+
+    this.touchTimer = setInterval((startTime, giveUpAfter) => {
+      const foundCircle = this.streamCaptureService.detectTouch(event.x, event.y, this.props.emulatorWidth, this.props.emulatorHeight);
+      if (foundCircle) {
+        const rtt = new Date().getTime() - startTime;
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT, {rtt: rtt});
+        clearInterval(this.touchTimer);
+      }
+      if (new Date().getTime() > startTime + giveUpAfter) {
+        clearInterval(this.touchTimer);
+      }
+    }, 1, new Date().getTime(), rttMeasurementTimeout);
   };
 
   onDisconnect = () => {
@@ -294,6 +318,12 @@ export default class EmulatorWebrtcView extends Component {
           ref={this.canvas}
           height={emulatorHeight / StreamCaptureService.CANVAS_SCALE_FACTOR}
           width={emulatorWidth / StreamCaptureService.CANVAS_SCALE_FACTOR}
+        />
+        <canvas
+          style={{ display: 'none' }}
+          ref={this.canvasTouch}
+          height='23'
+          width='23'
         />
       </div>
     );

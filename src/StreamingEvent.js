@@ -112,6 +112,23 @@ export default class StreamingEvent {
     return 'error-browser';
   }
 
+
+  /**
+   * Event fired when a touch or click has started
+   * @return {string}
+   */
+   static get TOUCH_START() {
+    return 'touch-start';
+  }
+
+  /**
+   * Event fired when a new RTT value based on a touch has been detected
+   * @return {string}
+   */
+   static get TOUCH_RTT() {
+    return 'touch-rtt';
+  }
+
   /**
    * Event that is fire when the SDK receiving the edge node are ready to accept a connection.
    * @return {string}
