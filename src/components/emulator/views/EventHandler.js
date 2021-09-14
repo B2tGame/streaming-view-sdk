@@ -8,7 +8,6 @@ import StreamingEvent from '../../../StreamingEvent';
 
 const ORIENTATION_PORTRAIT = 'portrait';
 const ORIENTATION_LANDSCAPE = 'landscape';
-const EMULATOR_WITHOUT_MULTITOUCH = 'emu-30.2.4-android10';
 
 /**
  * A handler that extends a view to send key/mouse events to the emulator.
@@ -66,16 +65,9 @@ export default class EventHandler extends Component {
   };
 
   updateTouchHandler() {
-    if (this.props.emulatorVersion !== EMULATOR_WITHOUT_MULTITOUCH) {
-      this.touchHandler = function(type, allEvents, events, firstChangedEvent) {
-        return this.sendMultiTouch(type, allEvents, events);
-      };
-    } else {
-      this.touchHandler = function(type, allEvents, events, firstChangedEvent) {
-        this.mouseDown = type !== 'touchend';
-        return this.sendMouse(this.calculateTouchEmulatorCoordinates(firstChangedEvent), type !== 'touchend' ? 0 : 1);
-      };
-    }
+    this.touchHandler = function(type, allEvents, events, firstChangedEvent) {
+      return this.sendMultiTouch(type, allEvents, events);
+    };
   }
 
   componentDidUpdate() {
