@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import StreamingEvent from '../../../StreamingEvent';
 import StreamCaptureService from '../../../service/StreamCaptureService';
 
-const rttMeasurementTimeout = 1000; 
+const rttMeasurementTimeout = 500;
 
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
