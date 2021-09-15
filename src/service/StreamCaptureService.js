@@ -53,52 +53,54 @@ export default class StreamCaptureService {
    * @returns {boolean}
    */
   detectTouch = (x, y, emulatorWidth, emulatorHeight) => {
-    const requiredPixelRatio = 0.5;
+    const requiredPixelRatio = 0.8;
 
     if (this.canvasTouch.current && this.video.current) {
       const canvasWidth = this.canvasTouch.current.width;
       const canvasHeight = this.canvasTouch.current.height;
 
-      const ctx = this.canvasTouch.current.getContext('2d');
+      const ctx = this.canvasTouch.current.getContext('2d', {
+        alpha: false
+      });
       ctx.drawImage(this.video.current, x + 1 - canvasWidth / 2, y + 1 - canvasHeight / 2, canvasWidth, canvasHeight, 0, 0, canvasWidth, canvasHeight);
 
-      let frame = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
-      let length = frame.data.length;
+      let frame = ctx.getImageData(0, 0, canvasWidth, canvasHeight).data
+      let length = frame.length; 
       
       for (let i = 0; i < length; i += 4) {
-        // Greyscale the click areas blue channel
-        const red = frame.data[i + 0];
-        const green = frame.data[i + 1];
-        const blue = frame.data[i + 2];
+        // Greyscale the click areas red channel
+        const red = frame[i + 0];
+        const green = frame[i + 1];
+        const blue = frame[i + 2];
 
         const indexX = Math.floor(((i / 4) % canvasWidth) + x + 1 - canvasWidth / 2);
         const indexY = Math.floor(((i / 4) / canvasWidth) + y + 1 - canvasWidth / 2);
 
         if (indexX < 0 || emulatorWidth < indexX ||
           indexY < 0 || emulatorHeight < indexY) {
-          frame.data[i + 2] = 0;
+          frame[i] = 0;
         } else {
-          frame.data[i + 2] = (red + green + blue) / 3;
+          frame[i] = (red + green + blue) / 3;
         }
       }
 
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       this.edgeDetection(ctx, canvasWidth, frame);
 
-      frame = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      frame = ctx.getImageData(0, 0, canvasWidth, canvasHeight).data;
 
-      const radius = 11;
+      const radius = 10.5;
       let hits = 0;
       const points = new Set()
 
       for (let angle = 0; angle < 360; angle += 6) {
         // Sum up the points on the circle that is marked as having an edge
         
-        let xa = Math.round(radius * Math.sin(Math.PI * 2 * angle / 360) + canvasWidth / 2);
-        let ya = Math.round(radius * Math.cos(Math.PI * 2 * angle / 360) + canvasWidth / 2);
+        let xa = Math.round(radius * Math.sin(Math.PI * 2 * angle / 360) + canvasWidth / 2 - 0.5);
+        let ya = Math.round(radius * Math.cos(Math.PI * 2 * angle / 360) + canvasWidth / 2 - 0.5);
 
         if (!points.has(xa + ya * canvasWidth)) {
-          const value = frame.data[(xa + ya * canvasWidth) * 4];
+          const value = frame[(xa + ya * canvasWidth) * 4];
           if (value !== undefined && value > 0) {
             hits += 1;
           }
@@ -121,17 +123,17 @@ export default class StreamCaptureService {
    */
   edgeDetection = function (ctx, canvasWidth, pixelData) {
     // Defines how aggresivly the edgedetector should classify an edge
-    const threshold = 30;
+    const threshold = 20;
 
-    for (let y = 0; y < pixelData.height; y++) {
-      for (let x = 0; x < pixelData.width; x++) {
+    for (let y = 0; y < pixelData.length / canvasWidth; y++) {
+      for (let x = 0; x < canvasWidth; x++) {
         const index = (x + y * canvasWidth) * 4;
-        const pixel = pixelData.data[index + 2];
+        const pixel = pixelData[index];
 
-        const left = pixelData.data[index - 4];
-        const right = pixelData.data[index + 4];
-        const top = pixelData.data[index - (canvasWidth * 4)];
-        const bottom = pixelData.data[index + (canvasWidth * 4)];
+        const left = pixelData[index - 4];
+        const right = pixelData[index + 4];
+        const top = pixelData[index - (canvasWidth * 4)];
+        const bottom = pixelData[index + (canvasWidth * 4)];
 
         if (pixel > left + threshold) {
           this.plotPoint(ctx, x, y);
