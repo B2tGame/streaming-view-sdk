@@ -101,13 +101,16 @@ class Emulator extends Component {
     /** Emulator Height */
     emulatorHeight: PropTypes.number,
     /** Emulator Version */
-    emulatorVersion: PropTypes.string
+    emulatorVersion: PropTypes.string,
+    /** Defines if touch rtt should be measured */
+    measureTouchRtt: PropTypes.bool
   };
 
   static defaultProps = {
     auth: null,
     poll: false,
-    maxConnectionRetries: Emulator.RELOAD_FAILURE_THRESHOLD
+    maxConnectionRetries: Emulator.RELOAD_FAILURE_THRESHOLD,
+    measureTouchRtt: false
   };
 
   components = {
@@ -239,6 +242,7 @@ class Emulator extends Component {
         enableControl={enableControl}
         logger={this.props.logger}
         edgeNodeId={this.props.edgeNodeId}
+        measureTouchRtt={this.props.measureTouchRtt}
         view={this.components[view] || EmulatorWebrtcView}
       />
     );

@@ -55,7 +55,8 @@ export default class StreamingView extends Component {
       maxConnectionRetries: PropTypes.number, // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
       height: PropTypes.string,
       width: PropTypes.string,
-      pingInterval: PropTypes.number
+      pingInterval: PropTypes.number,
+      measureTouchRtt: PropTypes.bool
     };
   }
 
@@ -67,7 +68,8 @@ export default class StreamingView extends Component {
     enableControl: true,
     volume: 1.0,
     muted: false,
-    pingInterval: StreamWebRtc.WEBRTC_PING_INTERVAL
+    pingInterval: StreamWebRtc.WEBRTC_PING_INTERVAL,
+    measureTouchRtt: false
   };
 
   /**
@@ -335,6 +337,7 @@ export default class StreamingView extends Component {
               logger={this.logger}
               edgeNodeId={edgeNodeId}
               maxConnectionRetries={this.props.maxConnectionRetries}
+              measureTouchRtt={this.props.measureTouchRtt}
             />
           </div>
         );

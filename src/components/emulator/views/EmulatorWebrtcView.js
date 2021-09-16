@@ -28,7 +28,9 @@ export default class EmulatorWebrtcView extends Component {
     emulatorWidth: PropTypes.number,
     /** The height of the screen/video feed provided by the emulator */
     emulatorHeight: PropTypes.number,
-    emulatorVersion: PropTypes.string
+    emulatorVersion: PropTypes.string,
+    /** Defines if touch rtt should be measured */
+    measureTouchRtt: PropTypes.bool
   };
 
   state = {
@@ -53,8 +55,12 @@ export default class EmulatorWebrtcView extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .on(StreamingEvent.STREAM_CONNECTED, this.onConnect)
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
-      .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction)
-      .on(StreamingEvent.TOUCH_START, this.onTouchStart);
+      .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
+
+    if (this.props.measureTouchRtt) {
+      StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.TOUCH_START, this.onTouchStart);
+    }
+
     this.setState({ video: false, audio: false }, () => this.props.jsep.startStream());
     // Performing 'health-check' of the stream and reporting events when video is missing
     this.timer = setInterval(() => {
@@ -78,8 +84,12 @@ export default class EmulatorWebrtcView extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .off(StreamingEvent.STREAM_CONNECTED, this.onConnect)
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
-      .off(StreamingEvent.USER_INTERACTION, this.onUserInteraction)
-      .off(StreamingEvent.TOUCH_START, this.onTouchStart);
+      .off(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
+
+    if (this.props.measureTouchRtt) {
+      StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.TOUCH_START, this.onTouchStart);
+    }
+
     this.props.jsep.disconnect();
   }
 
