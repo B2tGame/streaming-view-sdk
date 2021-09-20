@@ -91,7 +91,7 @@ export default class EmulatorWebrtcView extends Component {
 
     if (this.props.measureTouchRtt) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.TOUCH_START, this.onTouchStart);
-      StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.TOUCH_END, this.onTouchEnd);
+      StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.TOUCH_END, this.onTouchEnd);
     }
 
     this.props.jsep.disconnect();
