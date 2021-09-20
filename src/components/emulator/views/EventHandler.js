@@ -315,6 +315,7 @@ export default class EventHandler extends Component {
       event.nativeEvent.changedTouches,
       event.nativeEvent.changedTouches[0]
     );
+    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_END, this.calculateTouchEmulatorCoordinates(event.nativeEvent));
   };
 
   handleTouchMove = (event) => {
@@ -338,6 +339,7 @@ export default class EventHandler extends Component {
     if (!isMobile && this.mouseDown) {
       this.mouseDown = false;
       this.sendMouse(this.calculateMouseEmulatorCoordinates(event.nativeEvent));
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_END, this.calculateTouchEmulatorCoordinates(event.nativeEvent));
     }
   };
 

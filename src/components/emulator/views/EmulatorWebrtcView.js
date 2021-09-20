@@ -4,6 +4,8 @@ import StreamingEvent from '../../../StreamingEvent';
 import StreamCaptureService from '../../../service/StreamCaptureService';
 
 const rttMeasurementTimeout = 500;
+const touchAnimTime = 200;
+
 
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
@@ -59,6 +61,7 @@ export default class EmulatorWebrtcView extends Component {
 
     if (this.props.measureTouchRtt) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.TOUCH_START, this.onTouchStart);
+      StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.TOUCH_END, this.onTouchEnd);
     }
 
     this.setState({ video: false, audio: false }, () => this.props.jsep.startStream());
@@ -88,6 +91,7 @@ export default class EmulatorWebrtcView extends Component {
 
     if (this.props.measureTouchRtt) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.TOUCH_START, this.onTouchStart);
+      StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.TOUCH_END, this.onTouchEnd);
     }
 
     this.props.jsep.disconnect();
@@ -160,7 +164,17 @@ export default class EmulatorWebrtcView extends Component {
     }
   };
 
+  lastTouchEnd = 0;
+
+  onTouchEnd = () => {
+    this.lastTouchEnd = new Date().getTime();
+  };
+
   onTouchStart = (event) => {
+    if (this.lastTouchEnd + touchAnimTime > new Date().getTime()) {
+      return;
+    }
+
     if (this.touchTimer !== undefined) {
       clearInterval(this.touchTimer);
     }
