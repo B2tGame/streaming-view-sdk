@@ -3,33 +3,31 @@ import StreamingEvent from '../StreamingEvent';
 import StreamWebRtc from '../service/StreamWebRtc';
 import Measurement from '../service/Measurement';
 
-const axios = require('axios').default;
-const CancelToken = axios.CancelToken;
-
 const MEASUREMENT_LEVEL_BROWSER = 'browser-measurement';
 const MEASUREMENT_LEVEL_BASIC = 'basic';
 const MEASUREMENT_LEVEL_ADVANCED = 'advanced';
 
+const MAX_RECOMMENDATION_COUNT = 3;
 const DELAY_DEVICE_INFO_MS = 3000;
-const WEBRTC_TIME_TO_CONNECTED = 10000;
+const WEBRTC_TIME_TO_CONNECTED = 5000;
 const ADVANCED_MEASUREMENT_TIMEOUT = 5000;
-const DOWNLOAD_SPEED_RACE_FOR_MS = 2000;
-const DOWNLOAD_DATASOURCE_NAME = 'random4000x4000.jpg';
 
 const defaultNetworkConnectivity = {
   roundTripTime: undefined,
   webrtcRoundTripTime: undefined,
   downloadSpeed: undefined,
   recommendedRegion: undefined,
-  measurementLevel: undefined
+  recommendedRegions: undefined,
+  measurementLevel: undefined,
 };
 let networkConnectivity = { ...defaultNetworkConnectivity };
 let downloadSpeed = undefined; // in Mbps
-let webrtcRoundTripTimeValues = [];
+let webrtcRoundTripTimeValuesMulti = {};
 let webrtcRoundTripTimeStats = {
   rtt: undefined,
-  standardDeviation: undefined
+  standardDeviation: undefined,
 };
+let webrtcRoundTripTimeStatsMulti = {};
 let predictedGameExperience = undefined;
 
 /**
@@ -64,7 +62,7 @@ const getBrowserMeasurement = (browserConnection = undefined) => {
   return Promise.resolve({
     roundTripTime: connection.rtt,
     downloadSpeed: convertMbitToBytes(connection.downlink),
-    measurementLevel: MEASUREMENT_LEVEL_BROWSER
+    measurementLevel: MEASUREMENT_LEVEL_BROWSER,
   });
 };
 
@@ -75,7 +73,7 @@ const getBrowserMeasurement = (browserConnection = undefined) => {
 const getBasicMeasurement = () => {
   return getDeviceInfo().then((deviceInfo) => ({
     recommendedRegion: (((deviceInfo || {}).recommendation || []).find(() => true) || {}).edgeRegion,
-    measurementLevel: MEASUREMENT_LEVEL_BASIC
+    measurementLevel: MEASUREMENT_LEVEL_BASIC,
   }));
 };
 
@@ -84,105 +82,67 @@ const getBasicMeasurement = () => {
  * @return {Promise<{measurementLevel: string, downloadSpeed: any}>}
  */
 const getAdvancedMeasurement = () => {
+
   /**
-   * Downloader function used for speed-test measurements
-   * @param {string} url Download url
+   * Recursive function to manage download speed measurement and fallback case.
+   * @param {[]} recommendation Array of possible recommendations
    * @return {Promise<boolean>}
    */
-  const download = (url) => {
-    if (StreamingEvent.getEdgeNodes().length) {
-      return Promise.resolve(false); // Abort the download test because we have one or more StreamingViews running.
+  const connectionManagerMultiRegion = (recommendation) => {
+    let countRecommendation = 0;
+    for (let i = 0; i < recommendation.length; ++i) {
+      countRecommendation += recommendation[i].measurementEndpoints.length || 0;
+    }
+    if (countRecommendation === 0) {
+      return Promise.resolve(false);
     }
 
-    let firstByteReceivedAt = undefined;
-    let firstLoadedBytes = undefined;
-    let pendingCancel = false;
-    let cancelDownload = () => (pendingCancel = true);
-    const onNewEdgeNode = () => cancelDownload();
-    StreamingEvent.once(StreamingEvent.NEW_EDGE_NODE, onNewEdgeNode);
+    const selectedEdges = [];
+    for (let i = 0; i < recommendation.length && selectedEdges.length < MAX_RECOMMENDATION_COUNT; ++i) {
+      if (recommendation[i].measurementEndpoints.length) {
+        selectedEdges.push({
+          baseUrls: recommendation[i].measurementEndpoints.slice(0, 3),
+          region: recommendation[i].edgeRegion,
+        });
+      }
+    }
 
-    return axios
-      .get(url, {
-        timeout: ADVANCED_MEASUREMENT_TIMEOUT,
-        onDownloadProgress: (event) => {
-          const dateNow = Date.now();
-          const loaded = event.loaded;
-
-          if (firstByteReceivedAt === undefined) {
-            firstByteReceivedAt = dateNow;
-            firstLoadedBytes = loaded;
-          } else {
-            downloadSpeed = ((loaded - firstLoadedBytes) * 1000) / (dateNow - firstByteReceivedAt); // in bytes/sec
-
-            if (dateNow >= firstByteReceivedAt + DOWNLOAD_SPEED_RACE_FOR_MS) {
-              cancelDownload();
-            }
-          }
-        },
-        cancelToken: new CancelToken(function executor(canceler) {
-          // An executor function receives a cancel function as a parameter
-          cancelDownload = canceler;
-          if (pendingCancel) {
-            // We can end up in this case when we try to cancel the measurement before we receive the cancel token.
-            cancelDownload();
-          }
-        })
-      })
-      .then(() => true)
-      .catch((err) => err.name !== 'Error')
-      .finally(() => {
-        StreamingEvent.off(StreamingEvent.NEW_EDGE_NODE, onNewEdgeNode);
+    return webrtcManagerMultiRegion(selectedEdges)
+      .then((webrtcManagerSuccessful) => {
+        if (webrtcManagerSuccessful) {
+          return webrtcManagerSuccessful;
+        }
+        return connectionManagerMultiRegion(recommendation);
       });
   };
 
   /**
-   * Recursive function to manage download speed measurement and fallback case.
-   * @param {[]} availableEdges Array of possible speed test urls
+   * Recursive function to manage webrtc rtt measurement
+   * @param {{baseUrls: string[], region: string}} edge
    * @return {Promise<boolean>}
    */
-  const downloadManager = (availableEdges) => {
-    if (availableEdges.length === 0) {
+  const getWebRtcMeasurement = (edge) => {
+    if (edge.baseUrls.length === 0) {
       return Promise.resolve(false);
     }
 
-    const edge = availableEdges.shift();
-    const url = `${edge.endpoint}/${DOWNLOAD_DATASOURCE_NAME}?_=${Math.random()}`; // add a cache break query param to avoid speed measurement distortion
-    networkConnectivity.recommendedRegion = edge.edgeRegion;
-
-    return download(url).then((successful) => (successful ? successful : downloadManager(availableEdges)));
-  };
-
-  /**
-   * @param {number} webrtcRtt
-   */
-  const onWebRtcRoundTripTimeMeasurement = (webrtcRtt) => {
-    webrtcRoundTripTimeValues.push(webrtcRtt);
-    predictedGameExperience = Measurement.calculatePredictedGameExperience(webrtcRtt, 0)[Measurement.PREDICTED_GAME_EXPERIENCE_DEFAULT];
-  };
-
-  /**
-   * Recursive function to manage webrtc rtt measurement and fallback case.
-   * @param {[]} availableEdges Array of possible speed test urls
-   * @return {Promise<boolean>}
-   */
-  const webrtcManager = (availableEdges) => {
-    if (availableEdges.length === 0) {
-      return Promise.resolve(false);
-    }
-
-    const edge = availableEdges.shift();
-    const webRtcHost = `${edge.endpoint}/webrtc`;
-    console.log('WebRtc connect to:', webRtcHost);
+    const webRtcHost = `${edge.baseUrls.shift()}/webrtc`;
+    console.log('WebRtc connect attempt:', webRtcHost, 'for:', edge.region);
 
     return new Promise((resolve, reject) => {
       let streamWebRtc = undefined;
       const onWebRtcClientConnected = () => {
-        webrtcRoundTripTimeValues = [];
+        console.log('WebRtc connected to:', edge.region);
+        webrtcRoundTripTimeValuesMulti[edge.region] = [];
         setTimeout(() => stopMeasurement(), ADVANCED_MEASUREMENT_TIMEOUT);
       };
+      const onWebRtcRoundTripTimeMeasurement = (webrtcRtt) => {
+        webrtcRoundTripTimeValuesMulti[edge.region].push(webrtcRtt);
+        predictedGameExperience = Measurement.calculatePredictedGameExperience(webrtcRtt, 0)[Measurement.PREDICTED_GAME_EXPERIENCE_DEFAULT];
+      };
       const stopMeasurement = (closeAction = undefined) => {
-        if (webrtcRoundTripTimeValues.length > 0) {
-          webrtcRoundTripTimeStats = StreamWebRtc.calculateRoundTripTimeStats(webrtcRoundTripTimeValues);
+        if ((webrtcRoundTripTimeValuesMulti[edge.region] || []).length > 0) {
+          webrtcRoundTripTimeStatsMulti[edge.region] = StreamWebRtc.calculateRoundTripTimeStats(webrtcRoundTripTimeValuesMulti[edge.region]);
         }
         streamWebRtc
           .off(StreamingEvent.WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected)
@@ -192,7 +152,7 @@ const getAdvancedMeasurement = () => {
         if (closeAction) {
           closeAction();
         } else {
-          resolve(webrtcRoundTripTimeValues.length > 0);
+          resolve((webrtcRoundTripTimeValuesMulti[edge.region] || []).length > 0);
         }
       };
 
@@ -205,33 +165,61 @@ const getAdvancedMeasurement = () => {
       } catch (e) {
         stopMeasurement(() => reject(false));
       }
-    }).then((successful) => (successful ? successful : webrtcManager(availableEdges)));
+    }).then((result) => {
+      if (result) {
+        return result;
+      } else {
+        return getWebRtcMeasurement(edge);
+      }
+    });
+  };
+
+  /**
+   * Manages webrtc rtt measurements for multiple regions
+   * @param {[]} selectedEdges Array of possible edges
+   * @return {Promise<boolean>}
+   */
+  const webrtcManagerMultiRegion = (selectedEdges) => {
+    return Promise.all(selectedEdges.map((edge) => getWebRtcMeasurement(edge))).then((successful) => {
+      for (let success in successful) {
+        if (success) {
+          return true;
+        }
+      }
+      return false;
+    });
   };
 
   return getDeviceInfo()
-    .then((deviceInfo) => {
-      const availableEdges = ((deviceInfo || {}).recommendation || []).reduce((output, rec) => {
-        rec.measurementEndpoints.map((endpoint) =>
-          output.push({
-            endpoint: endpoint,
-            edgeRegion: rec.edgeRegion
-          })
-        );
-        return output;
-      }, []);
-
-      return Promise.all([downloadManager([...availableEdges]), webrtcManager([...availableEdges])]);
+    .then((deviceInfo) => connectionManagerMultiRegion(((deviceInfo || {}).recommendation || [])))
+    .then(() => {
+      let minRtt = undefined;
+      for (const [region, stats] of Object.entries(webrtcRoundTripTimeStatsMulti)) {
+        if (minRtt === undefined || minRtt > stats.rtt) {
+          minRtt = stats.rtt;
+        }
+      }
+      const finalResult = [];
+      for (const [region, stats] of Object.entries(webrtcRoundTripTimeStatsMulti)) {
+        if (stats.rtt <= minRtt * 2) {
+          finalResult.push({ region: region, rtt: stats.rtt });
+        }
+      }
+      networkConnectivity.recommendedRegions = finalResult.sort((a, b) => (a.rtt > b.rtt ? 1 : -1))
+        .slice(0, 3).map((recommendation) => recommendation.region);
+      networkConnectivity.recommendedRegion = networkConnectivity.recommendedRegions[0];
+      console.log('networkConnectivity: ', networkConnectivity);
     })
     .then(() =>
       downloadSpeed
         ? {
-            downloadSpeed: downloadSpeed,
-            webrtcRoundTripTime: webrtcRoundTripTimeStats.rtt,
-            webrtcRoundTripTimeStandardDeviation: webrtcRoundTripTimeStats.standardDeviation,
-            predictedGameExperience: predictedGameExperience,
-            measurementLevel: MEASUREMENT_LEVEL_ADVANCED
-          }
-        : {}
+          downloadSpeed: downloadSpeed,
+          webrtcRoundTripTime: webrtcRoundTripTimeStats.rtt,
+          webrtcRoundTripTimeStandardDeviation: webrtcRoundTripTimeStats.standardDeviation,
+          predictedGameExperience: predictedGameExperience,
+          measurementLevel: MEASUREMENT_LEVEL_ADVANCED,
+        }
+        : {},
     );
 };
 
@@ -239,7 +227,7 @@ const getAdvancedMeasurement = () => {
  * Measure network connectivity on different levels
  *
  * @param browserConnection NetworkInformation from the browser
- * @return {Promise<{measurementLevel: undefined, downloadSpeed: undefined, recommendedRegion: undefined, roundTripTime: undefined}>}
+ * @return {Promise<{measurementLevel: undefined, downloadSpeed: undefined, recommendedRegion: undefined, recommendedRegions: undefined, roundTripTime: undefined}>}
  */
 const measureNetworkConnectivity = (browserConnection = undefined) => {
   return getBrowserMeasurement(browserConnection)
@@ -253,8 +241,8 @@ const measureNetworkConnectivity = (browserConnection = undefined) => {
     .then(
       () =>
         new Promise(
-          (resolve) => setTimeout(() => resolve(getAdvancedMeasurement()), DELAY_DEVICE_INFO_MS) // delay the execution
-        )
+          (resolve) => setTimeout(() => resolve(getAdvancedMeasurement()), DELAY_DEVICE_INFO_MS), // delay the execution
+        ),
     )
     .then((advancedMeasurement) => {
       networkConnectivity = { ...networkConnectivity, ...advancedMeasurement };
@@ -266,7 +254,7 @@ const measureNetworkConnectivity = (browserConnection = undefined) => {
  * Gets the actual state of network connectivity information
  *
  * @param browserConnection
- * @return {Promise<{measurementLevel: (string|undefined), downloadSpeed: (number|undefined), recommendedRegion: (string|undefined), roundTripTime: (number|undefined)}>}
+ * @return {Promise<{measurementLevel: (string|undefined), downloadSpeed: (number|undefined), recommendedRegion: (string|undefined), recommendedRegions: (string[]|undefined), roundTripTime: (number|undefined)}>}
  */
 const getNetworkConnectivity = (browserConnection = undefined) => {
   return Promise.resolve().then(() => {
