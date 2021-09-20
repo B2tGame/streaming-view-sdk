@@ -42,7 +42,8 @@ export default class EventHandler extends Component {
     view: PropTypes.any.isRequired,
     edgeNodeId: PropTypes.string.isRequired, // report events during the streaming view.
     volume: PropTypes.number,
-    muted: PropTypes.bool
+    muted: PropTypes.bool,
+    measureTouchRtt: PropTypes.bool
   };
 
   static defaultProps = {

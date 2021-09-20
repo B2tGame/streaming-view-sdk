@@ -125,7 +125,7 @@ export default class StreamCaptureService {
     // Defines how aggresivly the edgedetector should classify an edge
     const threshold = 20;
 
-    for (let y = 0; y < pixelData.length / canvasWidth; y++) {
+    for (let y = 0; y < pixelData.length / canvasWidth / 4; y++) {
       for (let x = 0; x < canvasWidth; x++) {
         const index = (x + y * canvasWidth) * 4;
         const pixel = pixelData[index];
