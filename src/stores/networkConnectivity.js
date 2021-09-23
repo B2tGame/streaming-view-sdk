@@ -16,14 +16,14 @@ const defaultNetworkConnectivity = {
   webrtcRoundTripTime: undefined,
   downloadSpeed: undefined,
   recommendedRegion: undefined,
-  measurementLevel: undefined,
+  measurementLevel: undefined
 };
 let networkConnectivity = { ...defaultNetworkConnectivity };
 let downloadSpeed = undefined; // in Mbps
 let webrtcRoundTripTimeValues = [];
 let webrtcRoundTripTimeStats = {
   rtt: undefined,
-  standardDeviation: undefined,
+  standardDeviation: undefined
 };
 let predictedGameExperience = undefined;
 
@@ -59,7 +59,7 @@ const getBrowserMeasurement = (browserConnection = undefined) => {
   return Promise.resolve({
     roundTripTime: connection.rtt,
     downloadSpeed: convertMbitToBytes(connection.downlink),
-    measurementLevel: MEASUREMENT_LEVEL_BROWSER,
+    measurementLevel: MEASUREMENT_LEVEL_BROWSER
   });
 };
 
@@ -70,7 +70,7 @@ const getBrowserMeasurement = (browserConnection = undefined) => {
 const getBasicMeasurement = () => {
   return getDeviceInfo().then((deviceInfo) => ({
     recommendedRegion: (((deviceInfo || {}).recommendation || []).find(() => true) || {}).edgeRegion,
-    measurementLevel: MEASUREMENT_LEVEL_BASIC,
+    measurementLevel: MEASUREMENT_LEVEL_BASIC
   }));
 };
 
@@ -139,31 +139,25 @@ const getAdvancedMeasurement = () => {
     .then((deviceInfo) => {
       const availableEdges = ((deviceInfo || {}).recommendation || []).reduce((output, rec) => {
         rec.measurementEndpoints.map((endpoint) => {
-            if (networkConnectivity.recommendedRegion === undefined) {
-              networkConnectivity.recommendedRegion = rec.edgeRegion;
-            }
-            return output.push({
-              endpoint: endpoint,
-              edgeRegion: rec.edgeRegion,
-            });
-          },
-        );
+          if (networkConnectivity.recommendedRegion === undefined) {
+            networkConnectivity.recommendedRegion = rec.edgeRegion;
+          }
+          return output.push({
+            endpoint: endpoint,
+            edgeRegion: rec.edgeRegion
+          });
+        });
         return output;
       }, []);
 
       return webrtcManager([...availableEdges]);
     })
-    .then(() =>
-      downloadSpeed
-        ? {
-          downloadSpeed: downloadSpeed,
-          webrtcRoundTripTime: webrtcRoundTripTimeStats.rtt,
-          webrtcRoundTripTimeStandardDeviation: webrtcRoundTripTimeStats.standardDeviation,
-          predictedGameExperience: predictedGameExperience,
-          measurementLevel: MEASUREMENT_LEVEL_ADVANCED,
-        }
-        : {},
-    );
+    .then(() => ({
+      webrtcRoundTripTime: webrtcRoundTripTimeStats.rtt,
+      webrtcRoundTripTimeStandardDeviation: webrtcRoundTripTimeStats.standardDeviation,
+      predictedGameExperience: predictedGameExperience,
+      measurementLevel: MEASUREMENT_LEVEL_ADVANCED
+    }));
 };
 
 /**
@@ -184,8 +178,8 @@ const measureNetworkConnectivity = (browserConnection = undefined) => {
     .then(
       () =>
         new Promise(
-          (resolve) => setTimeout(() => resolve(getAdvancedMeasurement()), DELAY_DEVICE_INFO_MS), // delay the execution
-        ),
+          (resolve) => setTimeout(() => resolve(getAdvancedMeasurement()), DELAY_DEVICE_INFO_MS) // delay the execution
+        )
     )
     .then((advancedMeasurement) => {
       networkConnectivity = { ...networkConnectivity, ...advancedMeasurement };
