@@ -7,26 +7,21 @@ const MEASUREMENT_LEVEL_BROWSER = 'browser-measurement';
 const MEASUREMENT_LEVEL_BASIC = 'basic';
 const MEASUREMENT_LEVEL_ADVANCED = 'advanced';
 
-const MAX_RECOMMENDATION_COUNT = 3;
+const MAX_RECOMMENDATION_COUNT = 5;
 const DELAY_DEVICE_INFO_MS = 3000;
 const WEBRTC_TIME_TO_CONNECTED = 5000;
 const ADVANCED_MEASUREMENT_TIMEOUT = 5000;
 
 const defaultNetworkConnectivity = {
   roundTripTime: undefined,
-  webrtcRoundTripTime: undefined,
   downloadSpeed: undefined,
   recommendedRegion: undefined,
-  recommendedRegions: undefined,
-  measurementLevel: undefined,
+  rttRegionMeasurements: undefined,
+  measurementLevel: undefined
 };
 let networkConnectivity = { ...defaultNetworkConnectivity };
 let downloadSpeed = undefined; // in Mbps
 let webrtcRoundTripTimeValuesMulti = {};
-let webrtcRoundTripTimeStats = {
-  rtt: undefined,
-  standardDeviation: undefined,
-};
 let webrtcRoundTripTimeStatsMulti = {};
 let predictedGameExperience = undefined;
 
@@ -62,7 +57,7 @@ const getBrowserMeasurement = (browserConnection = undefined) => {
   return Promise.resolve({
     roundTripTime: connection.rtt,
     downloadSpeed: convertMbitToBytes(connection.downlink),
-    measurementLevel: MEASUREMENT_LEVEL_BROWSER,
+    measurementLevel: MEASUREMENT_LEVEL_BROWSER
   });
 };
 
@@ -73,7 +68,7 @@ const getBrowserMeasurement = (browserConnection = undefined) => {
 const getBasicMeasurement = () => {
   return getDeviceInfo().then((deviceInfo) => ({
     recommendedRegion: (((deviceInfo || {}).recommendation || []).find(() => true) || {}).edgeRegion,
-    measurementLevel: MEASUREMENT_LEVEL_BASIC,
+    measurementLevel: MEASUREMENT_LEVEL_BASIC
   }));
 };
 
@@ -82,7 +77,6 @@ const getBasicMeasurement = () => {
  * @return {Promise<{measurementLevel: string, downloadSpeed: any}>}
  */
 const getAdvancedMeasurement = () => {
-
   /**
    * Recursive function to manage download speed measurement and fallback case.
    * @param {[]} recommendation Array of possible recommendations
@@ -102,18 +96,17 @@ const getAdvancedMeasurement = () => {
       if (recommendation[i].measurementEndpoints.length) {
         selectedEdges.push({
           baseUrls: recommendation[i].measurementEndpoints.slice(0, 3),
-          region: recommendation[i].edgeRegion,
+          region: recommendation[i].edgeRegion
         });
       }
     }
 
-    return webrtcManagerMultiRegion(selectedEdges)
-      .then((webrtcManagerSuccessful) => {
-        if (webrtcManagerSuccessful) {
-          return webrtcManagerSuccessful;
-        }
-        return connectionManagerMultiRegion(recommendation);
-      });
+    return webrtcManagerMultiRegion(selectedEdges).then((webrtcManagerSuccessful) => {
+      if (webrtcManagerSuccessful) {
+        return webrtcManagerSuccessful;
+      }
+      return connectionManagerMultiRegion(recommendation);
+    });
   };
 
   /**
@@ -138,11 +131,14 @@ const getAdvancedMeasurement = () => {
       };
       const onWebRtcRoundTripTimeMeasurement = (webrtcRtt) => {
         webrtcRoundTripTimeValuesMulti[edge.region].push(webrtcRtt);
+        //TODO: do something here
         predictedGameExperience = Measurement.calculatePredictedGameExperience(webrtcRtt, 0)[Measurement.PREDICTED_GAME_EXPERIENCE_DEFAULT];
       };
       const stopMeasurement = (closeAction = undefined) => {
         if ((webrtcRoundTripTimeValuesMulti[edge.region] || []).length > 0) {
-          webrtcRoundTripTimeStatsMulti[edge.region] = StreamWebRtc.calculateRoundTripTimeStats(webrtcRoundTripTimeValuesMulti[edge.region]);
+          webrtcRoundTripTimeStatsMulti[edge.region] = StreamWebRtc.calculateRoundTripTimeStats(
+            webrtcRoundTripTimeValuesMulti[edge.region]
+          );
         }
         streamWebRtc
           .off(StreamingEvent.WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected)
@@ -191,35 +187,32 @@ const getAdvancedMeasurement = () => {
   };
 
   return getDeviceInfo()
-    .then((deviceInfo) => connectionManagerMultiRegion(((deviceInfo || {}).recommendation || [])))
+    .then((deviceInfo) => connectionManagerMultiRegion((deviceInfo || {}).recommendation || []))
     .then(() => {
       let minRtt = undefined;
+      const finalResult = {};
       for (const [region, stats] of Object.entries(webrtcRoundTripTimeStatsMulti)) {
         if (minRtt === undefined || minRtt > stats.rtt) {
           minRtt = stats.rtt;
+          networkConnectivity.recommendedRegion = region;
         }
+        finalResult[region] = {
+          rtt: Measurement.roundToDecimals(stats.rtt, 0),
+          stdDev: Measurement.roundToDecimals(stats.standardDeviation, 0)
+        };
       }
-      const finalResult = [];
-      for (const [region, stats] of Object.entries(webrtcRoundTripTimeStatsMulti)) {
-        if (stats.rtt <= minRtt * 2) {
-          finalResult.push({ region: region, rtt: stats.rtt });
-        }
-      }
-      networkConnectivity.recommendedRegions = finalResult.sort((a, b) => (a.rtt > b.rtt ? 1 : -1))
-        .slice(0, 3).map((recommendation) => recommendation.region);
-      networkConnectivity.recommendedRegion = networkConnectivity.recommendedRegions[0];
+
+      networkConnectivity.rttRegionMeasurements = finalResult;
       console.log('networkConnectivity: ', networkConnectivity);
     })
     .then(() =>
       downloadSpeed
         ? {
-          downloadSpeed: downloadSpeed,
-          webrtcRoundTripTime: webrtcRoundTripTimeStats.rtt,
-          webrtcRoundTripTimeStandardDeviation: webrtcRoundTripTimeStats.standardDeviation,
-          predictedGameExperience: predictedGameExperience,
-          measurementLevel: MEASUREMENT_LEVEL_ADVANCED,
-        }
-        : {},
+            downloadSpeed: downloadSpeed,
+            predictedGameExperience: predictedGameExperience,
+            measurementLevel: MEASUREMENT_LEVEL_ADVANCED
+          }
+        : {}
     );
 };
 
@@ -227,7 +220,7 @@ const getAdvancedMeasurement = () => {
  * Measure network connectivity on different levels
  *
  * @param browserConnection NetworkInformation from the browser
- * @return {Promise<{measurementLevel: undefined, downloadSpeed: undefined, recommendedRegion: undefined, recommendedRegions: undefined, roundTripTime: undefined}>}
+ * @return {Promise<{measurementLevel: undefined, downloadSpeed: undefined, recommendedRegion: undefined, rttRegionMeasurements: undefined, roundTripTime: undefined}>}
  */
 const measureNetworkConnectivity = (browserConnection = undefined) => {
   return getBrowserMeasurement(browserConnection)
@@ -241,8 +234,8 @@ const measureNetworkConnectivity = (browserConnection = undefined) => {
     .then(
       () =>
         new Promise(
-          (resolve) => setTimeout(() => resolve(getAdvancedMeasurement()), DELAY_DEVICE_INFO_MS), // delay the execution
-        ),
+          (resolve) => setTimeout(() => resolve(getAdvancedMeasurement()), DELAY_DEVICE_INFO_MS) // delay the execution
+        )
     )
     .then((advancedMeasurement) => {
       networkConnectivity = { ...networkConnectivity, ...advancedMeasurement };
@@ -254,7 +247,7 @@ const measureNetworkConnectivity = (browserConnection = undefined) => {
  * Gets the actual state of network connectivity information
  *
  * @param browserConnection
- * @return {Promise<{measurementLevel: (string|undefined), downloadSpeed: (number|undefined), recommendedRegion: (string|undefined), recommendedRegions: (string[]|undefined), roundTripTime: (number|undefined)}>}
+ * @return {Promise<{measurementLevel: (string|undefined), downloadSpeed: (number|undefined), recommendedRegion: (string|undefined), rttRegionMeasurements: (string[]|undefined), roundTripTime: (number|undefined)}>}
  */
 const getNetworkConnectivity = (browserConnection = undefined) => {
   return Promise.resolve().then(() => {
