@@ -20,10 +20,9 @@ const defaultNetworkConnectivity = {
   measurementLevel: undefined
 };
 let networkConnectivity = { ...defaultNetworkConnectivity };
-let downloadSpeed = undefined; // in Mbps
 let webrtcRoundTripTimeValuesMulti = {};
 let webrtcRoundTripTimeStatsMulti = {};
-let predictedGameExperience = undefined;
+let predictedGameExperienceMulti = {};
 
 /**
  * Reset all network connectivity data
@@ -131,8 +130,9 @@ const getAdvancedMeasurement = () => {
       };
       const onWebRtcRoundTripTimeMeasurement = (webrtcRtt) => {
         webrtcRoundTripTimeValuesMulti[edge.region].push(webrtcRtt);
-        //TODO: do something here
-        predictedGameExperience = Measurement.calculatePredictedGameExperience(webrtcRtt, 0)[Measurement.PREDICTED_GAME_EXPERIENCE_DEFAULT];
+        predictedGameExperienceMulti[edge.region] = Measurement.calculatePredictedGameExperience(webrtcRtt, 0, edge.region)[
+          Measurement.PREDICTED_GAME_EXPERIENCE_DEFAULT
+        ];
       };
       const stopMeasurement = (closeAction = undefined) => {
         if ((webrtcRoundTripTimeValuesMulti[edge.region] || []).length > 0) {
@@ -203,17 +203,11 @@ const getAdvancedMeasurement = () => {
       }
 
       networkConnectivity.rttRegionMeasurements = finalResult;
-      console.log('networkConnectivity: ', networkConnectivity);
     })
-    .then(() =>
-      downloadSpeed
-        ? {
-            downloadSpeed: downloadSpeed,
-            predictedGameExperience: predictedGameExperience,
-            measurementLevel: MEASUREMENT_LEVEL_ADVANCED
-          }
-        : {}
-    );
+    .then(() => ({
+      predictedGameExperience: predictedGameExperienceMulti[networkConnectivity.recommendedRegion],
+      measurementLevel: MEASUREMENT_LEVEL_ADVANCED
+    }));
 };
 
 /**
@@ -239,6 +233,7 @@ const measureNetworkConnectivity = (browserConnection = undefined) => {
     )
     .then((advancedMeasurement) => {
       networkConnectivity = { ...networkConnectivity, ...advancedMeasurement };
+      console.log('networkConnectivity: ', networkConnectivity);
     })
     .then(() => networkConnectivity);
 };
