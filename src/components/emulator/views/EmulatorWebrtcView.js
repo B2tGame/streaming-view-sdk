@@ -329,6 +329,7 @@ export default class EmulatorWebrtcView extends Component {
         <video
           ref={this.video}
           style={style}
+          className='video-webrtc'
           // Initial muted value, un-muting is done dynamically through ref on userInteraction
           // Known issue: https://github.com/facebook/react/issues/10389
           muted={true}
