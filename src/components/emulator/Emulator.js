@@ -110,7 +110,7 @@ class Emulator extends Component {
     auth: null,
     poll: false,
     maxConnectionRetries: Emulator.RELOAD_FAILURE_THRESHOLD,
-    measureTouchRtt: false
+    measureTouchRtt: true
   };
 
   components = {

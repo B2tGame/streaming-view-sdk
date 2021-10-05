@@ -69,7 +69,7 @@ export default class StreamingView extends Component {
     volume: 1.0,
     muted: false,
     pingInterval: StreamWebRtc.WEBRTC_PING_INTERVAL,
-    measureTouchRtt: false
+    measureTouchRtt: true
   };
 
   /**
