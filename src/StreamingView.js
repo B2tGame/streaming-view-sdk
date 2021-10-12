@@ -11,6 +11,7 @@ import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
 import BlackScreenDetector from './service/BlackScreenDetector';
 import StreamWebRtc from './service/StreamWebRtc';
+import stringify from './util/stringify';
 
 const urlParse = require('url-parse');
 
@@ -284,6 +285,9 @@ export default class StreamingView extends Component {
           message: `User event - ${StreamingEvent.STREAM_LOADING_TIME}: ${streamLoadingTime} ms.`
         };
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.USER_EVENT_REPORT, userEventPayload);
+      } else {
+        // Logging 
+        this.logger.info(`Unable to capture stream loading time - props.userClickedPlayAt is '${stringify(this.props.userClickedPlayAt)}'`)
       }
 
       // Send the video playing event when user can see the stream.

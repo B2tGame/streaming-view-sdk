@@ -324,6 +324,7 @@ export default class Measurement {
   }
 
   onStreamResumed = () => {
+    this.logger.info('stream resumed triggered');
     if (!this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
       this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
       this.metricsFramesDecodedPerSecond.setReferenceTime();
@@ -332,6 +333,7 @@ export default class Measurement {
   };
 
   onEmulatorConfiguration = (payload) => {
+    this.logger.info(`emulater configuration triggered, state is '${payload.state}'`);
     if (payload.state !== 'paused') {
       if (!this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
         this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
