@@ -278,6 +278,7 @@ export default class StreamingView extends Component {
       if (this.props.userClickedPlayAt > 0) {
         // Send the stream loading time if we have a user clicked play at props.
         const streamLoadingTime = Date.now() - this.props.userClickedPlayAt;
+        this.logger.info(`Stream loading time is '${streamLoadingTime}' (counted from ${this.props.userClickedPlayAt})`)
         const userEventPayload = {
           role: role,
           eventType: StreamingEvent.STREAM_LOADING_TIME,
