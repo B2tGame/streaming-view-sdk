@@ -278,6 +278,7 @@ export default class StreamingView extends Component {
       if (this.props.userClickedPlayAt > 0) {
         // Send the stream loading time if we have a user clicked play at props.
         const streamLoadingTime = Date.now() - this.props.userClickedPlayAt;
+        console.log(`Stream loading time is '${streamLoadingTime}' (counted from ${this.props.userClickedPlayAt})`)
         this.logger.info(`Stream loading time is '${streamLoadingTime}' (counted from ${this.props.userClickedPlayAt})`)
         const userEventPayload = {
           role: role,
@@ -288,6 +289,7 @@ export default class StreamingView extends Component {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.USER_EVENT_REPORT, userEventPayload);
       } else {
         // Logging 
+        console.log(`Unable to capture stream loading time - props.userClickedPlayAt is '${stringify(this.props.userClickedPlayAt)}'`)
         this.logger.info(`Unable to capture stream loading time - props.userClickedPlayAt is '${stringify(this.props.userClickedPlayAt)}'`)
       }
 
