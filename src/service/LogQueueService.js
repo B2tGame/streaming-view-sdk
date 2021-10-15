@@ -23,13 +23,16 @@ export default class LogQueueService {
       payload.event = eventType;
       payload.seqId = this.seqId++;
       payload.userId = userId;
-      this.logQueue.push({
-        edgeNodeId: edgeNodeId,
-        name: 'sdk',
-        timestamp: new Date().toISOString(),
-        type: 'log',
-        message: JSON.stringify(payload)
-      });
+
+      if (payload.localMessage !== true) { 
+        this.logQueue.push({
+          edgeNodeId: edgeNodeId,
+          name: 'sdk',
+          timestamp: new Date().toISOString(),
+          type: 'log',
+          message: JSON.stringify(payload)
+        });
+      }
       if (this.logQueue.length > 25) {
         this.sendQueue();
       }

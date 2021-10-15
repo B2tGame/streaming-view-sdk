@@ -3,8 +3,8 @@ import React, { Component } from 'react';
 import StreamingEvent from '../../../StreamingEvent';
 import StreamCaptureService from '../../../service/StreamCaptureService';
 
-const rttMeasurementTimeout = 500;
-const touchAnimTime = 200;
+const rttMeasurementTimeout = 450;
+const touchAnimTime = 400;
 
 
 /**
@@ -165,16 +165,29 @@ export default class EmulatorWebrtcView extends Component {
   };
 
   lastTouchEnd = 0;
-
+  lastTouchEvent;
+  lastTouchUsed;
   onTouchEnd = () => {
     this.lastTouchEnd = new Date().getTime();
+
+    if (!this.lastTouchUsed && this.lastTouchEvent !== undefined) {
+      this.lastTouchUsed = true;
+
+      clearInterval(this.touchTimer);
+      setTimeout(() => {
+        this.detectTouch(this.lastTouchEvent, false);
+
+        this.canvasTouch.current.style.position = "absolute";
+        this.canvasTouch.current.style.left = `${this.lastTouchEvent.x}px`;
+        this.canvasTouch.current.style.top = `${this.lastTouchEvent.y}px`;
+
+      }, touchAnimTime);
+    }
   };
 
-  onTouchStart = (event) => {
-    if (this.lastTouchEnd + touchAnimTime > new Date().getTime()) {
-      return;
-    }
-
+  touchDetectedCount = 0;
+  touchNotDetectedCount = 0;
+  detectTouch = (event, onTouchStart) => {
     if (this.touchTimer !== undefined) {
       clearInterval(this.touchTimer);
     }
@@ -182,14 +195,35 @@ export default class EmulatorWebrtcView extends Component {
     this.touchTimer = setInterval((startTime, giveUpAfter) => {
       const foundCircle = this.streamCaptureService.detectTouch(event.x, event.y, this.props.emulatorWidth, this.props.emulatorHeight);
       if (foundCircle) {
+        this.touchDetectedCount++;
+
         const rtt = new Date().getTime() - startTime;
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT, {rtt: rtt});
-        clearInterval(this.touchTimer);
+        if (onTouchStart) {
+          clearInterval(this.touchTimer);
+        }
+      } else {
+        this.touchNotDetectedCount++;
       }
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT_ACCURACY, {
+        touchNotDetectedCount: this.touchNotDetectedCount, 
+        touchDetectedCount: this.touchDetectedCount,
+        localMessage: (this.touchNotDetectedCount + this.touchDetectedCount) % 100 !== 0
+      });
+
       if (new Date().getTime() > startTime + giveUpAfter) {
-        clearInterval(this.touchTimer);
+        if (onTouchStart) {
+          clearInterval(this.touchTimer);
+        }
       }
     }, 1, new Date().getTime(), rttMeasurementTimeout);
+  }
+
+  onTouchStart = (event, event2) => {
+    if (this.lastTouchEnd + touchAnimTime > new Date().getTime()) {
+      return;
+    }
+    this.lastTouchEvent = event;
   };
 
   onDisconnect = () => {
@@ -326,6 +360,20 @@ export default class EmulatorWebrtcView extends Component {
           alignItems: 'center'
         }}
       >
+
+      <canvas
+        style={{ display: 'none' }}
+        ref={this.canvasTouch}
+        style={{
+          position: 'fixed',
+          margin: 'auto',
+          width: '50%',
+          width: '23',
+          height: '23',
+        }}
+        height="23"
+        width="23"
+      />
         <video
           ref={this.video}
           style={style}
@@ -344,12 +392,12 @@ export default class EmulatorWebrtcView extends Component {
           height={emulatorHeight / StreamCaptureService.CANVAS_SCALE_FACTOR}
           width={emulatorWidth / StreamCaptureService.CANVAS_SCALE_FACTOR}
         />
-        <canvas
+        {/* <canvas
           style={{ display: 'none' }}
           ref={this.canvasTouch}
           height='23'
           width='23'
-        />
+        /> */}
       </div>
     );
   }
