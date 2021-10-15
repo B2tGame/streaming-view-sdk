@@ -120,6 +120,17 @@ export default class StreamingView extends Component {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
     }
 
+    this.logger.info('StreamingView was mounted', 
+      Object.keys(this.props).reduce((propObj, propName) => {
+        const propValue = this.props[propName];
+        // All this extra logic to filter functions from rest of props
+        if(typeof propValue !== 'function') {
+          propObj[propName] = propValue
+        }
+        return propObj
+      }, {})
+    );
+
     this.logger.log(`SDK Version: ${buildInfo.tag}`);
     window.addEventListener('resize', this.onResize);
     window.addEventListener('error', this.onError);
