@@ -97,16 +97,7 @@ export default class StreamingView extends Component {
 
   componentDidMount() {
     this.isMountedInView = true;
-    const {
-      apiEndpoint,
-      edgeNodeId,
-      userId,
-      edgeNodeEndpoint,
-      internalSession,
-      turnEndpoint,
-      onEvent,
-      pingInterval
-    } = this.props;
+    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, onEvent, pingInterval } = this.props;
     if (!internalSession) {
       this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId, this.streamingViewId);
     }
@@ -120,14 +111,15 @@ export default class StreamingView extends Component {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
     }
 
-    this.logger.info('StreamingView was mounted', 
+    this.logger.info(
+      'StreamingView was mounted',
       Object.keys(this.props).reduce((propObj, propName) => {
         const propValue = this.props[propName];
         // All this extra logic to filter functions from rest of props
-        if(typeof propValue !== 'function') {
-          propObj[propName] = propValue
+        if (typeof propValue !== 'function') {
+          propObj[propName] = propValue;
         }
-        return propObj
+        return propObj;
       }, {})
     );
 
@@ -196,10 +188,10 @@ export default class StreamingView extends Component {
 
   componentWillUnmount() {
     this.logger.info('StreamingView component will unmount', {
-      measurement: this.measurement ? "should-be-destroy": "skip",
-      websocket: this.streamSocket ? "should-be-destroy": "skip",
-      blackScreenDetector: this.blackScreenDetector ? "should-be-destroy": "skip",
-      logQueueService: this.LogQueueService ? "should-be-destroy": "skip"
+      measurement: this.measurement ? 'should-be-destroy' : 'skip',
+      websocket: this.streamSocket ? 'should-be-destroy' : 'skip',
+      blackScreenDetector: this.blackScreenDetector ? 'should-be-destroy' : 'skip',
+      logQueueService: this.LogQueueService ? 'should-be-destroy' : 'skip'
     });
     this.isMountedInView = false;
 
@@ -219,7 +211,7 @@ export default class StreamingView extends Component {
     window.removeEventListener('error', this.onError);
     setTimeout(() => {
       StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
-    }, 500)
+    }, 500);
   }
 
   /**
@@ -359,7 +351,11 @@ export default class StreamingView extends Component {
           </p>
         );
       default:
-        return <p style={{ color: 'white' }} className={'streaming-view-loading-edge-node'}>Loading EdgeNode Stream</p>;
+        return (
+          <p style={{ color: 'white' }} className={'streaming-view-loading-edge-node'}>
+            Loading EdgeNode Stream
+          </p>
+        );
     }
   }
 }
