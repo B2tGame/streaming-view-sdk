@@ -94,7 +94,7 @@ const getAdvancedMeasurement = () => {
     for (let i = 0; i < recommendation.length && selectedEdges.length < MAX_RECOMMENDATION_COUNT; ++i) {
       if (recommendation[i].measurementEndpoints.length) {
         selectedEdges.push({
-          baseUrls: recommendation[i].measurementEndpoints.slice(0, 3),
+          baseUrls: recommendation[i].measurementEndpoints.slice(0, MAX_RECOMMENDATION_COUNT),
           region: recommendation[i].edgeRegion
         });
       }
