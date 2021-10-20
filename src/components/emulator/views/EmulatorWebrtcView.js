@@ -188,6 +188,7 @@ export default class EmulatorWebrtcView extends Component {
       }
       if (new Date().getTime() > startTime + giveUpAfter) {
         clearInterval(this.touchTimer);
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT_TIMOUT, {timeout: true, time: giveUpAfter});
       }
     }, 1, new Date().getTime(), rttMeasurementTimeout);
   };

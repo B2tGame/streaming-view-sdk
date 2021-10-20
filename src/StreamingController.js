@@ -166,7 +166,9 @@ class StreamingController {
         name: 'streaming-controller',
         action: 'resetMoment'
       });
-      return axios.get(`${streamEndpoint}/emulator-commands/reset`);
+      return axios.get(`${streamEndpoint}/emulator-commands/reset`).then(() => {
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_READY);
+      });
     });
   }
 
