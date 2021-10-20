@@ -130,6 +130,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fired when a touch rtt times out
+   * @return {string}
+   */
+   static get TOUCH_RTT_TIMOUT() {
+    return 'touch-rtt-timeout';
+  }
+  
+  /**
    * Event that is fire when the SDK receiving the edge node are ready to accept a connection.
    * @return {string}
    */
