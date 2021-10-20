@@ -47,6 +47,13 @@ class StreamingController {
     if (!props.apiEndpoint) {
       throw new Error('StreamingController: Missing apiEndpoint');
     }
+
+    try {
+      new URL(props.apiEndpoint);
+    } catch (err) {
+      throw new Error(`StreamingController: invalid apiEndpoint, got "${props.apiEndpoint}" as input`);
+    }
+
     this.apiEndpoint = props.apiEndpoint;
     this.edgeNodeId = props.edgeNodeId || undefined;
     this.internalSession = props.internalSession || false;
