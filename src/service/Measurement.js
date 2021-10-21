@@ -209,14 +209,21 @@ export default class Measurement {
     const framesDecodedPerSecondBeginning = this.metricsFramesDecodedPerSecond.getMetric(Metric.BEGINNING);
     const framesDecodedPerSecondOverall = this.metricsFramesDecodedPerSecond.getMetric(Metric.OVERALL);
     const framesDecodedPerSecondCurrent = this.metricsFramesDecodedPerSecond.getMetric(Metric.CURRENT);
+    
     const interFrameDelayStandardDeviationStart = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.START);
     const interFrameDelayStandardDeviationBeginning = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.BEGINNING);
     const interFrameDelayStandardDeviationOverall = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.OVERALL);
     const interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.CURRENT);
-    const classification = () => {
+
+    // There are three types of classification, good, bad and error
+    const createClassification = () => {
+
+      const classificationFlags = []
+
       // Unsupported device, for now only chrome is supported
       if (framesDecodedPerSecondStart === undefined || interFrameDelayStandardDeviationStart === undefined) {
-        return 'unsupported-device';
+        // Returning to this in SG-1262 - investigate unsupported device
+        return ['unsupported-device'];
       }
 
       // overall no issue was detected
@@ -228,82 +235,64 @@ export default class Measurement {
         interFrameDelayStandardDeviationBeginning < 15 &&
         (interFrameDelayStandardDeviationOverall || 0) < 15
       ) {
-        return 'no-slow-motion-detected';
+        return [ 'no-slow-motion-detected' ]
       }
 
-      // consistent low fps over the whole session.
       if (
-        framesDecodedPerSecondStart < 45 &&
-        framesDecodedPerSecondBeginning < 45 &&
-        (framesDecodedPerSecondOverall || 0) < 45
+        (framesDecodedPerSecondOverall || 0) < 45 || (interFrameDelayStandardDeviationOverall || Number.MAX_VALUE) > 15
       ) {
-        return 'consistent-slow-motion-detected';
+        classificationFlags.push('consistent-slow-motion-detected')
       }
 
-      // consistent high inter frame delay standard deviation over the whole game session.
-      if (
-        interFrameDelayStandardDeviationStart > 15 &&
-        interFrameDelayStandardDeviationBeginning > 15 &&
-        (interFrameDelayStandardDeviationOverall || Number.MAX_VALUE) > 15
-      ) {
-        return 'consistent-slow-motion-detected';
-      }
-
-      // slow start due to low fps in beginning
       if (
         framesDecodedPerSecondStart < 45 &&
         framesDecodedPerSecondBeginning < 45 &&
         (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 &&
         (interFrameDelayStandardDeviationOverall || 0) < 15
-      ) {
-        return 'slow-beginning-detected';
-      }
-
-      // slow start due to high inter frame delay std dev in beginning
-      if (
+        ) {
+        // slow start due to low fps in beginning
+        classificationFlags.push('slow-beginning-detected')
+      } else if (
         interFrameDelayStandardDeviationStart > 15 &&
         interFrameDelayStandardDeviationBeginning > 15 &&
         (interFrameDelayStandardDeviationOverall || 0) < 15 &&
         (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45
       ) {
-        return 'slow-beginning-detected';
+        // slow start due to high inter frame delay std dev in beginning
+        classificationFlags.push('slow-beginning-detected')
       }
 
-      // slow start due to low fps in start
       if (
         framesDecodedPerSecondStart < 45 &&
         framesDecodedPerSecondBeginning > 45 &&
         (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 &&
         interFrameDelayStandardDeviationBeginning < 15
-      ) {
-        return 'slow-start-detected';
-      }
-
-      // slow start due to high inter frame delay std dev in start
-      if (
+        ) {
+        // slow start due to low fps in start
+        classificationFlags.push('slow-start-detected')
+      } else if (
         interFrameDelayStandardDeviationStart > 15 &&
         interFrameDelayStandardDeviationBeginning < 15 &&
         (interFrameDelayStandardDeviationOverall || 0) < 15 &&
         (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45
-      ) {
-        return 'slow-start-detected';
+        ) {
+        // slow start due to high inter frame delay std dev in start
+        classificationFlags.push('slow-start-detected')
       }
 
       // consistent low fps or high inter frame delay std dev over the session.
-      if (
-        framesDecodedPerSecondOverall < 45 || interFrameDelayStandardDeviationOverall > 15
-      ) {
-        return 'consistent-slow-motion-detected';
-      }
-
-      return 'no-classification-detected';
+      return classificationFlags.length ? classificationFlags : ['no-classification-detected'];
     };
+
+    const classificationFlags = createClassification()
 
     StreamingEvent.edgeNode(this.edgeNodeId)
       .emit(
         StreamingEvent.CLASSIFICATION_REPORT,
         {
-          classification: classification(),
+          // The most 
+          classification: classificationFlags[0],
+          classificationReport: classificationFlags,
           duration: this.metricsFramesDecodedPerSecond.getReferenceTime(),
           streamingViewId: this.streamingViewId,
           framesDecodedPerSecond: {
