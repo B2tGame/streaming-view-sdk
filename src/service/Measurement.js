@@ -42,7 +42,6 @@ export default class Measurement {
       .on(StreamingEvent.STREAM_TERMINATED, this.onStreamTerminated)
       .on(StreamingEvent.STREAM_RESUMED, this.onStreamResumed)
       .on(StreamingEvent.EMULATOR_CONFIGURATION, this.onEmulatorConfiguration);
-
   }
 
   /**
@@ -215,7 +214,21 @@ export default class Measurement {
     const interFrameDelayStandardDeviationOverall = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.OVERALL);
     const interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.CURRENT);
 
-    // There are three types of classification, good, bad and error
+    /***************************************
+     *
+     *  There are three "types" of classification,
+     *  good, bad and error. They are put in an 
+     *  ordered by precedence like such:
+     * 
+     *    1. unsupported-device (error)
+     *    2. no-slow-motion-detected (good)
+     *    3. consistent-slow-motion-detected (bad)
+     *    4. slow-beginning-detected (bad)
+     *    5. slow-start-detected (bad)
+     *    6. no-classification-detected (error)
+     *
+     *
+    ****************************************/
     const createClassification = () => {
 
       const classificationFlags = []
@@ -241,75 +254,48 @@ export default class Measurement {
       if (
         (framesDecodedPerSecondOverall || 0) < 45 || (interFrameDelayStandardDeviationOverall || Number.MAX_VALUE) > 15
       ) {
+        // consistent low fps over the whole session.
         classificationFlags.push('consistent-slow-motion-detected')
       }
 
       if (
-        framesDecodedPerSecondStart < 45 &&
-        framesDecodedPerSecondBeginning < 45 &&
-        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 &&
-        (interFrameDelayStandardDeviationOverall || 0) < 15
-        ) {
-        // slow start due to low fps in beginning
-        classificationFlags.push('slow-beginning-detected')
-      } else if (
-        interFrameDelayStandardDeviationStart > 15 &&
-        interFrameDelayStandardDeviationBeginning > 15 &&
-        (interFrameDelayStandardDeviationOverall || 0) < 15 &&
-        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45
+        (framesDecodedPerSecondBeginning < 45) || (interFrameDelayStandardDeviationBeginning > 15)
       ) {
-        // slow start due to high inter frame delay std dev in beginning
+        // slow start due to low fps in beginning OR due to high inter frame delay std dev in beginning
         classificationFlags.push('slow-beginning-detected')
       }
 
-      if (
-        framesDecodedPerSecondStart < 45 &&
-        framesDecodedPerSecondBeginning > 45 &&
-        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 &&
-        interFrameDelayStandardDeviationBeginning < 15
-        ) {
-        // slow start due to low fps in start
-        classificationFlags.push('slow-start-detected')
-      } else if (
-        interFrameDelayStandardDeviationStart > 15 &&
-        interFrameDelayStandardDeviationBeginning < 15 &&
-        (interFrameDelayStandardDeviationOverall || 0) < 15 &&
-        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45
-        ) {
-        // slow start due to high inter frame delay std dev in start
+      if ( framesDecodedPerSecondStart < 45 || interFrameDelayStandardDeviationStart > 15) {
+        // slow start due to low fps or high inter frame delay at start 
         classificationFlags.push('slow-start-detected')
       }
 
-      // consistent low fps or high inter frame delay std dev over the session.
       return classificationFlags.length ? classificationFlags : ['no-classification-detected'];
     };
 
-    const classificationFlags = createClassification()
+    const classificationReport = createClassification()
 
-    StreamingEvent.edgeNode(this.edgeNodeId)
-      .emit(
-        StreamingEvent.CLASSIFICATION_REPORT,
-        {
-          // The most 
-          classification: classificationFlags[0],
-          classificationReport: classificationFlags,
-          duration: this.metricsFramesDecodedPerSecond.getReferenceTime(),
-          streamingViewId: this.streamingViewId,
-          framesDecodedPerSecond: {
-            start: Measurement.roundToDecimals(framesDecodedPerSecondStart),
-            beginning: Measurement.roundToDecimals(framesDecodedPerSecondBeginning),
-            overall: Measurement.roundToDecimals(framesDecodedPerSecondOverall),
-            current: Measurement.roundToDecimals(framesDecodedPerSecondCurrent),
-            histogram: this.framesDecodedPerSecondHistogram.getMetric()
-          },
-          interFrameDelayStandardDeviation: {
-            start: Measurement.roundToDecimals(interFrameDelayStandardDeviationStart),
-            beginning: Measurement.roundToDecimals(interFrameDelayStandardDeviationBeginning),
-            overall: Measurement.roundToDecimals(interFrameDelayStandardDeviationOverall),
-            current: Measurement.roundToDecimals(interFrameDelayStandardDeviationCurrent)
-          }
-        }
-      );
+    StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.CLASSIFICATION_REPORT, {
+      // The "most significant" class, with this priority:
+
+      classification: classificationReport[0],
+      fullClassificationReport: classificationReport,
+      duration: this.metricsFramesDecodedPerSecond.getReferenceTime(),
+      streamingViewId: this.streamingViewId,
+      framesDecodedPerSecond: {
+        start: Measurement.roundToDecimals(framesDecodedPerSecondStart),
+        beginning: Measurement.roundToDecimals(framesDecodedPerSecondBeginning),
+        overall: Measurement.roundToDecimals(framesDecodedPerSecondOverall),
+        current: Measurement.roundToDecimals(framesDecodedPerSecondCurrent),
+        histogram: this.framesDecodedPerSecondHistogram.getMetric()
+      },
+      interFrameDelayStandardDeviation: {
+        start: Measurement.roundToDecimals(interFrameDelayStandardDeviationStart),
+        beginning: Measurement.roundToDecimals(interFrameDelayStandardDeviationBeginning),
+        overall: Measurement.roundToDecimals(interFrameDelayStandardDeviationOverall),
+        current: Measurement.roundToDecimals(interFrameDelayStandardDeviationCurrent)
+      }
+    });
   }
 
   onStreamResumed = () => {
@@ -417,7 +403,7 @@ export default class Measurement {
       this.measurement.totalDecodeTimePerFramesDecodedInMs = Measurement.roundToDecimals(
         ((report.totalDecodeTime - this.previousMeasurement.totalDecodeTime) /
           (report.framesDecoded - this.previousMeasurement.framesDecoded)) *
-        1000
+          1000
       );
       this.measurement.interFrameDelayStandardDeviationInMs = Measurement.roundToDecimals(
         Measurement.calculateStandardDeviation(report, this.previousMeasurement)
@@ -498,19 +484,23 @@ export default class Measurement {
    * Calculates a predicted game experience value based on rtt and packet lost percent
    * @param {number} rtt
    * @param {number} packetLostPercent
+   * @param {string} region
    * @return {{Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA: undefined|number, Measurement.PREDICTED_GAME_EXPERIENCE_NEURAL1: undefined|number}}
    */
-  static calculatePredictedGameExperience(rtt, packetLostPercent) {
+  static calculatePredictedGameExperience(rtt, packetLostPercent, region = 'default') {
     if (Measurement.predictGameExperience === undefined) {
       Measurement.predictGameExperience = {};
-      Measurement.predictGameExperience[Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA] = new PredictGameExperience();
-      Measurement.predictGameExperience[Measurement.PREDICTED_GAME_EXPERIENCE_NEURAL1] = new PredictGameExperienceWithNeuralNetwork(
+    }
+    if (Measurement.predictGameExperience[region] === undefined) {
+      Measurement.predictGameExperience[region] = {};
+      Measurement.predictGameExperience[region][Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA] = new PredictGameExperience();
+      Measurement.predictGameExperience[region][Measurement.PREDICTED_GAME_EXPERIENCE_NEURAL1] = new PredictGameExperienceWithNeuralNetwork(
         require('./neural-network-models/b540f780-9367-427c-8b05-232cebb9ec49')
       );
     }
 
     return Measurement.PREDICTED_GAME_EXPERIENCE_ALGORITHMS.reduce((result, algorithm) => {
-      result[algorithm] = Measurement.predictGameExperience[algorithm].predict(rtt, packetLostPercent);
+      result[algorithm] = Measurement.predictGameExperience[region][algorithm].predict(rtt, packetLostPercent);
       return result;
     }, {});
   }
