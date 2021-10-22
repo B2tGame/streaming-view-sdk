@@ -276,8 +276,7 @@ export default class Measurement {
     const classificationReport = createClassification()
 
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.CLASSIFICATION_REPORT, {
-      // The "most significant" class, with this priority:
-
+      // The "most significant" class
       classification: classificationReport[0],
       fullClassificationReport: classificationReport,
       duration: this.metricsFramesDecodedPerSecond.getReferenceTime(),
