@@ -269,7 +269,7 @@ export default class Measurement {
         // slow start due to low fps or high inter frame delay at start 
         classificationFlags.push('slow-start-detected')
       }
-
+      
       return classificationFlags.length ? classificationFlags : ['no-classification-detected'];
     };
 
