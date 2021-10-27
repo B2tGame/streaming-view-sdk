@@ -240,12 +240,6 @@ export default class Measurement {
         return [ 'stream-not-resumed' ]
       }
 
-      this.logger.info(
-        "boomchacka",
-        this.browser.isSupportedBrowser(),
-        this.browser.UA.browser
-      )
-
       // Unsupported device, for now only chrome is supported
       if (framesDecodedPerSecondStart === undefined || interFrameDelayStandardDeviationStart === undefined) {
         if(!this.browser.isSupportedBrowser()) {
