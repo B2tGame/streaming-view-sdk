@@ -5,6 +5,7 @@ import StreamWebRtc from './StreamWebRtc';
 import StreamSocket from './StreamSocket';
 import Metric from './Metric';
 import FramePerSecondHistogram from './FramePerSecondHistogram';
+import DeviceInfo from './DeviceInfo';
 
 /**
  * Measurement class is responsible for processing and reporting measurement reports
@@ -22,6 +23,7 @@ export default class Measurement {
     this.networkRoundTripTime = 0;
     this.webrtcRoundTripTime = 0;
     this.webrtcRoundTripTimeValues = [];
+    this.isStreamResumed = false;
     this.streamQualityRating = 0;
     this.numberOfBlackScreens = 0;
     this.previousMeasurement = this.defaultPreviousMeasurement();
@@ -31,6 +33,7 @@ export default class Measurement {
     this.metricsFramesDecodedPerSecond = new Metric();
     this.metricsInterFrameDelayStandardDeviation = new Metric();
     this.framesDecodedPerSecondHistogram = new FramePerSecondHistogram();
+    this.browser = new DeviceInfo()
     this.isClassificationReportCreated = false;
 
     StreamingEvent.edgeNode(edgeNodeId)
@@ -233,9 +236,22 @@ export default class Measurement {
 
       const classificationReport = []
 
+      if(!this.isStreamResumed) {
+        return [ 'stream-not-resumed' ]
+      }
+
+      this.logger.info(
+        "boomchacka",
+        this.browser.isSupportedBrowser(),
+        this.browser.UA.browser
+      )
+
       // Unsupported device, for now only chrome is supported
       if (framesDecodedPerSecondStart === undefined || interFrameDelayStandardDeviationStart === undefined) {
-        return ['unsupported-device'];
+        if(!this.browser.isSupportedBrowser()) {
+          return ['unsupported-browser'];
+        }
+        return [ 'start-data-missing' ]
       }
 
       // overall no issue was detected
@@ -297,6 +313,7 @@ export default class Measurement {
   }
 
   onStreamResumed = () => {
+    this.isStreamResumed = true;
     if (!this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
       this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
       this.metricsFramesDecodedPerSecond.setReferenceTime();
@@ -306,6 +323,7 @@ export default class Measurement {
 
   onEmulatorConfiguration = (payload) => {
     if (payload.state !== 'paused') {
+      this.isStreamResumed = true;
       if (!this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
         this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
         this.metricsFramesDecodedPerSecond.setReferenceTime();
