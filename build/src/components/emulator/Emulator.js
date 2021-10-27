@@ -6,14 +6,21 @@ var _Reflect$construct = require("@babel/runtime-corejs3/core-js-stable/reflect/
 
 var _WeakMap = require("@babel/runtime-corejs3/core-js-stable/weak-map");
 
+var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
+
 var _Object$getOwnPropertyDescriptor = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor");
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
-Object.defineProperty(exports, "__esModule", {
+_Object$defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+
+exports["default"] = void 0;
+
+var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/date/now"));
+
+var _setTimeout2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-timeout"));
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
 
@@ -45,9 +52,9 @@ var _StreamingEvent = _interopRequireDefault(require("../../StreamingEvent"));
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof _WeakMap !== "function") return null; var cacheBabelInterop = new _WeakMap(); var cacheNodeInterop = new _WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && _Object$getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? _Object$getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = _Object$defineProperty && _Object$getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? _Object$getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { _Object$defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2.default)(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2.default)(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2.default)(this, result); }; }
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_Reflect$construct) return false; if (_Reflect$construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(_Reflect$construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
@@ -87,44 +94,44 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_R
  * "GoBack"          -  Open the previous screen you were looking at.
  */
 var Emulator = /*#__PURE__*/function (_Component) {
-  (0, _inherits2.default)(Emulator, _Component);
+  (0, _inherits2["default"])(Emulator, _Component);
 
   var _super = _createSuper(Emulator);
 
   function Emulator(props) {
     var _this;
 
-    (0, _classCallCheck2.default)(this, Emulator);
+    (0, _classCallCheck2["default"])(this, Emulator);
     _this = _super.call(this, props);
     _this.components = {
-      webrtc: _EmulatorWebrtcView.default,
-      png: _EmulatorPngView.default
+      webrtc: _EmulatorWebrtcView["default"],
+      png: _EmulatorPngView["default"]
     };
     _this.state = {
-      streamingConnectionId: Date.now(),
+      streamingConnectionId: (0, _now["default"])(),
       width: undefined,
       height: undefined
     };
 
     _this.onDisconnect = function () {
-      setTimeout(function () {
-        _this.reload(_StreamingEvent.default.STREAM_DISCONNECTED);
+      (0, _setTimeout2["default"])(function () {
+        _this.reload(_StreamingEvent["default"].STREAM_DISCONNECTED);
       }, 250);
     };
 
     _this.onVideoUnavailable = function () {
-      setTimeout(function () {
-        _this.reload(_StreamingEvent.default.STREAM_VIDEO_UNAVAILABLE);
+      (0, _setTimeout2["default"])(function () {
+        _this.reload(_StreamingEvent["default"].STREAM_VIDEO_UNAVAILABLE);
       }, 250);
     };
 
     _this.onVideoMissing = function () {
-      _this.reload(_StreamingEvent.default.STREAM_VIDEO_MISSING);
+      _this.reload(_StreamingEvent["default"].STREAM_VIDEO_MISSING);
     };
 
     _this.onConnect = function () {
       _this.reloadCount = 0;
-      _this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT_AFTER_CONNECT;
+      _this.reloadHoldOff = (0, _now["default"])() + Emulator.RELOAD_HOLD_OFF_TIMEOUT_AFTER_CONNECT;
     };
 
     _this.sendKey = function (key) {
@@ -136,23 +143,23 @@ var Emulator = /*#__PURE__*/function (_Component) {
     };
 
     _this.isMountedInView = false;
-    _this.view = /*#__PURE__*/_react.default.createRef();
+    _this.view = /*#__PURE__*/_react["default"].createRef();
     _this.reloadCount = 0;
-    _this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
+    _this.reloadHoldOff = (0, _now["default"])() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
     var _this$props = _this.props,
         uri = _this$props.uri,
         auth = _this$props.auth,
         poll = _this$props.poll;
     _this.emulator = new _emulator_web_client.EmulatorControllerService(uri, auth, _this.onError);
     _this.rtc = new _emulator_web_client.RtcService(uri, auth, _this.onError);
-    _this.jsep = new _JsepProtocol.default(_this.emulator, _this.rtc, poll, _this.props.edgeNodeId, _this.props.logger, _this.props.turnEndpoint);
+    _this.jsep = new _JsepProtocol["default"](_this.emulator, _this.rtc, poll, _this.props.edgeNodeId, _this.props.logger, _this.props.turnEndpoint);
 
-    _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).on(_StreamingEvent.default.STREAM_DISCONNECTED, _this.onDisconnect).on(_StreamingEvent.default.STREAM_VIDEO_UNAVAILABLE, _this.onVideoUnavailable).on(_StreamingEvent.default.STREAM_VIDEO_MISSING, _this.onVideoMissing).on(_StreamingEvent.default.STREAM_CONNECTED, _this.onConnect);
+    _StreamingEvent["default"].edgeNode(_this.props.edgeNodeId).on(_StreamingEvent["default"].STREAM_DISCONNECTED, _this.onDisconnect).on(_StreamingEvent["default"].STREAM_VIDEO_UNAVAILABLE, _this.onVideoUnavailable).on(_StreamingEvent["default"].STREAM_VIDEO_MISSING, _this.onVideoMissing).on(_StreamingEvent["default"].STREAM_CONNECTED, _this.onConnect);
 
     return _this;
   }
 
-  (0, _createClass2.default)(Emulator, [{
+  (0, _createClass2["default"])(Emulator, [{
     key: "componentDidMount",
     value: function componentDidMount() {
       this.isMountedInView = true;
@@ -162,7 +169,7 @@ var Emulator = /*#__PURE__*/function (_Component) {
     value: function componentWillUnmount() {
       this.isMountedInView = false;
 
-      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).off(_StreamingEvent.default.STREAM_DISCONNECTED, this.onDisconnect).off(_StreamingEvent.default.STREAM_VIDEO_UNAVAILABLE, this.onVideoUnavailable).off(_StreamingEvent.default.STREAM_VIDEO_MISSING, this.onVideoMissing).off(_StreamingEvent.default.STREAM_CONNECTED, this.onConnect);
+      _StreamingEvent["default"].edgeNode(this.props.edgeNodeId).off(_StreamingEvent["default"].STREAM_DISCONNECTED, this.onDisconnect).off(_StreamingEvent["default"].STREAM_VIDEO_UNAVAILABLE, this.onVideoUnavailable).off(_StreamingEvent["default"].STREAM_VIDEO_MISSING, this.onVideoMissing).off(_StreamingEvent["default"].STREAM_CONNECTED, this.onConnect);
     }
   }, {
     key: "reload",
@@ -174,19 +181,19 @@ var Emulator = /*#__PURE__*/function (_Component) {
     function reload(cause) {
       this.props.logger.info("stream not working, request reload");
 
-      if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
-        this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
+      if ((this.reloadHoldOff || 0) < (0, _now["default"])() && this.isMountedInView) {
+        this.reloadHoldOff = (0, _now["default"])() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
 
         if (this.reloadCount >= this.props.maxConnectionRetries) {
           // Give up and exit the stream.
-          _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_UNREACHABLE, "Reached max number of reload tries: ".concat(this.reloadCount));
+          _StreamingEvent["default"].edgeNode(this.props.edgeNodeId).emit(_StreamingEvent["default"].STREAM_UNREACHABLE, "Reached max number of reload tries: ".concat(this.reloadCount));
         } else {
           this.reloadCount++;
 
-          _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_RELOADED, cause);
+          _StreamingEvent["default"].edgeNode(this.props.edgeNodeId).emit(_StreamingEvent["default"].STREAM_RELOADED, cause);
 
           this.setState({
-            streamingConnectionId: Date.now()
+            streamingConnectionId: (0, _now["default"])()
           });
         }
       }
@@ -205,7 +212,7 @@ var Emulator = /*#__PURE__*/function (_Component) {
           emulatorWidth = _this$props2.emulatorWidth,
           emulatorHeight = _this$props2.emulatorHeight,
           emulatorVersion = _this$props2.emulatorVersion;
-      return /*#__PURE__*/_react.default.createElement(_EventHandler.default, {
+      return /*#__PURE__*/_react["default"].createElement(_EventHandler["default"], {
         key: this.state.streamingConnectionId,
         ref: this.view,
         emulatorWidth: emulatorWidth,
@@ -223,7 +230,7 @@ var Emulator = /*#__PURE__*/function (_Component) {
         logger: this.props.logger,
         edgeNodeId: this.props.edgeNodeId,
         measureTouchRtt: this.props.measureTouchRtt,
-        view: this.components[view] || _EmulatorWebrtcView.default
+        view: this.components[view] || _EmulatorWebrtcView["default"]
       });
     }
   }], [{
@@ -264,52 +271,52 @@ var Emulator = /*#__PURE__*/function (_Component) {
 
 Emulator.propTypes = {
   /** gRPC Endpoint where we can reach the emulator. */
-  uri: _propTypes.default.string.isRequired,
+  uri: _propTypes["default"].string.isRequired,
 
   /** Override the default uri for turn servers */
-  turnEndpoint: _propTypes.default.string,
+  turnEndpoint: _propTypes["default"].string,
 
   /** Streaming Edge node ID */
-  edgeNodeId: _propTypes.default.string.isRequired,
+  edgeNodeId: _propTypes["default"].string.isRequired,
 
   /** The authentication service to use, or null for no authentication. */
-  auth: _propTypes.default.object,
+  auth: _propTypes["default"].object,
 
   /** Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100% */
-  volume: _propTypes.default.number,
+  volume: _propTypes["default"].number,
 
   /** Audio is muted or enabled (un-muted) */
-  muted: _propTypes.default.bool,
+  muted: _propTypes["default"].bool,
 
   /** The underlying view used to display the emulator, one of ["webrtc", "png"] */
-  view: _propTypes.default.oneOf(['webrtc', 'png']),
+  view: _propTypes["default"].oneOf(['webrtc', 'png']),
 
   /** True if polling should be used, only set this to true if you are using the go webgrpc proxy. */
-  poll: _propTypes.default.bool,
+  poll: _propTypes["default"].bool,
 
   /** True if the fullscreen should be enabled. */
-  enableFullScreen: _propTypes.default.bool,
+  enableFullScreen: _propTypes["default"].bool,
 
   /** Enable or disable user interactions with the game */
-  enableControl: _propTypes.default.bool,
+  enableControl: _propTypes["default"].bool,
 
   /** Event Logger */
-  logger: _propTypes.default.object.isRequired,
+  logger: _propTypes["default"].object.isRequired,
 
   /** Override the default threshold for now many time the SDK will try to reconnect to the stream */
-  maxConnectionRetries: _propTypes.default.number,
+  maxConnectionRetries: _propTypes["default"].number,
 
   /** Emulator Width */
-  emulatorWidth: _propTypes.default.number,
+  emulatorWidth: _propTypes["default"].number,
 
   /** Emulator Height */
-  emulatorHeight: _propTypes.default.number,
+  emulatorHeight: _propTypes["default"].number,
 
   /** Emulator Version */
-  emulatorVersion: _propTypes.default.string,
+  emulatorVersion: _propTypes["default"].string,
 
   /** Defines if touch rtt should be measured */
-  measureTouchRtt: _propTypes.default.bool
+  measureTouchRtt: _propTypes["default"].bool
 };
 Emulator.defaultProps = {
   auth: null,
@@ -318,4 +325,4 @@ Emulator.defaultProps = {
   measureTouchRtt: true
 };
 var _default = Emulator;
-exports.default = _default;
+exports["default"] = _default;
