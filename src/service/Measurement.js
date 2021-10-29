@@ -247,7 +247,7 @@ export default class Measurement {
         if (!this.browser.isSupportedBrowser()) {
           return ['unsupported-browser'];
         }
-        return ['missing-iframe-stdDev'];
+        return ['missing-iframe-stddev'];
       }
 
       // overall no issue was detected
