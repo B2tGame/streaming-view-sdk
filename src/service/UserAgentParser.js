@@ -4,7 +4,7 @@ import UAParser from 'ua-parser-js';
  * thin wrapper around UAParser, for full info about browsers and devices, see:
  * https://github.com/faisalman/ua-parser-js#methods
  */
-export default class DeviceInfo {
+export default class UserAgentParser {
   static supportedBrowsers = ['safari', 'mobile safari', 'chrome', 'chrome headless'];
 
   constructor() {
@@ -23,6 +23,6 @@ export default class DeviceInfo {
   }
 
   isSupportedBrowser() {
-    return DeviceInfo.supportedBrowsers.includes(this.getBrowserName().toLocaleLowerCase());
+    return UserAgentParser.supportedBrowsers.includes(this.getBrowserName().toLocaleLowerCase());
   }
 }

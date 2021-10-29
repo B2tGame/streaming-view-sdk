@@ -5,7 +5,7 @@ import StreamWebRtc from './StreamWebRtc';
 import StreamSocket from './StreamSocket';
 import Metric from './Metric';
 import FramePerSecondHistogram from './FramePerSecondHistogram';
-import DeviceInfo from './DeviceInfo';
+import UserAgentParser from './UserAgentParser';
 
 /**
  * Measurement class is responsible for processing and reporting measurement reports
@@ -33,7 +33,7 @@ export default class Measurement {
     this.metricsFramesDecodedPerSecond = new Metric();
     this.metricsInterFrameDelayStandardDeviation = new Metric();
     this.framesDecodedPerSecondHistogram = new FramePerSecondHistogram();
-    this.browser = new DeviceInfo();
+    this.browser = new UserAgentParser();
     this.isClassificationReportCreated = false;
 
     StreamingEvent.edgeNode(edgeNodeId)
