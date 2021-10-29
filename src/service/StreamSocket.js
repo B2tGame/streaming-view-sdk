@@ -1,6 +1,7 @@
 import url from 'url';
 import StreamingEvent from '../StreamingEvent';
 import io from 'socket.io-client';
+import zlib from 'zlib';
 
 /**
  * Websocket connection and communicate with the backend
@@ -12,6 +13,10 @@ export default class StreamSocket {
    */
   static get WEBSOCKET_PING_INTERVAL() {
     return 250;
+  }
+
+  static get WEBSOCKET_EMIT_REPORTS_INTERVAL() {
+    return StreamSocket.WEBSOCKET_PING_INTERVAL * 10;
   }
 
   /**
@@ -28,6 +33,9 @@ export default class StreamSocket {
       path: `${endpoint.path}/emulator-commands/socket.io`,
       query: `userId=${userId}&internal=${internalSession ? '1' : '0'}`
     });
+    this.reportCache = [];
+    this.reportTimer = setInterval(this.emitReports, StreamSocket.WEBSOCKET_EMIT_REPORTS_INTERVAL);
+
     // Web Socket errors
     this.socket.on('error', (err) => StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ERROR, err));
     // Preforming and emit RTT to the streaming event bus.
@@ -72,16 +80,37 @@ export default class StreamSocket {
     });
     // Send measurement report to the backend.
     StreamingEvent.edgeNode(edgeNodeId)
-      .on(StreamingEvent.REPORT_MEASUREMENT, this.onReport)
+      .on(StreamingEvent.REPORT_MEASUREMENT, this.onReportMeasurement)
       .on(StreamingEvent.USER_EVENT_REPORT, this.onUserEventReport)
       .on(StreamingEvent.STREAM_UNREACHABLE, this.close);
   }
 
-  onReport = (payload) => {
+  onReportMeasurement = (payload) => {
+    console.log('PAYLOAD', payload);
     payload.type = 'report';
     payload.timestamp = Date.now();
-    if (this.socket) {
-      this.socket.emit('message', JSON.stringify(payload));
+    this.reportCache.push(JSON.stringify(payload));
+  };
+
+  /**
+   * Emits cached report messages
+   * @param {bool} isLast
+   */
+  emitReports = (isLast = false) => {
+    if (isLast) {
+      clearInterval(this.reportTimer);
+    }
+
+    if (this.reportCache.length && this.socket) {
+      this.socket.emit(
+        'message',
+        JSON.stringify({
+          type: 'report-bundle',
+          timestamp: Date.now(),
+          reports: zlib.deflateSync(Buffer.from(JSON.stringify([...this.reportCache])))
+        })
+      );
+      this.reportCache = [];
     }
   };
 
@@ -100,9 +129,10 @@ export default class StreamSocket {
 
   close = () => {
     if (this.socket) {
+      this.emitReports(true);
       this.socket.close();
       StreamingEvent.edgeNode(this.edgeNodeId)
-        .off(StreamingEvent.REPORT_MEASUREMENT, this.onReport)
+        .off(StreamingEvent.REPORT_MEASUREMENT, this.onReportMeasurement)
         .off(StreamingEvent.USER_EVENT_REPORT, this.onUserEventReport)
         .off(StreamingEvent.STREAM_UNREACHABLE, this.close);
       this.socket = undefined;
