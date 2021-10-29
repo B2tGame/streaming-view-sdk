@@ -33,7 +33,7 @@ export default class Measurement {
     this.metricsFramesDecodedPerSecond = new Metric();
     this.metricsInterFrameDelayStandardDeviation = new Metric();
     this.framesDecodedPerSecondHistogram = new FramePerSecondHistogram();
-    this.browser = new DeviceInfo()
+    this.browser = new DeviceInfo();
     this.isClassificationReportCreated = false;
 
     StreamingEvent.edgeNode(edgeNodeId)
@@ -211,41 +211,43 @@ export default class Measurement {
     const framesDecodedPerSecondBeginning = this.metricsFramesDecodedPerSecond.getMetric(Metric.BEGINNING);
     const framesDecodedPerSecondOverall = this.metricsFramesDecodedPerSecond.getMetric(Metric.OVERALL);
     const framesDecodedPerSecondCurrent = this.metricsFramesDecodedPerSecond.getMetric(Metric.CURRENT);
-    
+
     const interFrameDelayStandardDeviationStart = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.START);
     const interFrameDelayStandardDeviationBeginning = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.BEGINNING);
     const interFrameDelayStandardDeviationOverall = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.OVERALL);
     const interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.CURRENT);
 
     /**
-    *
-    *  There are three "types" of classification,
-    *  good, bad and error. They are put in an 
-    *  ordered by precedence like such:
-    * 
-    *    1. unsupported-device (error)
-    *    2. no-slow-motion-detected (good)
-    *    3. consistent-slow-motion-detected (bad)
-    *    4. slow-start-detected (acceptable)
-    *    5. slow-beginning-detected (bad)
-    *    6. no-classification-detected (error)
-    *
-    *
-    */
+     *
+     *  There are three "types" of classification,
+     *  good, bad and error. They are put in an
+     *  ordered by precedence like such:
+     *
+     *    1. unsupported-device (error)
+     *    2. no-slow-motion-detected (good)
+     *    3. consistent-slow-motion-detected (bad)
+     *    4. slow-start-detected (acceptable)
+     *    5. slow-beginning-detected (bad)
+     *    6. no-classification-detected (error)
+     *
+     *
+     */
     const createClassification = () => {
+      const classificationReport = [];
 
-      const classificationReport = []
-
-      if(!this.isStreamResumed) {
-        return [ 'stream-not-resumed' ]
+      if (!this.isStreamResumed) {
+        return ['stream-not-resumed'];
       }
 
-      // Unsupported device, for now only chrome is supported
-      if (framesDecodedPerSecondStart === undefined || interFrameDelayStandardDeviationStart === undefined) {
-        if(!this.browser.isSupportedBrowser()) {
+      if (
+        !interFrameDelayStandardDeviationStart &&
+        !interFrameDelayStandardDeviationBeginning &&
+        !interFrameDelayStandardDeviationCurrent
+      ) {
+        if (!this.browser.isSupportedBrowser()) {
           return ['unsupported-browser'];
         }
-        return [ 'start-data-missing' ]
+        return ['missing-iframe-stdDev'];
       }
 
       // overall no issue was detected
@@ -253,36 +255,32 @@ export default class Measurement {
         framesDecodedPerSecondStart > 45 &&
         framesDecodedPerSecondBeginning > 45 &&
         (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 &&
-        interFrameDelayStandardDeviationStart < 15 &&
-        interFrameDelayStandardDeviationBeginning < 15 &&
-        (interFrameDelayStandardDeviationOverall || 0) < 15
+        (interFrameDelayStandardDeviationStart || Number.MAX_VALUE) < 15 &&
+        (interFrameDelayStandardDeviationBeginning || Number.MAX_VALUE) < 15 &&
+        (interFrameDelayStandardDeviationOverall || Number.MAX_VALUE) < 15
       ) {
-        return [ 'no-slow-motion-detected' ]
+        return ['no-slow-motion-detected'];
       }
 
-      if (
-        (framesDecodedPerSecondOverall || 0) < 45 || (interFrameDelayStandardDeviationOverall || Number.MAX_VALUE) > 15
-      ) {
+      if ((framesDecodedPerSecondOverall || 0) < 45 || (interFrameDelayStandardDeviationOverall || Number.MAX_VALUE) > 15) {
         // consistent low fps over the whole session.
-        classificationReport.push('consistent-slow-motion-detected')
+        classificationReport.push('consistent-slow-motion-detected');
       }
 
-      if ( framesDecodedPerSecondStart < 45 || interFrameDelayStandardDeviationStart > 15) {
-        // slow start due to low fps or high inter frame delay at start 
-        classificationReport.push('slow-start-detected')
+      if (framesDecodedPerSecondStart < 45 || (interFrameDelayStandardDeviationStart || Number.MAX_VALUE) > 15) {
+        // slow start due to low fps or high inter frame delay at start
+        classificationReport.push('slow-start-detected');
       }
 
-      if (
-        (framesDecodedPerSecondBeginning < 45) || (interFrameDelayStandardDeviationBeginning > 15)
-      ) {
+      if (framesDecodedPerSecondBeginning < 45 || (interFrameDelayStandardDeviationBeginning || Number.MAX_VALUE) > 15) {
         // slow start due to low fps in beginning OR due to high inter frame delay std dev in beginning
-        classificationReport.push('slow-beginning-detected')
+        classificationReport.push('slow-beginning-detected');
       }
-      
+
       return classificationReport.length ? classificationReport : ['no-classification-detected'];
     };
 
-    const classificationReport = createClassification()
+    const classificationReport = createClassification();
 
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.CLASSIFICATION_REPORT, {
       // The "most significant" classification
