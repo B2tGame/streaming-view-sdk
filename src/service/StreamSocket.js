@@ -86,7 +86,6 @@ export default class StreamSocket {
   }
 
   onReportMeasurement = (payload) => {
-    console.log('PAYLOAD', payload);
     payload.type = 'report';
     payload.timestamp = Date.now();
     this.reportCache.push(JSON.stringify(payload));
