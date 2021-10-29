@@ -1,5 +1,4 @@
 export default class Metric {
-
   /**
    * The avg data over time 0 to 2000 ms
    * @constructor
@@ -28,7 +27,6 @@ export default class Metric {
     };
   }
 
-
   /**
    * The avg data over time 2000 to 7000ms
    * @constructor
@@ -53,7 +51,6 @@ export default class Metric {
     };
   }
 
-
   static get ALL_METRICS() {
     return [Metric.START, Metric.BEGINNING, Metric.OVERALL, Metric.CURRENT];
   }
@@ -61,7 +58,6 @@ export default class Metric {
   constructor() {
     this.refTimestamp = undefined;
   }
-
 
   /**
    * Set the zero reference timestamp
@@ -108,10 +104,11 @@ export default class Metric {
       const currentTimestamp = this.getReferenceTime(timestamp);
 
       for (let item of Metric.ALL_METRICS) {
-
         if (item.mode === 'start') {
           if (item.start <= currentTimestamp && item.end >= currentTimestamp) {
             const metric = this.metrics[item.id];
+
+            metric.raw.push({ timestamp: currentTimestamp, value: value });
             metric.firstValueTime = metric.firstValueTime === undefined ? currentTimestamp : metric.firstValueTime;
             metric.lastValueTime = currentTimestamp;
             metric.sum += value;
@@ -121,7 +118,7 @@ export default class Metric {
           const metric = this.metrics[item.id];
           metric.raw.push({ timestamp: currentTimestamp, value: value });
 
-          metric.raw = metric.raw.filter((rec) => (currentTimestamp - rec.timestamp) < -item.start);
+          metric.raw = metric.raw.filter((rec) => currentTimestamp - rec.timestamp < -item.start);
           metric.firstValueTime = metric.firstValueTime === undefined ? currentTimestamp : metric.firstValueTime;
           metric.lastValueTime = currentTimestamp;
           metric.count = metric.raw.length;
@@ -129,7 +126,6 @@ export default class Metric {
       }
     }
   }
-
 
   /**
    * Get a metric key
@@ -140,14 +136,14 @@ export default class Metric {
   getMetric(key, timestamp = undefined) {
     if (key && key.id && this.hasReferenceTime()) {
       const metric = this.metrics[key.id];
-      if (metric && (metric.lastValueTime - metric.firstValueTime) >= key.requiredWindow) {
+      if (metric && metric.lastValueTime - metric.firstValueTime >= key.requiredWindow) {
         if (key.mode === 'start') {
           return metric.sum / metric.count;
         } else if (key.mode === 'end') {
           const currentTimestamp = this.getReferenceTime(timestamp);
           const metrics = metric.raw
-            .filter((rec) => (currentTimestamp - rec.timestamp) <= -key.start)
-            .filter((rec) => (currentTimestamp - rec.timestamp) >= -key.end)
+            .filter((rec) => currentTimestamp - rec.timestamp <= -key.start)
+            .filter((rec) => currentTimestamp - rec.timestamp >= -key.end)
             .map((rec) => rec.value);
           return metrics.reduce((a, b) => a + b, 0) / metrics.length;
         }
@@ -156,4 +152,3 @@ export default class Metric {
     return undefined;
   }
 }
-
