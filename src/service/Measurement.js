@@ -231,8 +231,6 @@ export default class Measurement {
      *    6. slow-start-detected (acceptable)
      *    7. slow-beginning-detected (bad)
      *    8. no-classification-detected (error)
-     *
-     *
      */
     const createClassification = () => {
       const classificationReport = [];
