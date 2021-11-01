@@ -218,7 +218,6 @@ export default class Measurement {
     const interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.CURRENT);
 
     /**
-     *
      *  There are three "types" of classification,
      *  good, bad and error. They are put in an
      *  ordered by precedence like such:
