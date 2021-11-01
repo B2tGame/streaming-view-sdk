@@ -315,8 +315,13 @@ export default class Measurement {
     }
   };
 
+  /**
+   *
+   * @param {{ state: 'paused' | 'resumed' | 'terminated' | 'edge-node-crashed'}} payload
+   *
+   */
   onEmulatorConfiguration = (payload) => {
-    if (payload.state !== 'paused') {
+    if (payload.state === 'resumed') {
       this.isStreamResumed = true;
       if (!this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
         this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
