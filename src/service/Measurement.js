@@ -5,6 +5,7 @@ import StreamWebRtc from './StreamWebRtc';
 import StreamSocket from './StreamSocket';
 import Metric from './Metric';
 import FramePerSecondHistogram from './FramePerSecondHistogram';
+import UserAgentParser from './UserAgentParser';
 
 /**
  * Measurement class is responsible for processing and reporting measurement reports
@@ -22,6 +23,7 @@ export default class Measurement {
     this.networkRoundTripTime = 0;
     this.webrtcRoundTripTime = 0;
     this.webrtcRoundTripTimeValues = [];
+    this.isStreamResumed = false;
     this.streamQualityRating = 0;
     this.numberOfBlackScreens = 0;
     this.previousMeasurement = this.defaultPreviousMeasurement();
@@ -31,6 +33,7 @@ export default class Measurement {
     this.metricsFramesDecodedPerSecond = new Metric();
     this.metricsInterFrameDelayStandardDeviation = new Metric();
     this.framesDecodedPerSecondHistogram = new FramePerSecondHistogram();
+    this.browser = new UserAgentParser();
     this.isClassificationReportCreated = false;
 
     StreamingEvent.edgeNode(edgeNodeId)
@@ -208,14 +211,42 @@ export default class Measurement {
     const framesDecodedPerSecondBeginning = this.metricsFramesDecodedPerSecond.getMetric(Metric.BEGINNING);
     const framesDecodedPerSecondOverall = this.metricsFramesDecodedPerSecond.getMetric(Metric.OVERALL);
     const framesDecodedPerSecondCurrent = this.metricsFramesDecodedPerSecond.getMetric(Metric.CURRENT);
+
     const interFrameDelayStandardDeviationStart = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.START);
     const interFrameDelayStandardDeviationBeginning = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.BEGINNING);
     const interFrameDelayStandardDeviationOverall = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.OVERALL);
     const interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(Metric.CURRENT);
-    const classification = () => {
-      // Unsupported device, for now only chrome is supported
-      if (framesDecodedPerSecondStart === undefined || interFrameDelayStandardDeviationStart === undefined) {
-        return 'unsupported-device';
+
+    /**
+     *  There are three "types" of classification,
+     *  good, bad and error. They are put in an
+     *  ordered by precedence like such:
+     *
+     *    1. stream-not-resumed (possible user error)
+     *    2. unsupported-browser (error)
+     *    3. missing-iframe-stddev (error)
+     *    4. no-slow-motion-detected (good)
+     *    5. consistent-slow-motion-detected (bad)
+     *    6. slow-start-detected (acceptable)
+     *    7. slow-beginning-detected (bad)
+     *    8. no-classification-detected (error)
+     */
+    const createClassification = () => {
+      const classificationReport = [];
+
+      if (!this.isStreamResumed) {
+        return ['stream-not-resumed'];
+      }
+
+      if (
+        !interFrameDelayStandardDeviationStart &&
+        !interFrameDelayStandardDeviationBeginning &&
+        !interFrameDelayStandardDeviationCurrent
+      ) {
+        if (!this.browser.isSupportedBrowser()) {
+          return ['unsupported-browser'];
+        }
+        return ['missing-iframe-stddev'];
       }
 
       // overall no issue was detected
@@ -223,77 +254,37 @@ export default class Measurement {
         framesDecodedPerSecondStart > 45 &&
         framesDecodedPerSecondBeginning > 45 &&
         (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 &&
-        interFrameDelayStandardDeviationStart < 15 &&
-        interFrameDelayStandardDeviationBeginning < 15 &&
-        (interFrameDelayStandardDeviationOverall || 0) < 15
+        (interFrameDelayStandardDeviationStart || Number.MAX_VALUE) < 15 &&
+        (interFrameDelayStandardDeviationBeginning || Number.MAX_VALUE) < 15 &&
+        (interFrameDelayStandardDeviationOverall || Number.MAX_VALUE) < 15
       ) {
-        return 'no-slow-motion-detected';
+        return ['no-slow-motion-detected'];
       }
 
-      // consistent low fps over the whole session.
-      if (framesDecodedPerSecondStart < 45 && framesDecodedPerSecondBeginning < 45 && (framesDecodedPerSecondOverall || 0) < 45) {
-        return 'consistent-slow-motion-detected';
+      if ((framesDecodedPerSecondOverall || 0) < 45 || (interFrameDelayStandardDeviationOverall || Number.MAX_VALUE) > 15) {
+        // consistent low fps over the whole session.
+        classificationReport.push('consistent-slow-motion-detected');
       }
 
-      // consistent high inter frame delay standard deviation over the whole game session.
-      if (
-        interFrameDelayStandardDeviationStart > 15 &&
-        interFrameDelayStandardDeviationBeginning > 15 &&
-        (interFrameDelayStandardDeviationOverall || Number.MAX_VALUE) > 15
-      ) {
-        return 'consistent-slow-motion-detected';
+      if (framesDecodedPerSecondStart < 45 || (interFrameDelayStandardDeviationStart || Number.MAX_VALUE) > 15) {
+        // slow start due to low fps or high inter frame delay at start
+        classificationReport.push('slow-start-detected');
       }
 
-      // slow start due to low fps in beginning
-      if (
-        framesDecodedPerSecondStart < 45 &&
-        framesDecodedPerSecondBeginning < 45 &&
-        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 &&
-        (interFrameDelayStandardDeviationOverall || 0) < 15
-      ) {
-        return 'slow-beginning-detected';
+      if (framesDecodedPerSecondBeginning < 45 || (interFrameDelayStandardDeviationBeginning || Number.MAX_VALUE) > 15) {
+        // slow start due to low fps in beginning OR due to high inter frame delay std dev in beginning
+        classificationReport.push('slow-beginning-detected');
       }
 
-      // slow start due to high inter frame delay std dev in beginning
-      if (
-        interFrameDelayStandardDeviationStart > 15 &&
-        interFrameDelayStandardDeviationBeginning > 15 &&
-        (interFrameDelayStandardDeviationOverall || 0) < 15 &&
-        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45
-      ) {
-        return 'slow-beginning-detected';
-      }
-
-      // slow start due to low fps in start
-      if (
-        framesDecodedPerSecondStart < 45 &&
-        framesDecodedPerSecondBeginning > 45 &&
-        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 &&
-        interFrameDelayStandardDeviationBeginning < 15
-      ) {
-        return 'slow-start-detected';
-      }
-
-      // slow start due to high inter frame delay std dev in start
-      if (
-        interFrameDelayStandardDeviationStart > 15 &&
-        interFrameDelayStandardDeviationBeginning < 15 &&
-        (interFrameDelayStandardDeviationOverall || 0) < 15 &&
-        (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45
-      ) {
-        return 'slow-start-detected';
-      }
-
-      // consistent low fps or high inter frame delay std dev over the session.
-      if (framesDecodedPerSecondOverall < 45 || interFrameDelayStandardDeviationOverall > 15) {
-        return 'consistent-slow-motion-detected';
-      }
-
-      return 'no-classification-detected';
+      return classificationReport.length ? classificationReport : ['no-classification-detected'];
     };
 
+    const classificationReport = createClassification();
+
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.CLASSIFICATION_REPORT, {
-      classification: classification(),
+      // The "most significant" classification
+      classification: classificationReport[0],
+      classificationReport: classificationReport,
       duration: this.metricsFramesDecodedPerSecond.getReferenceTime(),
       streamingViewId: this.streamingViewId,
       framesDecodedPerSecond: {
@@ -313,6 +304,7 @@ export default class Measurement {
   }
 
   onStreamResumed = () => {
+    this.isStreamResumed = true;
     if (!this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
       this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
       this.metricsFramesDecodedPerSecond.setReferenceTime();
@@ -320,8 +312,14 @@ export default class Measurement {
     }
   };
 
+  /**
+   *
+   * @param {{ state: 'paused' | 'resumed' | 'terminated' | 'edge-node-crashed'}} payload
+   *
+   */
   onEmulatorConfiguration = (payload) => {
-    if (payload.state !== 'paused') {
+    if (payload.state === 'resumed') {
+      this.isStreamResumed = true;
       if (!this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
         this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
         this.metricsFramesDecodedPerSecond.setReferenceTime();
