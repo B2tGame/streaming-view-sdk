@@ -223,12 +223,14 @@ export default class Measurement {
      *  good, bad and error. They are put in an
      *  ordered by precedence like such:
      *
-     *    1. unsupported-device (error)
-     *    2. no-slow-motion-detected (good)
-     *    3. consistent-slow-motion-detected (bad)
-     *    4. slow-start-detected (acceptable)
-     *    5. slow-beginning-detected (bad)
-     *    6. no-classification-detected (error)
+     *    1. stream-not-resumed (possible user error)
+     *    2. unsupported-browser (error)
+     *    3. missing-iframe-stddev (error)
+     *    4. no-slow-motion-detected (good)
+     *    5. consistent-slow-motion-detected (bad)
+     *    6. slow-start-detected (acceptable)
+     *    7. slow-beginning-detected (bad)
+     *    8. no-classification-detected (error)
      *
      *
      */
