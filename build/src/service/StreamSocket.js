@@ -16,6 +16,10 @@ var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-
 
 var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
 
+var _setInterval2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-interval"));
+
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/toConsumableArray"));
+
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
@@ -25,6 +29,8 @@ var _url = _interopRequireDefault(require("url"));
 var _StreamingEvent = _interopRequireDefault(require("../StreamingEvent"));
 
 var _socket = _interopRequireDefault(require("socket.io-client"));
+
+var _zlib = _interopRequireDefault(require("zlib"));
 
 /**
  * Websocket connection and communicate with the backend
@@ -43,12 +49,28 @@ var StreamSocket = /*#__PURE__*/function () {
 
     (0, _classCallCheck2["default"])(this, StreamSocket);
 
-    this.onReport = function (payload) {
+    this.onReportMeasurement = function (payload) {
       payload.type = 'report';
       payload.timestamp = (0, _now["default"])();
 
-      if (_this.socket) {
-        _this.socket.emit('message', (0, _stringify["default"])(payload));
+      _this.reportCache.push((0, _stringify["default"])(payload));
+    };
+
+    this.emitReports = function () {
+      var isLast = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+      if (isLast) {
+        clearInterval(_this.reportTimer);
+      }
+
+      if (_this.reportCache.length && _this.socket) {
+        _this.socket.emit('message', (0, _stringify["default"])({
+          type: 'report-bundle',
+          timestamp: (0, _now["default"])(),
+          reports: _zlib["default"].deflateSync(Buffer.from((0, _stringify["default"])((0, _toConsumableArray2["default"])(_this.reportCache))))
+        }));
+
+        _this.reportCache = [];
       }
     };
 
@@ -63,9 +85,11 @@ var StreamSocket = /*#__PURE__*/function () {
 
     this.close = function () {
       if (_this.socket) {
+        _this.emitReports(true);
+
         _this.socket.close();
 
-        _StreamingEvent["default"].edgeNode(_this.edgeNodeId).off(_StreamingEvent["default"].REPORT_MEASUREMENT, _this.onReport).off(_StreamingEvent["default"].USER_EVENT_REPORT, _this.onUserEventReport).off(_StreamingEvent["default"].STREAM_UNREACHABLE, _this.close);
+        _StreamingEvent["default"].edgeNode(_this.edgeNodeId).off(_StreamingEvent["default"].REPORT_MEASUREMENT, _this.onReportMeasurement).off(_StreamingEvent["default"].USER_EVENT_REPORT, _this.onUserEventReport).off(_StreamingEvent["default"].STREAM_UNREACHABLE, _this.close);
 
         _this.socket = undefined;
       }
@@ -78,7 +102,9 @@ var StreamSocket = /*#__PURE__*/function () {
     this.socket = (0, _socket["default"])((0, _concat["default"])(_context = "".concat(endpoint.protocol, "//")).call(_context, endpoint.host), {
       path: "".concat(endpoint.path, "/emulator-commands/socket.io"),
       query: (0, _concat["default"])(_context2 = "userId=".concat(userId, "&internal=")).call(_context2, internalSession ? '1' : '0')
-    }); // Web Socket errors
+    });
+    this.reportCache = [];
+    this.reportTimer = (0, _setInterval2["default"])(this.emitReports, StreamSocket.WEBSOCKET_EMIT_REPORTS_INTERVAL); // Web Socket errors
 
     this.socket.on('error', function (err) {
       return _StreamingEvent["default"].edgeNode(edgeNodeId).emit(_StreamingEvent["default"].ERROR, err);
@@ -139,7 +165,7 @@ var StreamSocket = /*#__PURE__*/function () {
       }
     }); // Send measurement report to the backend.
 
-    _StreamingEvent["default"].edgeNode(edgeNodeId).on(_StreamingEvent["default"].REPORT_MEASUREMENT, this.onReport).on(_StreamingEvent["default"].USER_EVENT_REPORT, this.onUserEventReport).on(_StreamingEvent["default"].STREAM_UNREACHABLE, this.close);
+    _StreamingEvent["default"].edgeNode(edgeNodeId).on(_StreamingEvent["default"].REPORT_MEASUREMENT, this.onReportMeasurement).on(_StreamingEvent["default"].USER_EVENT_REPORT, this.onUserEventReport).on(_StreamingEvent["default"].STREAM_UNREACHABLE, this.close);
   }
 
   (0, _createClass2["default"])(StreamSocket, null, [{
@@ -151,6 +177,11 @@ var StreamSocket = /*#__PURE__*/function () {
      */
     function get() {
       return 250;
+    }
+  }, {
+    key: "WEBSOCKET_EMIT_REPORTS_INTERVAL",
+    get: function get() {
+      return StreamSocket.WEBSOCKET_PING_INTERVAL * 10;
     }
   }]);
   return StreamSocket;

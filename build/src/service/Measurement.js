@@ -36,6 +36,8 @@ var _Metric = _interopRequireDefault(require("./Metric"));
 
 var _FramePerSecondHistogram = _interopRequireDefault(require("./FramePerSecondHistogram"));
 
+var _UserAgentParser = _interopRequireDefault(require("./UserAgentParser"));
+
 /**
  * Measurement class is responsible for processing and reporting measurement reports
  */
@@ -79,6 +81,8 @@ var Measurement = /*#__PURE__*/function () {
     };
 
     this.onStreamResumed = function () {
+      _this.isStreamResumed = true;
+
       if (!_this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
         _this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
 
@@ -89,7 +93,9 @@ var Measurement = /*#__PURE__*/function () {
     };
 
     this.onEmulatorConfiguration = function (payload) {
-      if (payload.state !== 'paused') {
+      if (payload.state === 'resumed') {
+        _this.isStreamResumed = true;
+
         if (!_this.metricsFramesDecodedPerSecond.hasReferenceTime()) {
           _this.metricsInterFrameDelayStandardDeviation.setReferenceTime();
 
@@ -106,6 +112,7 @@ var Measurement = /*#__PURE__*/function () {
     this.networkRoundTripTime = 0;
     this.webrtcRoundTripTime = 0;
     this.webrtcRoundTripTimeValues = [];
+    this.isStreamResumed = false;
     this.streamQualityRating = 0;
     this.numberOfBlackScreens = 0;
     this.previousMeasurement = this.defaultPreviousMeasurement();
@@ -115,6 +122,7 @@ var Measurement = /*#__PURE__*/function () {
     this.metricsFramesDecodedPerSecond = new _Metric["default"]();
     this.metricsInterFrameDelayStandardDeviation = new _Metric["default"]();
     this.framesDecodedPerSecondHistogram = new _FramePerSecondHistogram["default"]();
+    this.browser = new _UserAgentParser["default"]();
     this.isClassificationReportCreated = false;
 
     _StreamingEvent["default"].edgeNode(edgeNodeId).on(_StreamingEvent["default"].ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement).on(_StreamingEvent["default"].WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement).on(_StreamingEvent["default"].STREAM_QUALITY_RATING, this.onStreamQualityRating).on(_StreamingEvent["default"].STREAM_BLACK_SCREEN, this.onStreamBlackScreen).on(_StreamingEvent["default"].STREAM_DISCONNECTED, this.onStreamDisconnected).on(_StreamingEvent["default"].STREAM_TERMINATED, this.onStreamTerminated).on(_StreamingEvent["default"].STREAM_RESUMED, this.onStreamResumed).on(_StreamingEvent["default"].EMULATOR_CONFIGURATION, this.onEmulatorConfiguration);
@@ -169,6 +177,8 @@ var Measurement = /*#__PURE__*/function () {
   }, {
     key: "createClassificationReport",
     value: function createClassificationReport() {
+      var _this3 = this;
+
       if (this.isClassificationReportCreated) {
         this.logger.info('classification report already created');
         return;
@@ -184,58 +194,65 @@ var Measurement = /*#__PURE__*/function () {
       var interFrameDelayStandardDeviationBeginning = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric["default"].BEGINNING);
       var interFrameDelayStandardDeviationOverall = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric["default"].OVERALL);
       var interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric["default"].CURRENT);
+      /**
+       *  There are three "types" of classification,
+       *  good, bad and error. They are put in an
+       *  ordered by precedence like such:
+       *
+       *    1. stream-not-resumed (possible user error)
+       *    2. unsupported-browser (error)
+       *    3. missing-iframe-stddev (error)
+       *    4. no-slow-motion-detected (good)
+       *    5. consistent-slow-motion-detected (bad)
+       *    6. slow-start-detected (acceptable)
+       *    7. slow-beginning-detected (bad)
+       *    8. no-classification-detected (error)
+       */
 
-      var classification = function classification() {
-        // Unsupported device, for now only chrome is supported
-        if (framesDecodedPerSecondStart === undefined || interFrameDelayStandardDeviationStart === undefined) {
-          return 'unsupported-device';
+      var createClassification = function createClassification() {
+        var classificationReport = [];
+
+        if (!_this3.isStreamResumed) {
+          return ['stream-not-resumed'];
+        }
+
+        if (!interFrameDelayStandardDeviationStart && !interFrameDelayStandardDeviationBeginning && !interFrameDelayStandardDeviationCurrent) {
+          if (!_this3.browser.isSupportedBrowser()) {
+            return ['unsupported-browser'];
+          }
+
+          return ['missing-iframe-stddev'];
         } // overall no issue was detected
 
 
-        if (framesDecodedPerSecondStart > 45 && framesDecodedPerSecondBeginning > 45 && (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 && interFrameDelayStandardDeviationStart < 15 && interFrameDelayStandardDeviationBeginning < 15 && (interFrameDelayStandardDeviationOverall || 0) < 15) {
-          return 'no-slow-motion-detected';
-        } // consistent low fps over the whole session.
-
-
-        if (framesDecodedPerSecondStart < 45 && framesDecodedPerSecondBeginning < 45 && (framesDecodedPerSecondOverall || 0) < 45) {
-          return 'consistent-slow-motion-detected';
-        } // consistent high inter frame delay standard deviation over the whole game session.
-
-
-        if (interFrameDelayStandardDeviationStart > 15 && interFrameDelayStandardDeviationBeginning > 15 && (interFrameDelayStandardDeviationOverall || Number.MAX_VALUE) > 15) {
-          return 'consistent-slow-motion-detected';
-        } // slow start due to low fps in beginning
-
-
-        if (framesDecodedPerSecondStart < 45 && framesDecodedPerSecondBeginning < 45 && (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 && (interFrameDelayStandardDeviationOverall || 0) < 15) {
-          return 'slow-beginning-detected';
-        } // slow start due to high inter frame delay std dev in beginning
-
-
-        if (interFrameDelayStandardDeviationStart > 15 && interFrameDelayStandardDeviationBeginning > 15 && (interFrameDelayStandardDeviationOverall || 0) < 15 && (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45) {
-          return 'slow-beginning-detected';
-        } // slow start due to low fps in start
-
-
-        if (framesDecodedPerSecondStart < 45 && framesDecodedPerSecondBeginning > 45 && (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 && interFrameDelayStandardDeviationBeginning < 15) {
-          return 'slow-start-detected';
-        } // slow start due to high inter frame delay std dev in start
-
-
-        if (interFrameDelayStandardDeviationStart > 15 && interFrameDelayStandardDeviationBeginning < 15 && (interFrameDelayStandardDeviationOverall || 0) < 15 && (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45) {
-          return 'slow-start-detected';
-        } // consistent low fps or high inter frame delay std dev over the session.
-
-
-        if (framesDecodedPerSecondOverall < 45 || interFrameDelayStandardDeviationOverall > 15) {
-          return 'consistent-slow-motion-detected';
+        if (framesDecodedPerSecondStart > 45 && framesDecodedPerSecondBeginning > 45 && (framesDecodedPerSecondOverall || Number.MAX_VALUE) > 45 && (interFrameDelayStandardDeviationStart || Number.MAX_VALUE) < 15 && (interFrameDelayStandardDeviationBeginning || Number.MAX_VALUE) < 15 && (interFrameDelayStandardDeviationOverall || Number.MAX_VALUE) < 15) {
+          return ['no-slow-motion-detected'];
         }
 
-        return 'no-classification-detected';
+        if ((framesDecodedPerSecondOverall || 0) < 45 || (interFrameDelayStandardDeviationOverall || Number.MAX_VALUE) > 15) {
+          // consistent low fps over the whole session.
+          classificationReport.push('consistent-slow-motion-detected');
+        }
+
+        if (framesDecodedPerSecondStart < 45 || (interFrameDelayStandardDeviationStart || Number.MAX_VALUE) > 15) {
+          // slow start due to low fps or high inter frame delay at start
+          classificationReport.push('slow-start-detected');
+        }
+
+        if (framesDecodedPerSecondBeginning < 45 || (interFrameDelayStandardDeviationBeginning || Number.MAX_VALUE) > 15) {
+          // slow start due to low fps in beginning OR due to high inter frame delay std dev in beginning
+          classificationReport.push('slow-beginning-detected');
+        }
+
+        return classificationReport.length ? classificationReport : ['no-classification-detected'];
       };
 
+      var classificationReport = createClassification();
+
       _StreamingEvent["default"].edgeNode(this.edgeNodeId).emit(_StreamingEvent["default"].CLASSIFICATION_REPORT, {
-        classification: classification(),
+        // The "most significant" classification
+        classification: classificationReport[0],
+        classificationReport: classificationReport,
         duration: this.metricsFramesDecodedPerSecond.getReferenceTime(),
         streamingViewId: this.streamingViewId,
         framesDecodedPerSecond: {
@@ -285,21 +302,21 @@ var Measurement = /*#__PURE__*/function () {
   }, {
     key: "reportWebRtcMeasurement",
     value: function reportWebRtcMeasurement(stats) {
-      var _this3 = this;
+      var _this4 = this;
 
       this.measurement.measureAt = (0, _now["default"])();
       this.measurement.measureDuration = (this.measurement.measureAt - this.previousMeasurement.measureAt) / 1000; // Process all reports and collect measurement data
 
       (0, _forEach["default"])(stats).call(stats, function (report) {
-        _this3.processInboundRtpVideoReport(report);
+        _this4.processInboundRtpVideoReport(report);
 
-        _this3.processTrackVideoReport(report);
+        _this4.processTrackVideoReport(report);
 
-        _this3.processDataChannelMouseReport(report);
+        _this4.processDataChannelMouseReport(report);
 
-        _this3.processDataChannelTouchReport(report);
+        _this4.processDataChannelTouchReport(report);
 
-        _this3.processCandidatePairReport(report);
+        _this4.processCandidatePairReport(report);
       });
       this.processWebRtcRoundTripTimeStats();
       this.previousMeasurement.measureAt = this.measurement.measureAt;

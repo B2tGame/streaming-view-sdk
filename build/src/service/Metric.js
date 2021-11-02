@@ -127,6 +127,10 @@ var Metric = /*#__PURE__*/function () {
               if (item.mode === 'start') {
                 if (item.start <= currentTimestamp && item.end >= currentTimestamp) {
                   var metric = _this.metrics[item.id];
+                  metric.raw.push({
+                    timestamp: currentTimestamp,
+                    value: value
+                  });
                   metric.firstValueTime = metric.firstValueTime === undefined ? currentTimestamp : metric.firstValueTime;
                   metric.lastValueTime = currentTimestamp;
                   metric.sum += value;
