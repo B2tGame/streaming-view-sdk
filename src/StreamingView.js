@@ -56,7 +56,8 @@ export default class StreamingView extends Component {
       height: PropTypes.string,
       width: PropTypes.string,
       pingInterval: PropTypes.number,
-      measureTouchRtt: PropTypes.bool
+      measureTouchRtt: PropTypes.bool,
+      playoutDelayHint: PropTypes.number
     };
   }
 
@@ -69,7 +70,8 @@ export default class StreamingView extends Component {
     volume: 1.0,
     muted: false,
     pingInterval: StreamWebRtc.WEBRTC_PING_INTERVAL,
-    measureTouchRtt: true
+    measureTouchRtt: true,
+    playoutDelayHint: 0
   };
 
   /**
@@ -318,7 +320,17 @@ export default class StreamingView extends Component {
   }
 
   render() {
-    const { enableControl, enableFullScreen, view, volume, muted, edgeNodeId, height: propsHeight, width: propsWidth } = this.props;
+    const {
+      enableControl,
+      enableFullScreen,
+      view,
+      volume,
+      muted,
+      edgeNodeId,
+      height: propsHeight,
+      width: propsWidth,
+      playoutDelayHint
+    } = this.props;
     const { height: stateHeight, width: stateWidth } = this.state;
 
     switch (this.state.isReadyStream) {
@@ -341,6 +353,7 @@ export default class StreamingView extends Component {
               edgeNodeId={edgeNodeId}
               maxConnectionRetries={this.props.maxConnectionRetries}
               measureTouchRtt={this.props.measureTouchRtt}
+              playoutDelayHint={playoutDelayHint}
             />
           </div>
         );

@@ -3,7 +3,6 @@ import url from 'url';
 import StreamingEvent from '../../../StreamingEvent';
 import SdpModifier from './SdpModifier';
 
-
 /**
  * This drives the jsep protocol with the emulator, and can be used to
  * send key/mouse/touch events to the emulator. Events will be send
@@ -21,8 +20,9 @@ export default class JsepProtocol {
    * @param {string} edgeNodeId
    * @param {Logger} logger for console logs
    * @param {string|undefined} turnEndpoint Override the default uri for turn servers
+   * @param {number|0} playoutDelayHint Custom playoutDelayHint value
    */
-  constructor(emulator, rtc, poll, edgeNodeId, logger, turnEndpoint = undefined) {
+  constructor(emulator, rtc, poll, edgeNodeId, logger, turnEndpoint = undefined, playoutDelayHint = 0) {
     this.emulator = emulator;
     this.rtc = rtc;
     this.guid = null;
@@ -31,6 +31,7 @@ export default class JsepProtocol {
     this.turnEndpoint = turnEndpoint;
     this.eventForwarders = {};
     this.poll = poll || typeof this.rtc.receiveJsepMessages !== 'function';
+    this.playoutDelayHint = playoutDelayHint;
     this.logger = logger;
   }
 
@@ -103,9 +104,11 @@ export default class JsepProtocol {
     }
 
     if (event.receiver) {
-      // On supported devices, playoutDelayHint can be used for set a recommended latency of the playback
-      // A low value will come with cost of higher frames drope etc.
-      event.receiver.playoutDelayHint = 0;
+      // On supported devices, playoutDelayHint can be used to set a recommended latency of the playback
+      // A low value will come with cost of higher frames dropped, a higher number wil decrease the number
+      // of dropped frames, but will also add more delay.
+      event.receiver.playoutDelayHint = this.playoutDelayHint / 1000;
+      console.log(`playoutDelayHint set to: ${event.receiver.playoutDelayHint}sec`);
     }
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_CONNECTED, event.track);
   };
@@ -127,7 +130,7 @@ export default class JsepProtocol {
         this.disconnect();
         break;
       case 'connected': {
-        const senders = (this.peerConnection.getSenders ? this.peerConnection.getSenders() : []);
+        const senders = this.peerConnection.getSenders ? this.peerConnection.getSenders() : [];
         const iceTransport = ((senders[0] || {}).transport || {}).iceTransport || {};
         const candidatePair = iceTransport.getSelectedCandidatePair ? iceTransport.getSelectedCandidatePair() : {};
         const protocol = (candidatePair.local || {}).protocol || undefined;
@@ -145,13 +148,10 @@ export default class JsepProtocol {
             // no action
           }
         }
-        StreamingEvent.edgeNode(this.edgeNodeId).emit(
-          StreamingEvent.PEER_CONNECTION_SELECTED,
-          {
-            connection: connection,
-            protocol: protocol
-          }
-        );
+        StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.PEER_CONNECTION_SELECTED, {
+          connection: connection,
+          protocol: protocol
+        });
         break;
       }
       default: {
@@ -214,10 +214,10 @@ export default class JsepProtocol {
   };
 
   onRequestWebRtcMeasurement = () => {
-      this.peerConnection
-        .getStats()
-        .then((stats) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, stats))
-        .catch((err) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err));
+    this.peerConnection
+      .getStats()
+      .then((stats) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, stats))
+      .catch((err) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err));
   };
 
   _handleSDP = async (signal) => {
