@@ -451,10 +451,8 @@ export default class Measurement {
     const deltaSquaredSum = currentStats.totalSquaredInterFrameDelay - previousStats.totalSquaredInterFrameDelay;
     const deltaSum = currentStats.totalInterFrameDelay - previousStats.totalInterFrameDelay;
     const variance = (deltaSquaredSum - Math.pow(deltaSum, 2) / deltaCount) / deltaCount;
-    if (variance < 0) {
-      return undefined;
-    }
-    return Math.sqrt(variance) * 1000;
+
+    return Math.sqrt(Math.abs(variance)) * 1000;
   };
 
   /**
