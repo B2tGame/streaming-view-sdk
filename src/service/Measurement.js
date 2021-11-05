@@ -363,7 +363,7 @@ export default class Measurement {
 
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.CLASSIFICATION_REPORT, {
       // The "most significant" classification
-      classification: legacyClassification,
+      classification: legacyClassification(),
       classificationReport: classificationReport,
       duration: this.metricsFramesDecodedPerSecond.getReferenceTime(),
       streamingViewId: this.streamingViewId,
