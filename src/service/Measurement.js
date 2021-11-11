@@ -227,8 +227,8 @@ export default class Measurement {
      *    3. missing-iframe-stddev (error)
      *    4. no-slow-motion-detected (good)
      *    5. consistent-slow-motion-detected (bad)
-     *    6. slow-start-detected (acceptable)
-     *    7. slow-beginning-detected (bad)
+     *    6. slow-beginning-detected (bad)
+     *    7. slow-start-detected (acceptable)
      *    8. no-classification-detected (error)
      */
     const createClassification = () => {
@@ -266,14 +266,14 @@ export default class Measurement {
         classificationReport.push('consistent-slow-motion-detected');
       }
 
-      if (framesDecodedPerSecondStart < 45 || (interFrameDelayStandardDeviationStart || Number.MAX_VALUE) > 15) {
-        // slow start due to low fps or high inter frame delay at start
-        classificationReport.push('slow-start-detected');
-      }
-
       if (framesDecodedPerSecondBeginning < 45 || (interFrameDelayStandardDeviationBeginning || Number.MAX_VALUE) > 15) {
         // slow start due to low fps in beginning OR due to high inter frame delay std dev in beginning
         classificationReport.push('slow-beginning-detected');
+      }
+
+      if (framesDecodedPerSecondStart < 45 || (interFrameDelayStandardDeviationStart || Number.MAX_VALUE) > 15) {
+        // slow start due to low fps or high inter frame delay at start
+        classificationReport.push('slow-start-detected');
       }
 
       return classificationReport.length ? classificationReport : ['no-classification-detected'];
