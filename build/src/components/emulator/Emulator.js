@@ -152,7 +152,7 @@ var Emulator = /*#__PURE__*/function (_Component) {
         poll = _this$props.poll;
     _this.emulator = new _emulator_web_client.EmulatorControllerService(uri, auth, _this.onError);
     _this.rtc = new _emulator_web_client.RtcService(uri, auth, _this.onError);
-    _this.jsep = new _JsepProtocol["default"](_this.emulator, _this.rtc, poll, _this.props.edgeNodeId, _this.props.logger, _this.props.turnEndpoint);
+    _this.jsep = new _JsepProtocol["default"](_this.emulator, _this.rtc, poll, _this.props.edgeNodeId, _this.props.logger, _this.props.turnEndpoint, _this.props.playoutDelayHint);
 
     _StreamingEvent["default"].edgeNode(_this.props.edgeNodeId).on(_StreamingEvent["default"].STREAM_DISCONNECTED, _this.onDisconnect).on(_StreamingEvent["default"].STREAM_VIDEO_UNAVAILABLE, _this.onVideoUnavailable).on(_StreamingEvent["default"].STREAM_VIDEO_MISSING, _this.onVideoMissing).on(_StreamingEvent["default"].STREAM_CONNECTED, _this.onConnect);
 
@@ -179,7 +179,7 @@ var Emulator = /*#__PURE__*/function (_Component) {
      * @param {string} cause
      */
     function reload(cause) {
-      this.props.logger.info("stream not working, request reload");
+      this.props.logger.info('stream not working, request reload');
 
       if ((this.reloadHoldOff || 0) < (0, _now["default"])() && this.isMountedInView) {
         this.reloadHoldOff = (0, _now["default"])() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
@@ -211,7 +211,10 @@ var Emulator = /*#__PURE__*/function (_Component) {
           uri = _this$props2.uri,
           emulatorWidth = _this$props2.emulatorWidth,
           emulatorHeight = _this$props2.emulatorHeight,
-          emulatorVersion = _this$props2.emulatorVersion;
+          emulatorVersion = _this$props2.emulatorVersion,
+          logger = _this$props2.logger,
+          edgeNodeId = _this$props2.edgeNodeId,
+          measureTouchRtt = _this$props2.measureTouchRtt;
       return /*#__PURE__*/_react["default"].createElement(_EventHandler["default"], {
         key: this.state.streamingConnectionId,
         ref: this.view,
@@ -227,9 +230,9 @@ var Emulator = /*#__PURE__*/function (_Component) {
         onAudioStateChange: this.onAudioStateChange,
         enableFullScreen: enableFullScreen,
         enableControl: enableControl,
-        logger: this.props.logger,
-        edgeNodeId: this.props.edgeNodeId,
-        measureTouchRtt: this.props.measureTouchRtt,
+        logger: logger,
+        edgeNodeId: edgeNodeId,
+        measureTouchRtt: measureTouchRtt,
         view: this.components[view] || _EmulatorWebrtcView["default"]
       });
     }
@@ -316,7 +319,10 @@ Emulator.propTypes = {
   emulatorVersion: _propTypes["default"].string,
 
   /** Defines if touch rtt should be measured */
-  measureTouchRtt: _propTypes["default"].bool
+  measureTouchRtt: _propTypes["default"].bool,
+
+  /** Playout Delay Hint */
+  playoutDelayHint: _propTypes["default"].number
 };
 Emulator.defaultProps = {
   auth: null,
