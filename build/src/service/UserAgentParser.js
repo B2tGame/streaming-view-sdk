@@ -1,11 +1,14 @@
 "use strict";
 
+var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
+
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
-Object.defineProperty(exports, "__esModule", {
+_Object$defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+
+exports["default"] = void 0;
 
 var _includes = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/includes"));
 
@@ -21,15 +24,15 @@ var _uaParserJs = _interopRequireDefault(require("ua-parser-js"));
  */
 var UserAgentParser = /*#__PURE__*/function () {
   function UserAgentParser() {
-    (0, _classCallCheck2.default)(this, UserAgentParser);
-    this.userAgentInfo = new _uaParserJs.default();
+    (0, _classCallCheck2["default"])(this, UserAgentParser);
+    this.userAgentInfo = new _uaParserJs["default"]();
   }
   /**
    * @returns {UAParser.IResult}
    */
 
 
-  (0, _createClass2.default)(UserAgentParser, [{
+  (0, _createClass2["default"])(UserAgentParser, [{
     key: "UA",
     get: function get() {
       return this.userAgentInfo.getResult();
@@ -46,11 +49,11 @@ var UserAgentParser = /*#__PURE__*/function () {
     value: function isSupportedBrowser() {
       var _context;
 
-      return (0, _includes.default)(_context = UserAgentParser.supportedBrowsers).call(_context, this.getBrowserName().toLocaleLowerCase());
+      return (0, _includes["default"])(_context = UserAgentParser.supportedBrowsers).call(_context, this.getBrowserName().toLocaleLowerCase());
     }
   }]);
   return UserAgentParser;
 }();
 
-exports.default = UserAgentParser;
+exports["default"] = UserAgentParser;
 UserAgentParser.supportedBrowsers = ['safari', 'mobile safari', 'chrome', 'chrome headless'];
