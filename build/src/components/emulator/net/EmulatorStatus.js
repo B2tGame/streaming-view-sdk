@@ -1,14 +1,11 @@
 "use strict";
 
-var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
-
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
-_Object$defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-exports["default"] = void 0;
+exports.default = void 0;
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
 
@@ -37,7 +34,7 @@ var EmulatorStatus =
 function EmulatorStatus(uriOrEmulator, auth) {
   var _this = this;
 
-  (0, _classCallCheck2["default"])(this, EmulatorStatus);
+  (0, _classCallCheck2.default)(this, EmulatorStatus);
 
   this.getStatus = function () {
     return _this.status;
@@ -98,4 +95,4 @@ function EmulatorStatus(uriOrEmulator, auth) {
 ;
 
 var _default = EmulatorStatus;
-exports["default"] = _default;
+exports.default = _default;

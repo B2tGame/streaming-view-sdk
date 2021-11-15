@@ -8,21 +8,12 @@ var _Symbol = require("@babel/runtime-corejs3/core-js-stable/symbol");
 
 var _getIteratorMethod = require("@babel/runtime-corejs3/core-js/get-iterator-method");
 
-var _Array$isArray = require("@babel/runtime-corejs3/core-js-stable/array/is-array");
-
-var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
-
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
-_Object$defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-exports["default"] = void 0;
-
-var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/date/now"));
-
-var _isFinite = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/number/is-finite"));
+exports.default = void 0;
 
 var _filter = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/filter"));
 
@@ -34,7 +25,7 @@ var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/he
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof _Symbol !== "undefined" && _getIteratorMethod(o) || o["@@iterator"]; if (!it) { if (_Array$isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof _Symbol !== "undefined" && _getIteratorMethod(o) || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { var _context5; if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = _sliceInstanceProperty(_context5 = Object.prototype.toString.call(o)).call(_context5, 8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return _Array$from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -42,7 +33,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 var Metric = /*#__PURE__*/function () {
   function Metric() {
-    (0, _classCallCheck2["default"])(this, Metric);
+    (0, _classCallCheck2.default)(this, Metric);
     this.refTimestamp = undefined;
   }
   /**
@@ -51,11 +42,11 @@ var Metric = /*#__PURE__*/function () {
    */
 
 
-  (0, _createClass2["default"])(Metric, [{
+  (0, _createClass2.default)(Metric, [{
     key: "setReferenceTime",
     value: function setReferenceTime() {
       var timestamp = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
-      this.refTimestamp = timestamp || (0, _now["default"])();
+      this.refTimestamp = timestamp || Date.now();
       this.metrics = {};
 
       var _iterator = _createForOfIteratorHelper(Metric.ALL_METRICS),
@@ -98,7 +89,7 @@ var Metric = /*#__PURE__*/function () {
     key: "getReferenceTime",
     value: function getReferenceTime() {
       var timestamp = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
-      return (timestamp || (0, _now["default"])()) - this.refTimestamp;
+      return (timestamp || Date.now()) - this.refTimestamp;
     }
     /**
      * Inject a new value to the metric.
@@ -113,7 +104,7 @@ var Metric = /*#__PURE__*/function () {
 
       var timestamp = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
 
-      if ((0, _isFinite["default"])(value) && this.refTimestamp !== undefined) {
+      if (Number.isFinite(value) && this.refTimestamp !== undefined) {
         (function () {
           var currentTimestamp = _this.getReferenceTime(timestamp);
 
@@ -146,7 +137,7 @@ var Metric = /*#__PURE__*/function () {
                   value: value
                 });
 
-                _metric.raw = (0, _filter["default"])(_context = _metric.raw).call(_context, function (rec) {
+                _metric.raw = (0, _filter.default)(_context = _metric.raw).call(_context, function (rec) {
                   return currentTimestamp - rec.timestamp < -item.start;
                 });
                 _metric.firstValueTime = _metric.firstValueTime === undefined ? currentTimestamp : _metric.firstValueTime;
@@ -188,14 +179,14 @@ var Metric = /*#__PURE__*/function () {
             var _context2, _context3, _context4;
 
             var currentTimestamp = this.getReferenceTime(timestamp);
-            var metrics = (0, _map["default"])(_context2 = (0, _filter["default"])(_context3 = (0, _filter["default"])(_context4 = metric.raw).call(_context4, function (rec) {
+            var metrics = (0, _map.default)(_context2 = (0, _filter.default)(_context3 = (0, _filter.default)(_context4 = metric.raw).call(_context4, function (rec) {
               return currentTimestamp - rec.timestamp <= -key.start;
             })).call(_context3, function (rec) {
               return currentTimestamp - rec.timestamp >= -key.end;
             })).call(_context2, function (rec) {
               return rec.value;
             });
-            return (0, _reduce["default"])(metrics).call(metrics, function (a, b) {
+            return (0, _reduce.default)(metrics).call(metrics, function (a, b) {
               return a + b;
             }, 0) / metrics.length;
           }
@@ -273,4 +264,4 @@ var Metric = /*#__PURE__*/function () {
   return Metric;
 }();
 
-exports["default"] = Metric;
+exports.default = Metric;

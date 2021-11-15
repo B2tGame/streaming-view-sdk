@@ -1,22 +1,15 @@
 "use strict";
 
-var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
-
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
-_Object$defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-exports["default"] = void 0;
+exports.default = void 0;
 
 var _set = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set"));
 
 var _fill = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/fill"));
-
-var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/date/now"));
-
-var _every = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/every"));
 
 var _reduce = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/reduce"));
 
@@ -38,7 +31,7 @@ var StreamCaptureService = /*#__PURE__*/function () {
   function StreamCaptureService(edgeNodeId, video, canvas, canvasTouch) {
     var _this = this;
 
-    (0, _classCallCheck2["default"])(this, StreamCaptureService);
+    (0, _classCallCheck2.default)(this, StreamCaptureService);
 
     this.detectTouch = function (x, y, emulatorWidth, emulatorHeight) {
       var requiredPixelRatio = 0.8;
@@ -77,7 +70,7 @@ var StreamCaptureService = /*#__PURE__*/function () {
         frame = ctx.getImageData(0, 0, canvasWidth, canvasHeight).data;
         var radius = 10.5;
         var hits = 0;
-        var points = new _set["default"]();
+        var points = new _set.default();
 
         for (var angle = 0; angle < 360; angle += 6) {
           // Sum up the points on the circle that is marked as having an edge
@@ -137,12 +130,12 @@ var StreamCaptureService = /*#__PURE__*/function () {
       ctx.beginPath();
       ctx.arc(x, y, 0.5, 0, 2 * Math.PI, false);
       ctx.fillStyle = '#FF0000';
-      (0, _fill["default"])(ctx).call(ctx);
+      (0, _fill.default)(ctx).call(ctx);
       ctx.beginPath();
     };
 
     this.captureScreenshot = function (emulatorWidth, emulatorHeight) {
-      var captureVideoStreamStartTime = (0, _now["default"])();
+      var captureVideoStreamStartTime = Date.now();
       var scaledWidth = emulatorWidth / StreamCaptureService.CANVAS_SCALE_FACTOR;
       var scaledHeight = emulatorHeight / StreamCaptureService.CANVAS_SCALE_FACTOR;
       var offset = StreamCaptureService.SCREEN_DETECTOR_OFFSET;
@@ -168,13 +161,13 @@ var StreamCaptureService = /*#__PURE__*/function () {
 
         var averagePixelColor = _this.avgColor(pixels);
 
-        var hasVideo = !(0, _every["default"])(pixels).call(pixels, function (pixel) {
+        var hasVideo = !pixels.every(function (pixel) {
           return _this.isDarkGrey(pixel) && _this.isSameColor(averagePixelColor, pixel);
         });
 
-        _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].STREAM_VIDEO_SCREENSHOT, {
+        _StreamingEvent.default.edgeNode(_this.edgeNodeId).emit(_StreamingEvent.default.STREAM_VIDEO_SCREENSHOT, {
           hasVideo: hasVideo,
-          captureProcessingTime: (0, _now["default"])() - captureVideoStreamStartTime,
+          captureProcessingTime: Date.now() - captureVideoStreamStartTime,
           screenshot: _this.canvas.current.toDataURL('image/jpeg'),
           centerPixelColor: centerPixelColor
         });
@@ -198,7 +191,7 @@ var StreamCaptureService = /*#__PURE__*/function () {
    */
 
 
-  (0, _createClass2["default"])(StreamCaptureService, [{
+  (0, _createClass2.default)(StreamCaptureService, [{
     key: "isSameColor",
     value:
     /**
@@ -230,13 +223,13 @@ var StreamCaptureService = /*#__PURE__*/function () {
     key: "avgColor",
     value: function avgColor(pixels) {
       return {
-        red: Math.round((0, _reduce["default"])(pixels).call(pixels, function (sum, pixel) {
+        red: Math.round((0, _reduce.default)(pixels).call(pixels, function (sum, pixel) {
           return sum + pixel.red;
         }, 0) / pixels.length),
-        green: Math.round((0, _reduce["default"])(pixels).call(pixels, function (sum, pixel) {
+        green: Math.round((0, _reduce.default)(pixels).call(pixels, function (sum, pixel) {
           return sum + pixel.green;
         }, 0) / pixels.length),
-        blue: Math.round((0, _reduce["default"])(pixels).call(pixels, function (sum, pixel) {
+        blue: Math.round((0, _reduce.default)(pixels).call(pixels, function (sum, pixel) {
           return sum + pixel.blue;
         }, 0) / pixels.length)
       };
@@ -262,7 +255,7 @@ var StreamCaptureService = /*#__PURE__*/function () {
     value: function rgbToHex(pixel) {
       var _context;
 
-      return '#' + (0, _slice["default"])(_context = ((1 << 24) + (pixel.red << 16) + (pixel.green << 8) + pixel.blue).toString(16)).call(_context, 1);
+      return '#' + (0, _slice.default)(_context = ((1 << 24) + (pixel.red << 16) + (pixel.green << 8) + pixel.blue).toString(16)).call(_context, 1);
     }
   }], [{
     key: "CANVAS_SCALE_FACTOR",
@@ -302,4 +295,4 @@ var StreamCaptureService = /*#__PURE__*/function () {
   return StreamCaptureService;
 }();
 
-exports["default"] = StreamCaptureService;
+exports.default = StreamCaptureService;
