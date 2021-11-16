@@ -1,11 +1,44 @@
 "use strict";
 
+var _Object$keys = require("@babel/runtime-corejs3/core-js-stable/object/keys");
+
+var _Object$getOwnPropertySymbols = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-symbols");
+
+var _filterInstanceProperty = require("@babel/runtime-corejs3/core-js-stable/instance/filter");
+
+var _Object$getOwnPropertyDescriptor = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor");
+
+var _forEachInstanceProperty = require("@babel/runtime-corejs3/core-js-stable/instance/for-each");
+
+var _Object$getOwnPropertyDescriptors = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptors");
+
+var _Object$defineProperties = require("@babel/runtime-corejs3/core-js-stable/object/define-properties");
+
+var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
+
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
-Object.defineProperty(exports, "__esModule", {
+_Object$defineProperty(exports, "__esModule", {
   value: true
 });
+
 exports.resetNetworkConnectivity = exports.measureNetworkConnectivity = exports.getNetworkConnectivity = void 0;
+
+var _promise = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/promise"));
+
+var _find = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/find"));
+
+var _slice = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/slice"));
+
+var _setTimeout2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-timeout"));
+
+var _map = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/map"));
+
+var _entries = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/object/entries"));
+
+var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/slicedToArray"));
+
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/defineProperty"));
 
 var _deviceInfo = require("./deviceInfo");
 
@@ -15,32 +48,36 @@ var _StreamWebRtc = _interopRequireDefault(require("../service/StreamWebRtc"));
 
 var _Measurement = _interopRequireDefault(require("../service/Measurement"));
 
-const MEASUREMENT_LEVEL_BROWSER = 'browser-measurement';
-const MEASUREMENT_LEVEL_BASIC = 'basic';
-const MEASUREMENT_LEVEL_ADVANCED = 'advanced';
-const MAX_RECOMMENDATION_COUNT = 3;
-const DELAY_DEVICE_INFO_MS = 3000;
-const WEBRTC_TIME_TO_CONNECTED = 5000;
-const ADVANCED_MEASUREMENT_TIMEOUT = 5000;
-const defaultNetworkConnectivity = {
+function ownKeys(object, enumerableOnly) { var keys = _Object$keys(object); if (_Object$getOwnPropertySymbols) { var symbols = _Object$getOwnPropertySymbols(object); if (enumerableOnly) { symbols = _filterInstanceProperty(symbols).call(symbols, function (sym) { return _Object$getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { var _context3; _forEachInstanceProperty(_context3 = ownKeys(Object(source), true)).call(_context3, function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (_Object$getOwnPropertyDescriptors) { _Object$defineProperties(target, _Object$getOwnPropertyDescriptors(source)); } else { var _context4; _forEachInstanceProperty(_context4 = ownKeys(Object(source))).call(_context4, function (key) { _Object$defineProperty(target, key, _Object$getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+var MEASUREMENT_LEVEL_BROWSER = 'browser-measurement';
+var MEASUREMENT_LEVEL_BASIC = 'basic';
+var MEASUREMENT_LEVEL_ADVANCED = 'advanced';
+var MAX_RECOMMENDATION_COUNT = 3;
+var DELAY_DEVICE_INFO_MS = 3000;
+var WEBRTC_TIME_TO_CONNECTED = 5000;
+var ADVANCED_MEASUREMENT_TIMEOUT = 5000;
+var defaultNetworkConnectivity = {
   roundTripTime: undefined,
   downloadSpeed: undefined,
   recommendedRegion: undefined,
   rttRegionMeasurements: undefined,
   measurementLevel: undefined
 };
-let networkConnectivity = { ...defaultNetworkConnectivity
-};
-let webrtcRoundTripTimeValuesMulti = {};
-let webrtcRoundTripTimeStatsMulti = {};
-let predictedGameExperienceMulti = {};
+
+var networkConnectivity = _objectSpread({}, defaultNetworkConnectivity);
+
+var webrtcRoundTripTimeValuesMulti = {};
+var webrtcRoundTripTimeStatsMulti = {};
+var predictedGameExperienceMulti = {};
 /**
  * Reset all network connectivity data
  */
 
-const resetNetworkConnectivity = () => {
-  networkConnectivity = { ...defaultNetworkConnectivity
-  };
+var resetNetworkConnectivity = function resetNetworkConnectivity() {
+  networkConnectivity = _objectSpread({}, defaultNetworkConnectivity);
 };
 /**
  * @param downloadSpeed
@@ -50,7 +87,7 @@ const resetNetworkConnectivity = () => {
 
 exports.resetNetworkConnectivity = resetNetworkConnectivity;
 
-const convertMbitToBytes = downloadSpeed => {
+var convertMbitToBytes = function convertMbitToBytes(downloadSpeed) {
   if (downloadSpeed) {
     return downloadSpeed * 1024 * 1024 / 8;
   }
@@ -64,10 +101,10 @@ const convertMbitToBytes = downloadSpeed => {
  */
 
 
-const getBrowserMeasurement = function () {
-  let browserConnection = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
-  const connection = browserConnection ? browserConnection : navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
-  return Promise.resolve({
+var getBrowserMeasurement = function getBrowserMeasurement() {
+  var browserConnection = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
+  var connection = browserConnection ? browserConnection : navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
+  return _promise["default"].resolve({
     roundTripTime: connection.rtt,
     downloadSpeed: convertMbitToBytes(connection.downlink),
     measurementLevel: MEASUREMENT_LEVEL_BROWSER
@@ -79,11 +116,17 @@ const getBrowserMeasurement = function () {
  */
 
 
-const getBasicMeasurement = () => {
-  return (0, _deviceInfo.getDeviceInfo)().then(deviceInfo => ({
-    recommendedRegion: (((deviceInfo || {}).recommendation || []).find(() => true) || {}).edgeRegion,
-    measurementLevel: MEASUREMENT_LEVEL_BASIC
-  }));
+var getBasicMeasurement = function getBasicMeasurement() {
+  return (0, _deviceInfo.getDeviceInfo)().then(function (deviceInfo) {
+    var _context;
+
+    return {
+      recommendedRegion: ((0, _find["default"])(_context = (deviceInfo || {}).recommendation || []).call(_context, function () {
+        return true;
+      }) || {}).edgeRegion,
+      measurementLevel: MEASUREMENT_LEVEL_BASIC
+    };
+  });
 };
 /**
  * Get Advanced measurement attributes, designed to be used in getBrowserMeasurement.
@@ -91,35 +134,37 @@ const getBasicMeasurement = () => {
  */
 
 
-const getAdvancedMeasurement = () => {
+var getAdvancedMeasurement = function getAdvancedMeasurement() {
   /**
    * Recursive function to manage download speed measurement and fallback case.
    * @param {[]} recommendation Array of possible recommendations
    * @return {Promise<boolean>}
    */
-  const connectionManagerMultiRegion = recommendation => {
-    let countRecommendation = 0;
+  var connectionManagerMultiRegion = function connectionManagerMultiRegion(recommendation) {
+    var countRecommendation = 0;
 
-    for (let i = 0; i < recommendation.length; ++i) {
+    for (var i = 0; i < recommendation.length; ++i) {
       countRecommendation += recommendation[i].measurementEndpoints.length || 0;
     }
 
     if (countRecommendation === 0) {
-      return Promise.resolve(false);
+      return _promise["default"].resolve(false);
     }
 
-    const selectedEdges = [];
+    var selectedEdges = [];
 
-    for (let i = 0; i < recommendation.length && selectedEdges.length < MAX_RECOMMENDATION_COUNT; ++i) {
-      if (recommendation[i].measurementEndpoints.length) {
+    for (var _i = 0; _i < recommendation.length && selectedEdges.length < MAX_RECOMMENDATION_COUNT; ++_i) {
+      if (recommendation[_i].measurementEndpoints.length) {
+        var _context2;
+
         selectedEdges.push({
-          baseUrls: recommendation[i].measurementEndpoints.slice(0, MAX_RECOMMENDATION_COUNT),
-          region: recommendation[i].edgeRegion
+          baseUrls: (0, _slice["default"])(_context2 = recommendation[_i].measurementEndpoints).call(_context2, 0, MAX_RECOMMENDATION_COUNT),
+          region: recommendation[_i].edgeRegion
         });
       }
     }
 
-    return webrtcManagerMultiRegion(selectedEdges).then(webrtcManagerSuccessful => {
+    return webrtcManagerMultiRegion(selectedEdges).then(function (webrtcManagerSuccessful) {
       if (webrtcManagerSuccessful) {
         return webrtcManagerSuccessful;
       }
@@ -134,35 +179,37 @@ const getAdvancedMeasurement = () => {
    */
 
 
-  const getWebRtcMeasurement = edge => {
+  var getWebRtcMeasurement = function getWebRtcMeasurement(edge) {
     if (edge.baseUrls.length === 0) {
-      return Promise.resolve(false);
+      return _promise["default"].resolve(false);
     }
 
-    const webRtcHost = "".concat(edge.baseUrls.shift(), "/webrtc");
+    var webRtcHost = "".concat(edge.baseUrls.shift(), "/webrtc");
     console.log('WebRtc connect attempt:', webRtcHost, 'for:', edge.region);
-    return new Promise((resolve, reject) => {
-      let streamWebRtc = undefined;
+    return new _promise["default"](function (resolve, reject) {
+      var streamWebRtc = undefined;
 
-      const onWebRtcClientConnected = () => {
+      var onWebRtcClientConnected = function onWebRtcClientConnected() {
         console.log('WebRtc connected to:', edge.region);
         webrtcRoundTripTimeValuesMulti[edge.region] = [];
-        setTimeout(() => stopMeasurement(), ADVANCED_MEASUREMENT_TIMEOUT);
+        (0, _setTimeout2["default"])(function () {
+          return stopMeasurement();
+        }, ADVANCED_MEASUREMENT_TIMEOUT);
       };
 
-      const onWebRtcRoundTripTimeMeasurement = webrtcRtt => {
+      var onWebRtcRoundTripTimeMeasurement = function onWebRtcRoundTripTimeMeasurement(webrtcRtt) {
         webrtcRoundTripTimeValuesMulti[edge.region].push(webrtcRtt);
-        predictedGameExperienceMulti[edge.region] = _Measurement.default.calculatePredictedGameExperience(webrtcRtt, 0, edge.region)[_Measurement.default.PREDICTED_GAME_EXPERIENCE_DEFAULT];
+        predictedGameExperienceMulti[edge.region] = _Measurement["default"].calculatePredictedGameExperience(webrtcRtt, 0, edge.region)[_Measurement["default"].PREDICTED_GAME_EXPERIENCE_DEFAULT];
       };
 
-      const stopMeasurement = function () {
-        let closeAction = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
+      var stopMeasurement = function stopMeasurement() {
+        var closeAction = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
 
         if ((webrtcRoundTripTimeValuesMulti[edge.region] || []).length > 0) {
-          webrtcRoundTripTimeStatsMulti[edge.region] = _StreamWebRtc.default.calculateRoundTripTimeStats(webrtcRoundTripTimeValuesMulti[edge.region]);
+          webrtcRoundTripTimeStatsMulti[edge.region] = _StreamWebRtc["default"].calculateRoundTripTimeStats(webrtcRoundTripTimeValuesMulti[edge.region]);
         }
 
-        streamWebRtc.off(_StreamingEvent.default.WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected).off(_StreamingEvent.default.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement).close();
+        streamWebRtc.off(_StreamingEvent["default"].WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected).off(_StreamingEvent["default"].WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement).close();
 
         if (closeAction) {
           closeAction();
@@ -172,13 +219,17 @@ const getAdvancedMeasurement = () => {
       };
 
       try {
-        streamWebRtc = new _StreamWebRtc.default(webRtcHost);
-        setTimeout(() => stopMeasurement(), WEBRTC_TIME_TO_CONNECTED);
-        streamWebRtc.on(_StreamingEvent.default.WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected).on(_StreamingEvent.default.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
+        streamWebRtc = new _StreamWebRtc["default"](webRtcHost);
+        (0, _setTimeout2["default"])(function () {
+          return stopMeasurement();
+        }, WEBRTC_TIME_TO_CONNECTED);
+        streamWebRtc.on(_StreamingEvent["default"].WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected).on(_StreamingEvent["default"].WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
       } catch (e) {
-        stopMeasurement(() => reject(false));
+        stopMeasurement(function () {
+          return reject(false);
+        });
       }
-    }).then(result => {
+    }).then(function (result) {
       if (result) {
         return result;
       } else {
@@ -193,9 +244,11 @@ const getAdvancedMeasurement = () => {
    */
 
 
-  const webrtcManagerMultiRegion = selectedEdges => {
-    return Promise.all(selectedEdges.map(edge => getWebRtcMeasurement(edge))).then(successful => {
-      for (let success in successful) {
+  var webrtcManagerMultiRegion = function webrtcManagerMultiRegion(selectedEdges) {
+    return _promise["default"].all((0, _map["default"])(selectedEdges).call(selectedEdges, function (edge) {
+      return getWebRtcMeasurement(edge);
+    })).then(function (successful) {
+      for (var success in successful) {
         if (success) {
           return true;
         }
@@ -205,27 +258,35 @@ const getAdvancedMeasurement = () => {
     });
   };
 
-  return (0, _deviceInfo.getDeviceInfo)().then(deviceInfo => connectionManagerMultiRegion((deviceInfo || {}).recommendation || [])).then(() => {
-    let minRtt = undefined;
-    const finalResult = {};
+  return (0, _deviceInfo.getDeviceInfo)().then(function (deviceInfo) {
+    return connectionManagerMultiRegion((deviceInfo || {}).recommendation || []);
+  }).then(function () {
+    var minRtt = undefined;
+    var finalResult = {};
 
-    for (const [region, stats] of Object.entries(webrtcRoundTripTimeStatsMulti)) {
+    for (var _i2 = 0, _Object$entries = (0, _entries["default"])(webrtcRoundTripTimeStatsMulti); _i2 < _Object$entries.length; _i2++) {
+      var _Object$entries$_i = (0, _slicedToArray2["default"])(_Object$entries[_i2], 2),
+          region = _Object$entries$_i[0],
+          stats = _Object$entries$_i[1];
+
       if (minRtt === undefined || minRtt > stats.rtt) {
         minRtt = stats.rtt;
         networkConnectivity.recommendedRegion = region;
       }
 
       finalResult[region] = {
-        rtt: _Measurement.default.roundToDecimals(stats.rtt, 0),
-        stdDev: _Measurement.default.roundToDecimals(stats.standardDeviation, 0)
+        rtt: _Measurement["default"].roundToDecimals(stats.rtt, 0),
+        stdDev: _Measurement["default"].roundToDecimals(stats.standardDeviation, 0)
       };
     }
 
     networkConnectivity.rttRegionMeasurements = finalResult;
-  }).then(() => ({
-    predictedGameExperience: predictedGameExperienceMulti[networkConnectivity.recommendedRegion],
-    measurementLevel: MEASUREMENT_LEVEL_ADVANCED
-  }));
+  }).then(function () {
+    return {
+      predictedGameExperience: predictedGameExperienceMulti[networkConnectivity.recommendedRegion],
+      measurementLevel: MEASUREMENT_LEVEL_ADVANCED
+    };
+  });
 };
 /**
  * Measure network connectivity on different levels
@@ -235,23 +296,27 @@ const getAdvancedMeasurement = () => {
  */
 
 
-const measureNetworkConnectivity = function () {
-  let browserConnection = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
-  return getBrowserMeasurement(browserConnection).then(browserMeasurement => {
-    networkConnectivity = { ...networkConnectivity,
-      ...browserMeasurement
-    };
-  }).then(() => getBasicMeasurement()).then(basicMeasurement => {
-    networkConnectivity = { ...networkConnectivity,
-      ...basicMeasurement
-    };
-  }).then(() => new Promise(resolve => setTimeout(() => resolve(getAdvancedMeasurement()), DELAY_DEVICE_INFO_MS) // delay the execution
-  )).then(advancedMeasurement => {
-    networkConnectivity = { ...networkConnectivity,
-      ...advancedMeasurement
-    };
+var measureNetworkConnectivity = function measureNetworkConnectivity() {
+  var browserConnection = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
+  return getBrowserMeasurement(browserConnection).then(function (browserMeasurement) {
+    networkConnectivity = _objectSpread(_objectSpread({}, networkConnectivity), browserMeasurement);
+  }).then(function () {
+    return getBasicMeasurement();
+  }).then(function (basicMeasurement) {
+    networkConnectivity = _objectSpread(_objectSpread({}, networkConnectivity), basicMeasurement);
+  }).then(function () {
+    return new _promise["default"](function (resolve) {
+      return (0, _setTimeout2["default"])(function () {
+        return resolve(getAdvancedMeasurement());
+      }, DELAY_DEVICE_INFO_MS);
+    } // delay the execution
+    );
+  }).then(function (advancedMeasurement) {
+    networkConnectivity = _objectSpread(_objectSpread({}, networkConnectivity), advancedMeasurement);
     console.log('networkConnectivity: ', networkConnectivity);
-  }).then(() => networkConnectivity);
+  }).then(function () {
+    return networkConnectivity;
+  });
 };
 /**
  * Gets the actual state of network connectivity information
@@ -263,9 +328,9 @@ const measureNetworkConnectivity = function () {
 
 exports.measureNetworkConnectivity = measureNetworkConnectivity;
 
-const getNetworkConnectivity = function () {
-  let browserConnection = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
-  return Promise.resolve().then(() => {
+var getNetworkConnectivity = function getNetworkConnectivity() {
+  var browserConnection = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
+  return _promise["default"].resolve().then(function () {
     if (networkConnectivity.measurementLevel === undefined) {
       return getBrowserMeasurement(browserConnection);
     }
