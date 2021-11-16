@@ -9,12 +9,12 @@
 
 /* eslint-disable */
 // @ts-nocheck
-var grpc = {};
+const grpc = {};
 grpc.web = require('grpc-web');
 
 var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js');
 
-var proto = {};
+const proto = {};
 proto.android = {};
 proto.android.emulation = {};
 proto.android.emulation.control = require('./rtc_service_pb.js');
@@ -73,7 +73,7 @@ proto.android.emulation.control.RtcPromiseClient = function (hostname, credentia
  */
 
 
-var methodDescriptor_Rtc_requestRtcStream = new grpc.web.MethodDescriptor('/android.emulation.control.Rtc/requestRtcStream', grpc.web.MethodType.UNARY, google_protobuf_empty_pb.Empty, proto.android.emulation.control.RtcId,
+const methodDescriptor_Rtc_requestRtcStream = new grpc.web.MethodDescriptor('/android.emulation.control.Rtc/requestRtcStream', grpc.web.MethodType.UNARY, google_protobuf_empty_pb.Empty, proto.android.emulation.control.RtcId,
 /**
  * @param {!proto.google.protobuf.Empty} request
  * @return {!Uint8Array}
@@ -88,7 +88,7 @@ function (request) {
  *   !proto.android.emulation.control.RtcId>}
  */
 
-var methodInfo_Rtc_requestRtcStream = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.RtcId,
+const methodInfo_Rtc_requestRtcStream = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.RtcId,
 /**
  * @param {!proto.google.protobuf.Empty} request
  * @return {!Uint8Array}
@@ -131,7 +131,7 @@ proto.android.emulation.control.RtcPromiseClient.prototype.requestRtcStream = fu
  */
 
 
-var methodDescriptor_Rtc_sendJsepMessage = new grpc.web.MethodDescriptor('/android.emulation.control.Rtc/sendJsepMessage', grpc.web.MethodType.UNARY, proto.android.emulation.control.JsepMsg, google_protobuf_empty_pb.Empty,
+const methodDescriptor_Rtc_sendJsepMessage = new grpc.web.MethodDescriptor('/android.emulation.control.Rtc/sendJsepMessage', grpc.web.MethodType.UNARY, proto.android.emulation.control.JsepMsg, google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.JsepMsg} request
  * @return {!Uint8Array}
@@ -146,7 +146,7 @@ function (request) {
  *   !proto.google.protobuf.Empty>}
  */
 
-var methodInfo_Rtc_sendJsepMessage = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
+const methodInfo_Rtc_sendJsepMessage = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.JsepMsg} request
  * @return {!Uint8Array}
@@ -189,7 +189,7 @@ proto.android.emulation.control.RtcPromiseClient.prototype.sendJsepMessage = fun
  */
 
 
-var methodDescriptor_Rtc_receiveJsepMessages = new grpc.web.MethodDescriptor('/android.emulation.control.Rtc/receiveJsepMessages', grpc.web.MethodType.SERVER_STREAMING, proto.android.emulation.control.RtcId, proto.android.emulation.control.JsepMsg,
+const methodDescriptor_Rtc_receiveJsepMessages = new grpc.web.MethodDescriptor('/android.emulation.control.Rtc/receiveJsepMessages', grpc.web.MethodType.SERVER_STREAMING, proto.android.emulation.control.RtcId, proto.android.emulation.control.JsepMsg,
 /**
  * @param {!proto.android.emulation.control.RtcId} request
  * @return {!Uint8Array}
@@ -204,7 +204,7 @@ function (request) {
  *   !proto.android.emulation.control.JsepMsg>}
  */
 
-var methodInfo_Rtc_receiveJsepMessages = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.JsepMsg,
+const methodInfo_Rtc_receiveJsepMessages = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.JsepMsg,
 /**
  * @param {!proto.android.emulation.control.RtcId} request
  * @return {!Uint8Array}
@@ -243,7 +243,7 @@ proto.android.emulation.control.RtcPromiseClient.prototype.receiveJsepMessages =
  */
 
 
-var methodDescriptor_Rtc_receiveJsepMessage = new grpc.web.MethodDescriptor('/android.emulation.control.Rtc/receiveJsepMessage', grpc.web.MethodType.UNARY, proto.android.emulation.control.RtcId, proto.android.emulation.control.JsepMsg,
+const methodDescriptor_Rtc_receiveJsepMessage = new grpc.web.MethodDescriptor('/android.emulation.control.Rtc/receiveJsepMessage', grpc.web.MethodType.UNARY, proto.android.emulation.control.RtcId, proto.android.emulation.control.JsepMsg,
 /**
  * @param {!proto.android.emulation.control.RtcId} request
  * @return {!Uint8Array}
@@ -258,7 +258,7 @@ function (request) {
  *   !proto.android.emulation.control.JsepMsg>}
  */
 
-var methodInfo_Rtc_receiveJsepMessage = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.JsepMsg,
+const methodInfo_Rtc_receiveJsepMessage = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.JsepMsg,
 /**
  * @param {!proto.android.emulation.control.RtcId} request
  * @return {!Uint8Array}

@@ -9,12 +9,12 @@
 
 /* eslint-disable */
 // @ts-nocheck
-var grpc = {};
+const grpc = {};
 grpc.web = require('grpc-web');
 
 var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js');
 
-var proto = {};
+const proto = {};
 proto.android = {};
 proto.android.emulation = {};
 proto.android.emulation.control = require('./emulator_controller_pb.js');
@@ -73,7 +73,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient = function (host
  */
 
 
-var methodDescriptor_EmulatorController_streamSensor = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/streamSensor', grpc.web.MethodType.SERVER_STREAMING, proto.android.emulation.control.SensorValue, proto.android.emulation.control.SensorValue,
+const methodDescriptor_EmulatorController_streamSensor = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/streamSensor', grpc.web.MethodType.SERVER_STREAMING, proto.android.emulation.control.SensorValue, proto.android.emulation.control.SensorValue,
 /**
  * @param {!proto.android.emulation.control.SensorValue} request
  * @return {!Uint8Array}
@@ -88,7 +88,7 @@ function (request) {
  *   !proto.android.emulation.control.SensorValue>}
  */
 
-var methodInfo_EmulatorController_streamSensor = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.SensorValue,
+const methodInfo_EmulatorController_streamSensor = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.SensorValue,
 /**
  * @param {!proto.android.emulation.control.SensorValue} request
  * @return {!Uint8Array}
@@ -127,7 +127,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.stream
  */
 
 
-var methodDescriptor_EmulatorController_getSensor = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getSensor', grpc.web.MethodType.UNARY, proto.android.emulation.control.SensorValue, proto.android.emulation.control.SensorValue,
+const methodDescriptor_EmulatorController_getSensor = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getSensor', grpc.web.MethodType.UNARY, proto.android.emulation.control.SensorValue, proto.android.emulation.control.SensorValue,
 /**
  * @param {!proto.android.emulation.control.SensorValue} request
  * @return {!Uint8Array}
@@ -142,7 +142,7 @@ function (request) {
  *   !proto.android.emulation.control.SensorValue>}
  */
 
-var methodInfo_EmulatorController_getSensor = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.SensorValue,
+const methodInfo_EmulatorController_getSensor = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.SensorValue,
 /**
  * @param {!proto.android.emulation.control.SensorValue} request
  * @return {!Uint8Array}
@@ -185,7 +185,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getSen
  */
 
 
-var methodDescriptor_EmulatorController_setSensor = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/setSensor', grpc.web.MethodType.UNARY, proto.android.emulation.control.SensorValue, google_protobuf_empty_pb.Empty,
+const methodDescriptor_EmulatorController_setSensor = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/setSensor', grpc.web.MethodType.UNARY, proto.android.emulation.control.SensorValue, google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.SensorValue} request
  * @return {!Uint8Array}
@@ -200,7 +200,7 @@ function (request) {
  *   !proto.google.protobuf.Empty>}
  */
 
-var methodInfo_EmulatorController_setSensor = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
+const methodInfo_EmulatorController_setSensor = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.SensorValue} request
  * @return {!Uint8Array}
@@ -243,7 +243,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setSen
  */
 
 
-var methodDescriptor_EmulatorController_setPhysicalModel = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/setPhysicalModel', grpc.web.MethodType.UNARY, proto.android.emulation.control.PhysicalModelValue, google_protobuf_empty_pb.Empty,
+const methodDescriptor_EmulatorController_setPhysicalModel = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/setPhysicalModel', grpc.web.MethodType.UNARY, proto.android.emulation.control.PhysicalModelValue, google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.PhysicalModelValue} request
  * @return {!Uint8Array}
@@ -258,7 +258,7 @@ function (request) {
  *   !proto.google.protobuf.Empty>}
  */
 
-var methodInfo_EmulatorController_setPhysicalModel = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
+const methodInfo_EmulatorController_setPhysicalModel = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.PhysicalModelValue} request
  * @return {!Uint8Array}
@@ -301,7 +301,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setPhy
  */
 
 
-var methodDescriptor_EmulatorController_getPhysicalModel = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getPhysicalModel', grpc.web.MethodType.UNARY, proto.android.emulation.control.PhysicalModelValue, proto.android.emulation.control.PhysicalModelValue,
+const methodDescriptor_EmulatorController_getPhysicalModel = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getPhysicalModel', grpc.web.MethodType.UNARY, proto.android.emulation.control.PhysicalModelValue, proto.android.emulation.control.PhysicalModelValue,
 /**
  * @param {!proto.android.emulation.control.PhysicalModelValue} request
  * @return {!Uint8Array}
@@ -316,7 +316,7 @@ function (request) {
  *   !proto.android.emulation.control.PhysicalModelValue>}
  */
 
-var methodInfo_EmulatorController_getPhysicalModel = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.PhysicalModelValue,
+const methodInfo_EmulatorController_getPhysicalModel = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.PhysicalModelValue,
 /**
  * @param {!proto.android.emulation.control.PhysicalModelValue} request
  * @return {!Uint8Array}
@@ -359,7 +359,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getPhy
  */
 
 
-var methodDescriptor_EmulatorController_streamPhysicalModel = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/streamPhysicalModel', grpc.web.MethodType.SERVER_STREAMING, proto.android.emulation.control.PhysicalModelValue, proto.android.emulation.control.PhysicalModelValue,
+const methodDescriptor_EmulatorController_streamPhysicalModel = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/streamPhysicalModel', grpc.web.MethodType.SERVER_STREAMING, proto.android.emulation.control.PhysicalModelValue, proto.android.emulation.control.PhysicalModelValue,
 /**
  * @param {!proto.android.emulation.control.PhysicalModelValue} request
  * @return {!Uint8Array}
@@ -374,7 +374,7 @@ function (request) {
  *   !proto.android.emulation.control.PhysicalModelValue>}
  */
 
-var methodInfo_EmulatorController_streamPhysicalModel = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.PhysicalModelValue,
+const methodInfo_EmulatorController_streamPhysicalModel = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.PhysicalModelValue,
 /**
  * @param {!proto.android.emulation.control.PhysicalModelValue} request
  * @return {!Uint8Array}
@@ -413,7 +413,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.stream
  */
 
 
-var methodDescriptor_EmulatorController_setClipboard = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/setClipboard', grpc.web.MethodType.UNARY, proto.android.emulation.control.ClipData, google_protobuf_empty_pb.Empty,
+const methodDescriptor_EmulatorController_setClipboard = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/setClipboard', grpc.web.MethodType.UNARY, proto.android.emulation.control.ClipData, google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.ClipData} request
  * @return {!Uint8Array}
@@ -428,7 +428,7 @@ function (request) {
  *   !proto.google.protobuf.Empty>}
  */
 
-var methodInfo_EmulatorController_setClipboard = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
+const methodInfo_EmulatorController_setClipboard = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.ClipData} request
  * @return {!Uint8Array}
@@ -471,7 +471,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setCli
  */
 
 
-var methodDescriptor_EmulatorController_getClipboard = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getClipboard', grpc.web.MethodType.UNARY, google_protobuf_empty_pb.Empty, proto.android.emulation.control.ClipData,
+const methodDescriptor_EmulatorController_getClipboard = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getClipboard', grpc.web.MethodType.UNARY, google_protobuf_empty_pb.Empty, proto.android.emulation.control.ClipData,
 /**
  * @param {!proto.google.protobuf.Empty} request
  * @return {!Uint8Array}
@@ -486,7 +486,7 @@ function (request) {
  *   !proto.android.emulation.control.ClipData>}
  */
 
-var methodInfo_EmulatorController_getClipboard = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.ClipData,
+const methodInfo_EmulatorController_getClipboard = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.ClipData,
 /**
  * @param {!proto.google.protobuf.Empty} request
  * @return {!Uint8Array}
@@ -529,7 +529,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getCli
  */
 
 
-var methodDescriptor_EmulatorController_streamClipboard = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/streamClipboard', grpc.web.MethodType.SERVER_STREAMING, google_protobuf_empty_pb.Empty, proto.android.emulation.control.ClipData,
+const methodDescriptor_EmulatorController_streamClipboard = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/streamClipboard', grpc.web.MethodType.SERVER_STREAMING, google_protobuf_empty_pb.Empty, proto.android.emulation.control.ClipData,
 /**
  * @param {!proto.google.protobuf.Empty} request
  * @return {!Uint8Array}
@@ -544,7 +544,7 @@ function (request) {
  *   !proto.android.emulation.control.ClipData>}
  */
 
-var methodInfo_EmulatorController_streamClipboard = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.ClipData,
+const methodInfo_EmulatorController_streamClipboard = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.ClipData,
 /**
  * @param {!proto.google.protobuf.Empty} request
  * @return {!Uint8Array}
@@ -583,7 +583,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.stream
  */
 
 
-var methodDescriptor_EmulatorController_setBattery = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/setBattery', grpc.web.MethodType.UNARY, proto.android.emulation.control.BatteryState, google_protobuf_empty_pb.Empty,
+const methodDescriptor_EmulatorController_setBattery = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/setBattery', grpc.web.MethodType.UNARY, proto.android.emulation.control.BatteryState, google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.BatteryState} request
  * @return {!Uint8Array}
@@ -598,7 +598,7 @@ function (request) {
  *   !proto.google.protobuf.Empty>}
  */
 
-var methodInfo_EmulatorController_setBattery = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
+const methodInfo_EmulatorController_setBattery = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.BatteryState} request
  * @return {!Uint8Array}
@@ -641,7 +641,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setBat
  */
 
 
-var methodDescriptor_EmulatorController_getBattery = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getBattery', grpc.web.MethodType.UNARY, google_protobuf_empty_pb.Empty, proto.android.emulation.control.BatteryState,
+const methodDescriptor_EmulatorController_getBattery = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getBattery', grpc.web.MethodType.UNARY, google_protobuf_empty_pb.Empty, proto.android.emulation.control.BatteryState,
 /**
  * @param {!proto.google.protobuf.Empty} request
  * @return {!Uint8Array}
@@ -656,7 +656,7 @@ function (request) {
  *   !proto.android.emulation.control.BatteryState>}
  */
 
-var methodInfo_EmulatorController_getBattery = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.BatteryState,
+const methodInfo_EmulatorController_getBattery = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.BatteryState,
 /**
  * @param {!proto.google.protobuf.Empty} request
  * @return {!Uint8Array}
@@ -699,7 +699,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getBat
  */
 
 
-var methodDescriptor_EmulatorController_setGps = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/setGps', grpc.web.MethodType.UNARY, proto.android.emulation.control.GpsState, google_protobuf_empty_pb.Empty,
+const methodDescriptor_EmulatorController_setGps = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/setGps', grpc.web.MethodType.UNARY, proto.android.emulation.control.GpsState, google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.GpsState} request
  * @return {!Uint8Array}
@@ -714,7 +714,7 @@ function (request) {
  *   !proto.google.protobuf.Empty>}
  */
 
-var methodInfo_EmulatorController_setGps = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
+const methodInfo_EmulatorController_setGps = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.GpsState} request
  * @return {!Uint8Array}
@@ -757,7 +757,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setGps
  */
 
 
-var methodDescriptor_EmulatorController_getGps = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getGps', grpc.web.MethodType.UNARY, google_protobuf_empty_pb.Empty, proto.android.emulation.control.GpsState,
+const methodDescriptor_EmulatorController_getGps = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getGps', grpc.web.MethodType.UNARY, google_protobuf_empty_pb.Empty, proto.android.emulation.control.GpsState,
 /**
  * @param {!proto.google.protobuf.Empty} request
  * @return {!Uint8Array}
@@ -772,7 +772,7 @@ function (request) {
  *   !proto.android.emulation.control.GpsState>}
  */
 
-var methodInfo_EmulatorController_getGps = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.GpsState,
+const methodInfo_EmulatorController_getGps = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.GpsState,
 /**
  * @param {!proto.google.protobuf.Empty} request
  * @return {!Uint8Array}
@@ -815,7 +815,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getGps
  */
 
 
-var methodDescriptor_EmulatorController_sendFingerprint = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/sendFingerprint', grpc.web.MethodType.UNARY, proto.android.emulation.control.Fingerprint, google_protobuf_empty_pb.Empty,
+const methodDescriptor_EmulatorController_sendFingerprint = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/sendFingerprint', grpc.web.MethodType.UNARY, proto.android.emulation.control.Fingerprint, google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.Fingerprint} request
  * @return {!Uint8Array}
@@ -830,7 +830,7 @@ function (request) {
  *   !proto.google.protobuf.Empty>}
  */
 
-var methodInfo_EmulatorController_sendFingerprint = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
+const methodInfo_EmulatorController_sendFingerprint = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.Fingerprint} request
  * @return {!Uint8Array}
@@ -873,7 +873,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendFi
  */
 
 
-var methodDescriptor_EmulatorController_sendKey = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/sendKey', grpc.web.MethodType.UNARY, proto.android.emulation.control.KeyboardEvent, google_protobuf_empty_pb.Empty,
+const methodDescriptor_EmulatorController_sendKey = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/sendKey', grpc.web.MethodType.UNARY, proto.android.emulation.control.KeyboardEvent, google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.KeyboardEvent} request
  * @return {!Uint8Array}
@@ -888,7 +888,7 @@ function (request) {
  *   !proto.google.protobuf.Empty>}
  */
 
-var methodInfo_EmulatorController_sendKey = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
+const methodInfo_EmulatorController_sendKey = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.KeyboardEvent} request
  * @return {!Uint8Array}
@@ -931,7 +931,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendKe
  */
 
 
-var methodDescriptor_EmulatorController_sendTouch = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/sendTouch', grpc.web.MethodType.UNARY, proto.android.emulation.control.TouchEvent, google_protobuf_empty_pb.Empty,
+const methodDescriptor_EmulatorController_sendTouch = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/sendTouch', grpc.web.MethodType.UNARY, proto.android.emulation.control.TouchEvent, google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.TouchEvent} request
  * @return {!Uint8Array}
@@ -946,7 +946,7 @@ function (request) {
  *   !proto.google.protobuf.Empty>}
  */
 
-var methodInfo_EmulatorController_sendTouch = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
+const methodInfo_EmulatorController_sendTouch = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.TouchEvent} request
  * @return {!Uint8Array}
@@ -989,7 +989,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendTo
  */
 
 
-var methodDescriptor_EmulatorController_sendMouse = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/sendMouse', grpc.web.MethodType.UNARY, proto.android.emulation.control.MouseEvent, google_protobuf_empty_pb.Empty,
+const methodDescriptor_EmulatorController_sendMouse = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/sendMouse', grpc.web.MethodType.UNARY, proto.android.emulation.control.MouseEvent, google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.MouseEvent} request
  * @return {!Uint8Array}
@@ -1004,7 +1004,7 @@ function (request) {
  *   !proto.google.protobuf.Empty>}
  */
 
-var methodInfo_EmulatorController_sendMouse = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
+const methodInfo_EmulatorController_sendMouse = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.MouseEvent} request
  * @return {!Uint8Array}
@@ -1047,7 +1047,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendMo
  */
 
 
-var methodDescriptor_EmulatorController_sendPhone = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/sendPhone', grpc.web.MethodType.UNARY, proto.android.emulation.control.PhoneCall, proto.android.emulation.control.PhoneResponse,
+const methodDescriptor_EmulatorController_sendPhone = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/sendPhone', grpc.web.MethodType.UNARY, proto.android.emulation.control.PhoneCall, proto.android.emulation.control.PhoneResponse,
 /**
  * @param {!proto.android.emulation.control.PhoneCall} request
  * @return {!Uint8Array}
@@ -1062,7 +1062,7 @@ function (request) {
  *   !proto.android.emulation.control.PhoneResponse>}
  */
 
-var methodInfo_EmulatorController_sendPhone = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.PhoneResponse,
+const methodInfo_EmulatorController_sendPhone = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.PhoneResponse,
 /**
  * @param {!proto.android.emulation.control.PhoneCall} request
  * @return {!Uint8Array}
@@ -1105,7 +1105,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendPh
  */
 
 
-var methodDescriptor_EmulatorController_sendSms = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/sendSms', grpc.web.MethodType.UNARY, proto.android.emulation.control.SmsMessage, proto.android.emulation.control.PhoneResponse,
+const methodDescriptor_EmulatorController_sendSms = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/sendSms', grpc.web.MethodType.UNARY, proto.android.emulation.control.SmsMessage, proto.android.emulation.control.PhoneResponse,
 /**
  * @param {!proto.android.emulation.control.SmsMessage} request
  * @return {!Uint8Array}
@@ -1120,7 +1120,7 @@ function (request) {
  *   !proto.android.emulation.control.PhoneResponse>}
  */
 
-var methodInfo_EmulatorController_sendSms = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.PhoneResponse,
+const methodInfo_EmulatorController_sendSms = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.PhoneResponse,
 /**
  * @param {!proto.android.emulation.control.SmsMessage} request
  * @return {!Uint8Array}
@@ -1163,7 +1163,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.sendSm
  */
 
 
-var methodDescriptor_EmulatorController_getStatus = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getStatus', grpc.web.MethodType.UNARY, google_protobuf_empty_pb.Empty, proto.android.emulation.control.EmulatorStatus,
+const methodDescriptor_EmulatorController_getStatus = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getStatus', grpc.web.MethodType.UNARY, google_protobuf_empty_pb.Empty, proto.android.emulation.control.EmulatorStatus,
 /**
  * @param {!proto.google.protobuf.Empty} request
  * @return {!Uint8Array}
@@ -1178,7 +1178,7 @@ function (request) {
  *   !proto.android.emulation.control.EmulatorStatus>}
  */
 
-var methodInfo_EmulatorController_getStatus = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.EmulatorStatus,
+const methodInfo_EmulatorController_getStatus = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.EmulatorStatus,
 /**
  * @param {!proto.google.protobuf.Empty} request
  * @return {!Uint8Array}
@@ -1221,7 +1221,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getSta
  */
 
 
-var methodDescriptor_EmulatorController_getScreenshot = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getScreenshot', grpc.web.MethodType.UNARY, proto.android.emulation.control.ImageFormat, proto.android.emulation.control.Image,
+const methodDescriptor_EmulatorController_getScreenshot = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getScreenshot', grpc.web.MethodType.UNARY, proto.android.emulation.control.ImageFormat, proto.android.emulation.control.Image,
 /**
  * @param {!proto.android.emulation.control.ImageFormat} request
  * @return {!Uint8Array}
@@ -1236,7 +1236,7 @@ function (request) {
  *   !proto.android.emulation.control.Image>}
  */
 
-var methodInfo_EmulatorController_getScreenshot = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.Image,
+const methodInfo_EmulatorController_getScreenshot = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.Image,
 /**
  * @param {!proto.android.emulation.control.ImageFormat} request
  * @return {!Uint8Array}
@@ -1279,7 +1279,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getScr
  */
 
 
-var methodDescriptor_EmulatorController_streamScreenshot = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/streamScreenshot', grpc.web.MethodType.SERVER_STREAMING, proto.android.emulation.control.ImageFormat, proto.android.emulation.control.Image,
+const methodDescriptor_EmulatorController_streamScreenshot = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/streamScreenshot', grpc.web.MethodType.SERVER_STREAMING, proto.android.emulation.control.ImageFormat, proto.android.emulation.control.Image,
 /**
  * @param {!proto.android.emulation.control.ImageFormat} request
  * @return {!Uint8Array}
@@ -1294,7 +1294,7 @@ function (request) {
  *   !proto.android.emulation.control.Image>}
  */
 
-var methodInfo_EmulatorController_streamScreenshot = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.Image,
+const methodInfo_EmulatorController_streamScreenshot = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.Image,
 /**
  * @param {!proto.android.emulation.control.ImageFormat} request
  * @return {!Uint8Array}
@@ -1333,7 +1333,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.stream
  */
 
 
-var methodDescriptor_EmulatorController_streamAudio = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/streamAudio', grpc.web.MethodType.SERVER_STREAMING, proto.android.emulation.control.AudioFormat, proto.android.emulation.control.AudioPacket,
+const methodDescriptor_EmulatorController_streamAudio = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/streamAudio', grpc.web.MethodType.SERVER_STREAMING, proto.android.emulation.control.AudioFormat, proto.android.emulation.control.AudioPacket,
 /**
  * @param {!proto.android.emulation.control.AudioFormat} request
  * @return {!Uint8Array}
@@ -1348,7 +1348,7 @@ function (request) {
  *   !proto.android.emulation.control.AudioPacket>}
  */
 
-var methodInfo_EmulatorController_streamAudio = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.AudioPacket,
+const methodInfo_EmulatorController_streamAudio = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.AudioPacket,
 /**
  * @param {!proto.android.emulation.control.AudioFormat} request
  * @return {!Uint8Array}
@@ -1387,7 +1387,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.stream
  */
 
 
-var methodDescriptor_EmulatorController_getLogcat = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getLogcat', grpc.web.MethodType.UNARY, proto.android.emulation.control.LogMessage, proto.android.emulation.control.LogMessage,
+const methodDescriptor_EmulatorController_getLogcat = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getLogcat', grpc.web.MethodType.UNARY, proto.android.emulation.control.LogMessage, proto.android.emulation.control.LogMessage,
 /**
  * @param {!proto.android.emulation.control.LogMessage} request
  * @return {!Uint8Array}
@@ -1402,7 +1402,7 @@ function (request) {
  *   !proto.android.emulation.control.LogMessage>}
  */
 
-var methodInfo_EmulatorController_getLogcat = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.LogMessage,
+const methodInfo_EmulatorController_getLogcat = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.LogMessage,
 /**
  * @param {!proto.android.emulation.control.LogMessage} request
  * @return {!Uint8Array}
@@ -1445,7 +1445,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getLog
  */
 
 
-var methodDescriptor_EmulatorController_streamLogcat = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/streamLogcat', grpc.web.MethodType.SERVER_STREAMING, proto.android.emulation.control.LogMessage, proto.android.emulation.control.LogMessage,
+const methodDescriptor_EmulatorController_streamLogcat = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/streamLogcat', grpc.web.MethodType.SERVER_STREAMING, proto.android.emulation.control.LogMessage, proto.android.emulation.control.LogMessage,
 /**
  * @param {!proto.android.emulation.control.LogMessage} request
  * @return {!Uint8Array}
@@ -1460,7 +1460,7 @@ function (request) {
  *   !proto.android.emulation.control.LogMessage>}
  */
 
-var methodInfo_EmulatorController_streamLogcat = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.LogMessage,
+const methodInfo_EmulatorController_streamLogcat = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.LogMessage,
 /**
  * @param {!proto.android.emulation.control.LogMessage} request
  * @return {!Uint8Array}
@@ -1499,7 +1499,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.stream
  */
 
 
-var methodDescriptor_EmulatorController_setVmState = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/setVmState', grpc.web.MethodType.UNARY, proto.android.emulation.control.VmRunState, google_protobuf_empty_pb.Empty,
+const methodDescriptor_EmulatorController_setVmState = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/setVmState', grpc.web.MethodType.UNARY, proto.android.emulation.control.VmRunState, google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.VmRunState} request
  * @return {!Uint8Array}
@@ -1514,7 +1514,7 @@ function (request) {
  *   !proto.google.protobuf.Empty>}
  */
 
-var methodInfo_EmulatorController_setVmState = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
+const methodInfo_EmulatorController_setVmState = new grpc.web.AbstractClientBase.MethodInfo(google_protobuf_empty_pb.Empty,
 /**
  * @param {!proto.android.emulation.control.VmRunState} request
  * @return {!Uint8Array}
@@ -1557,7 +1557,7 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.setVmS
  */
 
 
-var methodDescriptor_EmulatorController_getVmState = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getVmState', grpc.web.MethodType.UNARY, google_protobuf_empty_pb.Empty, proto.android.emulation.control.VmRunState,
+const methodDescriptor_EmulatorController_getVmState = new grpc.web.MethodDescriptor('/android.emulation.control.EmulatorController/getVmState', grpc.web.MethodType.UNARY, google_protobuf_empty_pb.Empty, proto.android.emulation.control.VmRunState,
 /**
  * @param {!proto.google.protobuf.Empty} request
  * @return {!Uint8Array}
@@ -1572,7 +1572,7 @@ function (request) {
  *   !proto.android.emulation.control.VmRunState>}
  */
 
-var methodInfo_EmulatorController_getVmState = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.VmRunState,
+const methodInfo_EmulatorController_getVmState = new grpc.web.AbstractClientBase.MethodInfo(proto.android.emulation.control.VmRunState,
 /**
  * @param {!proto.google.protobuf.Empty} request
  * @return {!Uint8Array}
