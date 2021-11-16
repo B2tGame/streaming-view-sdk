@@ -1,13 +1,18 @@
 "use strict";
 
+var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
+
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
-Object.defineProperty(exports, "__esModule", {
+_Object$defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+
+exports["default"] = void 0;
 
 var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
+
+var _setInterval2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-interval"));
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/typeof"));
 
@@ -32,14 +37,14 @@ var LogQueueService = /*#__PURE__*/function () {
   function LogQueueService(edgeNodeId, apiEndpoint, userId, streamingViewId) {
     var _this = this;
 
-    (0, _classCallCheck2.default)(this, LogQueueService);
+    (0, _classCallCheck2["default"])(this, LogQueueService);
     this.logQueue = [];
     this.endpoint = "".concat(apiEndpoint, "/api/streaming-games/edge-node/log");
     this.seqId = 0;
     this.streamingViewId = streamingViewId;
 
-    _StreamingEvent.default.edgeNode(edgeNodeId).on('event', function (eventType, payload) {
-      payload = (0, _typeof2.default)(payload) === 'object' ? payload : {
+    _StreamingEvent["default"].edgeNode(edgeNodeId).on('event', function (eventType, payload) {
+      payload = (0, _typeof2["default"])(payload) === 'object' ? payload : {
         data: payload
       };
       payload.streamingViewId = _this.streamingViewId;
@@ -52,7 +57,7 @@ var LogQueueService = /*#__PURE__*/function () {
         name: 'sdk',
         timestamp: new Date().toISOString(),
         type: 'log',
-        message: (0, _stringify.default)(payload)
+        message: (0, _stringify["default"])(payload)
       });
 
       if (_this.logQueue.length > 25) {
@@ -65,7 +70,7 @@ var LogQueueService = /*#__PURE__*/function () {
     };
 
     window.addEventListener('unload', this.unloadListener);
-    this.timer = setInterval(function () {
+    this.timer = (0, _setInterval2["default"])(function () {
       return _this.sendQueue();
     }, 10000);
   }
@@ -74,7 +79,7 @@ var LogQueueService = /*#__PURE__*/function () {
    */
 
 
-  (0, _createClass2.default)(LogQueueService, [{
+  (0, _createClass2["default"])(LogQueueService, [{
     key: "destroy",
     value: function destroy() {
       clearInterval(this.timer);
@@ -94,10 +99,10 @@ var LogQueueService = /*#__PURE__*/function () {
 
         if (navigator && navigator.sendBeacon) {
           // Send request if supported via beacon
-          navigator.sendBeacon(this.endpoint, (0, _stringify.default)(logQueue));
+          navigator.sendBeacon(this.endpoint, (0, _stringify["default"])(logQueue));
         } else {
           // otherwise with axios
-          _axios.default.post(this.endpoint, logQueue).catch(function () {});
+          _axios["default"].post(this.endpoint, logQueue)["catch"](function () {});
         }
       }
     }
@@ -105,4 +110,4 @@ var LogQueueService = /*#__PURE__*/function () {
   return LogQueueService;
 }();
 
-exports.default = LogQueueService;
+exports["default"] = LogQueueService;
