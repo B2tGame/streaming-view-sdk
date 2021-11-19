@@ -6,13 +6,11 @@ import StreamCaptureService from '../../../service/StreamCaptureService';
 const rttMeasurementTimeout = 500;
 const touchAnimTime = 200;
 
-
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
  * establish the video streams.
  */
 export default class EmulatorWebrtcView extends Component {
-
   static propTypes = {
     /** gRPC Endpoint where we can reach the emulator. */
     uri: PropTypes.string.isRequired,
@@ -184,13 +182,13 @@ export default class EmulatorWebrtcView extends Component {
 
       if (foundCircle) {
         const rtt = timestamp - startTime;
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT, {rtt: rtt});
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT, { rtt: rtt });
       } else if (timestamp > startTime + giveUpAfter) {
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT_TIMOUT, {timeout: true, time: giveUpAfter});
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT_TIMOUT, { timeout: true, time: giveUpAfter });
       } else {
-        requestAnimationFrame(runTouchDetection(startTime, giveUpAfter))
+        requestAnimationFrame(runTouchDetection(startTime, giveUpAfter));
       }
-    }
+    };
 
     this.touchTimer = requestAnimationFrame(runTouchDetection(performance.now(), rttMeasurementTimeout));
   };
@@ -251,7 +249,6 @@ export default class EmulatorWebrtcView extends Component {
     //   video.requestVideoFrameCallback(requestVideoFrameCallback);
     // };
     // video.requestVideoFrameCallback(requestVideoFrameCallback);
-
 
     const onUserInteractionCallback = () => {
       this.playVideo();
@@ -347,12 +344,7 @@ export default class EmulatorWebrtcView extends Component {
           height={emulatorHeight / StreamCaptureService.CANVAS_SCALE_FACTOR}
           width={emulatorWidth / StreamCaptureService.CANVAS_SCALE_FACTOR}
         />
-        <canvas
-          style={{ display: 'none' }}
-          ref={this.canvasTouch}
-          height='23'
-          width='23'
-        />
+        <canvas style={{ display: 'none' }} ref={this.canvasTouch} height='23' width='23' />
       </div>
     );
   }
