@@ -6,13 +6,11 @@ import StreamCaptureService from '../../../service/StreamCaptureService';
 const rttMeasurementTimeout = 500;
 const touchAnimTime = 200;
 
-
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
  * establish the video streams.
  */
 export default class EmulatorWebrtcView extends Component {
-
   static propTypes = {
     /** gRPC Endpoint where we can reach the emulator. */
     uri: PropTypes.string.isRequired,
@@ -176,21 +174,28 @@ export default class EmulatorWebrtcView extends Component {
     }
 
     if (this.touchTimer !== undefined) {
-      clearInterval(this.touchTimer);
+      cancelAnimationFrame(this.touchTimer);
     }
 
-    this.touchTimer = setInterval((startTime, giveUpAfter) => {
+    const startTime = performance.now();
+
+    const runTouchDetection = (timestamp) => {
       const foundCircle = this.streamCaptureService.detectTouch(event.x, event.y, this.props.emulatorWidth, this.props.emulatorHeight);
+
       if (foundCircle) {
-        const rtt = new Date().getTime() - startTime;
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT, {rtt: rtt});
-        clearInterval(this.touchTimer);
+        const rtt = timestamp - startTime;
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT, { rtt: rtt });
+      } else if (timestamp > startTime + rttMeasurementTimeout) {
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT_TIMOUT, {
+          timeout: true,
+          time: rttMeasurementTimeout
+        });
+      } else {
+        requestAnimationFrame(runTouchDetection);
       }
-      if (new Date().getTime() > startTime + giveUpAfter) {
-        clearInterval(this.touchTimer);
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT_TIMOUT, {timeout: true, time: giveUpAfter});
-      }
-    }, 1, new Date().getTime(), rttMeasurementTimeout);
+    };
+
+    this.touchTimer = requestAnimationFrame(runTouchDetection);
   };
 
   onDisconnect = () => {
@@ -249,7 +254,6 @@ export default class EmulatorWebrtcView extends Component {
     //   video.requestVideoFrameCallback(requestVideoFrameCallback);
     // };
     // video.requestVideoFrameCallback(requestVideoFrameCallback);
-
 
     const onUserInteractionCallback = () => {
       this.playVideo();
@@ -345,12 +349,7 @@ export default class EmulatorWebrtcView extends Component {
           height={emulatorHeight / StreamCaptureService.CANVAS_SCALE_FACTOR}
           width={emulatorWidth / StreamCaptureService.CANVAS_SCALE_FACTOR}
         />
-        <canvas
-          style={{ display: 'none' }}
-          ref={this.canvasTouch}
-          height='23'
-          width='23'
-        />
+        <canvas style={{ display: 'none' }} ref={this.canvasTouch} height='23' width='23' />
       </div>
     );
   }
