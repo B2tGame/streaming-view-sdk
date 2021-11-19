@@ -177,7 +177,7 @@ export default class EmulatorWebrtcView extends Component {
       cancelAnimationFrame(this.touchTimer);
     }
 
-    const startTime = performance.now()
+    const startTime = performance.now();
 
     const runTouchDetection = (timestamp) => {
       const foundCircle = this.streamCaptureService.detectTouch(event.x, event.y, this.props.emulatorWidth, this.props.emulatorHeight);
@@ -186,12 +186,14 @@ export default class EmulatorWebrtcView extends Component {
         const rtt = timestamp - startTime;
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT, { rtt: rtt });
       } else if (timestamp > startTime + rttMeasurementTimeout) {
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT_TIMOUT, { timeout: true, time: rttMeasurementTimeout });
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT_TIMOUT, {
+          timeout: true,
+          time: rttMeasurementTimeout
+        });
       } else {
         requestAnimationFrame(runTouchDetection);
       }
     };
-
 
     this.touchTimer = requestAnimationFrame(runTouchDetection);
   };
