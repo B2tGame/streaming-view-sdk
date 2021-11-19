@@ -177,20 +177,23 @@ export default class EmulatorWebrtcView extends Component {
       cancelAnimationFrame(this.touchTimer);
     }
 
-    const runTouchDetection = (startTime, giveUpAfter) => (timestamp) => {
+    const startTime = performance.now()
+
+    const runTouchDetection = (timestamp) => {
       const foundCircle = this.streamCaptureService.detectTouch(event.x, event.y, this.props.emulatorWidth, this.props.emulatorHeight);
 
       if (foundCircle) {
         const rtt = timestamp - startTime;
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT, { rtt: rtt });
-      } else if (timestamp > startTime + giveUpAfter) {
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT_TIMOUT, { timeout: true, time: giveUpAfter });
+      } else if (timestamp > startTime + rttMeasurementTimeout) {
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT_TIMOUT, { timeout: true, time: rttMeasurementTimeout });
       } else {
-        requestAnimationFrame(runTouchDetection(startTime, giveUpAfter));
+        requestAnimationFrame(runTouchDetection);
       }
     };
 
-    this.touchTimer = requestAnimationFrame(runTouchDetection(performance.now(), rttMeasurementTimeout));
+
+    this.touchTimer = requestAnimationFrame(runTouchDetection);
   };
 
   onDisconnect = () => {
