@@ -293,18 +293,38 @@ export default class EmulatorWebrtcView extends Component {
     this.setState({ playing: true });
     StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_PLAYING);
 
-    this.props.jsep.peerConnection.getStats().then((stats) => {
-      stats.forEach((report) => {
-        if (report.type === 'inbound-rtp') {
-          const codec = (stats.get(report.codecId) || {}).mimeType;
-          if (report.kind === 'audio' && codec) {
-            StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_CODEC, codec.replace('audio/', ''));
-          } else if (report.kind === 'video' && codec) {
-            StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_CODEC, codec.replace('video/', ''));
+    console.log({ PEER_CONNECTION: this.props.jsep.peerConnection });
+    this.props.jsep.peerConnection &&
+      this.props.jsep.peerConnection.getStats().then((stats) => {
+        const findSelected = (stats) => [...stats.values()].find((s) => s.type === 'candidate-pair' && s.selected);
+
+        this.props.jsep.peerConnection
+          .getStats()
+          .then((s) => findSelected(s))
+          .then(() => this.props.jsep.peerConnection.getStats())
+          .then((stats) => {
+            const candidate = stats.get(findSelected(stats).localCandidateId);
+            console.log(candidate);
+            //            if (candidate.candidateType == 'relayed') {
+            // console.log('Uses TURN server: ' + candidate.ipAddress, { candidate });
+            if (candidate.candidateType == 'relay') {
+              console.log('Uses TURN server: ' + candidate.address, { candidate });
+            } else {
+              console.log('Does not use TURN (uses ' + candidate.candidateType + ').', { candidate });
+            }
+          })
+          .catch((err) => console.log(err));
+        stats.forEach((report) => {
+          if (report.type === 'inbound-rtp') {
+            const codec = (stats.get(report.codecId) || {}).mimeType;
+            if (report.kind === 'audio' && codec) {
+              StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_CODEC, codec.replace('audio/', ''));
+            } else if (report.kind === 'video' && codec) {
+              StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_CODEC, codec.replace('video/', ''));
+            }
           }
-        }
+        });
       });
-    });
   };
 
   onContextMenu = (e) => {

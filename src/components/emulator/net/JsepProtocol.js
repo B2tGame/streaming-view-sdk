@@ -200,9 +200,44 @@ export default class JsepProtocol {
   }
 
   _handleStart = (signal) => {
+    //TODO-subspace:
     signal.start = {
-      iceServers: [this.getIceConfiguration()],
-      iceTransportPolicy: 'relay'
+      //iceServers: [this.getIceConfiguration()],
+      //ice_servers: [
+      iceServers: [
+        // this.getIceConfiguration(),
+        {
+          username: '1638271361:prj_40FJdijqV0Bx4hT2sY09Ll',
+          credential: 'oaeeHDaoSv+tlUi0hNpLLPKhpUM=',
+          url: 'turn:globalturn.subspace.com:3478?transport=udp',
+          urls: 'turn:globalturn.subspace.com:3478?transport=udp'
+        }
+        // {
+        //   username: '1638271361:prj_40FJdijqV0Bx4hT2sY09Ll',
+        //   credential: 'oaeeHDaoSv+tlUi0hNpLLPKhpUM=',
+        //   url: 'turn:globalturn.subspace.com:3478?transport=tcp',
+        //   urls: 'turn:globalturn.subspace.com:3478?transport=tcp'
+        // },
+        // {
+        //   username: '1638271361:prj_40FJdijqV0Bx4hT2sY09Ll',
+        //   credential: 'oaeeHDaoSv+tlUi0hNpLLPKhpUM=',
+        //   url: 'turns:globalturn.subspace.com:5349?transport=udp',
+        //   urls: 'turns:globalturn.subspace.com:5349?transport=udp'
+        // },
+        // {
+        //   username: '1638271361:prj_40FJdijqV0Bx4hT2sY09Ll',
+        //   credential: 'oaeeHDaoSv+tlUi0hNpLLPKhpUM=',
+        //   url: 'turns:globalturn.subspace.com:5349?transport=tcp',
+        //   urls: 'turns:globalturn.subspace.com:5349?transport=tcp'
+        // },
+        // {
+        //   username: '1638271361:prj_40FJdijqV0Bx4hT2sY09Ll',
+        //   credential: 'oaeeHDaoSv+tlUi0hNpLLPKhpUM=',
+        //   url: 'turns:globalturn.subspace.com:443?transport=tcp',
+        //   urls: 'turns:globalturn.subspace.com:443?transport=tcp'
+        // }
+      ],
+      iceTransportPolicy: 'relay' // forces use of TURN
     };
     this.peerConnection = new RTCPeerConnection(signal.start);
     StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
@@ -214,6 +249,23 @@ export default class JsepProtocol {
   };
 
   onRequestWebRtcMeasurement = () => {
+    // const findSelected = (stats) => [...stats.values()].find((s) => s.type === 'candidate-pair' && s.selected);
+
+    // this.peerConnection
+    //   .getStats()
+    //   .then((s) => findSelected(s))
+    //   .then(() => this.peerConnection.getStats())
+    //   .then((stats) => {
+    //     const candidate = stats.get(findSelected(stats).localCandidateId);
+    //     console.log(candidate);
+    //     if (candidate.candidateType == 'relayed') {
+    //       console.log('Uses TURN server: ' + candidate.ipAddress);
+    //     } else {
+    //       console.log('Does not use TURN (uses ' + candidate.candidateType + ').');
+    //     }
+    //   })
+    //   .catch((err) => console.log(err));
+
     this.peerConnection
       .getStats()
       .then((stats) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, stats))

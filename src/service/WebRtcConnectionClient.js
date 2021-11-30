@@ -30,7 +30,39 @@ export default class WebRtcConnectionClient {
    */
   static createPeerConnection = (host, id) => {
     const options = { sdpSemantics: 'unified-plan' };
-    options.iceServers = [WebRtcConnectionClient.getIceConfiguration(host)];
+    options.iceServers = [
+      // WebRtcConnectionClient.getIceConfiguration(host),
+      // {
+      //   username: '1638271361:prj_40FJdijqV0Bx4hT2sY09Ll',
+      //   credential: 'oaeeHDaoSv+tlUi0hNpLLPKhpUM=',
+      //   url: 'turn:globalturn.subspace.com:3478?transport=udp',
+      //   urls: 'turn:globalturn.subspace.com:3478?transport=udp'
+      // },
+      // {
+      //   username: '1638271361:prj_40FJdijqV0Bx4hT2sY09Ll',
+      //   credential: 'oaeeHDaoSv+tlUi0hNpLLPKhpUM=',
+      //   url: 'turn:globalturn.subspace.com:3478?transport=tcp',
+      //   urls: 'turn:globalturn.subspace.com:3478?transport=tcp'
+      // },
+      // {
+      //   username: '1638271361:prj_40FJdijqV0Bx4hT2sY09Ll',
+      //   credential: 'oaeeHDaoSv+tlUi0hNpLLPKhpUM=',
+      //   url: 'turns:globalturn.subspace.com:5349?transport=udp',
+      //   urls: 'turns:globalturn.subspace.com:5349?transport=udp'
+      // },
+      // {
+      //   username: '1638271361:prj_40FJdijqV0Bx4hT2sY09Ll',
+      //   credential: 'oaeeHDaoSv+tlUi0hNpLLPKhpUM=',
+      //   url: 'turns:globalturn.subspace.com:5349?transport=tcp',
+      //   urls: 'turns:globalturn.subspace.com:5349?transport=tcp'
+      // },
+      // {
+      //   username: '1638271361:prj_40FJdijqV0Bx4hT2sY09Ll',
+      //   credential: 'oaeeHDaoSv+tlUi0hNpLLPKhpUM=',
+      //   url: 'turns:globalturn.subspace.com:443?transport=tcp',
+      //   urls: 'turns:globalturn.subspace.com:443?transport=tcp'
+      // }
+    ];
     options.iceTransportPolicy = 'relay';
     const peerConnection = new RTCPeerConnection(options);
 
