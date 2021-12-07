@@ -28,41 +28,13 @@ export default class WebRtcConnectionClient {
    * @param {string} host
    * @param {string} id
    */
-  static createPeerConnection = (host, id) => {
+  static createPeerConnection = (host, id, iceServers) => {
     const options = { sdpSemantics: 'unified-plan' };
-    options.iceServers = [
-      // WebRtcConnectionClient.getIceConfiguration(host),
-      // {
-      //   username: '1638271361:prj_40FJdijqV0Bx4hT2sY09Ll',
-      //   credential: 'oaeeHDaoSv+tlUi0hNpLLPKhpUM=',
-      //   url: 'turn:globalturn.subspace.com:3478?transport=udp',
-      //   urls: 'turn:globalturn.subspace.com:3478?transport=udp'
-      // },
-      // {
-      //   username: '1638271361:prj_40FJdijqV0Bx4hT2sY09Ll',
-      //   credential: 'oaeeHDaoSv+tlUi0hNpLLPKhpUM=',
-      //   url: 'turn:globalturn.subspace.com:3478?transport=tcp',
-      //   urls: 'turn:globalturn.subspace.com:3478?transport=tcp'
-      // },
-      // {
-      //   username: '1638271361:prj_40FJdijqV0Bx4hT2sY09Ll',
-      //   credential: 'oaeeHDaoSv+tlUi0hNpLLPKhpUM=',
-      //   url: 'turns:globalturn.subspace.com:5349?transport=udp',
-      //   urls: 'turns:globalturn.subspace.com:5349?transport=udp'
-      // },
-      // {
-      //   username: '1638271361:prj_40FJdijqV0Bx4hT2sY09Ll',
-      //   credential: 'oaeeHDaoSv+tlUi0hNpLLPKhpUM=',
-      //   url: 'turns:globalturn.subspace.com:5349?transport=tcp',
-      //   urls: 'turns:globalturn.subspace.com:5349?transport=tcp'
-      // },
-      // {
-      //   username: '1638271361:prj_40FJdijqV0Bx4hT2sY09Ll',
-      //   credential: 'oaeeHDaoSv+tlUi0hNpLLPKhpUM=',
-      //   url: 'turns:globalturn.subspace.com:443?transport=tcp',
-      //   urls: 'turns:globalturn.subspace.com:443?transport=tcp'
-      // }
-    ];
+    //TODO-subspace: think about the default end additional cases
+    // console.log('---------------------------------DEBUG---------------------------------', { iceServers });
+    options.iceServers =
+      //iceServers; //
+      [WebRtcConnectionClient.getIceConfiguration(host)];
     options.iceTransportPolicy = 'relay';
     const peerConnection = new RTCPeerConnection(options);
 
@@ -88,14 +60,23 @@ export default class WebRtcConnectionClient {
     const { host, beforeAnswer } = createOptions;
     let remotePeerConnectionId = undefined;
     let peerConnection = undefined;
-    return axios
-      .post(`${host}/connections`)
-      .then((response) => {
-        const remotePeerConnection = response.data || {};
-        remotePeerConnectionId = remotePeerConnection.id;
-        peerConnection = WebRtcConnectionClient.createPeerConnection(host, remotePeerConnectionId);
-        return peerConnection.setRemoteDescription(remotePeerConnection.localDescription);
-      })
+    return Promise.all([
+      axios.post(`${host}/connections`)
+      //axios.post(`${host}/ice-candidates`)
+    ])
+      .then(
+        ([
+          connections
+          //  , iceCandidates
+        ]) => {
+          const remotePeerConnection = connections.data || {};
+          remotePeerConnectionId = remotePeerConnection.id;
+          //const iceServers = iceCandidates.data || [];
+          const iceServers = [];
+          peerConnection = WebRtcConnectionClient.createPeerConnection(host, remotePeerConnectionId, iceServers);
+          return peerConnection.setRemoteDescription(remotePeerConnection.localDescription);
+        }
+      )
       .then(() => beforeAnswer(peerConnection))
       .then(() => peerConnection.createAnswer())
       .then((originalAnswer) =>

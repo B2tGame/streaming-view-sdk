@@ -305,9 +305,7 @@ export default class EmulatorWebrtcView extends Component {
           .then((stats) => {
             const candidate = stats.get(findSelected(stats).localCandidateId);
             console.log(candidate);
-            //            if (candidate.candidateType == 'relayed') {
-            // console.log('Uses TURN server: ' + candidate.ipAddress, { candidate });
-            if (candidate.candidateType == 'relay') {
+            if (candidate.candidateType === 'relay') {
               console.log('Uses TURN server: ' + candidate.address, { candidate });
             } else {
               console.log('Does not use TURN (uses ' + candidate.candidateType + ').', { candidate });

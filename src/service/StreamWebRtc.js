@@ -29,6 +29,7 @@ export default class StreamWebRtc extends EventEmitter {
     this.pingInterval = pingInterval;
     this.peerConnection = undefined;
 
+    //TODO-subspace: consider to duplicate this, one as default one for subspace
     WebRtcConnectionClient.createConnection({
       beforeAnswer: this.beforeAnswer,
       host: this.host
