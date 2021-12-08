@@ -206,35 +206,65 @@ export default class JsepProtocol {
       //ice_servers: [
       iceServers: [
         // this.getIceConfiguration(),
+        // {
+        //   username: '1639046092:prj_40FJdijqV0Bx4hT2sY09Ll',
+        //   credential: 'NGUaaGd+VyguDJ5q0gLmB31gBxM=',
+        //   url: 'turn:globalturn.subspace.com:3478?transport=udp',
+        //   urls: 'turn:globalturn.subspace.com:3478?transport=udp'
+        // },
+        // {
+        //   username: '1639046092:prj_40FJdijqV0Bx4hT2sY09Ll',
+        //   credential: 'NGUaaGd+VyguDJ5q0gLmB31gBxM=',
+        //   url: 'turn:globalturn.subspace.com:3478?transport=tcp',
+        //   urls: 'turn:globalturn.subspace.com:3478?transport=tcp'
+        // },
+        // {
+        //   username: '1639046092:prj_40FJdijqV0Bx4hT2sY09Ll',
+        //   credential: 'NGUaaGd+VyguDJ5q0gLmB31gBxM=',
+        //   url: 'turns:globalturn.subspace.com:5349?transport=udp',
+        //   urls: 'turns:globalturn.subspace.com:5349?transport=udp'
+        // },
+        // {
+        //   username: '1639046092:prj_40FJdijqV0Bx4hT2sY09Ll',
+        //   credential: 'NGUaaGd+VyguDJ5q0gLmB31gBxM=',
+        //   url: 'turns:globalturn.subspace.com:5349?transport=tcp',
+        //   urls: 'turns:globalturn.subspace.com:5349?transport=tcp'
+        // },
+        // {
+        //   username: '1639046092:prj_40FJdijqV0Bx4hT2sY09Ll',
+        //   credential: 'NGUaaGd+VyguDJ5q0gLmB31gBxM=',
+        //   url: 'turns:globalturn.subspace.com:443?transport=tcp',
+        //   urls: 'turns:globalturn.subspace.com:443?transport=tcp'
+        // }
         {
-          username: '1638960339:prj_40FJdijqV0Bx4hT2sY09Ll',
-          credential: 'YXCz5qTQUhOHgO1S5tF+bVTZW34=',
-          url: 'turn:globalturn.subspace.com:3478?transport=udp',
-          urls: 'turn:globalturn.subspace.com:3478?transport=udp'
+          username: '1639048815:prj_40FJdijqV0Bx4hT2sY09Ll',
+          credential: '0Muha4DeMqFVAndMS2Td4KrBhNs=',
+          url: 'turn:globalturn.subspace-alpha.com:3478?transport=udp',
+          urls: 'turn:globalturn.subspace-alpha.com:3478?transport=udp'
         },
         {
-          username: '1638960339:prj_40FJdijqV0Bx4hT2sY09Ll',
-          credential: 'YXCz5qTQUhOHgO1S5tF+bVTZW34=',
-          url: 'turn:globalturn.subspace.com:3478?transport=tcp',
-          urls: 'turn:globalturn.subspace.com:3478?transport=tcp'
+          username: '1639048815:prj_40FJdijqV0Bx4hT2sY09Ll',
+          credential: '0Muha4DeMqFVAndMS2Td4KrBhNs=',
+          url: 'turn:globalturn.subspace-alpha.com:3478?transport=tcp',
+          urls: 'turn:globalturn.subspace-alpha.com:3478?transport=tcp'
         },
         {
-          username: '1638960339:prj_40FJdijqV0Bx4hT2sY09Ll',
-          credential: 'YXCz5qTQUhOHgO1S5tF+bVTZW34=',
-          url: 'turns:globalturn.subspace.com:5349?transport=udp',
-          urls: 'turns:globalturn.subspace.com:5349?transport=udp'
+          username: '1639048815:prj_40FJdijqV0Bx4hT2sY09Ll',
+          credential: '0Muha4DeMqFVAndMS2Td4KrBhNs=',
+          url: 'turns:globalturn.subspace-alpha.com:5349?transport=udp',
+          urls: 'turns:globalturn.subspace-alpha.com:5349?transport=udp'
         },
         {
-          username: '1638960339:prj_40FJdijqV0Bx4hT2sY09Ll',
-          credential: 'YXCz5qTQUhOHgO1S5tF+bVTZW34=',
-          url: 'turns:globalturn.subspace.com:5349?transport=tcp',
-          urls: 'turns:globalturn.subspace.com:5349?transport=tcp'
+          username: '1639048815:prj_40FJdijqV0Bx4hT2sY09Ll',
+          credential: '0Muha4DeMqFVAndMS2Td4KrBhNs=',
+          url: 'turns:globalturn.subspace-alpha.com:5349?transport=tcp',
+          urls: 'turns:globalturn.subspace-alpha.com:5349?transport=tcp'
         },
         {
-          username: '1638960339:prj_40FJdijqV0Bx4hT2sY09Ll',
-          credential: 'YXCz5qTQUhOHgO1S5tF+bVTZW34=',
-          url: 'turns:globalturn.subspace.com:443?transport=tcp',
-          urls: 'turns:globalturn.subspace.com:443?transport=tcp'
+          username: '1639048815:prj_40FJdijqV0Bx4hT2sY09Ll',
+          credential: '0Muha4DeMqFVAndMS2Td4KrBhNs=',
+          url: 'turns:globalturn.subspace-alpha.com:443?transport=tcp',
+          urls: 'turns:globalturn.subspace-alpha.com:443?transport=tcp'
         }
       ],
       iceTransportPolicy: 'relay' // forces use of TURN
