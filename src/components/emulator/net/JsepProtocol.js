@@ -237,32 +237,32 @@ export default class JsepProtocol {
         //   urls: 'turns:globalturn.subspace.com:443?transport=tcp'
         // }
         {
-          username: '1639048815:prj_40FJdijqV0Bx4hT2sY09Ll',
-          credential: '0Muha4DeMqFVAndMS2Td4KrBhNs=',
+          username: '1639055833:prj_40FJdijqV0Bx4hT2sY09Ll',
+          credential: 'GZ4/Rkc7zcK1PpJ6XD/s4GPmN4c=',
           url: 'turn:globalturn.subspace-alpha.com:3478?transport=udp',
           urls: 'turn:globalturn.subspace-alpha.com:3478?transport=udp'
         },
         {
-          username: '1639048815:prj_40FJdijqV0Bx4hT2sY09Ll',
-          credential: '0Muha4DeMqFVAndMS2Td4KrBhNs=',
+          username: '1639055833:prj_40FJdijqV0Bx4hT2sY09Ll',
+          credential: 'GZ4/Rkc7zcK1PpJ6XD/s4GPmN4c=',
           url: 'turn:globalturn.subspace-alpha.com:3478?transport=tcp',
           urls: 'turn:globalturn.subspace-alpha.com:3478?transport=tcp'
         },
         {
-          username: '1639048815:prj_40FJdijqV0Bx4hT2sY09Ll',
-          credential: '0Muha4DeMqFVAndMS2Td4KrBhNs=',
+          username: '1639055833:prj_40FJdijqV0Bx4hT2sY09Ll',
+          credential: 'GZ4/Rkc7zcK1PpJ6XD/s4GPmN4c=',
           url: 'turns:globalturn.subspace-alpha.com:5349?transport=udp',
           urls: 'turns:globalturn.subspace-alpha.com:5349?transport=udp'
         },
         {
-          username: '1639048815:prj_40FJdijqV0Bx4hT2sY09Ll',
-          credential: '0Muha4DeMqFVAndMS2Td4KrBhNs=',
+          username: '1639055833:prj_40FJdijqV0Bx4hT2sY09Ll',
+          credential: 'GZ4/Rkc7zcK1PpJ6XD/s4GPmN4c=',
           url: 'turns:globalturn.subspace-alpha.com:5349?transport=tcp',
           urls: 'turns:globalturn.subspace-alpha.com:5349?transport=tcp'
         },
         {
-          username: '1639048815:prj_40FJdijqV0Bx4hT2sY09Ll',
-          credential: '0Muha4DeMqFVAndMS2Td4KrBhNs=',
+          username: '1639055833:prj_40FJdijqV0Bx4hT2sY09Ll',
+          credential: 'GZ4/Rkc7zcK1PpJ6XD/s4GPmN4c=',
           url: 'turns:globalturn.subspace-alpha.com:443?transport=tcp',
           urls: 'turns:globalturn.subspace-alpha.com:443?transport=tcp'
         }
