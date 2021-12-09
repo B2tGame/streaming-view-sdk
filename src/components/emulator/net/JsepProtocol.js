@@ -1,3 +1,4 @@
+import { sign } from 'crypto';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import url from 'url';
 import StreamingEvent from '../../../StreamingEvent';
@@ -22,7 +23,7 @@ export default class JsepProtocol {
    * @param {string|undefined} turnEndpoint Override the default uri for turn servers
    * @param {number|0} playoutDelayHint Custom playoutDelayHint value
    */
-  constructor(emulator, rtc, poll, edgeNodeId, logger, turnEndpoint = undefined, playoutDelayHint = 0) {
+  constructor(emulator, rtc, poll, edgeNodeId, logger, turnEndpoint = undefined, playoutDelayHint = 0, iceServers = []) {
     this.emulator = emulator;
     this.rtc = rtc;
     this.guid = null;
@@ -32,6 +33,7 @@ export default class JsepProtocol {
     this.eventForwarders = {};
     this.poll = poll || typeof this.rtc.receiveJsepMessages !== 'function';
     this.playoutDelayHint = playoutDelayHint;
+    this.iceServers = iceServers;
     this.logger = logger;
   }
 
@@ -201,9 +203,11 @@ export default class JsepProtocol {
 
   _handleStart = (signal) => {
     signal.start = {
-      iceServers: [this.getIceConfiguration()],
+      iceServers: !this.iceServers.length ? [this.getIceConfiguration()] : this.iceServers,
       iceTransportPolicy: 'relay'
     };
+    console.log('JsepProtocol._handleStart:', signal);
+
     this.peerConnection = new RTCPeerConnection(signal.start);
     StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
 

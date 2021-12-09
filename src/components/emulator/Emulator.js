@@ -144,7 +144,8 @@ class Emulator extends Component {
       this.props.edgeNodeId,
       this.props.logger,
       this.props.turnEndpoint,
-      this.props.playoutDelayHint
+      this.props.playoutDelayHint,
+      this.props.iceServers
     );
 
     StreamingEvent.edgeNode(this.props.edgeNodeId)

@@ -57,7 +57,9 @@ export default class StreamingView extends Component {
       width: PropTypes.string,
       pingInterval: PropTypes.number,
       measureTouchRtt: PropTypes.bool,
-      playoutDelayHint: PropTypes.number
+      playoutDelayHint: PropTypes.number,
+      iceServers: PropTypes.array,
+      measureWebrtcRtt: PropTypes.bool
     };
   }
 
@@ -71,7 +73,9 @@ export default class StreamingView extends Component {
     muted: false,
     pingInterval: StreamWebRtc.WEBRTC_PING_INTERVAL,
     measureTouchRtt: true,
-    playoutDelayHint: 0
+    playoutDelayHint: 0,
+    iceServers: [],
+    measureWebrtcRtt: true
   };
 
   /**
@@ -329,7 +333,8 @@ export default class StreamingView extends Component {
       edgeNodeId,
       height: propsHeight,
       width: propsWidth,
-      playoutDelayHint
+      playoutDelayHint,
+      iceServers
     } = this.props;
     const { height: stateHeight, width: stateWidth } = this.state;
 
@@ -354,6 +359,7 @@ export default class StreamingView extends Component {
               maxConnectionRetries={this.props.maxConnectionRetries}
               measureTouchRtt={this.props.measureTouchRtt}
               playoutDelayHint={playoutDelayHint}
+              iceServers={iceServers}
             />
           </div>
         );
