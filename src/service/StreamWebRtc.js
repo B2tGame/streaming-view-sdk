@@ -21,12 +21,14 @@ export default class StreamWebRtc extends EventEmitter {
   /**
    * @param {string} host
    * @param {number} pingInterval
+   * @param {boolean} measureWebrtcRtt
    */
-  constructor(host, pingInterval = StreamWebRtc.WEBRTC_PING_INTERVAL) {
+  constructor(host, pingInterval = StreamWebRtc.WEBRTC_PING_INTERVAL, measureWebrtcRtt = true) {
     super();
 
     this.host = host;
     this.pingInterval = pingInterval;
+    this.measureWebrtcRtt = measureWebrtcRtt;
     this.peerConnection = undefined;
 
     WebRtcConnectionClient.createConnection({

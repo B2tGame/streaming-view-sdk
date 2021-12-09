@@ -103,7 +103,8 @@ export default class StreamingView extends Component {
 
   componentDidMount() {
     this.isMountedInView = true;
-    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, onEvent, pingInterval } = this.props;
+    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, onEvent, pingInterval, measureWebrtcRtt } =
+      this.props;
     if (!internalSession) {
       this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId, this.streamingViewId);
     }
@@ -111,7 +112,9 @@ export default class StreamingView extends Component {
     this.blackScreenDetector = new BlackScreenDetector(edgeNodeId, this.streamingViewId);
 
     this.logger = new Logger();
-    this.measurement = new Measurement(edgeNodeId, this.streamingViewId, this.logger);
+    if (measureWebrtcRtt) {
+      this.measurement = new Measurement(edgeNodeId, this.streamingViewId, this.logger);
+    }
 
     if (onEvent) {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
@@ -168,7 +171,9 @@ export default class StreamingView extends Component {
         return internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
       })
       .then((streamEndpoint) => {
-        this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, pingInterval);
+        if (this.measurement) {
+          this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, pingInterval);
+        }
         if (!this.isMountedInView) {
           this.logger.log('Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
