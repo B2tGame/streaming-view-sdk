@@ -82,6 +82,9 @@ export default class JsepProtocol {
     this.rtc.requestRtcStream(request, {}, (err, response) => {
       if (err) {
         this.logger.error('Failed to configure rtc stream: ' + JSON.stringify(err));
+        console.log('JsepProtocol.startStream: Failed to configure rtc stream:', JSON.stringify(err));
+        console.log('JsepProtocol.startStream: Disconnecting');
+
         this.disconnect();
         return;
       }
@@ -116,6 +119,8 @@ export default class JsepProtocol {
   };
 
   _handlePeerConnectionStateChange = () => {
+    console.log('JsepProtocol._handleDataChannelStatusChange:', { connectionState: this.peerConnection.connectionState });
+
     switch (this.peerConnection.connectionState) {
       case 'disconnected':
         // At least one of the ICE transports for the connection is in the "disconnected" state
@@ -163,6 +168,8 @@ export default class JsepProtocol {
   };
 
   _handleDataChannelStatusChange = (e) => {
+    console.log('JsepProtocol._handleDataChannelStatusChange:', e);
+
     this.logger.log('Data status change ' + e);
   };
 
@@ -177,6 +184,8 @@ export default class JsepProtocol {
   }
 
   _handlePeerIceCandidate = (e) => {
+    console.log('JsepProtocol._handlePeerIceCandidate:', { candidate: e.candidate });
+
     if (e.candidate === null) return;
     this._sendJsep({ candidate: e.candidate });
   };
@@ -236,6 +245,9 @@ export default class JsepProtocol {
     // sdp.restrictVideoCodec(['VP9']);
 
     answer.sdp = sdp.toString();
+
+    console.log('JsepProtocol._handleSDP:', answer);
+
     if (answer) {
       this.peerConnection.setLocalDescription(answer);
       this._sendJsep({ sdp: answer });
@@ -249,6 +261,7 @@ export default class JsepProtocol {
   };
 
   _handleJsepMessage = (message) => {
+    console.log('JsepProtocol._handleJsepMessage:', message);
     try {
       const signal = JSON.parse(message);
       if (signal.start) this._handleStart(signal);
@@ -262,6 +275,7 @@ export default class JsepProtocol {
 
   _handleBye = () => {
     if (this.connected) {
+      console.log('JsepProtocol._handleBye: Disconnecting');
       this.disconnect();
     }
   };
@@ -271,6 +285,7 @@ export default class JsepProtocol {
     const request = new proto.android.emulation.control.JsepMsg();
     request.setId(this.guid);
     request.setMessage(JSON.stringify(jsonObject));
+    console.log('JsepProtocol._sendJsep:', request);
     this.rtc.sendJsepMessage(request);
   };
 
