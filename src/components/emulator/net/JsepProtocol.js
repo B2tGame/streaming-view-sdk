@@ -167,6 +167,10 @@ export default class JsepProtocol {
     }
   };
 
+  _handlePeerOnIceCandidateError = (e) => {
+    console.log('JsepProtocol._handlePeerOnIceCandidateError:', e);
+  };
+
   _handleDataChannelStatusChange = (e) => {
     console.log('JsepProtocol._handleDataChannelStatusChange:', e);
 
@@ -223,6 +227,7 @@ export default class JsepProtocol {
     this.peerConnection.addEventListener('track', this._handlePeerConnectionTrack, false);
     this.peerConnection.addEventListener('icecandidate', this._handlePeerIceCandidate, false);
     this.peerConnection.addEventListener('connectionstatechange', this._handlePeerConnectionStateChange, false);
+    this.peerConnection.addEventListener('onicecandidateerror', this._handlePeerOnIceCandidateError, false);
     this.peerConnection.ondatachannel = (e) => this._handleDataChannel(e);
   };
 
