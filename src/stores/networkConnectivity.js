@@ -153,7 +153,6 @@ const getAdvancedMeasurement = () => {
       };
 
       try {
-        console.log('DEBUGGGGG');
         streamWebRtc = new StreamWebRtc(webRtcHost);
         setTimeout(() => stopMeasurement(), WEBRTC_TIME_TO_CONNECTED);
         streamWebRtc

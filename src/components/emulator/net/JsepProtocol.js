@@ -119,7 +119,7 @@ export default class JsepProtocol {
   };
 
   _handlePeerConnectionStateChange = () => {
-    console.log('JsepProtocol._handleDataChannelStatusChange:', { connectionState: this.peerConnection.connectionState });
+    console.log('JsepProtocol._handlePeerConnectionStateChange:', { connectionState: this.peerConnection.connectionState });
 
     switch (this.peerConnection.connectionState) {
       case 'disconnected':

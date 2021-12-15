@@ -68,7 +68,7 @@ class Emulator extends Component {
    * @return {number}
    */
   static get RELOAD_FAILURE_THRESHOLD() {
-    return 2;
+    return 5;
   }
 
   static propTypes = {
@@ -220,6 +220,7 @@ class Emulator extends Component {
     if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
       this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
       if (this.reloadCount >= this.props.maxConnectionRetries) {
+        this.props.logger.info(`reload count: ${this.reloadCount} of ${this.props.maxConnectionRetries}`);
         // Give up and exit the stream.
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(
           StreamingEvent.STREAM_UNREACHABLE,
