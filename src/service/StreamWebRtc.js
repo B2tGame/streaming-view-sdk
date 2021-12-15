@@ -115,7 +115,7 @@ export default class StreamWebRtc extends EventEmitter {
   close = () => {
     if (this.peerConnection) {
       this.peerConnection.close();
-      this.peerConnection = undefined;
+      this.peerConnection = null;
     }
   };
 }

@@ -87,6 +87,7 @@ export default class WebRtcConnectionClient {
       .catch((error) => {
         if (peerConnection) {
           peerConnection.close();
+          peerConnection = null;
         }
         throw error;
       });

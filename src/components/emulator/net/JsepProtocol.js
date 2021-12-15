@@ -45,10 +45,10 @@ export default class JsepProtocol {
     this.streamConnectedTimestamp = undefined;
 
     if (this.peerConnection) {
-      this.peerConnection.close();
       this.peerConnection.removeEventListener('track', this._handlePeerConnectionTrack);
       this.peerConnection.removeEventListener('icecandidate', this._handlePeerIceCandidate);
       this.peerConnection.removeEventListener('connectionstatechange', this._handlePeerConnectionStateChange);
+      this.peerConnection.close();
       this.peerConnection = null;
     }
 
