@@ -239,7 +239,7 @@ export default class JsepProtocol {
   };
 
   _handleSDP = async (signal) => {
-    this.peerConnection.setRemoteDescription(new RTCSessionDescription(signal));
+    await this.peerConnection.setRemoteDescription(new RTCSessionDescription(signal));
     const answer = await this.peerConnection.createAnswer();
     const sdp = new SdpModifier(answer.sdp);
     // This will set the target bandwidth usage to 1 mbits/sec for both video and audio stream.
