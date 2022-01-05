@@ -1,6 +1,7 @@
-import url from 'url';
+
 import StreamingEvent from '../StreamingEvent';
 import io from 'socket.io-client';
+import parseUrl from 'url-parse'
 import pako from 'pako'
 
 /**
@@ -26,11 +27,11 @@ export default class StreamSocket {
    * @param {boolean} internalSession
    */
   constructor(edgeNodeId, streamEndpoint, userId, internalSession) {
-    const endpoint = url.parse(streamEndpoint);
+    const endpoint = parseUrl(streamEndpoint);
     this.edgeNodeId = edgeNodeId;
     this.userId = userId;
     this.socket = io(`${endpoint.protocol}//${endpoint.host}`, {
-      path: `${endpoint.path}/emulator-commands/socket.io`,
+      path: `${endpoint.pathname}/emulator-commands/socket.io`,
       query: `userId=${userId}&internal=${internalSession ? '1' : '0'}`
     });
     this.reportCache = [];
