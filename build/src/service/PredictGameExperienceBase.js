@@ -14,6 +14,8 @@ var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/he
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
 
+/* eslint-disable no-unused-vars */
+
 /**
  * PredictGameExperienceBase class
  */

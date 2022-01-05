@@ -14,6 +14,8 @@ var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable
 
 var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
 
+var _from = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/array/from"));
+
 var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
 
 var _setInterval2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-interval"));
@@ -30,7 +32,7 @@ var _StreamingEvent = _interopRequireDefault(require("../StreamingEvent"));
 
 var _socket = _interopRequireDefault(require("socket.io-client"));
 
-var _zlib = _interopRequireDefault(require("zlib"));
+var _pako = _interopRequireDefault(require("pako"));
 
 /**
  * Websocket connection and communicate with the backend
@@ -67,7 +69,7 @@ var StreamSocket = /*#__PURE__*/function () {
         _this.socket.emit('message', (0, _stringify["default"])({
           type: 'report-bundle',
           timestamp: (0, _now["default"])(),
-          reports: _zlib["default"].deflateSync(Buffer.from((0, _stringify["default"])((0, _toConsumableArray2["default"])(_this.reportCache))))
+          reports: (0, _from["default"])(_pako["default"].deflate((0, _stringify["default"])((0, _toConsumableArray2["default"])(_this.reportCache))))
         }));
 
         _this.reportCache = [];

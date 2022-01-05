@@ -20,11 +20,11 @@ exports["default"] = void 0;
 
 var _promise = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/promise"));
 
-var _setInterval2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-interval"));
-
 var _setTimeout2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-timeout"));
 
 var _forEach = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/for-each"));
+
+var _setInterval2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-interval"));
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
 
@@ -117,31 +117,31 @@ var EmulatorWebrtcView = /*#__PURE__*/function (_Component) {
       }
 
       if (_this.touchTimer !== undefined) {
-        clearInterval(_this.touchTimer);
+        cancelAnimationFrame(_this.touchTimer);
       }
 
-      _this.touchTimer = (0, _setInterval2["default"])(function (startTime, giveUpAfter) {
+      var startTime = performance.now();
+
+      var runTouchDetection = function runTouchDetection(timestamp) {
         var foundCircle = _this.streamCaptureService.detectTouch(event.x, event.y, _this.props.emulatorWidth, _this.props.emulatorHeight);
 
         if (foundCircle) {
-          var rtt = new Date().getTime() - startTime;
+          var rtt = timestamp - startTime;
 
           _StreamingEvent["default"].edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent["default"].TOUCH_RTT, {
             rtt: rtt
           });
-
-          clearInterval(_this.touchTimer);
-        }
-
-        if (new Date().getTime() > startTime + giveUpAfter) {
-          clearInterval(_this.touchTimer);
-
+        } else if (timestamp > startTime + rttMeasurementTimeout) {
           _StreamingEvent["default"].edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent["default"].TOUCH_RTT_TIMOUT, {
             timeout: true,
-            time: giveUpAfter
+            time: rttMeasurementTimeout
           });
+        } else {
+          requestAnimationFrame(runTouchDetection);
         }
-      }, 1, new Date().getTime(), rttMeasurementTimeout);
+      };
+
+      _this.touchTimer = requestAnimationFrame(runTouchDetection);
     };
 
     _this.onDisconnect = function () {

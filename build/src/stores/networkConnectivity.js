@@ -313,7 +313,7 @@ var measureNetworkConnectivity = function measureNetworkConnectivity() {
     );
   }).then(function (advancedMeasurement) {
     networkConnectivity = _objectSpread(_objectSpread({}, networkConnectivity), advancedMeasurement);
-    console.log('networkConnectivity: ', networkConnectivity);
+    console.log('networkConnectivity:', networkConnectivity);
   }).then(function () {
     return networkConnectivity;
   });

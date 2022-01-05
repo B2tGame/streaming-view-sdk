@@ -72,7 +72,8 @@ var StreamingAgent = /*#__PURE__*/function (_Component) {
 
       this.connection.onchange = function () {
         return _this2.onConnectivityUpdate();
-      };
+      }; //TODO-Jonathan: pls check if we really need this
+
 
       this.onConnectivityUpdate();
     }
