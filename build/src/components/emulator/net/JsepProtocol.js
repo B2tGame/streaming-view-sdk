@@ -1,26 +1,11 @@
 "use strict";
 
-var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
-
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
-_Object$defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-exports["default"] = void 0;
-
-var _regenerator = _interopRequireDefault(require("@babel/runtime-corejs3/regenerator"));
-
-var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
-
-var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/date/now"));
-
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/asyncToGenerator"));
-
-var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
-
-var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
+exports.default = void 0;
 
 var _empty_pb = require("google-protobuf/google/protobuf/empty_pb");
 
@@ -38,7 +23,7 @@ var _SdpModifier = _interopRequireDefault(require("./SdpModifier"));
  *
  * The jsep protocol is described here: https://rtcweb-wg.github.io/jsep/.
  */
-var JsepProtocol = /*#__PURE__*/function () {
+class JsepProtocol {
   /**
    * Creates an instance of JsepProtocol.
    * @param {EmulatorControllerService} emulator Service used to make the gRPC calls
@@ -49,129 +34,114 @@ var JsepProtocol = /*#__PURE__*/function () {
    * @param {string|undefined} turnEndpoint Override the default uri for turn servers
    * @param {number|0} playoutDelayHint Custom playoutDelayHint value
    */
-  function JsepProtocol(emulator, rtc, poll, edgeNodeId, logger) {
-    var _this = this;
+  constructor(emulator, rtc, poll, edgeNodeId, logger) {
+    let turnEndpoint = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : undefined;
+    let playoutDelayHint = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 0;
 
-    var turnEndpoint = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : undefined;
-    var playoutDelayHint = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 0;
-    (0, _classCallCheck2["default"])(this, JsepProtocol);
+    this.disconnect = () => {
+      this.connected = false;
+      this.streamConnectedTimestamp = undefined;
 
-    this.disconnect = function () {
-      _this.connected = false;
-      _this.streamConnectedTimestamp = undefined;
-
-      if (_this.peerConnection) {
-        _this.peerConnection.close();
-
-        _this.peerConnection.removeEventListener('track', _this._handlePeerConnectionTrack);
-
-        _this.peerConnection.removeEventListener('icecandidate', _this._handlePeerIceCandidate);
-
-        _this.peerConnection.removeEventListener('connectionstatechange', _this._handlePeerConnectionStateChange);
-
-        _this.peerConnection = null;
+      if (this.peerConnection) {
+        this.peerConnection.close();
+        this.peerConnection.removeEventListener('track', this._handlePeerConnectionTrack);
+        this.peerConnection.removeEventListener('icecandidate', this._handlePeerIceCandidate);
+        this.peerConnection.removeEventListener('connectionstatechange', this._handlePeerConnectionStateChange);
+        this.peerConnection = null;
       }
 
-      _this.eventForwarders = {};
+      this.eventForwarders = {};
 
-      if (_this.stream) {
-        _this.stream.cancel();
-
-        _this.stream = null;
+      if (this.stream) {
+        this.stream.cancel();
+        this.stream = null;
       }
 
-      _this.active = false;
+      this.active = false;
 
-      if (_this.rtcEventTrigger) {
-        _this.logger.log('Unregister RTC event trigger:', _this.rtcEventTrigger);
-
-        clearInterval(_this.rtcEventTrigger);
-        _this.rtcEventTrigger = null;
+      if (this.rtcEventTrigger) {
+        this.logger.log('Unregister RTC event trigger:', this.rtcEventTrigger);
+        clearInterval(this.rtcEventTrigger);
+        this.rtcEventTrigger = null;
       }
 
-      _StreamingEvent["default"].edgeNode(_this.edgeNodeId).off(_StreamingEvent["default"].REQUEST_WEB_RTC_MEASUREMENT, _this.onRequestWebRtcMeasurement);
+      _StreamingEvent.default.edgeNode(this.edgeNodeId).off(_StreamingEvent.default.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
 
-      _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].STREAM_DISCONNECTED);
+      _StreamingEvent.default.edgeNode(this.edgeNodeId).emit(_StreamingEvent.default.STREAM_DISCONNECTED);
     };
 
-    this.startStream = function () {
-      _this.connected = false;
-      _this.peerConnection = null;
-      _this.active = true;
-      var request = new _empty_pb.Empty();
-
-      _this.rtc.requestRtcStream(request, {}, function (err, response) {
+    this.startStream = () => {
+      this.connected = false;
+      this.peerConnection = null;
+      this.active = true;
+      const request = new _empty_pb.Empty();
+      this.rtc.requestRtcStream(request, {}, (err, response) => {
         if (err) {
-          _this.logger.error('Failed to configure rtc stream: ' + (0, _stringify["default"])(err));
-
-          _this.disconnect();
-
+          this.logger.error('Failed to configure rtc stream: ' + JSON.stringify(err));
+          this.disconnect();
           return;
         } // Configure
 
 
-        _this.guid = response;
-        _this.connected = true;
+        this.guid = response;
+        this.connected = true;
 
-        if (!_this.poll) {
+        if (!this.poll) {
           // Streaming envoy based.
-          _this.logger.info('Streaming JSEP messages.');
+          this.logger.info('Streaming JSEP messages.');
 
-          _this._streamJsepMessage();
+          this._streamJsepMessage();
         } else {
           // Poll pump messages, go/envoy based proxy.
-          _this.logger.info('Polling JSEP messages.');
+          this.logger.info('Polling JSEP messages.');
 
-          _this._receiveJsepMessage();
+          this._receiveJsepMessage();
         }
       });
     };
 
-    this._handlePeerConnectionTrack = function (event) {
-      if (_this.streamConnectedTimestamp === undefined) {
-        _this.streamConnectedTimestamp = (0, _now["default"])();
+    this._handlePeerConnectionTrack = event => {
+      if (this.streamConnectedTimestamp === undefined) {
+        this.streamConnectedTimestamp = Date.now();
       }
 
       if (event.receiver) {
         // On supported devices, playoutDelayHint can be used to set a recommended latency of the playback
         // A low value will come with cost of higher frames dropped, a higher number wil decrease the number
         // of dropped frames, but will also add more delay.
-        event.receiver.playoutDelayHint = _this.playoutDelayHint / 1000;
+        event.receiver.playoutDelayHint = this.playoutDelayHint / 1000;
         console.log("playoutDelayHint set to: ".concat(event.receiver.playoutDelayHint, "sec"));
       }
 
-      _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].STREAM_CONNECTED, event.track);
+      _StreamingEvent.default.edgeNode(this.edgeNodeId).emit(_StreamingEvent.default.STREAM_CONNECTED, event.track);
     };
 
-    this._handlePeerConnectionStateChange = function () {
-      switch (_this.peerConnection.connectionState) {
+    this._handlePeerConnectionStateChange = () => {
+      switch (this.peerConnection.connectionState) {
         case 'disconnected':
           // At least one of the ICE transports for the connection is in the "disconnected" state
           // and none of the other transports are in the state "failed", "connecting",
           // or "checking".
-          _this.disconnect();
-
+          this.disconnect();
           break;
 
         case 'failed':
           // One or more of the ICE transports on the connection is in the "failed" state.
-          _this.disconnect();
-
+          this.disconnect();
           break;
 
         case 'closed':
           //The RTCPeerConnection is closed.
-          _this.disconnect();
-
+          this.disconnect();
           break;
 
         case 'connected':
           {
-            var senders = _this.peerConnection.getSenders ? _this.peerConnection.getSenders() : [];
-            var iceTransport = ((senders[0] || {}).transport || {}).iceTransport || {};
-            var candidatePair = iceTransport.getSelectedCandidatePair ? iceTransport.getSelectedCandidatePair() : {};
-            var protocol = (candidatePair.local || {}).protocol || undefined;
-            var connection = undefined;
+            const senders = this.peerConnection.getSenders ? this.peerConnection.getSenders() : [];
+            const iceTransport = ((senders[0] || {}).transport || {}).iceTransport || {};
+            const candidatePair = iceTransport.getSelectedCandidatePair ? iceTransport.getSelectedCandidatePair() : {};
+            const protocol = (candidatePair.local || {}).protocol || undefined;
+            let connection = undefined;
 
             switch ((candidatePair.local || {}).type) {
               case 'relay':
@@ -191,7 +161,7 @@ var JsepProtocol = /*#__PURE__*/function () {
                 }
             }
 
-            _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].PEER_CONNECTION_SELECTED, {
+            _StreamingEvent.default.edgeNode(this.edgeNodeId).emit(_StreamingEvent.default.PEER_CONNECTION_SELECTED, {
               connection: connection,
               protocol: protocol
             });
@@ -205,161 +175,125 @@ var JsepProtocol = /*#__PURE__*/function () {
       }
     };
 
-    this._handleDataChannelStatusChange = function (e) {
-      _this.logger.log('Data status change ' + e);
+    this._handleDataChannelStatusChange = e => {
+      this.logger.log('Data status change ' + e);
     };
 
-    this._handlePeerIceCandidate = function (e) {
+    this._handlePeerIceCandidate = e => {
       if (e.candidate === null) return;
 
-      _this._sendJsep({
+      this._sendJsep({
         candidate: e.candidate
       });
     };
 
-    this._handleDataChannel = function (e) {
-      var channel = e.channel;
-      _this.eventForwarders[channel.label] = channel;
+    this._handleDataChannel = e => {
+      let channel = e.channel;
+      this.eventForwarders[channel.label] = channel;
     };
 
-    this._handleStart = function (signal) {
+    this._handleStart = signal => {
       signal.start = {
-        iceServers: [_this.getIceConfiguration()],
+        iceServers: [this.getIceConfiguration()],
         iceTransportPolicy: 'relay'
       };
-      _this.peerConnection = new RTCPeerConnection(signal.start);
+      this.peerConnection = new RTCPeerConnection(signal.start);
 
-      _StreamingEvent["default"].edgeNode(_this.edgeNodeId).on(_StreamingEvent["default"].REQUEST_WEB_RTC_MEASUREMENT, _this.onRequestWebRtcMeasurement);
+      _StreamingEvent.default.edgeNode(this.edgeNodeId).on(_StreamingEvent.default.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
 
-      _this.peerConnection.addEventListener('track', _this._handlePeerConnectionTrack, false);
+      this.peerConnection.addEventListener('track', this._handlePeerConnectionTrack, false);
+      this.peerConnection.addEventListener('icecandidate', this._handlePeerIceCandidate, false);
+      this.peerConnection.addEventListener('connectionstatechange', this._handlePeerConnectionStateChange, false);
 
-      _this.peerConnection.addEventListener('icecandidate', _this._handlePeerIceCandidate, false);
-
-      _this.peerConnection.addEventListener('connectionstatechange', _this._handlePeerConnectionStateChange, false);
-
-      _this.peerConnection.ondatachannel = function (e) {
-        return _this._handleDataChannel(e);
-      };
+      this.peerConnection.ondatachannel = e => this._handleDataChannel(e);
     };
 
-    this.onRequestWebRtcMeasurement = function () {
-      _this.peerConnection.getStats().then(function (stats) {
-        return _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].WEB_RTC_MEASUREMENT, stats);
-      })["catch"](function (err) {
-        return _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].ERROR, err);
-      });
+    this.onRequestWebRtcMeasurement = () => {
+      this.peerConnection.getStats().then(stats => _StreamingEvent.default.edgeNode(this.edgeNodeId).emit(_StreamingEvent.default.WEB_RTC_MEASUREMENT, stats)).catch(err => _StreamingEvent.default.edgeNode(this.edgeNodeId).emit(_StreamingEvent.default.ERROR, err));
     };
 
-    this._handleSDP = /*#__PURE__*/function () {
-      var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(signal) {
-        var answer, sdp;
-        return _regenerator["default"].wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                _this.peerConnection.setRemoteDescription(new RTCSessionDescription(signal));
+    this._handleSDP = async signal => {
+      this.peerConnection.setRemoteDescription(new RTCSessionDescription(signal));
+      const answer = await this.peerConnection.createAnswer();
+      const sdp = new _SdpModifier.default(answer.sdp); // This will set the target bandwidth usage to 1 mbits/sec for both video and audio stream.
+      // The code is disable for now due to increased latency for everything above the default bandwidth.
+      // sdp.setTargetBandwidth(1 * SDP.MEGABIT, 1 * SDP.MEGABIT);
+      // This will force the system to only using one of the listed codecs for the video stream.
+      // sdp.restrictVideoCodec(['VP9']);
 
-                _context.next = 3;
-                return _this.peerConnection.createAnswer();
+      answer.sdp = sdp.toString();
 
-              case 3:
-                answer = _context.sent;
-                sdp = new _SdpModifier["default"](answer.sdp); // This will set the target bandwidth usage to 1 mbits/sec for both video and audio stream.
-                // The code is disable for now due to increased latency for everything above the default bandwidth.
-                // sdp.setTargetBandwidth(1 * SDP.MEGABIT, 1 * SDP.MEGABIT);
-                // This will force the system to only using one of the listed codecs for the video stream.
-                // sdp.restrictVideoCodec(['VP9']);
+      if (answer) {
+        this.peerConnection.setLocalDescription(answer);
 
-                answer.sdp = sdp.toString();
-
-                if (answer) {
-                  _this.peerConnection.setLocalDescription(answer);
-
-                  _this._sendJsep({
-                    sdp: answer
-                  });
-                } else {
-                  _this.disconnect();
-                }
-
-              case 7:
-              case "end":
-                return _context.stop();
-            }
-          }
-        }, _callee);
-      }));
-
-      return function (_x) {
-        return _ref.apply(this, arguments);
-      };
-    }();
-
-    this._handleCandidate = function (signal) {
-      _this.peerConnection.addIceCandidate(new RTCIceCandidate(signal));
+        this._sendJsep({
+          sdp: answer
+        });
+      } else {
+        this.disconnect();
+      }
     };
 
-    this._handleJsepMessage = function (message) {
+    this._handleCandidate = signal => {
+      this.peerConnection.addIceCandidate(new RTCIceCandidate(signal));
+    };
+
+    this._handleJsepMessage = message => {
       try {
-        var signal = JSON.parse(message);
-        if (signal.start) _this._handleStart(signal);
-        if (signal.sdp) _this._handleSDP(signal);
-        if (signal.bye) _this._handleBye();
-        if (signal.candidate) _this._handleCandidate(signal);
+        const signal = JSON.parse(message);
+        if (signal.start) this._handleStart(signal);
+        if (signal.sdp) this._handleSDP(signal);
+        if (signal.bye) this._handleBye();
+        if (signal.candidate) this._handleCandidate(signal);
       } catch (e) {
-        _this.logger.error('Streaming View SDK: Failed to handle message: [' + message + '], due to: ' + (0, _stringify["default"])(e));
+        this.logger.error('Streaming View SDK: Failed to handle message: [' + message + '], due to: ' + JSON.stringify(e));
       }
     };
 
-    this._handleBye = function () {
-      if (_this.connected) {
-        _this.disconnect();
+    this._handleBye = () => {
+      if (this.connected) {
+        this.disconnect();
       }
     };
 
-    this._sendJsep = function (jsonObject) {
+    this._sendJsep = jsonObject => {
       /* eslint-disable */
-      var request = new proto.android.emulation.control.JsepMsg();
-      request.setId(_this.guid);
-      request.setMessage((0, _stringify["default"])(jsonObject));
-
-      _this.rtc.sendJsepMessage(request);
+      const request = new proto.android.emulation.control.JsepMsg();
+      request.setId(this.guid);
+      request.setMessage(JSON.stringify(jsonObject));
+      this.rtc.sendJsepMessage(request);
     };
 
-    this._streamJsepMessage = function () {
-      if (!_this.connected) return;
-      var self = _this;
-      _this.stream = _this.rtc.receiveJsepMessages(_this.guid, {});
-
-      _this.stream.on('data', function (response) {
-        var msg = response.getMessage();
+    this._streamJsepMessage = () => {
+      if (!this.connected) return;
+      const self = this;
+      this.stream = this.rtc.receiveJsepMessages(this.guid, {});
+      this.stream.on('data', response => {
+        const msg = response.getMessage();
 
         self._handleJsepMessage(msg);
       });
-
-      _this.stream.on('error', function (e) {
+      this.stream.on('error', e => {
         self.disconnect();
       });
-
-      _this.stream.on('end', function (e) {
+      this.stream.on('end', e => {
         self.disconnect();
       });
     };
 
-    this._receiveJsepMessage = function () {
-      if (!_this.connected) return;
-      var self = _this; // This is a blocking call, that will return as soon as a series
+    this._receiveJsepMessage = () => {
+      if (!this.connected) return;
+      const self = this; // This is a blocking call, that will return as soon as a series
       // of messages have been made available, or if we reach a timeout
 
-      _this.rtc.receiveJsepMessage(_this.guid, {}, function (err, response) {
+      this.rtc.receiveJsepMessage(this.guid, {}, (err, response) => {
         if (err) {
-          _this.logger.error('Failed to receive jsep message, disconnecting: ' + (0, _stringify["default"])(err));
-
-          _this.disconnect();
+          this.logger.error('Failed to receive jsep message, disconnecting: ' + JSON.stringify(err));
+          this.disconnect();
         }
 
         try {
-          var msg = response.getMessage(); // Handle only if we received a useful message.
+          const msg = response.getMessage(); // Handle only if we received a useful message.
           // it is possible to get nothing if the server decides
           // to kick us out.
 
@@ -367,7 +301,7 @@ var JsepProtocol = /*#__PURE__*/function () {
             self._handleJsepMessage(response.getMessage());
           }
         } catch (err) {
-          _this.logger.error('Failed to get jsep message, disconnecting: ' + (0, _stringify["default"])(err));
+          this.logger.error('Failed to get jsep message, disconnecting: ' + JSON.stringify(err));
         } // And pump messages. Note we must continue the message pump as we
         // can receive new ICE candidates at any point in time.
 
@@ -394,35 +328,30 @@ var JsepProtocol = /*#__PURE__*/function () {
    */
 
 
-  (0, _createClass2["default"])(JsepProtocol, [{
-    key: "send",
-    value: function send(label, msg) {
-      var bytes = msg.serializeBinary();
-      var forwarder = this.eventForwarders[label]; // Send via data channel/gRPC bridge.
+  send(label, msg) {
+    let bytes = msg.serializeBinary();
+    let forwarder = this.eventForwarders[label]; // Send via data channel/gRPC bridge.
 
-      if (this.connected && forwarder && forwarder.readyState === 'open') {
-        this.eventForwarders[label].send(bytes);
-      }
+    if (this.connected && forwarder && forwarder.readyState === 'open') {
+      this.eventForwarders[label].send(bytes);
     }
-  }, {
-    key: "getIceConfiguration",
-    value:
-    /**
-     * Get Ice configuration from emulator hostname
-     * @returns {any|{urls: string[], credential: string, username: string}}
-     */
-    function getIceConfiguration() {
-      var hostname = _url["default"].parse(this.emulator.hostname_).hostname;
+  }
 
-      var endpoint = this.turnEndpoint ? this.turnEndpoint : "turn:".concat(hostname, ":3478");
-      return {
-        urls: ["".concat(endpoint, "?transport=udp"), "".concat(endpoint, "?transport=tcp")],
-        username: 'webclient',
-        credential: 'webclient'
-      };
-    }
-  }]);
-  return JsepProtocol;
-}();
+  /**
+   * Get Ice configuration from emulator hostname
+   * @returns {any|{urls: string[], credential: string, username: string}}
+   */
+  getIceConfiguration() {
+    const hostname = _url.default.parse(this.emulator.hostname_).hostname;
 
-exports["default"] = JsepProtocol;
+    const endpoint = this.turnEndpoint ? this.turnEndpoint : "turn:".concat(hostname, ":3478");
+    return {
+      urls: ["".concat(endpoint, "?transport=udp"), "".concat(endpoint, "?transport=tcp")],
+      username: 'webclient',
+      credential: 'webclient'
+    };
+  }
+
+}
+
+exports.default = JsepProtocol;

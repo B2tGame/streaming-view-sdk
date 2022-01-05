@@ -1,24 +1,11 @@
 "use strict";
 
-var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
-
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
-_Object$defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-exports["default"] = void 0;
-
-var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
-
-var _setInterval2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-interval"));
-
-var _typeof2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/typeof"));
-
-var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
-
-var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
+exports.default = void 0;
 
 var _StreamingEvent = _interopRequireDefault(require("../StreamingEvent"));
 
@@ -27,87 +14,75 @@ var _axios = _interopRequireDefault(require("axios"));
 /**
  * Collect and send logs from SDK directly to the Service Coordinator.
  */
-var LogQueueService = /*#__PURE__*/function () {
+class LogQueueService {
   /**
    * @param {string} edgeNodeId
    * @param {string} apiEndpoint
    * @param {string} userId
    * @param {string} streamingViewId
    */
-  function LogQueueService(edgeNodeId, apiEndpoint, userId, streamingViewId) {
-    var _this = this;
-
-    (0, _classCallCheck2["default"])(this, LogQueueService);
+  constructor(edgeNodeId, apiEndpoint, userId, streamingViewId) {
     this.logQueue = [];
     this.endpoint = "".concat(apiEndpoint, "/api/streaming-games/edge-node/log");
     this.seqId = 0;
     this.streamingViewId = streamingViewId;
 
-    _StreamingEvent["default"].edgeNode(edgeNodeId).on('event', function (eventType, payload) {
-      payload = (0, _typeof2["default"])(payload) === 'object' ? payload : {
+    _StreamingEvent.default.edgeNode(edgeNodeId).on('event', (eventType, payload) => {
+      payload = typeof payload === 'object' ? payload : {
         data: payload
       };
-      payload.streamingViewId = _this.streamingViewId;
+      payload.streamingViewId = this.streamingViewId;
       payload.event = eventType;
-      payload.seqId = _this.seqId++;
+      payload.seqId = this.seqId++;
       payload.userId = userId;
-
-      _this.logQueue.push({
+      this.logQueue.push({
         edgeNodeId: edgeNodeId,
         name: 'sdk',
         timestamp: new Date().toISOString(),
         type: 'log',
-        message: (0, _stringify["default"])(payload)
+        message: JSON.stringify(payload)
       });
 
-      if (_this.logQueue.length > 25) {
-        _this.sendQueue();
+      if (this.logQueue.length > 25) {
+        this.sendQueue();
       }
     });
 
-    this.unloadListener = function () {
-      return _this.sendQueue();
-    };
+    this.unloadListener = () => this.sendQueue();
 
     window.addEventListener('unload', this.unloadListener);
-    this.timer = (0, _setInterval2["default"])(function () {
-      return _this.sendQueue();
-    }, 10000);
+    this.timer = setInterval(() => this.sendQueue(), 10000);
   }
   /**
    * Destroy the LogQueueService and send any message in the queue
    */
 
 
-  (0, _createClass2["default"])(LogQueueService, [{
-    key: "destroy",
-    value: function destroy() {
-      clearInterval(this.timer);
-      window.removeEventListener('unload', this.unloadListener);
-      this.sendQueue();
-    }
-    /**
-     * Send the queue as it is now to the backend.
-     */
+  destroy() {
+    clearInterval(this.timer);
+    window.removeEventListener('unload', this.unloadListener);
+    this.sendQueue();
+  }
+  /**
+   * Send the queue as it is now to the backend.
+   */
 
-  }, {
-    key: "sendQueue",
-    value: function sendQueue() {
-      if (this.logQueue.length) {
-        var logQueue = this.logQueue;
-        this.logQueue = [];
 
-        if (navigator && navigator.sendBeacon) {
-          // Send request if supported via beacon
-          navigator.sendBeacon(this.endpoint, (0, _stringify["default"])(logQueue));
-        } else {
-          // otherwise with axios
-          _axios["default"].post(this.endpoint, logQueue)["catch"](function () {});
-        }
+  sendQueue() {
+    if (this.logQueue.length) {
+      const logQueue = this.logQueue;
+      this.logQueue = [];
+
+      if (navigator && navigator.sendBeacon) {
+        // Send request if supported via beacon
+        navigator.sendBeacon(this.endpoint, JSON.stringify(logQueue));
+      } else {
+        // otherwise with axios
+        _axios.default.post(this.endpoint, logQueue).catch(() => {});
       }
     }
-  }]);
-  return LogQueueService;
-}();
+  }
 
-exports["default"] = LogQueueService;
+}
+
+exports.default = LogQueueService;
