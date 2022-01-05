@@ -106,7 +106,7 @@ export default class StreamSocket {
         JSON.stringify({
           type: 'report-bundle',
           timestamp: Date.now(),
-          reports: pako.deflate(JSON.stringify([...this.reportCache]))
+          reports: Array.from(pako.deflate(JSON.stringify([...this.reportCache])))
         })
       );
       this.reportCache = [];
