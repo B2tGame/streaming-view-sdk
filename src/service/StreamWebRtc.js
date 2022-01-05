@@ -20,18 +20,23 @@ export default class StreamWebRtc extends EventEmitter {
 
   /**
    * @param {string} host
+   * @param {{name: string, candidates: []}} iceServers
    * @param {number} pingInterval
    */
-  constructor(host, pingInterval = StreamWebRtc.WEBRTC_PING_INTERVAL) {
+  constructor(host, iceServers = { name: 'default', candidates: [] }, pingInterval = StreamWebRtc.WEBRTC_PING_INTERVAL) {
     super();
 
     this.host = host;
+    this.iceServersName = iceServers.name;
+    this.iceServersCandidates = iceServers.candidates;
     this.pingInterval = pingInterval;
     this.peerConnection = undefined;
 
     WebRtcConnectionClient.createConnection({
       beforeAnswer: this.beforeAnswer,
-      host: this.host
+      host: this.host,
+      iceServersName: this.iceServersName,
+      iceServersCandidates: this.iceServersCandidates
     }).then((peerConnection) => {
       this.peerConnection = peerConnection;
     });
@@ -72,6 +77,7 @@ export default class StreamWebRtc extends EventEmitter {
     };
 
     const onConnectionStateChange = () => {
+      console.log('peerConnection.connectionState=', peerConnection.connectionState);
       switch (peerConnection.connectionState) {
         case 'disconnected':
           if (dataChannel) {

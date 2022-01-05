@@ -25,23 +25,39 @@ export default class WebRtcConnectionClient {
   /**
    *
    * @param {string} host
+   * @param {[]} iceServers
    * @param {string} id
    */
-  static createPeerConnection = (host, id) => {
+  static createPeerConnection = (host, iceServers, id) => {
     const options = { sdpSemantics: 'unified-plan' };
-    options.iceServers = [WebRtcConnectionClient.getIceConfiguration(host)];
+    //console.log('createPeerConnection:', iceServers);
+    options.iceServers = iceServers.length ? iceServers : [WebRtcConnectionClient.getIceConfiguration(host)];
     options.iceTransportPolicy = 'relay';
     const peerConnection = new RTCPeerConnection(options);
 
+    const onIceCandidateError = (event) => {
+      console.log('onIceCandidateError was called with event:', event);
+      // if (event.errorCode >= 300 && event.errorCode <= 699) {
+      //   // STUN errors are in the range 300-699. See RFC 5389, section 15.6
+      //   // for a list of codes. TURN adds a few more error codes; see
+      //   // RFC 5766, section 15 for details.
+      // } else if (event.errorCode >= 700 && event.errorCode <= 799) {
+      //   // Server could not be reached; a specific error number is
+      //   // provided but these are not yet specified.
+      // }
+    };
     const onConnectionStateChange = () => {
+      // console.log('peerConnection.connectionState=', peerConnection.connectionState);
       if (peerConnection.connectionState === 'disconnected') {
         axios.delete(`${host}/connections/${id}`).catch((error) => {
           console.log(error);
         });
         peerConnection.removeEventListener('connectionstatechange', onConnectionStateChange);
+        peerConnection.removeEventListener('onicecandidateerror', onIceCandidateError);
       }
     };
     peerConnection.addEventListener('connectionstatechange', onConnectionStateChange);
+    peerConnection.addEventListener('onicecandidateerror', onIceCandidateError);
 
     return peerConnection;
   };
@@ -52,7 +68,7 @@ export default class WebRtcConnectionClient {
       stereo: false,
       ...options
     };
-    const { host, beforeAnswer } = createOptions;
+    const { host, iceServersName, iceServersCandidates, beforeAnswer } = createOptions;
     let remotePeerConnectionId = undefined;
     let peerConnection = undefined;
     return axios
@@ -60,7 +76,7 @@ export default class WebRtcConnectionClient {
       .then((response) => {
         const remotePeerConnection = response.data || {};
         remotePeerConnectionId = remotePeerConnection.id;
-        peerConnection = WebRtcConnectionClient.createPeerConnection(host, remotePeerConnectionId);
+        peerConnection = WebRtcConnectionClient.createPeerConnection(host, iceServersCandidates, remotePeerConnectionId);
         return peerConnection.setRemoteDescription(remotePeerConnection.localDescription);
       })
       .then(() => beforeAnswer(peerConnection))
