@@ -1,7 +1,7 @@
 import url from 'url';
 import StreamingEvent from '../StreamingEvent';
 import io from 'socket.io-client';
-import zlib from 'zlib';
+import pako from 'pako'
 
 /**
  * Websocket connection and communicate with the backend
@@ -106,7 +106,7 @@ export default class StreamSocket {
         JSON.stringify({
           type: 'report-bundle',
           timestamp: Date.now(),
-          reports: zlib.deflateSync(Buffer.from(JSON.stringify([...this.reportCache])))
+          reports: Array.from(pako.deflate(JSON.stringify([...this.reportCache])))
         })
       );
       this.reportCache = [];
