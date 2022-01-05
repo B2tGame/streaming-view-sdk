@@ -11,8 +11,7 @@ import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
 import BlackScreenDetector from './service/BlackScreenDetector';
 import StreamWebRtc from './service/StreamWebRtc';
-
-const urlParse = require('url-parse');
+import parseUrl from 'url-parse'
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
@@ -164,7 +163,7 @@ export default class StreamingView extends Component {
         return internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
       })
       .then((streamEndpoint) => {
-        this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, pingInterval);
+        this.measurement.initWebRtc(`${parseUrl(streamEndpoint).origin}/measurement/webrtc`, pingInterval);
         if (!this.isMountedInView) {
           this.logger.log('Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
