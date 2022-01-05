@@ -1,6 +1,6 @@
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import StreamingEvent from '../../../StreamingEvent';
-import parseUrl from 'url-parse'
+import parseUrl from 'url-parse';
 import SdpModifier from './SdpModifier';
 
 /**

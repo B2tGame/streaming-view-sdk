@@ -1,8 +1,7 @@
-
 import StreamingEvent from '../StreamingEvent';
 import io from 'socket.io-client';
-import parseUrl from 'url-parse'
-import pako from 'pako'
+import parseUrl from 'url-parse';
+import pako from 'pako';
 
 /**
  * Websocket connection and communicate with the backend
