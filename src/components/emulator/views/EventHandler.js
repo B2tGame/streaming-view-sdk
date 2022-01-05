@@ -66,7 +66,7 @@ export default class EventHandler extends Component {
   };
 
   updateTouchHandler() {
-    this.touchHandler = function(type, allEvents, events, firstChangedEvent) {
+    this.touchHandler = function(type, allEvents, events) {
       return this.sendMultiTouch(type, allEvents, events);
     };
   }
