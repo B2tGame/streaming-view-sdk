@@ -1,4 +1,3 @@
-import { sign } from 'crypto';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import StreamingEvent from '../../../StreamingEvent';
 import parseUrl from 'url-parse';
@@ -216,6 +215,7 @@ export default class JsepProtocol {
 
   _handleStart = (signal) => {
     signal.start = {
+      sdpSemantics: 'unified-plan',
       iceServers: !this.iceServers.length ? [this.getIceConfiguration()] : this.iceServers,
       iceTransportPolicy: 'relay'
     };

@@ -68,7 +68,7 @@ class Emulator extends Component {
    * @return {number}
    */
   static get RELOAD_FAILURE_THRESHOLD() {
-    return 5;
+    return 2;
   }
 
   static propTypes = {
@@ -105,7 +105,9 @@ class Emulator extends Component {
     /** Defines if touch rtt should be measured */
     measureTouchRtt: PropTypes.bool,
     /** Playout Delay Hint */
-    playoutDelayHint: PropTypes.number
+    playoutDelayHint: PropTypes.number,
+    /** Ice Server Candidates */
+    iceServers: PropTypes.array
   };
 
   static defaultProps = {
