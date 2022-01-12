@@ -30,33 +30,30 @@ var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/defineProperty"));
 
+var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
+
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
 
-function ownKeys(object, enumerableOnly) { var keys = _Object$keys(object); if (_Object$getOwnPropertySymbols) { var symbols = _Object$getOwnPropertySymbols(object); if (enumerableOnly) { symbols = _filterInstanceProperty(symbols).call(symbols, function (sym) { return _Object$getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+var _urlParse = _interopRequireDefault(require("url-parse"));
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { var _context3; _forEachInstanceProperty(_context3 = ownKeys(Object(source), true)).call(_context3, function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (_Object$getOwnPropertyDescriptors) { _Object$defineProperties(target, _Object$getOwnPropertyDescriptors(source)); } else { var _context4; _forEachInstanceProperty(_context4 = ownKeys(Object(source))).call(_context4, function (key) { _Object$defineProperty(target, key, _Object$getOwnPropertyDescriptor(source, key)); }); } } return target; }
+var _axios = _interopRequireDefault(require("axios"));
 
-var urlParse = require('url-parse');
+var _wrtc = require("wrtc");
 
-var axios = require('axios')["default"];
+function ownKeys(object, enumerableOnly) { var keys = _Object$keys(object); if (_Object$getOwnPropertySymbols) { var symbols = _Object$getOwnPropertySymbols(object); enumerableOnly && (symbols = _filterInstanceProperty(symbols).call(symbols, function (sym) { return _Object$getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 
-var RTCPeerConnection = require('wrtc').RTCPeerConnection;
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var _context3, _context4; var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? _forEachInstanceProperty(_context3 = ownKeys(Object(source), !0)).call(_context3, function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }) : _Object$getOwnPropertyDescriptors ? _Object$defineProperties(target, _Object$getOwnPropertyDescriptors(source)) : _forEachInstanceProperty(_context4 = ownKeys(Object(source))).call(_context4, function (key) { _Object$defineProperty(target, key, _Object$getOwnPropertyDescriptor(source, key)); }); } return target; }
 
-var _require = require('wrtc'),
-    RTCSessionDescription = _require.RTCSessionDescription;
 /**
  * WebRtcConnectionClient class to handle Web RTC client connections
  */
-
-
-var WebRtcConnectionClient = function WebRtcConnectionClient() {
+var WebRtcConnectionClient = /*#__PURE__*/(0, _createClass2["default"])(function WebRtcConnectionClient() {
   (0, _classCallCheck2["default"])(this, WebRtcConnectionClient);
-};
-
+});
 exports["default"] = WebRtcConnectionClient;
 
 WebRtcConnectionClient.getIceConfiguration = function (host) {
-  var hostname = urlParse(host).hostname;
+  var hostname = (0, _urlParse["default"])(host).hostname;
   var endpoint = "turn:".concat(hostname, ":3478");
   return {
     urls: ["".concat(endpoint, "?transport=udp"), "".concat(endpoint, "?transport=tcp")],
@@ -72,15 +69,16 @@ WebRtcConnectionClient.createPeerConnection = function (host, id) {
   };
   options.iceServers = [WebRtcConnectionClient.getIceConfiguration(host)];
   options.iceTransportPolicy = 'relay';
-  var peerConnection = new RTCPeerConnection(options);
+  var peerConnection = new _wrtc.RTCPeerConnection(options);
 
   var onConnectionStateChange = function onConnectionStateChange() {
     if (peerConnection.connectionState === 'disconnected') {
       var _context;
 
-      axios["delete"]((0, _concat["default"])(_context = "".concat(host, "/connections/")).call(_context, id))["catch"](function (error) {
+      _axios["default"]["delete"]((0, _concat["default"])(_context = "".concat(host, "/connections/")).call(_context, id))["catch"](function (error) {
         console.log(error);
       });
+
       peerConnection.removeEventListener('connectionstatechange', onConnectionStateChange);
     }
   };
@@ -101,7 +99,7 @@ WebRtcConnectionClient.createConnection = function () {
       beforeAnswer = createOptions.beforeAnswer;
   var remotePeerConnectionId = undefined;
   var peerConnection = undefined;
-  return axios.post("".concat(host, "/connections")).then(function (response) {
+  return _axios["default"].post("".concat(host, "/connections")).then(function (response) {
     var remotePeerConnection = response.data || {};
     remotePeerConnectionId = remotePeerConnection.id;
     peerConnection = WebRtcConnectionClient.createPeerConnection(host, remotePeerConnectionId);
@@ -111,14 +109,14 @@ WebRtcConnectionClient.createConnection = function () {
   }).then(function () {
     return peerConnection.createAnswer();
   }).then(function (originalAnswer) {
-    return peerConnection.setLocalDescription(new RTCSessionDescription({
+    return peerConnection.setLocalDescription(new _wrtc.RTCSessionDescription({
       type: 'answer',
       sdp: createOptions.stereo ? originalAnswer.sdp.replace(/a=fmtp:111/, 'a=fmtp:111 stereo=1\r\na=fmtp:111') : originalAnswer.sdp
     }));
   }).then(function () {
     var _context2;
 
-    return axios((0, _concat["default"])(_context2 = "".concat(host, "/connections/")).call(_context2, remotePeerConnectionId, "/remote-description"), {
+    return (0, _axios["default"])((0, _concat["default"])(_context2 = "".concat(host, "/connections/")).call(_context2, remotePeerConnectionId, "/remote-description"), {
       method: 'POST',
       data: (0, _stringify["default"])(peerConnection.localDescription),
       headers: {

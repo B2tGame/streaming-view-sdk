@@ -70,6 +70,8 @@ var _BlackScreenDetector = _interopRequireDefault(require("./service/BlackScreen
 
 var _StreamWebRtc = _interopRequireDefault(require("./service/StreamWebRtc"));
 
+var _urlParse = _interopRequireDefault(require("url-parse"));
+
 function _getRequireWildcardCache(nodeInterop) { if (typeof _WeakMap !== "function") return null; var cacheBabelInterop = new _WeakMap(); var cacheNodeInterop = new _WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = _Object$defineProperty && _Object$getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? _Object$getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { _Object$defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -78,15 +80,12 @@ function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflec
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_Reflect$construct) return false; if (_Reflect$construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(_Reflect$construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
-var urlParse = require('url-parse');
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
  *
  * @class StreamingView
  * @extends {Component}
  */
-
-
 var StreamingView = /*#__PURE__*/function (_Component) {
   (0, _inherits2["default"])(StreamingView, _Component);
 
@@ -223,7 +222,7 @@ var StreamingView = /*#__PURE__*/function (_Component) {
         // public endpoint received from Service Coordinator.
         return internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
       }).then(function (streamEndpoint) {
-        _this2.measurement.initWebRtc("".concat(urlParse(streamEndpoint).origin, "/measurement/webrtc"), pingInterval);
+        _this2.measurement.initWebRtc("".concat((0, _urlParse["default"])(streamEndpoint).origin, "/measurement/webrtc"), pingInterval);
 
         if (!_this2.isMountedInView) {
           _this2.logger.log('Cancel action due to view is not mounted.');

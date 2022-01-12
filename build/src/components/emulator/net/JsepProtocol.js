@@ -24,9 +24,9 @@ var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpe
 
 var _empty_pb = require("google-protobuf/google/protobuf/empty_pb");
 
-var _url = _interopRequireDefault(require("url"));
-
 var _StreamingEvent = _interopRequireDefault(require("../../../StreamingEvent"));
+
+var _urlParse = _interopRequireDefault(require("url-parse"));
 
 var _SdpModifier = _interopRequireDefault(require("./SdpModifier"));
 
@@ -412,8 +412,7 @@ var JsepProtocol = /*#__PURE__*/function () {
      * @returns {any|{urls: string[], credential: string, username: string}}
      */
     function getIceConfiguration() {
-      var hostname = _url["default"].parse(this.emulator.hostname_).hostname;
-
+      var hostname = (0, _urlParse["default"])(this.emulator.hostname_).hostname;
       var endpoint = this.turnEndpoint ? this.turnEndpoint : "turn:".concat(hostname, ":3478");
       return {
         urls: ["".concat(endpoint, "?transport=udp"), "".concat(endpoint, "?transport=tcp")],

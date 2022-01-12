@@ -40,6 +40,8 @@ var _get2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/get")
 
 var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/getPrototypeOf"));
 
+var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
+
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
 
 var _emulator_controller_grpc_web_pb = require("../proto/emulator_controller_grpc_web_pb");
@@ -50,15 +52,15 @@ var _grpcWeb = require("grpc-web");
 
 var _events = require("events");
 
-function ownKeys(object, enumerableOnly) { var keys = _Object$keys(object); if (_Object$getOwnPropertySymbols) { var symbols = _Object$getOwnPropertySymbols(object); if (enumerableOnly) { symbols = _filterInstanceProperty(symbols).call(symbols, function (sym) { return _Object$getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+function ownKeys(object, enumerableOnly) { var keys = _Object$keys(object); if (_Object$getOwnPropertySymbols) { var symbols = _Object$getOwnPropertySymbols(object); enumerableOnly && (symbols = _filterInstanceProperty(symbols).call(symbols, function (sym) { return _Object$getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { var _context; _forEachInstanceProperty(_context = ownKeys(Object(source), true)).call(_context, function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (_Object$getOwnPropertyDescriptors) { _Object$defineProperties(target, _Object$getOwnPropertyDescriptors(source)); } else { var _context2; _forEachInstanceProperty(_context2 = ownKeys(Object(source))).call(_context2, function (key) { _Object$defineProperty(target, key, _Object$getOwnPropertyDescriptor(source, key)); }); } } return target; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var _context, _context2; var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? _forEachInstanceProperty(_context = ownKeys(Object(source), !0)).call(_context, function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }) : _Object$getOwnPropertyDescriptors ? _Object$defineProperties(target, _Object$getOwnPropertyDescriptors(source)) : _forEachInstanceProperty(_context2 = ownKeys(Object(source))).call(_context2, function (key) { _Object$defineProperty(target, key, _Object$getOwnPropertyDescriptor(source, key)); }); } return target; }
 
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_Reflect$construct) return false; if (_Reflect$construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(_Reflect$construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
-var NopAuthenticator = function NopAuthenticator() {
+var NopAuthenticator = /*#__PURE__*/(0, _createClass2["default"])(function NopAuthenticator() {
   (0, _classCallCheck2["default"])(this, NopAuthenticator);
 
   this.authHeader = function () {
@@ -66,7 +68,7 @@ var NopAuthenticator = function NopAuthenticator() {
   };
 
   this.unauthorized = function () {};
-};
+});
 /**
  * A GrcpWebClientBase that inject authentication headers and intercepts
  * errors. If the errors are 401, the unauthorized method of the authenticator will be invoked.
@@ -75,7 +77,6 @@ var NopAuthenticator = function NopAuthenticator() {
  * @class EmulatorWebClient
  * @extends {GrpcWebClientBase}
  */
-
 
 exports.NopAuthenticator = NopAuthenticator;
 
@@ -138,7 +139,7 @@ var EmulatorWebClient = /*#__PURE__*/function (_GrpcWebClientBase) {
     return _this;
   }
 
-  return EmulatorWebClient;
+  return (0, _createClass2["default"])(EmulatorWebClient);
 }(_grpcWeb.GrpcWebClientBase);
 /**
  * An EmulatorControllerService is an EmulatorControllerClient that inject authentication headers.
@@ -183,7 +184,7 @@ var EmulatorControllerService = /*#__PURE__*/function (_EmulatorControllerCl) {
     return _this2;
   }
 
-  return EmulatorControllerService;
+  return (0, _createClass2["default"])(EmulatorControllerService);
 }(_emulator_controller_grpc_web_pb.EmulatorControllerClient);
 /**
  * An RtcService is an RtcClient that inject authentication headers.
@@ -227,7 +228,7 @@ var RtcService = /*#__PURE__*/function (_RtcClient) {
     return _this3;
   }
 
-  return RtcService;
+  return (0, _createClass2["default"])(RtcService);
 }(_rtc_service_grpc_web_pb.RtcClient);
 
 exports.RtcService = RtcService;
