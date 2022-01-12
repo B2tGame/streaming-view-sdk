@@ -47,11 +47,13 @@ var JsepProtocol = /*#__PURE__*/function () {
    * @param {string} edgeNodeId
    * @param {Logger} logger for console logs
    * @param {string|undefined} turnEndpoint Override the default uri for turn servers
+   * @param {number|0} playoutDelayHint Custom playoutDelayHint value
    */
   function JsepProtocol(emulator, rtc, poll, edgeNodeId, logger) {
     var _this = this;
 
     var turnEndpoint = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : undefined;
+    var playoutDelayHint = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 0;
     (0, _classCallCheck2["default"])(this, JsepProtocol);
 
     this.disconnect = function () {
@@ -131,9 +133,11 @@ var JsepProtocol = /*#__PURE__*/function () {
       }
 
       if (event.receiver) {
-        // On supported devices, playoutDelayHint can be used for set a recommended latency of the playback
-        // A low value will come with cost of higher frames drope etc.
-        event.receiver.playoutDelayHint = 0;
+        // On supported devices, playoutDelayHint can be used to set a recommended latency of the playback
+        // A low value will come with cost of higher frames dropped, a higher number wil decrease the number
+        // of dropped frames, but will also add more delay.
+        event.receiver.playoutDelayHint = _this.playoutDelayHint / 1000;
+        console.log("playoutDelayHint set to: ".concat(event.receiver.playoutDelayHint, "sec"));
       }
 
       _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].STREAM_CONNECTED, event.track);
@@ -382,6 +386,7 @@ var JsepProtocol = /*#__PURE__*/function () {
     this.turnEndpoint = turnEndpoint;
     this.eventForwarders = {};
     this.poll = poll || typeof this.rtc.receiveJsepMessages !== 'function';
+    this.playoutDelayHint = playoutDelayHint;
     this.logger = logger;
   }
   /**

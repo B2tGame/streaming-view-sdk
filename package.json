@@ -18,7 +18,7 @@
     "axios": "^0.24.0",
     "eventemitter3": "^4.0.0",
     "google-protobuf": "^3.11.4",
-    "grpc-web": "^1.0.7",
+    "grpc-web": "1.0.7",
     "react": "^17.0.2 || ^16.14.0",
     "react-device-detect": "^2.1.2",
     "react-resize-observer": "^1.1.1",

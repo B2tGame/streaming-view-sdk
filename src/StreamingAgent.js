@@ -31,6 +31,7 @@ export default class StreamingAgent extends Component {
     this.clearStoresCache();
     this.connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
     this.connection.onchange = () => this.onConnectivityUpdate();
+    //TODO-Jonathan: pls check if we really need this
     this.onConnectivityUpdate();
   }
 

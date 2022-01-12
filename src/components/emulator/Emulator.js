@@ -103,7 +103,9 @@ class Emulator extends Component {
     /** Emulator Version */
     emulatorVersion: PropTypes.string,
     /** Defines if touch rtt should be measured */
-    measureTouchRtt: PropTypes.bool
+    measureTouchRtt: PropTypes.bool,
+    /** Playout Delay Hint */
+    playoutDelayHint: PropTypes.number
   };
 
   static defaultProps = {
@@ -135,7 +137,15 @@ class Emulator extends Component {
     const { uri, auth, poll } = this.props;
     this.emulator = new EmulatorControllerService(uri, auth, this.onError);
     this.rtc = new RtcService(uri, auth, this.onError);
-    this.jsep = new JsepProtocol(this.emulator, this.rtc, poll, this.props.edgeNodeId, this.props.logger, this.props.turnEndpoint);
+    this.jsep = new JsepProtocol(
+      this.emulator,
+      this.rtc,
+      poll,
+      this.props.edgeNodeId,
+      this.props.logger,
+      this.props.turnEndpoint,
+      this.props.playoutDelayHint
+    );
 
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
@@ -205,7 +215,7 @@ class Emulator extends Component {
    * @param {string} cause
    */
   reload(cause) {
-    this.props.logger.info("stream not working, request reload");
+    this.props.logger.info('stream not working, request reload');
     if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
       this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
       if (this.reloadCount >= this.props.maxConnectionRetries) {
@@ -223,7 +233,21 @@ class Emulator extends Component {
   }
 
   render() {
-    const { view, poll, volume, muted, enableFullScreen, enableControl, uri, emulatorWidth, emulatorHeight, emulatorVersion } = this.props;
+    const {
+      view,
+      poll,
+      volume,
+      muted,
+      enableFullScreen,
+      enableControl,
+      uri,
+      emulatorWidth,
+      emulatorHeight,
+      emulatorVersion,
+      logger,
+      edgeNodeId,
+      measureTouchRtt
+    } = this.props;
     return (
       <EventHandler
         key={this.state.streamingConnectionId}
@@ -240,9 +264,9 @@ class Emulator extends Component {
         onAudioStateChange={this.onAudioStateChange}
         enableFullScreen={enableFullScreen}
         enableControl={enableControl}
-        logger={this.props.logger}
-        edgeNodeId={this.props.edgeNodeId}
-        measureTouchRtt={this.props.measureTouchRtt}
+        logger={logger}
+        edgeNodeId={edgeNodeId}
+        measureTouchRtt={measureTouchRtt}
         view={this.components[view] || EmulatorWebrtcView}
       />
     );

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getNetworkConnectivity } from './networkConnectivity';
+import Logger from './../Logger';
 
 let deviceInfo = {};
 
@@ -60,7 +61,9 @@ function getDeviceInfo(apiEndpoint, browserConnection = undefined) {
     getBrowserDeviceInfo(browserConnection),
     getNetworkConnectivity(browserConnection)
   ]).then(([networkDeviceInfo, browserDeviceInfo, networkConnectivity]) => {
-    return { ...networkDeviceInfo, ...browserDeviceInfo, ...networkConnectivity };
+    const deviceInfo = { ...networkDeviceInfo, ...browserDeviceInfo, ...networkConnectivity };
+    new Logger().info('deviceInfo is ready', deviceInfo);
+    return deviceInfo;
   });
 }
 

@@ -233,7 +233,7 @@ const measureNetworkConnectivity = (browserConnection = undefined) => {
     )
     .then((advancedMeasurement) => {
       networkConnectivity = { ...networkConnectivity, ...advancedMeasurement };
-      console.log('networkConnectivity: ', networkConnectivity);
+      console.log('networkConnectivity:', networkConnectivity);
     })
     .then(() => networkConnectivity);
 };

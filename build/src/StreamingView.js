@@ -402,7 +402,8 @@ var StreamingView = /*#__PURE__*/function (_Component) {
           muted = _this$props2.muted,
           edgeNodeId = _this$props2.edgeNodeId,
           propsHeight = _this$props2.height,
-          propsWidth = _this$props2.width;
+          propsWidth = _this$props2.width,
+          playoutDelayHint = _this$props2.playoutDelayHint;
       var _this$state = this.state,
           stateHeight = _this$state.height,
           stateWidth = _this$state.width;
@@ -430,7 +431,8 @@ var StreamingView = /*#__PURE__*/function (_Component) {
             logger: this.logger,
             edgeNodeId: edgeNodeId,
             maxConnectionRetries: this.props.maxConnectionRetries,
-            measureTouchRtt: this.props.measureTouchRtt
+            measureTouchRtt: this.props.measureTouchRtt,
+            playoutDelayHint: playoutDelayHint
           }));
 
         case false:
@@ -492,7 +494,8 @@ var StreamingView = /*#__PURE__*/function (_Component) {
         height: _propTypes["default"].string,
         width: _propTypes["default"].string,
         pingInterval: _propTypes["default"].number,
-        measureTouchRtt: _propTypes["default"].bool
+        measureTouchRtt: _propTypes["default"].bool,
+        playoutDelayHint: _propTypes["default"].number
       };
     }
   }, {
@@ -528,5 +531,6 @@ StreamingView.defaultProps = {
   volume: 1.0,
   muted: false,
   pingInterval: _StreamWebRtc["default"].WEBRTC_PING_INTERVAL,
-  measureTouchRtt: true
+  measureTouchRtt: true,
+  playoutDelayHint: 0
 };
