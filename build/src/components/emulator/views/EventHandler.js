@@ -321,7 +321,7 @@ var EventHandler = /*#__PURE__*/function (_Component) {
   (0, _createClass2["default"])(EventHandler, [{
     key: "updateTouchHandler",
     value: function updateTouchHandler() {
-      this.touchHandler = function (type, allEvents, events, firstChangedEvent) {
+      this.touchHandler = function (type, allEvents, events) {
         return this.sendMultiTouch(type, allEvents, events);
       };
     }

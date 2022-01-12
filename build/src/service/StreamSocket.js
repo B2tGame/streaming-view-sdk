@@ -14,6 +14,8 @@ var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable
 
 var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
 
+var _from = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/array/from"));
+
 var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
 
 var _setInterval2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-interval"));
@@ -24,13 +26,13 @@ var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/he
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
 
-var _url = _interopRequireDefault(require("url"));
-
 var _StreamingEvent = _interopRequireDefault(require("../StreamingEvent"));
 
 var _socket = _interopRequireDefault(require("socket.io-client"));
 
-var _zlib = _interopRequireDefault(require("zlib"));
+var _urlParse = _interopRequireDefault(require("url-parse"));
+
+var _pako = _interopRequireDefault(require("pako"));
 
 /**
  * Websocket connection and communicate with the backend
@@ -67,7 +69,7 @@ var StreamSocket = /*#__PURE__*/function () {
         _this.socket.emit('message', (0, _stringify["default"])({
           type: 'report-bundle',
           timestamp: (0, _now["default"])(),
-          reports: _zlib["default"].deflateSync(Buffer.from((0, _stringify["default"])((0, _toConsumableArray2["default"])(_this.reportCache))))
+          reports: (0, _from["default"])(_pako["default"].deflate((0, _stringify["default"])((0, _toConsumableArray2["default"])(_this.reportCache))))
         }));
 
         _this.reportCache = [];
@@ -95,12 +97,11 @@ var StreamSocket = /*#__PURE__*/function () {
       }
     };
 
-    var endpoint = _url["default"].parse(streamEndpoint);
-
+    var endpoint = (0, _urlParse["default"])(streamEndpoint);
     this.edgeNodeId = edgeNodeId;
     this.userId = userId;
     this.socket = (0, _socket["default"])((0, _concat["default"])(_context = "".concat(endpoint.protocol, "//")).call(_context, endpoint.host), {
-      path: "".concat(endpoint.path, "/emulator-commands/socket.io"),
+      path: "".concat(endpoint.pathname, "/emulator-commands/socket.io"),
       query: (0, _concat["default"])(_context2 = "userId=".concat(userId, "&internal=")).call(_context2, internalSession ? '1' : '0')
     });
     this.reportCache = [];

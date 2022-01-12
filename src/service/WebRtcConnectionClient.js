@@ -1,7 +1,6 @@
-const urlParse = require('url-parse');
-const axios = require('axios').default;
-const RTCPeerConnection = require('wrtc').RTCPeerConnection;
-const { RTCSessionDescription } = require('wrtc');
+import parseUrl from 'url-parse';
+import axios from 'axios';
+import { RTCSessionDescription, RTCPeerConnection } from 'wrtc';
 
 /**
  * WebRtcConnectionClient class to handle Web RTC client connections
@@ -12,7 +11,7 @@ export default class WebRtcConnectionClient {
    * @returns {any|{urls: string[], credential: string, username: string}}
    */
   static getIceConfiguration = (host) => {
-    const hostname = urlParse(host).hostname;
+    const hostname = parseUrl(host).hostname;
     const endpoint = `turn:${hostname}:3478`;
 
     return {

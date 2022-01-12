@@ -1,7 +1,7 @@
 import { sign } from 'crypto';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
-import url from 'url';
 import StreamingEvent from '../../../StreamingEvent';
+import parseUrl from 'url-parse';
 import SdpModifier from './SdpModifier';
 
 /**
@@ -204,7 +204,7 @@ export default class JsepProtocol {
    * @returns {any|{urls: string[], credential: string, username: string}}
    */
   getIceConfiguration() {
-    const hostname = url.parse(this.emulator.hostname_).hostname;
+    const hostname = parseUrl(this.emulator.hostname_).hostname;
     const endpoint = this.turnEndpoint ? this.turnEndpoint : `turn:${hostname}:3478`;
 
     return {

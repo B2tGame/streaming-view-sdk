@@ -10,6 +10,8 @@ _Object$defineProperty(exports, "__esModule", {
 
 exports["default"] = void 0;
 
+var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
+
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
 
 var _empty_pb = require("google-protobuf/google/protobuf/empty_pb");
@@ -23,7 +25,7 @@ var _emulator_web_client = require("../../../proto/emulator_web_client");
  * @export
  * @class EmulatorStatus
  */
-var EmulatorStatus =
+var EmulatorStatus = /*#__PURE__*/(0, _createClass2["default"])(
 /**
  * Creates an EmulatorStatus object that can retrieve the status of the running emulator.
  *
@@ -95,7 +97,6 @@ function EmulatorStatus(uriOrEmulator, auth) {
  *
  * @memberof EmulatorStatus
  */
-;
-
+);
 var _default = EmulatorStatus;
 exports["default"] = _default;
