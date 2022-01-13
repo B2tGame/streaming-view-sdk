@@ -10,9 +10,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports["default"] = void 0;
-
-var _isArray = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/array/is-array"));
+exports.default = void 0;
 
 var _includes = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/includes"));
 
@@ -36,7 +34,7 @@ var _eventemitter = _interopRequireDefault(require("eventemitter3"));
 
 var _Logger = _interopRequireDefault(require("./Logger"));
 
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2.default)(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2.default)(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2.default)(this, result); }; }
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_Reflect$construct) return false; if (_Reflect$construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(_Reflect$construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
@@ -44,7 +42,7 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_R
  * Extend Event Emitter with an emit that always send the event to 'event' target
  */
 var ExtendedEventEmitter = /*#__PURE__*/function (_EventEmitter) {
-  (0, _inherits2["default"])(ExtendedEventEmitter, _EventEmitter);
+  (0, _inherits2.default)(ExtendedEventEmitter, _EventEmitter);
 
   var _super = _createSuper(ExtendedEventEmitter);
 
@@ -55,7 +53,7 @@ var ExtendedEventEmitter = /*#__PURE__*/function (_EventEmitter) {
     var _this;
 
     var edgeNodeId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
-    (0, _classCallCheck2["default"])(this, ExtendedEventEmitter);
+    (0, _classCallCheck2.default)(this, ExtendedEventEmitter);
     _this = _super.call(this);
     _this.edgeNodeId = edgeNodeId;
     return _this;
@@ -73,7 +71,7 @@ var ExtendedEventEmitter = /*#__PURE__*/function (_EventEmitter) {
    */
 
 
-  (0, _createClass2["default"])(ExtendedEventEmitter, [{
+  (0, _createClass2.default)(ExtendedEventEmitter, [{
     key: "invokeTestFrameworkRawEventCallback",
     value: function invokeTestFrameworkRawEventCallback(type, event) {
       if ((window || {}).applandStreamingRawEventCallback) {
@@ -90,7 +88,7 @@ var ExtendedEventEmitter = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "emit",
     value: function emit(event, data) {
-      if (_Logger["default"].isVerboseEnabled() && event !== StreamingEvent.LOG) {
+      if (_Logger.default.isVerboseEnabled() && event !== StreamingEvent.LOG) {
         // Emit all events except for StreamingEvent.LOG since that has been logged out already.
         console.info('Streaming SDK:', event, data);
       }
@@ -109,8 +107,8 @@ var ExtendedEventEmitter = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_emit",
     value: function _emit(event, data) {
-      (0, _get2["default"])((0, _getPrototypeOf2["default"])(ExtendedEventEmitter.prototype), "emit", this).call(this, 'event', event, data);
-      (0, _get2["default"])((0, _getPrototypeOf2["default"])(ExtendedEventEmitter.prototype), "emit", this).call(this, event, data);
+      (0, _get2.default)((0, _getPrototypeOf2.default)(ExtendedEventEmitter.prototype), "emit", this).call(this, 'event', event, data);
+      (0, _get2.default)((0, _getPrototypeOf2.default)(ExtendedEventEmitter.prototype), "emit", this).call(this, event, data);
       return this;
     }
     /**
@@ -122,16 +120,16 @@ var ExtendedEventEmitter = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "on",
     value: function on(events, callback) {
-      if (!(0, _isArray["default"])(events)) {
-        return (0, _get2["default"])((0, _getPrototypeOf2["default"])(ExtendedEventEmitter.prototype), "on", this).call(this, events, callback);
+      if (!Array.isArray(events)) {
+        return (0, _get2.default)((0, _getPrototypeOf2.default)(ExtendedEventEmitter.prototype), "on", this).call(this, events, callback);
       } else {
         var eventData = {};
-        (0, _get2["default"])((0, _getPrototypeOf2["default"])(ExtendedEventEmitter.prototype), "on", this).call(this, 'event', function (event, data) {
-          if ((0, _includes["default"])(events).call(events, event)) {
+        (0, _get2.default)((0, _getPrototypeOf2.default)(ExtendedEventEmitter.prototype), "on", this).call(this, 'event', function (event, data) {
+          if ((0, _includes.default)(events).call(events, event)) {
             eventData[event] = data || undefined;
 
-            if ((0, _keys["default"])(eventData).length === events.length) {
-              callback((0, _map["default"])(events).call(events, function (e) {
+            if ((0, _keys.default)(eventData).length === events.length) {
+              callback((0, _map.default)(events).call(events, function (e) {
                 return eventData[e];
               }));
             }
@@ -141,7 +139,7 @@ var ExtendedEventEmitter = /*#__PURE__*/function (_EventEmitter) {
     }
   }]);
   return ExtendedEventEmitter;
-}(_eventemitter["default"]);
+}(_eventemitter.default);
 
 var globalEventEmitter = new ExtendedEventEmitter();
 var edgeNodeEventEmitter = {};
@@ -151,10 +149,10 @@ var edgeNodeEventEmitter = {};
 
 var StreamingEvent = /*#__PURE__*/function () {
   function StreamingEvent() {
-    (0, _classCallCheck2["default"])(this, StreamingEvent);
+    (0, _classCallCheck2.default)(this, StreamingEvent);
   }
 
-  (0, _createClass2["default"])(StreamingEvent, null, [{
+  (0, _createClass2.default)(StreamingEvent, null, [{
     key: "LOG",
     get:
     /**
@@ -691,7 +689,7 @@ var StreamingEvent = /*#__PURE__*/function () {
   }, {
     key: "getEdgeNodes",
     value: function getEdgeNodes() {
-      return (0, _keys["default"])(edgeNodeEventEmitter);
+      return (0, _keys.default)(edgeNodeEventEmitter);
     }
     /**
      * Destroy all the EventEmitter for a specific edge node and force unsubscribe all listeners
@@ -768,4 +766,4 @@ var StreamingEvent = /*#__PURE__*/function () {
   return StreamingEvent;
 }();
 
-exports["default"] = StreamingEvent;
+exports.default = StreamingEvent;
