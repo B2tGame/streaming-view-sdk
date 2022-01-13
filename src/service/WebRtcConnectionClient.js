@@ -29,11 +29,15 @@ export default class WebRtcConnectionClient {
    * @param {string} id
    */
   static createPeerConnection = (host, iceServers, id) => {
-    const peerConnection = new RTCPeerConnection({
+    const options = {
       sdpSemantics: 'unified-plan',
+      // iceServers: [WebRtcConnectionClient.getIceConfiguration(host)],
+      //TODO-turn: the following can cause issues when the webrtc-rtt-collector is down
       iceServers: iceServers.length ? iceServers : [WebRtcConnectionClient.getIceConfiguration(host)],
       iceTransportPolicy: 'relay'
-    });
+    };
+    console.log('RTCPeerConnection options:', options);
+    const peerConnection = new RTCPeerConnection(options);
 
     const onIceCandidateError = (event) => {
       console.log('onIceCandidateError was called with event:', event);
