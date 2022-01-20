@@ -1,31 +1,37 @@
 "use strict";
 
+var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
+
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
-Object.defineProperty(exports, "__esModule", {
+_Object$defineProperty(exports, "__esModule", {
   value: true
 });
-Object.defineProperty(exports, "StreamingAgent", {
+
+_Object$defineProperty(exports, "StreamingAgent", {
   enumerable: true,
-  get: function () {
+  get: function get() {
     return _StreamingAgent.default;
   }
 });
-Object.defineProperty(exports, "StreamingController", {
+
+_Object$defineProperty(exports, "StreamingController", {
   enumerable: true,
-  get: function () {
+  get: function get() {
     return _StreamingController.default;
   }
 });
-Object.defineProperty(exports, "StreamingEvent", {
+
+_Object$defineProperty(exports, "StreamingEvent", {
   enumerable: true,
-  get: function () {
+  get: function get() {
     return _StreamingEvent.default;
   }
 });
-Object.defineProperty(exports, "StreamingView", {
+
+_Object$defineProperty(exports, "StreamingView", {
   enumerable: true,
-  get: function () {
+  get: function get() {
     return _StreamingView.default;
   }
 });

@@ -1,108 +1,117 @@
 "use strict";
 
+var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
+
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
-Object.defineProperty(exports, "__esModule", {
+_Object$defineProperty(exports, "__esModule", {
   value: true
 });
+
 exports.default = void 0;
 
-var _url = _interopRequireDefault(require("url"));
+var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
+
+var _from = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/array/from"));
+
+var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
+
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/toConsumableArray"));
+
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
+
+var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
 
 var _StreamingEvent = _interopRequireDefault(require("../StreamingEvent"));
 
 var _socket = _interopRequireDefault(require("socket.io-client"));
+
+var _urlParse = _interopRequireDefault(require("url-parse"));
 
 var _pako = _interopRequireDefault(require("pako"));
 
 /**
  * Websocket connection and communicate with the backend
  */
-class StreamSocket {
-  /**
-   * Returns Web Socket ping interval number in ms.
-   * @return {number}
-   */
-  static get WEBSOCKET_PING_INTERVAL() {
-    return 250;
-  }
-
-  static get WEBSOCKET_EMIT_REPORTS_INTERVAL() {
-    return StreamSocket.WEBSOCKET_PING_INTERVAL * 10;
-  }
+var StreamSocket = /*#__PURE__*/function () {
   /**
    * @param {string} edgeNodeId
    * @param {string} streamEndpoint
    * @param {string} userId
    * @param {boolean} internalSession
    */
+  function StreamSocket(edgeNodeId, streamEndpoint, userId, internalSession) {
+    var _this = this,
+        _context,
+        _context2;
 
+    (0, _classCallCheck2.default)(this, StreamSocket);
 
-  constructor(edgeNodeId, streamEndpoint, userId, internalSession) {
-    var _this = this;
-
-    this.onReportMeasurement = payload => {
+    this.onReportMeasurement = function (payload) {
       payload.type = 'report';
       payload.timestamp = Date.now();
-      this.reportCache.push(JSON.stringify(payload));
+
+      _this.reportCache.push((0, _stringify.default)(payload));
     };
 
     this.emitReports = function () {
-      let isLast = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      var isLast = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
       if (isLast) {
         clearInterval(_this.reportTimer);
       }
 
       if (_this.reportCache.length && _this.socket) {
-        _this.socket.emit('message', JSON.stringify({
+        _this.socket.emit('message', (0, _stringify.default)({
           type: 'report-bundle',
           timestamp: Date.now(),
-          reports: Array.from(_pako.default.deflate(JSON.stringify([..._this.reportCache])))
+          reports: (0, _from.default)(_pako.default.deflate((0, _stringify.default)((0, _toConsumableArray2.default)(_this.reportCache))))
         }));
 
         _this.reportCache = [];
       }
     };
 
-    this.onUserEventReport = payload => {
+    this.onUserEventReport = function (payload) {
       payload.type = 'report-user-event';
       payload.timestamp = Date.now();
 
-      if (this.socket) {
-        this.socket.emit('message', JSON.stringify(payload));
+      if (_this.socket) {
+        _this.socket.emit('message', (0, _stringify.default)(payload));
       }
     };
 
-    this.close = () => {
-      if (this.socket) {
-        this.emitReports(true);
-        this.socket.close();
+    this.close = function () {
+      if (_this.socket) {
+        _this.emitReports(true);
 
-        _StreamingEvent.default.edgeNode(this.edgeNodeId).off(_StreamingEvent.default.REPORT_MEASUREMENT, this.onReportMeasurement).off(_StreamingEvent.default.USER_EVENT_REPORT, this.onUserEventReport).off(_StreamingEvent.default.STREAM_UNREACHABLE, this.close);
+        _this.socket.close();
 
-        this.socket = undefined;
+        _StreamingEvent.default.edgeNode(_this.edgeNodeId).off(_StreamingEvent.default.REPORT_MEASUREMENT, _this.onReportMeasurement).off(_StreamingEvent.default.USER_EVENT_REPORT, _this.onUserEventReport).off(_StreamingEvent.default.STREAM_UNREACHABLE, _this.close);
+
+        _this.socket = undefined;
       }
     };
 
-    const endpoint = _url.default.parse(streamEndpoint);
-
+    var endpoint = (0, _urlParse.default)(streamEndpoint);
     this.edgeNodeId = edgeNodeId;
     this.userId = userId;
-    this.socket = (0, _socket.default)("".concat(endpoint.protocol, "//").concat(endpoint.host), {
-      path: "".concat(endpoint.path, "/emulator-commands/socket.io"),
-      query: "userId=".concat(userId, "&internal=").concat(internalSession ? '1' : '0')
+    this.socket = (0, _socket.default)((0, _concat.default)(_context = "".concat(endpoint.protocol, "//")).call(_context, endpoint.host), {
+      path: "".concat(endpoint.pathname, "/emulator-commands/socket.io"),
+      query: (0, _concat.default)(_context2 = "userId=".concat(userId, "&internal=")).call(_context2, internalSession ? '1' : '0')
     });
     this.reportCache = [];
     this.reportTimer = setInterval(this.emitReports, StreamSocket.WEBSOCKET_EMIT_REPORTS_INTERVAL); // Web Socket errors
 
-    this.socket.on('error', err => _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.ERROR, err)); // Preforming and emit RTT to the streaming event bus.
+    this.socket.on('error', function (err) {
+      return _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.ERROR, err);
+    }); // Preforming and emit RTT to the streaming event bus.
 
-    this.socket.on('pong', networkRoundTripTime => {
+    this.socket.on('pong', function (networkRoundTripTime) {
       _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.ROUND_TRIP_TIME_MEASUREMENT, networkRoundTripTime);
     });
-    this.socket.on('message', data => {
-      const message = JSON.parse(data);
+    this.socket.on('message', function (data) {
+      var message = JSON.parse(data);
 
       if (message.name === 'emulator-configuration') {
         _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.EMULATOR_CONFIGURATION, message.configuration);
@@ -156,6 +165,23 @@ class StreamSocket {
     _StreamingEvent.default.edgeNode(edgeNodeId).on(_StreamingEvent.default.REPORT_MEASUREMENT, this.onReportMeasurement).on(_StreamingEvent.default.USER_EVENT_REPORT, this.onUserEventReport).on(_StreamingEvent.default.STREAM_UNREACHABLE, this.close);
   }
 
-}
+  (0, _createClass2.default)(StreamSocket, null, [{
+    key: "WEBSOCKET_PING_INTERVAL",
+    get:
+    /**
+     * Returns Web Socket ping interval number in ms.
+     * @return {number}
+     */
+    function get() {
+      return 250;
+    }
+  }, {
+    key: "WEBSOCKET_EMIT_REPORTS_INTERVAL",
+    get: function get() {
+      return StreamSocket.WEBSOCKET_PING_INTERVAL * 10;
+    }
+  }]);
+  return StreamSocket;
+}();
 
 exports.default = StreamSocket;

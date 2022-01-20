@@ -1,13 +1,30 @@
 "use strict";
 
+var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
+
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
-Object.defineProperty(exports, "__esModule", {
+_Object$defineProperty(exports, "__esModule", {
   value: true
 });
+
 exports.default = void 0;
 
 var _url = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/url"));
+
+var _promise = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/promise"));
+
+var _startsWith = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/starts-with"));
+
+var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
+
+var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
+
+var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/slicedToArray"));
+
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
+
+var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
 
 var _axios = _interopRequireDefault(require("axios"));
 
@@ -24,35 +41,7 @@ var _buildInfo = _interopRequireDefault(require("./build-info.json"));
  *
  * @class StreamingController
  */
-class StreamingController {
-  static get DEFAULT_TIMEOUT() {
-    return 30 * 60 * 1000; // 30 minute
-  }
-  /**
-   * Get SDK Version
-   * @returns {string}
-   */
-
-
-  static get SDK_VERSION() {
-    return _buildInfo.default.tag;
-  }
-  /**
-   * Wait until the edge node reach a ready state.
-   */
-
-
-  static get WAIT_FOR_READY() {
-    return 'ready';
-  }
-  /**
-   * Wait until the edge node receiving an endpoint independent of the ready state.
-   */
-
-
-  static get WAIT_FOR_ENDPOINT() {
-    return 'endpoint';
-  }
+var StreamingController = /*#__PURE__*/function () {
   /**
    *
    * @param {object} props
@@ -60,9 +49,9 @@ class StreamingController {
    * @param {string} props.edgeNodeId Optional parameters, require for some of the API.
    * @param {string} props.internalSession Optional parameter for flagging if the session is internal.
    */
+  function StreamingController(props) {
+    (0, _classCallCheck2.default)(this, StreamingController);
 
-
-  constructor(props) {
     if (!props.apiEndpoint) {
       throw new Error('StreamingController: Missing apiEndpoint');
     }
@@ -83,277 +72,356 @@ class StreamingController {
    */
 
 
-  getEdgeNodeId() {
-    return this.edgeNodeId !== undefined ? Promise.resolve(this.edgeNodeId) : Promise.reject(new Error('StreamingController: Missing edgeNodeId, API endpoint unsupported without Edge Node ID.'));
-  }
-  /**
-   * Terminate the instance
-   * @returns {Promise<*>}
-   */
-
-
-  terminate() {
-    return this.getStreamEndpoint().then(streamEndpoint => _axios.default.get("".concat(streamEndpoint, "/emulator-commands/terminate")));
-  }
-  /**
-   * Backup the current state
-   * @returns {Promise<*>}
-   */
-
-
-  backup() {
-    return this.getStreamEndpoint().then(streamEndpoint => {
-      return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/backup"));
-    }).then(resp => {
-      if (resp.data.toString().startsWith('FAIL')) {
-        throw new Error(resp.data.toString());
-      } else {
-        return resp.data;
-      }
-    });
-  }
-  /**
-   * Creates a game snapshot
-   * @returns {Promise<string>}
-   */
-
-
-  createGameSnapshot() {
-    return this.save();
-  }
-  /**
-   * Get a list of predicted game experiences for all apps based on the current usage connectivity.
-   * @returns {Promise<[{appId: number, score: number}]>}
-   */
-
-
-  getPredictedGameExperiences() {
-    return Promise.all([this.getApiEndpoint(), this.getConnectivityInfo()]).then(_ref => {
-      let [apiEndpoint, connectivityInfo] = _ref;
-      const encodedConnectivityInfo = encodeURIComponent(JSON.stringify(connectivityInfo));
-      return Promise.all([connectivityInfo, _axios.default.get("".concat(apiEndpoint, "/api/streaming-games/predicted-game-experience?connectivity-info=").concat(encodedConnectivityInfo))]);
-    }).then(_ref2 => {
-      let [connectivityInfo, result] = _ref2;
-      return {
-        apps: (result.data || {}).apps || [],
-        measurementLevel: connectivityInfo.measurementLevel
-      };
-    });
-  }
-  /**
-   * Sends the save command to the supervisor.
-   * This is used to trigger different save behaviour depending on edgenode mode.
-   * Snapshot mode: saves a snapshot
-   * Apk-image mode: saves an apk image
-   * Base-image mode: saves a base image definition
-   * @returns {Promise<string>}
-   */
-
-
-  save() {
-    return this.getStreamEndpoint().then(streamEndpoint => {
-      return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/save"));
-    }).then(resp => {
-      if (resp.data.toString().startsWith('FAIL')) {
-        throw new Error(resp.data.toString());
-      } else {
-        return resp.data;
-      }
-    });
-  }
-  /**
-   * Sends the pause command to the supervisor.
-   * This is used to pause the emulator.
-   * @returns {Promise<*>}
-   */
-
-
-  pause() {
-    return Promise.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(_ref3 => {
-      let [edgeNodeId, streamEndpoint] = _ref3;
-
-      _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.LOG, {
-        name: 'streaming-controller',
-        action: 'pause'
-      });
-
-      return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/pause"));
-    });
-  }
-  /**
-   * Resets the current moment.
-   * @returns {Promise<*>}
-   */
-
-
-  resetMoment() {
-    return Promise.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(_ref4 => {
-      let [edgeNodeId, streamEndpoint] = _ref4;
-
-      _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.LOG, {
-        name: 'streaming-controller',
-        action: 'resetMoment'
-      });
-
-      return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/reset")).then(() => {
-        _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.STREAM_READY);
-      });
-    });
-  }
-  /**
-   * Sends the pause command to the supervisor.
-   * This is used to resume a paused emulator.
-   * @returns {Promise<*>}
-   */
-
-
-  resume() {
-    return Promise.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(_ref5 => {
-      let [edgeNodeId, streamEndpoint] = _ref5;
-
-      _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.LOG, {
-        name: 'streaming-controller',
-        action: 'resume'
-      });
-
-      return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/resume"));
-    });
-  }
-  /**
-   * Get the streaming endpoint
-   * @return {Promise<string>}
-   */
-
-
-  getStreamEndpoint() {
-    return this.waitFor().then(status => {
-      if (status.endpoint !== undefined) {
-        return status.endpoint;
-      } else {
-        throw new Error("Can't resolve Stream Endpoint, got: " + JSON.stringify(status));
-      }
-    });
-  }
-  /**
-   * Get API Endpoint
-   * @returns {string}
-   */
-
-
-  getApiEndpoint() {
-    return this.apiEndpoint;
-  }
-  /**
-   * Determine if the session is internal.
-   * @return {boolean}
-   */
-
-
-  isInternalSession() {
-    return this.internalSession;
-  }
-  /**
-   * Wait for the edge node to be ready before the promise will resolve.
-   * @param {StreamingController.WAIT_FOR_READY|StreamingController.WAIT_FOR_ENDPOINT} waitFor Define the exit criteria for what to wait for.
-   * @param {number} timeout Max duration the waitFor should wait before reject with an timeout exception.
-   * @returns {Promise<{status: string, endpoint: string}>}
-   */
-
-
-  waitFor() {
-    let waitFor = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : StreamingController.WAIT_FOR_READY;
-    let timeout = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : StreamingController.DEFAULT_TIMEOUT;
-    let isQueuedEventFire = false;
+  (0, _createClass2.default)(StreamingController, [{
+    key: "getEdgeNodeId",
+    value: function getEdgeNodeId() {
+      return this.edgeNodeId !== undefined ? _promise.default.resolve(this.edgeNodeId) : _promise.default.reject(new Error('StreamingController: Missing edgeNodeId, API endpoint unsupported without Edge Node ID.'));
+    }
     /**
-     * Get the status of the edge node.
-     * @param {string} uri
-     * @param {number} timeout
+     * Terminate the instance
      * @returns {Promise<*>}
      */
 
-    const getStatus = (uri, timeout) => {
-      return _axios.default.get(uri, {
-        timeout: timeout
-      }).then(result => {
-        const stillWaiting = waitFor === StreamingController.WAIT_FOR_READY && result.data.state === 'pending' || waitFor === StreamingController.WAIT_FOR_ENDPOINT && result.data.endpoint === undefined;
-
-        if (stillWaiting) {
-          if (result.data.queued && !isQueuedEventFire) {
-            isQueuedEventFire = true;
-
-            if (this.edgeNodeId) {
-              _StreamingEvent.default.edgeNode(this.edgeNodeId).emit(_StreamingEvent.default.SERVER_OUT_OF_CAPACITY);
-            }
-          }
-
-          throw new Error('pending');
-        } else {
-          return result.data;
-        }
+  }, {
+    key: "terminate",
+    value: function terminate() {
+      return this.getStreamEndpoint().then(function (streamEndpoint) {
+        return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/terminate"));
       });
-    };
+    }
     /**
-     * Retry will try to execute the promise that the callback function returns
-     * until resolved or runs out of maxRetry
-     * @param {function: Promise<*>} callback
-     * @param {number} maxTimeout
+     * Backup the current state
+     * @returns {Promise<*>}
      */
 
+  }, {
+    key: "backup",
+    value: function backup() {
+      return this.getStreamEndpoint().then(function (streamEndpoint) {
+        return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/backup"));
+      }).then(function (resp) {
+        var _context;
 
-    const retry = (callback, maxTimeout) => {
-      const endTimestamp = Date.now() + maxTimeout;
-      return new Promise((resolve, reject) => {
-        const fn = () => {
-          callback().then(resolve, err => {
-            const httpStatusCode = (err.response || {}).status || 500;
-
-            if (httpStatusCode === 404) {
-              resolve((err.response || {}).data || {});
-            } else if (endTimestamp > Date.now()) {
-              setTimeout(fn, 10);
-            } else {
-              reject(err);
-            }
-          });
-        };
-
-        fn();
+        if ((0, _startsWith.default)(_context = resp.data.toString()).call(_context, 'FAIL')) {
+          throw new Error(resp.data.toString());
+        } else {
+          return resp.data;
+        }
       });
-    };
+    }
+    /**
+     * Creates a game snapshot
+     * @returns {Promise<string>}
+     */
 
-    return this.getEdgeNodeId().then(edgeNodeId => {
-      const internalSession = this.isInternalSession() ? '&internal=1' : '';
-      return retry(() => getStatus("".concat(this.getApiEndpoint(), "/api/streaming-games/status/").concat(edgeNodeId, "?wait=1").concat(internalSession), 5000), timeout);
-    });
-  }
-  /**
-   * Get device info from the device including geolocation, screen configuration etc.
-   * @returns {Promise<object>}
-   */
+  }, {
+    key: "createGameSnapshot",
+    value: function createGameSnapshot() {
+      return this.save();
+    }
+    /**
+     * Get a list of predicted game experiences for all apps based on the current usage connectivity.
+     * @returns {Promise<[{appId: number, score: number}]>}
+     */
+
+  }, {
+    key: "getPredictedGameExperiences",
+    value: function getPredictedGameExperiences() {
+      return _promise.default.all([this.getApiEndpoint(), this.getConnectivityInfo()]).then(function (_ref) {
+        var _context2;
+
+        var _ref2 = (0, _slicedToArray2.default)(_ref, 2),
+            apiEndpoint = _ref2[0],
+            connectivityInfo = _ref2[1];
+
+        var encodedConnectivityInfo = encodeURIComponent((0, _stringify.default)(connectivityInfo));
+        return _promise.default.all([connectivityInfo, _axios.default.get((0, _concat.default)(_context2 = "".concat(apiEndpoint, "/api/streaming-games/predicted-game-experience?connectivity-info=")).call(_context2, encodedConnectivityInfo))]);
+      }).then(function (_ref3) {
+        var _ref4 = (0, _slicedToArray2.default)(_ref3, 2),
+            connectivityInfo = _ref4[0],
+            result = _ref4[1];
+
+        return {
+          apps: (result.data || {}).apps || [],
+          measurementLevel: connectivityInfo.measurementLevel
+        };
+      });
+    }
+    /**
+     * Sends the save command to the supervisor.
+     * This is used to trigger different save behaviour depending on edgenode mode.
+     * Snapshot mode: saves a snapshot
+     * Apk-image mode: saves an apk image
+     * Base-image mode: saves a base image definition
+     * @returns {Promise<string>}
+     */
+
+  }, {
+    key: "save",
+    value: function save() {
+      return this.getStreamEndpoint().then(function (streamEndpoint) {
+        return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/save"));
+      }).then(function (resp) {
+        var _context3;
+
+        if ((0, _startsWith.default)(_context3 = resp.data.toString()).call(_context3, 'FAIL')) {
+          throw new Error(resp.data.toString());
+        } else {
+          return resp.data;
+        }
+      });
+    }
+    /**
+     * Sends the pause command to the supervisor.
+     * This is used to pause the emulator.
+     * @returns {Promise<*>}
+     */
+
+  }, {
+    key: "pause",
+    value: function pause() {
+      return _promise.default.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(function (_ref5) {
+        var _ref6 = (0, _slicedToArray2.default)(_ref5, 2),
+            edgeNodeId = _ref6[0],
+            streamEndpoint = _ref6[1];
+
+        _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.LOG, {
+          name: 'streaming-controller',
+          action: 'pause'
+        });
+
+        return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/pause"));
+      });
+    }
+    /**
+     * Resets the current moment.
+     * @returns {Promise<*>}
+     */
+
+  }, {
+    key: "resetMoment",
+    value: function resetMoment() {
+      return _promise.default.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(function (_ref7) {
+        var _ref8 = (0, _slicedToArray2.default)(_ref7, 2),
+            edgeNodeId = _ref8[0],
+            streamEndpoint = _ref8[1];
+
+        _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.LOG, {
+          name: 'streaming-controller',
+          action: 'resetMoment'
+        });
+
+        return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/reset")).then(function () {
+          _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.STREAM_READY);
+        });
+      });
+    }
+    /**
+     * Sends the pause command to the supervisor.
+     * This is used to resume a paused emulator.
+     * @returns {Promise<*>}
+     */
+
+  }, {
+    key: "resume",
+    value: function resume() {
+      return _promise.default.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(function (_ref9) {
+        var _ref10 = (0, _slicedToArray2.default)(_ref9, 2),
+            edgeNodeId = _ref10[0],
+            streamEndpoint = _ref10[1];
+
+        _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.LOG, {
+          name: 'streaming-controller',
+          action: 'resume'
+        });
+
+        return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/resume"));
+      });
+    }
+    /**
+     * Get the streaming endpoint
+     * @return {Promise<string>}
+     */
+
+  }, {
+    key: "getStreamEndpoint",
+    value: function getStreamEndpoint() {
+      return this.waitFor().then(function (status) {
+        if (status.endpoint !== undefined) {
+          return status.endpoint;
+        } else {
+          throw new Error("Can't resolve Stream Endpoint, got: " + (0, _stringify.default)(status));
+        }
+      });
+    }
+    /**
+     * Get API Endpoint
+     * @returns {string}
+     */
+
+  }, {
+    key: "getApiEndpoint",
+    value: function getApiEndpoint() {
+      return this.apiEndpoint;
+    }
+    /**
+     * Determine if the session is internal.
+     * @return {boolean}
+     */
+
+  }, {
+    key: "isInternalSession",
+    value: function isInternalSession() {
+      return this.internalSession;
+    }
+    /**
+     * Wait for the edge node to be ready before the promise will resolve.
+     * @param {StreamingController.WAIT_FOR_READY|StreamingController.WAIT_FOR_ENDPOINT} waitFor Define the exit criteria for what to wait for.
+     * @param {number} timeout Max duration the waitFor should wait before reject with an timeout exception.
+     * @returns {Promise<{status: string, endpoint: string}>}
+     */
+
+  }, {
+    key: "waitFor",
+    value: function waitFor() {
+      var _this = this;
+
+      var _waitFor = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : StreamingController.WAIT_FOR_READY;
+
+      var timeout = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : StreamingController.DEFAULT_TIMEOUT;
+      var isQueuedEventFire = false;
+      /**
+       * Get the status of the edge node.
+       * @param {string} uri
+       * @param {number} timeout
+       * @returns {Promise<*>}
+       */
+
+      var getStatus = function getStatus(uri, timeout) {
+        return _axios.default.get(uri, {
+          timeout: timeout
+        }).then(function (result) {
+          var stillWaiting = _waitFor === StreamingController.WAIT_FOR_READY && result.data.state === 'pending' || _waitFor === StreamingController.WAIT_FOR_ENDPOINT && result.data.endpoint === undefined;
+
+          if (stillWaiting) {
+            if (result.data.queued && !isQueuedEventFire) {
+              isQueuedEventFire = true;
+
+              if (_this.edgeNodeId) {
+                _StreamingEvent.default.edgeNode(_this.edgeNodeId).emit(_StreamingEvent.default.SERVER_OUT_OF_CAPACITY);
+              }
+            }
+
+            throw new Error('pending');
+          } else {
+            return result.data;
+          }
+        });
+      };
+      /**
+       * Retry will try to execute the promise that the callback function returns
+       * until resolved or runs out of maxRetry
+       * @param {function: Promise<*>} callback
+       * @param {number} maxTimeout
+       */
 
 
-  getDeviceInfo() {
-    return (0, _deviceInfo.getDeviceInfo)(this.getApiEndpoint());
-  }
-  /**
-   * Get connectivity info
-   * @returns {Promise<{}>}
-   */
+      var retry = function retry(callback, maxTimeout) {
+        var endTimestamp = Date.now() + maxTimeout;
+        return new _promise.default(function (resolve, reject) {
+          var fn = function fn() {
+            callback().then(resolve, function (err) {
+              var httpStatusCode = (err.response || {}).status || 500;
 
+              if (httpStatusCode === 404) {
+                resolve((err.response || {}).data || {});
+              } else if (endTimestamp > Date.now()) {
+                setTimeout(fn, 10);
+              } else {
+                reject(err);
+              }
+            });
+          };
 
-  getConnectivityInfo() {
-    return (0, _networkConnectivity.getNetworkConnectivity)();
-  }
+          fn();
+        });
+      };
 
-}
+      return this.getEdgeNodeId().then(function (edgeNodeId) {
+        var internalSession = _this.isInternalSession() ? '&internal=1' : '';
+        return retry(function () {
+          var _context4, _context5;
+
+          return getStatus((0, _concat.default)(_context4 = (0, _concat.default)(_context5 = "".concat(_this.getApiEndpoint(), "/api/streaming-games/status/")).call(_context5, edgeNodeId, "?wait=1")).call(_context4, internalSession), 5000);
+        }, timeout);
+      });
+    }
+    /**
+     * Get device info from the device including geolocation, screen configuration etc.
+     * @returns {Promise<object>}
+     */
+
+  }, {
+    key: "getDeviceInfo",
+    value: function getDeviceInfo() {
+      return (0, _deviceInfo.getDeviceInfo)(this.getApiEndpoint());
+    }
+    /**
+     * Get connectivity info
+     * @returns {Promise<{}>}
+     */
+
+  }, {
+    key: "getConnectivityInfo",
+    value: function getConnectivityInfo() {
+      return (0, _networkConnectivity.getNetworkConnectivity)();
+    }
+  }], [{
+    key: "DEFAULT_TIMEOUT",
+    get: function get() {
+      return 30 * 60 * 1000; // 30 minute
+    }
+    /**
+     * Get SDK Version
+     * @returns {string}
+     */
+
+  }, {
+    key: "SDK_VERSION",
+    get: function get() {
+      return _buildInfo.default.tag;
+    }
+    /**
+     * Wait until the edge node reach a ready state.
+     */
+
+  }, {
+    key: "WAIT_FOR_READY",
+    get: function get() {
+      return 'ready';
+    }
+    /**
+     * Wait until the edge node receiving an endpoint independent of the ready state.
+     */
+
+  }, {
+    key: "WAIT_FOR_ENDPOINT",
+    get: function get() {
+      return 'endpoint';
+    }
+  }]);
+  return StreamingController;
+}();
 /**
  * Instantiating the StreamingController
  * @returns {Promise<StreamingController>}
  */
 
 
-const factory = props => {
-  return Promise.resolve(props).then(props => new StreamingController(props));
+var factory = function factory(props) {
+  return _promise.default.resolve(props).then(function (props) {
+    return new StreamingController(props);
+  });
 };
 
 factory.EVENT_STREAM_CONNECTED = _StreamingEvent.default.STREAM_CONNECTED;

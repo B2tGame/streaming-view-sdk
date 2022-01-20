@@ -1,11 +1,32 @@
 "use strict";
 
+var _typeof = require("@babel/runtime-corejs3/helpers/typeof");
+
+var _Reflect$construct = require("@babel/runtime-corejs3/core-js-stable/reflect/construct");
+
+var _WeakMap = require("@babel/runtime-corejs3/core-js-stable/weak-map");
+
+var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
+
+var _Object$getOwnPropertyDescriptor = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor");
+
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
-Object.defineProperty(exports, "__esModule", {
+_Object$defineProperty(exports, "__esModule", {
   value: true
 });
+
 exports.default = void 0;
+
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
+
+var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
+
+var _inherits2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/inherits"));
+
+var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/possibleConstructorReturn"));
+
+var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/getPrototypeOf"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
@@ -25,9 +46,13 @@ var _emulator_web_client = require("../../proto/emulator_web_client");
 
 var _StreamingEvent = _interopRequireDefault(require("../../StreamingEvent"));
 
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _getRequireWildcardCache(nodeInterop) { if (typeof _WeakMap !== "function") return null; var cacheBabelInterop = new _WeakMap(); var cacheNodeInterop = new _WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = _Object$defineProperty && _Object$getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? _Object$getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { _Object$defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2.default)(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2.default)(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2.default)(this, result); }; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_Reflect$construct) return false; if (_Reflect$construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(_Reflect$construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
 /**
  * A React component that displays a remote android emulator.
@@ -64,165 +89,184 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * "GoHome"          -  Go to the home screen.
  * "GoBack"          -  Open the previous screen you were looking at.
  */
-class Emulator extends _react.Component {
-  /**
-   * The minimum amount time the SDK should wait before doing a hard reload due to bad/none functional stream.
-   * Consider the time needed after it has been reloaded, it will need some time to do a reconnection etc.
-   * @return {number}
-   */
-  static get RELOAD_HOLD_OFF_TIMEOUT() {
-    return 10000;
-  }
-  /**
-   * The minimum amount time the SDK should wait (after a onConnect event) before doing a hard reload due to bad/none functional stream.
-   * Consider the time needed after it has been reloaded, it will need some time to do a reconnection etc.
-   * @return {number}
-   */
+var Emulator = /*#__PURE__*/function (_Component) {
+  (0, _inherits2.default)(Emulator, _Component);
 
+  var _super = _createSuper(Emulator);
 
-  static get RELOAD_HOLD_OFF_TIMEOUT_AFTER_CONNECT() {
-    return 5000;
-  }
-  /**
-   * Number of times the system should reload the stream before entering an unreachable state.
-   * @return {number}
-   */
+  function Emulator(props) {
+    var _this;
 
-
-  static get RELOAD_FAILURE_THRESHOLD() {
-    return 2;
-  }
-
-  constructor(props) {
-    super(props);
-    this.components = {
+    (0, _classCallCheck2.default)(this, Emulator);
+    _this = _super.call(this, props);
+    _this.components = {
       webrtc: _EmulatorWebrtcView.default,
       png: _EmulatorPngView.default
     };
-    this.state = {
+    _this.state = {
       streamingConnectionId: Date.now(),
       width: undefined,
       height: undefined
     };
 
-    this.onDisconnect = () => {
-      setTimeout(() => {
-        this.reload(_StreamingEvent.default.STREAM_DISCONNECTED);
+    _this.onDisconnect = function () {
+      setTimeout(function () {
+        _this.reload(_StreamingEvent.default.STREAM_DISCONNECTED);
       }, 250);
     };
 
-    this.onVideoUnavailable = () => {
-      setTimeout(() => {
-        this.reload(_StreamingEvent.default.STREAM_VIDEO_UNAVAILABLE);
+    _this.onVideoUnavailable = function () {
+      setTimeout(function () {
+        _this.reload(_StreamingEvent.default.STREAM_VIDEO_UNAVAILABLE);
       }, 250);
     };
 
-    this.onVideoMissing = () => {
-      this.reload(_StreamingEvent.default.STREAM_VIDEO_MISSING);
+    _this.onVideoMissing = function () {
+      _this.reload(_StreamingEvent.default.STREAM_VIDEO_MISSING);
     };
 
-    this.onConnect = () => {
-      this.reloadCount = 0;
-      this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT_AFTER_CONNECT;
+    _this.onConnect = function () {
+      _this.reloadCount = 0;
+      _this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT_AFTER_CONNECT;
     };
 
-    this.sendKey = key => {
-      const request = new Proto.KeyboardEvent();
+    _this.sendKey = function (key) {
+      var request = new Proto.KeyboardEvent();
       request.setEventtype(Proto.KeyboardEvent.KeyEventType.KEYPRESS);
       request.setKey(key);
-      this.jsep.send('keyboard', request);
+
+      _this.jsep.send('keyboard', request);
     };
 
-    this.isMountedInView = false;
-    this.view = /*#__PURE__*/_react.default.createRef();
-    this.reloadCount = 0;
-    this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
-    const {
-      uri,
-      auth,
-      poll
-    } = this.props;
-    this.emulator = new _emulator_web_client.EmulatorControllerService(uri, auth, this.onError);
-    this.rtc = new _emulator_web_client.RtcService(uri, auth, this.onError);
-    this.jsep = new _JsepProtocol.default(this.emulator, this.rtc, poll, this.props.edgeNodeId, this.props.logger, this.props.turnEndpoint, this.props.playoutDelayHint);
+    _this.isMountedInView = false;
+    _this.view = /*#__PURE__*/_react.default.createRef();
+    _this.reloadCount = 0;
+    _this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
+    var _this$props = _this.props,
+        uri = _this$props.uri,
+        auth = _this$props.auth,
+        poll = _this$props.poll;
+    _this.emulator = new _emulator_web_client.EmulatorControllerService(uri, auth, _this.onError);
+    _this.rtc = new _emulator_web_client.RtcService(uri, auth, _this.onError);
+    _this.jsep = new _JsepProtocol.default(_this.emulator, _this.rtc, poll, _this.props.edgeNodeId, _this.props.logger, _this.props.turnEndpoint, _this.props.playoutDelayHint);
 
-    _StreamingEvent.default.edgeNode(this.props.edgeNodeId).on(_StreamingEvent.default.STREAM_DISCONNECTED, this.onDisconnect).on(_StreamingEvent.default.STREAM_VIDEO_UNAVAILABLE, this.onVideoUnavailable).on(_StreamingEvent.default.STREAM_VIDEO_MISSING, this.onVideoMissing).on(_StreamingEvent.default.STREAM_CONNECTED, this.onConnect);
+    _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).on(_StreamingEvent.default.STREAM_DISCONNECTED, _this.onDisconnect).on(_StreamingEvent.default.STREAM_VIDEO_UNAVAILABLE, _this.onVideoUnavailable).on(_StreamingEvent.default.STREAM_VIDEO_MISSING, _this.onVideoMissing).on(_StreamingEvent.default.STREAM_CONNECTED, _this.onConnect);
+
+    return _this;
   }
 
-  componentDidMount() {
-    this.isMountedInView = true;
-  }
+  (0, _createClass2.default)(Emulator, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      this.isMountedInView = true;
+    }
+  }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {
+      this.isMountedInView = false;
 
-  componentWillUnmount() {
-    this.isMountedInView = false;
+      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).off(_StreamingEvent.default.STREAM_DISCONNECTED, this.onDisconnect).off(_StreamingEvent.default.STREAM_VIDEO_UNAVAILABLE, this.onVideoUnavailable).off(_StreamingEvent.default.STREAM_VIDEO_MISSING, this.onVideoMissing).off(_StreamingEvent.default.STREAM_CONNECTED, this.onConnect);
+    }
+  }, {
+    key: "reload",
+    value:
+    /**
+     *
+     * @param {string} cause
+     */
+    function reload(cause) {
+      this.props.logger.info('stream not working, request reload');
 
-    _StreamingEvent.default.edgeNode(this.props.edgeNodeId).off(_StreamingEvent.default.STREAM_DISCONNECTED, this.onDisconnect).off(_StreamingEvent.default.STREAM_VIDEO_UNAVAILABLE, this.onVideoUnavailable).off(_StreamingEvent.default.STREAM_VIDEO_MISSING, this.onVideoMissing).off(_StreamingEvent.default.STREAM_CONNECTED, this.onConnect);
-  }
+      if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
+        this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
 
-  /**
-   *
-   * @param {string} cause
-   */
-  reload(cause) {
-    this.props.logger.info('stream not working, request reload');
+        if (this.reloadCount >= this.props.maxConnectionRetries) {
+          // Give up and exit the stream.
+          _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_UNREACHABLE, "Reached max number of reload tries: ".concat(this.reloadCount));
+        } else {
+          this.reloadCount++;
 
-    if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
-      this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
+          _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_RELOADED, cause);
 
-      if (this.reloadCount >= this.props.maxConnectionRetries) {
-        // Give up and exit the stream.
-        _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_UNREACHABLE, "Reached max number of reload tries: ".concat(this.reloadCount));
-      } else {
-        this.reloadCount++;
-
-        _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_RELOADED, cause);
-
-        this.setState({
-          streamingConnectionId: Date.now()
-        });
+          this.setState({
+            streamingConnectionId: Date.now()
+          });
+        }
       }
     }
-  }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this$props2 = this.props,
+          view = _this$props2.view,
+          poll = _this$props2.poll,
+          volume = _this$props2.volume,
+          muted = _this$props2.muted,
+          enableFullScreen = _this$props2.enableFullScreen,
+          enableControl = _this$props2.enableControl,
+          uri = _this$props2.uri,
+          emulatorWidth = _this$props2.emulatorWidth,
+          emulatorHeight = _this$props2.emulatorHeight,
+          emulatorVersion = _this$props2.emulatorVersion,
+          logger = _this$props2.logger,
+          edgeNodeId = _this$props2.edgeNodeId,
+          measureTouchRtt = _this$props2.measureTouchRtt;
+      return /*#__PURE__*/_react.default.createElement(_EventHandler.default, {
+        key: this.state.streamingConnectionId,
+        ref: this.view,
+        emulatorWidth: emulatorWidth,
+        emulatorHeight: emulatorHeight,
+        emulatorVersion: emulatorVersion,
+        uri: uri,
+        emulator: this.emulator,
+        jsep: this.jsep,
+        poll: poll,
+        volume: volume,
+        muted: muted,
+        onAudioStateChange: this.onAudioStateChange,
+        enableFullScreen: enableFullScreen,
+        enableControl: enableControl,
+        logger: logger,
+        edgeNodeId: edgeNodeId,
+        measureTouchRtt: measureTouchRtt,
+        view: this.components[view] || _EmulatorWebrtcView.default
+      });
+    }
+  }], [{
+    key: "RELOAD_HOLD_OFF_TIMEOUT",
+    get:
+    /**
+     * The minimum amount time the SDK should wait before doing a hard reload due to bad/none functional stream.
+     * Consider the time needed after it has been reloaded, it will need some time to do a reconnection etc.
+     * @return {number}
+     */
+    function get() {
+      return 10000;
+    }
+    /**
+     * The minimum amount time the SDK should wait (after a onConnect event) before doing a hard reload due to bad/none functional stream.
+     * Consider the time needed after it has been reloaded, it will need some time to do a reconnection etc.
+     * @return {number}
+     */
 
-  render() {
-    const {
-      view,
-      poll,
-      volume,
-      muted,
-      enableFullScreen,
-      enableControl,
-      uri,
-      emulatorWidth,
-      emulatorHeight,
-      emulatorVersion,
-      logger,
-      edgeNodeId,
-      measureTouchRtt
-    } = this.props;
-    return /*#__PURE__*/_react.default.createElement(_EventHandler.default, {
-      key: this.state.streamingConnectionId,
-      ref: this.view,
-      emulatorWidth: emulatorWidth,
-      emulatorHeight: emulatorHeight,
-      emulatorVersion: emulatorVersion,
-      uri: uri,
-      emulator: this.emulator,
-      jsep: this.jsep,
-      poll: poll,
-      volume: volume,
-      muted: muted,
-      onAudioStateChange: this.onAudioStateChange,
-      enableFullScreen: enableFullScreen,
-      enableControl: enableControl,
-      logger: logger,
-      edgeNodeId: edgeNodeId,
-      measureTouchRtt: measureTouchRtt,
-      view: this.components[view] || _EmulatorWebrtcView.default
-    });
-  }
+  }, {
+    key: "RELOAD_HOLD_OFF_TIMEOUT_AFTER_CONNECT",
+    get: function get() {
+      return 5000;
+    }
+    /**
+     * Number of times the system should reload the stream before entering an unreachable state.
+     * @return {number}
+     */
 
-}
+  }, {
+    key: "RELOAD_FAILURE_THRESHOLD",
+    get: function get() {
+      return 2;
+    }
+  }]);
+  return Emulator;
+}(_react.Component);
 
 Emulator.propTypes = {
   /** gRPC Endpoint where we can reach the emulator. */

@@ -1,11 +1,44 @@
 "use strict";
 
+var _typeof = require("@babel/runtime-corejs3/helpers/typeof");
+
+var _Reflect$construct = require("@babel/runtime-corejs3/core-js-stable/reflect/construct");
+
+var _WeakMap = require("@babel/runtime-corejs3/core-js-stable/weak-map");
+
+var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
+
+var _Object$getOwnPropertyDescriptor = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor");
+
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
-Object.defineProperty(exports, "__esModule", {
+_Object$defineProperty(exports, "__esModule", {
   value: true
 });
+
 exports.default = void 0;
+
+var _reduce = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/reduce"));
+
+var _keys = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/object/keys"));
+
+var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
+
+var _filter = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/filter"));
+
+var _indexOf = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/index-of"));
+
+var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/slicedToArray"));
+
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
+
+var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
+
+var _inherits2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/inherits"));
+
+var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/possibleConstructorReturn"));
+
+var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/getPrototypeOf"));
 
 var _Emulator = _interopRequireDefault(require("./components/emulator/Emulator"));
 
@@ -33,84 +66,33 @@ var _BlackScreenDetector = _interopRequireDefault(require("./service/BlackScreen
 
 var _StreamWebRtc = _interopRequireDefault(require("./service/StreamWebRtc"));
 
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+var _urlParse = _interopRequireDefault(require("url-parse"));
 
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _getRequireWildcardCache(nodeInterop) { if (typeof _WeakMap !== "function") return null; var cacheBabelInterop = new _WeakMap(); var cacheNodeInterop = new _WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
-const urlParse = require('url-parse');
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = _Object$defineProperty && _Object$getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? _Object$getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { _Object$defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2.default)(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2.default)(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2.default)(this, result); }; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_Reflect$construct) return false; if (_Reflect$construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(_Reflect$construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
  *
  * @class StreamingView
  * @extends {Component}
  */
+var StreamingView = /*#__PURE__*/function (_Component) {
+  (0, _inherits2.default)(StreamingView, _Component);
 
+  var _super = _createSuper(StreamingView);
 
-class StreamingView extends _react.Component {
-  /**
-   * Return an object of props and what type it should be.
-   * We need to create a custom function for this since accessing `static propTypes` during runtime get a warning.
-   */
-  static get PROP_TYPES() {
-    return {
-      apiEndpoint: _propTypes.default.string.isRequired,
-      // Can't be changed after creation
-      edgeNodeId: _propTypes.default.string.isRequired,
-      // Can't be changed after creation
-      edgeNodeEndpoint: _propTypes.default.string,
-      // Can't be changed after creation
-      turnEndpoint: _propTypes.default.string,
-      // Can't be changed after creation
-      userId: _propTypes.default.string,
-      // Can't be changed after creation
-      enableControl: _propTypes.default.bool,
-      // Can be changed dynamically
-      enableFullScreen: _propTypes.default.bool,
-      // Can be changed dynamically
-      view: _propTypes.default.oneOf(['webrtc', 'png']),
-      // Can't be changed after creation
-      volume: _propTypes.default.number,
-      // Can be changed dynamically, Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
-      muted: _propTypes.default.bool,
-      // Can be changed dynamically
-      onEvent: _propTypes.default.func,
-      // Can't be changed after creation
-      streamQualityRating: _propTypes.default.number,
-      // Can be changed dynamically
-      internalSession: _propTypes.default.bool,
-      // Can't be changed after creation
-      userClickedPlayAt: _propTypes.default.number,
-      // Can't be changed after creation
-      maxConnectionRetries: _propTypes.default.number,
-      // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
-      height: _propTypes.default.string,
-      width: _propTypes.default.string,
-      pingInterval: _propTypes.default.number,
-      measureTouchRtt: _propTypes.default.bool,
-      playoutDelayHint: _propTypes.default.number
-    };
-  }
+  function StreamingView(props) {
+    var _this;
 
-  /**
-   * Player is a user with enabled control
-   * @return {string}
-   */
-  static get ROLE_PLAYER() {
-    return 'player';
-  }
-  /**
-   * Watcher is a user with disabled control
-   * @return {string}
-   */
-
-
-  static get ROLE_WATCHER() {
-    return 'watcher';
-  }
-
-  constructor(props) {
-    super(props);
-    this.state = {
+    (0, _classCallCheck2.default)(this, StreamingView);
+    _this = _super.call(this, props);
+    _this.state = {
       isReadyStream: undefined,
       streamEndpoint: undefined,
       turnEndpoint: undefined,
@@ -121,14 +103,14 @@ class StreamingView extends _react.Component {
       width: window.innerWidth + 'px'
     };
 
-    this.onResize = () => {
-      if (this.onResizeTieout) {
-        clearTimeout(this.onResizeTieout);
+    _this.onResize = function () {
+      if (_this.onResizeTieout) {
+        clearTimeout(_this.onResizeTieout);
       }
 
-      this.onResizeTieout = setTimeout(() => {
-        if (this.isMountedInView) {
-          this.setState({
+      _this.onResizeTieout = setTimeout(function () {
+        if (_this.isMountedInView) {
+          _this.setState({
             height: window.innerHeight + 'px',
             width: window.innerWidth + 'px'
           });
@@ -136,8 +118,8 @@ class StreamingView extends _react.Component {
       }, 50);
     };
 
-    this.onError = error => {
-      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.ERROR_BROWSER, {
+    _this.onError = function (error) {
+      _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.ERROR_BROWSER, {
         message: error.message,
         filename: error.filename,
         stack: error.stack
@@ -146,52 +128,140 @@ class StreamingView extends _react.Component {
       return false;
     };
 
-    this.isMountedInView = false;
-    this.streamingViewId = (0, _uuid.v4)();
-    this.emulatorIsReady = false;
+    _this.isMountedInView = false;
+    _this.streamingViewId = (0, _uuid.v4)();
+    _this.emulatorIsReady = false;
+    return _this;
   }
 
-  componentDidMount() {
-    this.isMountedInView = true;
-    const {
-      apiEndpoint,
-      edgeNodeId,
-      userId,
-      edgeNodeEndpoint,
-      internalSession,
-      turnEndpoint,
-      onEvent,
-      pingInterval
-    } = this.props;
+  (0, _createClass2.default)(StreamingView, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      var _context,
+          _this2 = this;
 
-    if (!internalSession) {
-      this.LogQueueService = new _LogQueueService.default(edgeNodeId, apiEndpoint, userId, this.streamingViewId);
-    }
+      this.isMountedInView = true;
+      var _this$props = this.props,
+          apiEndpoint = _this$props.apiEndpoint,
+          edgeNodeId = _this$props.edgeNodeId,
+          userId = _this$props.userId,
+          edgeNodeEndpoint = _this$props.edgeNodeEndpoint,
+          internalSession = _this$props.internalSession,
+          turnEndpoint = _this$props.turnEndpoint,
+          onEvent = _this$props.onEvent,
+          pingInterval = _this$props.pingInterval;
 
-    this.blackScreenDetector = new _BlackScreenDetector.default(edgeNodeId, this.streamingViewId);
-    this.logger = new _Logger.default();
-    this.measurement = new _Measurement.default(edgeNodeId, this.streamingViewId, this.logger);
-
-    if (onEvent) {
-      _StreamingEvent.default.edgeNode(edgeNodeId).on('event', onEvent);
-    }
-
-    this.logger.info('StreamingView was mounted', Object.keys(this.props).reduce((propObj, propName) => {
-      const propValue = this.props[propName]; // All this extra logic to filter functions from rest of props
-
-      if (typeof propValue !== 'function') {
-        propObj[propName] = propValue;
+      if (!internalSession) {
+        this.LogQueueService = new _LogQueueService.default(edgeNodeId, apiEndpoint, userId, this.streamingViewId);
       }
 
-      return propObj;
-    }, {}));
-    this.logger.log("SDK Version: ".concat(_buildInfo.default.tag));
-    window.addEventListener('resize', this.onResize);
-    window.addEventListener('error', this.onError);
+      this.blackScreenDetector = new _BlackScreenDetector.default(edgeNodeId, this.streamingViewId);
+      this.logger = new _Logger.default();
+      this.measurement = new _Measurement.default(edgeNodeId, this.streamingViewId, this.logger);
 
-    _StreamingEvent.default.edgeNode(edgeNodeId).once(_StreamingEvent.default.STREAM_UNREACHABLE, () => this.setState({
-      isReadyStream: false
-    })).once(_StreamingEvent.default.STREAM_TERMINATED, () => {
+      if (onEvent) {
+        _StreamingEvent.default.edgeNode(edgeNodeId).on('event', onEvent);
+      }
+
+      this.logger.info('StreamingView was mounted', (0, _reduce.default)(_context = (0, _keys.default)(this.props)).call(_context, function (propObj, propName) {
+        var propValue = _this2.props[propName]; // All this extra logic to filter functions from rest of props
+
+        if (typeof propValue !== 'function') {
+          propObj[propName] = propValue;
+        }
+
+        return propObj;
+      }, {}));
+      this.logger.log("SDK Version: ".concat(_buildInfo.default.tag));
+      window.addEventListener('resize', this.onResize);
+      window.addEventListener('error', this.onError);
+
+      _StreamingEvent.default.edgeNode(edgeNodeId).once(_StreamingEvent.default.STREAM_UNREACHABLE, function () {
+        return _this2.setState({
+          isReadyStream: false
+        });
+      }).once(_StreamingEvent.default.STREAM_TERMINATED, function () {
+        if (_this2.measurement) {
+          _this2.measurement.destroy();
+        }
+
+        if (_this2.streamSocket) {
+          _this2.streamSocket.close();
+        }
+
+        _this2.setState({
+          isReadyStream: false
+        });
+      }).on(_StreamingEvent.default.EMULATOR_CONFIGURATION, function (configuration) {
+        _this2.setState({
+          emulatorWidth: configuration.emulatorWidth,
+          emulatorHeight: configuration.emulatorHeight,
+          emulatorVersion: configuration.emulatorVersion
+        });
+      }).on([_StreamingEvent.default.STREAM_WEBRTC_READY, _StreamingEvent.default.STREAM_EMULATOR_READY], function (_ref) {
+        var _ref2 = (0, _slicedToArray2.default)(_ref, 1),
+            onUserInteractionCallback = _ref2[0];
+
+        _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.STREAM_READY, onUserInteractionCallback);
+      });
+
+      (0, _StreamingController.default)({
+        apiEndpoint: apiEndpoint,
+        edgeNodeId: edgeNodeId,
+        internalSession: internalSession
+      }).then(function (controller) {
+        return controller.waitFor(_StreamingController.default.WAIT_FOR_ENDPOINT);
+      }).then(function (state) {
+        return state.endpoint;
+      }).then(function (streamEndpoint) {
+        // if the SDK are in internal session mode and a value has been pass to edge node endpoint use that value instead of the
+        // public endpoint received from Service Coordinator.
+        return internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
+      }).then(function (streamEndpoint) {
+        _this2.measurement.initWebRtc("".concat((0, _urlParse.default)(streamEndpoint).origin, "/measurement/webrtc"), pingInterval);
+
+        if (!_this2.isMountedInView) {
+          _this2.logger.log('Cancel action due to view is not mounted.');
+
+          return; // Cancel any action if we not longer are mounted.
+        }
+
+        _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.EDGE_NODE_READY_TO_ACCEPT_CONNECTION);
+
+        _this2.streamSocket = new _StreamSocket.default(edgeNodeId, streamEndpoint, userId, internalSession);
+
+        _this2.setState({
+          isReadyStream: true,
+          streamEndpoint: streamEndpoint,
+          turnEndpoint: internalSession && turnEndpoint ? turnEndpoint : undefined
+        });
+
+        _this2.registerUserEventsHandler();
+      }).catch(function (err) {
+        var _context2;
+
+        if (!_this2.isMountedInView) {
+          _this2.logger.log('Cancel action due to view is not mounted.');
+
+          return; // Cancel any action if we not longer are mounted.
+        }
+
+        _StreamingEvent.default.edgeNode(_this2.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_UNREACHABLE, (0, _concat.default)(_context2 = "Due to ".concat(err.message, ": ")).call(_context2, err));
+      });
+    }
+  }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {
+      var _this3 = this;
+
+      this.logger.info('StreamingView component will unmount', {
+        measurement: this.measurement ? 'should-be-destroy' : 'skip',
+        websocket: this.streamSocket ? 'should-be-destroy' : 'skip',
+        blackScreenDetector: this.blackScreenDetector ? 'should-be-destroy' : 'skip',
+        logQueueService: this.LogQueueService ? 'should-be-destroy' : 'skip'
+      });
+      this.isMountedInView = false;
+
       if (this.measurement) {
         this.measurement.destroy();
       }
@@ -200,235 +270,252 @@ class StreamingView extends _react.Component {
         this.streamSocket.close();
       }
 
-      this.setState({
-        isReadyStream: false
-      });
-    }).on(_StreamingEvent.default.EMULATOR_CONFIGURATION, configuration => {
-      this.setState({
-        emulatorWidth: configuration.emulatorWidth,
-        emulatorHeight: configuration.emulatorHeight,
-        emulatorVersion: configuration.emulatorVersion
-      });
-    }).on([_StreamingEvent.default.STREAM_WEBRTC_READY, _StreamingEvent.default.STREAM_EMULATOR_READY], _ref => {
-      let [onUserInteractionCallback] = _ref;
-
-      _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.STREAM_READY, onUserInteractionCallback);
-    });
-
-    (0, _StreamingController.default)({
-      apiEndpoint: apiEndpoint,
-      edgeNodeId: edgeNodeId,
-      internalSession: internalSession
-    }).then(controller => controller.waitFor(_StreamingController.default.WAIT_FOR_ENDPOINT)).then(state => state.endpoint).then(streamEndpoint => {
-      // if the SDK are in internal session mode and a value has been pass to edge node endpoint use that value instead of the
-      // public endpoint received from Service Coordinator.
-      return internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
-    }).then(streamEndpoint => {
-      this.measurement.initWebRtc("".concat(urlParse(streamEndpoint).origin, "/measurement/webrtc"), pingInterval);
-
-      if (!this.isMountedInView) {
-        this.logger.log('Cancel action due to view is not mounted.');
-        return; // Cancel any action if we not longer are mounted.
+      if (this.blackScreenDetector) {
+        this.blackScreenDetector.destroy();
       }
 
-      _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.EDGE_NODE_READY_TO_ACCEPT_CONNECTION);
+      if (this.LogQueueService) {
+        this.LogQueueService.destroy();
+      }
 
-      this.streamSocket = new _StreamSocket.default(edgeNodeId, streamEndpoint, userId, internalSession);
-      this.setState({
-        isReadyStream: true,
-        streamEndpoint: streamEndpoint,
-        turnEndpoint: internalSession && turnEndpoint ? turnEndpoint : undefined
+      window.removeEventListener('resize', this.onResize);
+      window.removeEventListener('error', this.onError);
+      setTimeout(function () {
+        _StreamingEvent.default.destroyEdgeNode(_this3.props.edgeNodeId);
+      }, 500);
+    }
+    /**
+     * Update the state parameter heigth and width when screen size is changeing.
+     */
+
+  }, {
+    key: "shouldComponentUpdate",
+    value: function shouldComponentUpdate(nextProps, nextState) {
+      var _context3,
+          _this4 = this;
+
+      // List of fields that should not generate into a render operation.
+      var whiteListedFields = ['streamQualityRating', 'onEvent'];
+
+      if (nextProps.streamQualityRating !== this.props.streamQualityRating) {
+        _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_QUALITY_RATING, {
+          streamQualityRating: nextProps.streamQualityRating
+        });
+      }
+
+      if (nextProps.onEvent !== this.props.onEvent) {
+        if (this.props.onEvent) {
+          _StreamingEvent.default.edgeNode(this.props.edgeNodeId).off('event', this.props.onEvent);
+        }
+
+        if (nextProps.onEvent) {
+          _StreamingEvent.default.edgeNode(this.props.edgeNodeId).on('event', nextProps.onEvent);
+        }
+      } // Do not render if there are only changes in the whitelisted props attributes.
+
+
+      var hasChanges = (0, _filter.default)(_context3 = (0, _keys.default)(StreamingView.PROP_TYPES)).call(_context3, function (key) {
+        return nextProps[key] !== _this4.props[key];
       });
-      this.registerUserEventsHandler();
-    }).catch(err => {
-      if (!this.isMountedInView) {
-        this.logger.log('Cancel action due to view is not mounted.');
-        return; // Cancel any action if we not longer are mounted.
+
+      if (hasChanges.length > 0) {
+        return (0, _filter.default)(hasChanges).call(hasChanges, function (key) {
+          return (0, _indexOf.default)(whiteListedFields).call(whiteListedFields, key) === -1;
+        }).length !== 0;
+      } else {
+        return this.state !== nextState;
       }
-
-      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_UNREACHABLE, "Due to ".concat(err.message, ": ").concat(err));
-    });
-  }
-
-  componentWillUnmount() {
-    this.logger.info('StreamingView component will unmount', {
-      measurement: this.measurement ? 'should-be-destroy' : 'skip',
-      websocket: this.streamSocket ? 'should-be-destroy' : 'skip',
-      blackScreenDetector: this.blackScreenDetector ? 'should-be-destroy' : 'skip',
-      logQueueService: this.LogQueueService ? 'should-be-destroy' : 'skip'
-    });
-    this.isMountedInView = false;
-
-    if (this.measurement) {
-      this.measurement.destroy();
     }
+    /**
+     * Register user event handler reporting different user events through Stream Socket into Supervisor
+     */
 
-    if (this.streamSocket) {
-      this.streamSocket.close();
-    }
+  }, {
+    key: "registerUserEventsHandler",
+    value: function registerUserEventsHandler() {
+      var _this5 = this;
 
-    if (this.blackScreenDetector) {
-      this.blackScreenDetector.destroy();
-    }
+      // Report user event - stream-loading-time
+      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).once(_StreamingEvent.default.STREAM_READY, function () {
+        var role = _this5.props.enableControl ? StreamingView.ROLE_PLAYER : StreamingView.ROLE_WATCHER;
 
-    if (this.LogQueueService) {
-      this.LogQueueService.destroy();
-    }
+        if (_this5.props.userClickedPlayAt > 0) {
+          var _context4;
 
-    window.removeEventListener('resize', this.onResize);
-    window.removeEventListener('error', this.onError);
-    setTimeout(() => {
-      _StreamingEvent.default.destroyEdgeNode(this.props.edgeNodeId);
-    }, 500);
-  }
-  /**
-   * Update the state parameter heigth and width when screen size is changeing.
-   */
+          // Send the stream loading time if we have a user clicked play at props.
+          var streamLoadingTime = Date.now() - _this5.props.userClickedPlayAt;
 
+          var userEventPayload = {
+            role: role,
+            eventType: _StreamingEvent.default.STREAM_LOADING_TIME,
+            value: streamLoadingTime,
+            message: (0, _concat.default)(_context4 = "User event - ".concat(_StreamingEvent.default.STREAM_LOADING_TIME, ": ")).call(_context4, streamLoadingTime, " ms.")
+          };
 
-  shouldComponentUpdate(nextProps, nextState) {
-    // List of fields that should not generate into a render operation.
-    const whiteListedFields = ['streamQualityRating', 'onEvent'];
-
-    if (nextProps.streamQualityRating !== this.props.streamQualityRating) {
-      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_QUALITY_RATING, {
-        streamQualityRating: nextProps.streamQualityRating
-      });
-    }
-
-    if (nextProps.onEvent !== this.props.onEvent) {
-      if (this.props.onEvent) {
-        _StreamingEvent.default.edgeNode(this.props.edgeNodeId).off('event', this.props.onEvent);
-      }
-
-      if (nextProps.onEvent) {
-        _StreamingEvent.default.edgeNode(this.props.edgeNodeId).on('event', nextProps.onEvent);
-      }
-    } // Do not render if there are only changes in the whitelisted props attributes.
+          _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, userEventPayload);
+        } // Send the video playing event when user can see the stream.
 
 
-    const hasChanges = Object.keys(StreamingView.PROP_TYPES).filter(key => nextProps[key] !== this.props[key]);
-
-    if (hasChanges.length > 0) {
-      return hasChanges.filter(key => whiteListedFields.indexOf(key) === -1).length !== 0;
-    } else {
-      return this.state !== nextState;
-    }
-  }
-  /**
-   * Register user event handler reporting different user events through Stream Socket into Supervisor
-   */
-
-
-  registerUserEventsHandler() {
-    // Report user event - stream-loading-time
-    _StreamingEvent.default.edgeNode(this.props.edgeNodeId).once(_StreamingEvent.default.STREAM_READY, () => {
-      const role = this.props.enableControl ? StreamingView.ROLE_PLAYER : StreamingView.ROLE_WATCHER;
-
-      if (this.props.userClickedPlayAt > 0) {
-        // Send the stream loading time if we have a user clicked play at props.
-        const streamLoadingTime = Date.now() - this.props.userClickedPlayAt;
-        const userEventPayload = {
+        _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, {
           role: role,
-          eventType: _StreamingEvent.default.STREAM_LOADING_TIME,
-          value: streamLoadingTime,
-          message: "User event - ".concat(_StreamingEvent.default.STREAM_LOADING_TIME, ": ").concat(streamLoadingTime, " ms.")
-        };
+          eventType: _StreamingEvent.default.USER_STARTS_PLAYING,
+          value: 1,
+          message: "User event - ".concat(_StreamingEvent.default.USER_STARTS_PLAYING, ": Video is playing.")
+        });
 
-        _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, userEventPayload);
-      } // Send the video playing event when user can see the stream.
+        _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).on(_StreamingEvent.default.STREAM_AUDIO_CODEC, function (codec) {
+          var _context5;
 
+          _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, {
+            role: role,
+            eventType: _StreamingEvent.default.STREAM_AUDIO_CODEC,
+            value: codec,
+            message: (0, _concat.default)(_context5 = "User event - ".concat(_StreamingEvent.default.STREAM_AUDIO_CODEC, ": ")).call(_context5, codec)
+          });
+        });
 
-      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, {
-        role: role,
-        eventType: _StreamingEvent.default.USER_STARTS_PLAYING,
-        value: 1,
-        message: "User event - ".concat(_StreamingEvent.default.USER_STARTS_PLAYING, ": Video is playing.")
-      });
+        _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).on(_StreamingEvent.default.STREAM_VIDEO_CODEC, function (codec) {
+          var _context6;
 
-      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).on(_StreamingEvent.default.STREAM_AUDIO_CODEC, codec => {
-        _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, {
-          role: role,
-          eventType: _StreamingEvent.default.STREAM_AUDIO_CODEC,
-          value: codec,
-          message: "User event - ".concat(_StreamingEvent.default.STREAM_AUDIO_CODEC, ": ").concat(codec)
+          _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, {
+            role: role,
+            eventType: _StreamingEvent.default.STREAM_VIDEO_CODEC,
+            value: codec,
+            message: (0, _concat.default)(_context6 = "User event - ".concat(_StreamingEvent.default.STREAM_VIDEO_CODEC, ": ")).call(_context6, codec, ".")
+          });
         });
       });
-
-      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).on(_StreamingEvent.default.STREAM_VIDEO_CODEC, codec => {
-        _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, {
-          role: role,
-          eventType: _StreamingEvent.default.STREAM_VIDEO_CODEC,
-          value: codec,
-          message: "User event - ".concat(_StreamingEvent.default.STREAM_VIDEO_CODEC, ": ").concat(codec, ".")
-        });
-      });
-    });
-  }
-
-  render() {
-    const {
-      enableControl,
-      enableFullScreen,
-      view,
-      volume,
-      muted,
-      edgeNodeId,
-      height: propsHeight,
-      width: propsWidth,
-      playoutDelayHint
-    } = this.props;
-    const {
-      height: stateHeight,
-      width: stateWidth
-    } = this.state;
-
-    switch (this.state.isReadyStream) {
-      case true:
-        return /*#__PURE__*/_react.default.createElement("div", {
-          style: {
-            height: propsHeight || stateHeight,
-            width: propsWidth || stateWidth
-          },
-          id: this.streamingViewId
-        }, /*#__PURE__*/_react.default.createElement(_Emulator.default, {
-          uri: this.state.streamEndpoint,
-          turnEndpoint: this.state.turnEndpoint,
-          enableControl: enableControl,
-          enableFullScreen: enableFullScreen,
-          view: view,
-          volume: volume,
-          muted: muted,
-          poll: true,
-          emulatorWidth: this.state.emulatorWidth,
-          emulatorHeight: this.state.emulatorHeight,
-          emulatorVersion: this.state.emulatorVersion,
-          logger: this.logger,
-          edgeNodeId: edgeNodeId,
-          maxConnectionRetries: this.props.maxConnectionRetries,
-          measureTouchRtt: this.props.measureTouchRtt,
-          playoutDelayHint: playoutDelayHint
-        }));
-
-      case false:
-        return /*#__PURE__*/_react.default.createElement("p", {
-          id: this.streamingViewId,
-          style: {
-            color: 'white'
-          }
-        }, "EdgeNode Stream is unreachable");
-
-      default:
-        return /*#__PURE__*/_react.default.createElement("p", {
-          style: {
-            color: 'white'
-          },
-          className: 'streaming-view-loading-edge-node'
-        }, "Loading EdgeNode Stream");
     }
-  }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this$props2 = this.props,
+          enableControl = _this$props2.enableControl,
+          enableFullScreen = _this$props2.enableFullScreen,
+          view = _this$props2.view,
+          volume = _this$props2.volume,
+          muted = _this$props2.muted,
+          edgeNodeId = _this$props2.edgeNodeId,
+          propsHeight = _this$props2.height,
+          propsWidth = _this$props2.width,
+          playoutDelayHint = _this$props2.playoutDelayHint;
+      var _this$state = this.state,
+          stateHeight = _this$state.height,
+          stateWidth = _this$state.width;
 
-}
+      switch (this.state.isReadyStream) {
+        case true:
+          return /*#__PURE__*/_react.default.createElement("div", {
+            style: {
+              height: propsHeight || stateHeight,
+              width: propsWidth || stateWidth
+            },
+            id: this.streamingViewId
+          }, /*#__PURE__*/_react.default.createElement(_Emulator.default, {
+            uri: this.state.streamEndpoint,
+            turnEndpoint: this.state.turnEndpoint,
+            enableControl: enableControl,
+            enableFullScreen: enableFullScreen,
+            view: view,
+            volume: volume,
+            muted: muted,
+            poll: true,
+            emulatorWidth: this.state.emulatorWidth,
+            emulatorHeight: this.state.emulatorHeight,
+            emulatorVersion: this.state.emulatorVersion,
+            logger: this.logger,
+            edgeNodeId: edgeNodeId,
+            maxConnectionRetries: this.props.maxConnectionRetries,
+            measureTouchRtt: this.props.measureTouchRtt,
+            playoutDelayHint: playoutDelayHint
+          }));
+
+        case false:
+          return /*#__PURE__*/_react.default.createElement("p", {
+            id: this.streamingViewId,
+            style: {
+              color: 'white'
+            }
+          }, "EdgeNode Stream is unreachable");
+
+        default:
+          return /*#__PURE__*/_react.default.createElement("p", {
+            style: {
+              color: 'white'
+            },
+            className: 'streaming-view-loading-edge-node'
+          }, "Loading EdgeNode Stream");
+      }
+    }
+  }], [{
+    key: "PROP_TYPES",
+    get:
+    /**
+     * Return an object of props and what type it should be.
+     * We need to create a custom function for this since accessing `static propTypes` during runtime get a warning.
+     */
+    function get() {
+      return {
+        apiEndpoint: _propTypes.default.string.isRequired,
+        // Can't be changed after creation
+        edgeNodeId: _propTypes.default.string.isRequired,
+        // Can't be changed after creation
+        edgeNodeEndpoint: _propTypes.default.string,
+        // Can't be changed after creation
+        turnEndpoint: _propTypes.default.string,
+        // Can't be changed after creation
+        userId: _propTypes.default.string,
+        // Can't be changed after creation
+        enableControl: _propTypes.default.bool,
+        // Can be changed dynamically
+        enableFullScreen: _propTypes.default.bool,
+        // Can be changed dynamically
+        view: _propTypes.default.oneOf(['webrtc', 'png']),
+        // Can't be changed after creation
+        volume: _propTypes.default.number,
+        // Can be changed dynamically, Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
+        muted: _propTypes.default.bool,
+        // Can be changed dynamically
+        onEvent: _propTypes.default.func,
+        // Can't be changed after creation
+        streamQualityRating: _propTypes.default.number,
+        // Can be changed dynamically
+        internalSession: _propTypes.default.bool,
+        // Can't be changed after creation
+        userClickedPlayAt: _propTypes.default.number,
+        // Can't be changed after creation
+        maxConnectionRetries: _propTypes.default.number,
+        // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
+        height: _propTypes.default.string,
+        width: _propTypes.default.string,
+        pingInterval: _propTypes.default.number,
+        measureTouchRtt: _propTypes.default.bool,
+        playoutDelayHint: _propTypes.default.number
+      };
+    }
+  }, {
+    key: "ROLE_PLAYER",
+    get:
+    /**
+     * Player is a user with enabled control
+     * @return {string}
+     */
+    function get() {
+      return 'player';
+    }
+    /**
+     * Watcher is a user with disabled control
+     * @return {string}
+     */
+
+  }, {
+    key: "ROLE_WATCHER",
+    get: function get() {
+      return 'watcher';
+    }
+  }]);
+  return StreamingView;
+}(_react.Component);
 
 exports.default = StreamingView;
 StreamingView.propTypes = StreamingView.PROP_TYPES;

@@ -1,11 +1,32 @@
 "use strict";
 
+var _Reflect$construct = require("@babel/runtime-corejs3/core-js-stable/reflect/construct");
+
+var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
+
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
-Object.defineProperty(exports, "__esModule", {
+_Object$defineProperty(exports, "__esModule", {
   value: true
 });
+
 exports.default = void 0;
+
+var _trunc = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/math/trunc"));
+
+var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
+
+var _reduce = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/reduce"));
+
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
+
+var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
+
+var _inherits2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/inherits"));
+
+var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/possibleConstructorReturn"));
+
+var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/getPrototypeOf"));
 
 var _eventemitter = _interopRequireDefault(require("eventemitter3"));
 
@@ -13,59 +34,53 @@ var _StreamingEvent = _interopRequireDefault(require("../StreamingEvent"));
 
 var _WebRtcConnectionClient = _interopRequireDefault(require("./WebRtcConnectionClient"));
 
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2.default)(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2.default)(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2.default)(this, result); }; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_Reflect$construct) return false; if (_Reflect$construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(_Reflect$construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
 /**
  * StreamWebRtc is a WebRtc connection class to communicate with the backend
  */
-class StreamWebRtc extends _eventemitter.default {
-  static get DATA_CHANNEL_NAME() {
-    return 'streaming-webrtc-server';
-  }
-  /**
-   * Returns WebRtc ping interval number in ms.
-   * @return {number}
-   */
+var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
+  (0, _inherits2.default)(StreamWebRtc, _EventEmitter);
 
+  var _super = _createSuper(StreamWebRtc);
 
-  static get WEBRTC_PING_INTERVAL() {
-    return 25;
-  }
   /**
    * @param {string} host
    * @param {number} pingInterval
    */
+  function StreamWebRtc(host) {
+    var _this;
 
+    var _pingInterval = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : StreamWebRtc.WEBRTC_PING_INTERVAL;
 
-  constructor(host) {
-    let _pingInterval = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : StreamWebRtc.WEBRTC_PING_INTERVAL;
+    (0, _classCallCheck2.default)(this, StreamWebRtc);
+    _this = _super.call(this);
 
-    super();
+    _this.beforeAnswer = function (peerConnection) {
+      var dataChannel = undefined;
+      var interval = undefined;
+      var sequenceId = 0;
+      var pingInterval = _this.pingInterval;
 
-    this.beforeAnswer = peerConnection => {
-      let dataChannel = undefined;
-      let interval = undefined;
-      let sequenceId = 0;
-      const pingInterval = this.pingInterval;
+      var onMessage = function onMessage(_ref) {
+        var data = _ref.data;
 
-      const onMessage = _ref => {
-        let {
-          data
-        } = _ref;
-        const {
-          type,
-          timestamp
-        } = JSON.parse(data);
+        var _JSON$parse = JSON.parse(data),
+            type = _JSON$parse.type,
+            timestamp = _JSON$parse.timestamp;
 
         if (type === 'pong') {
-          const sendTime = Math.trunc(timestamp);
-          const rtt = Date.now() - sendTime;
-          this.emit(_StreamingEvent.default.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
+          var sendTime = (0, _trunc.default)(timestamp);
+          var rtt = Date.now() - sendTime;
+
+          _this.emit(_StreamingEvent.default.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
         }
       };
 
-      const onDataChannel = _ref2 => {
-        let {
-          channel
-        } = _ref2;
+      var onDataChannel = function onDataChannel(_ref2) {
+        var channel = _ref2.channel;
 
         if (channel.label !== StreamWebRtc.DATA_CHANNEL_NAME) {
           return;
@@ -73,9 +88,9 @@ class StreamWebRtc extends _eventemitter.default {
 
         dataChannel = channel;
         dataChannel.addEventListener('message', onMessage);
-        interval = setInterval(() => {
+        interval = setInterval(function () {
           if (dataChannel.readyState === 'open') {
-            dataChannel.send(JSON.stringify({
+            dataChannel.send((0, _stringify.default)({
               type: 'ping',
               timestamp: Date.now(),
               sequenceId: sequenceId++ // incremental counter to be able to detect out of order or lost packages
@@ -85,7 +100,7 @@ class StreamWebRtc extends _eventemitter.default {
         }, pingInterval);
       };
 
-      const onConnectionStateChange = () => {
+      var onConnectionStateChange = function onConnectionStateChange() {
         switch (peerConnection.connectionState) {
           case 'disconnected':
             if (dataChannel) {
@@ -100,7 +115,8 @@ class StreamWebRtc extends _eventemitter.default {
             break;
 
           case 'connected':
-            this.emit(_StreamingEvent.default.WEBRTC_CLIENT_CONNECTED);
+            _this.emit(_StreamingEvent.default.WEBRTC_CLIENT_CONNECTED);
+
             break;
 
           default:
@@ -111,41 +127,65 @@ class StreamWebRtc extends _eventemitter.default {
       peerConnection.addEventListener('connectionstatechange', onConnectionStateChange);
     };
 
-    this.close = () => {
-      if (this.peerConnection) {
-        this.peerConnection.close();
-        this.peerConnection = undefined;
+    _this.close = function () {
+      if (_this.peerConnection) {
+        _this.peerConnection.close();
+
+        _this.peerConnection = undefined;
       }
     };
 
-    this.host = host;
-    this.pingInterval = _pingInterval;
-    this.peerConnection = undefined;
+    _this.host = host;
+    _this.pingInterval = _pingInterval;
+    _this.peerConnection = undefined;
 
     _WebRtcConnectionClient.default.createConnection({
-      beforeAnswer: this.beforeAnswer,
-      host: this.host
-    }).then(peerConnection => {
-      this.peerConnection = peerConnection;
+      beforeAnswer: _this.beforeAnswer,
+      host: _this.host
+    }).then(function (peerConnection) {
+      _this.peerConnection = peerConnection;
     });
+
+    return _this;
   }
 
-}
+  (0, _createClass2.default)(StreamWebRtc, null, [{
+    key: "DATA_CHANNEL_NAME",
+    get: function get() {
+      return 'streaming-webrtc-server';
+    }
+    /**
+     * Returns WebRtc ping interval number in ms.
+     * @return {number}
+     */
+
+  }, {
+    key: "WEBRTC_PING_INTERVAL",
+    get: function get() {
+      return 25;
+    }
+  }]);
+  return StreamWebRtc;
+}(_eventemitter.default);
 
 exports.default = StreamWebRtc;
 
-StreamWebRtc.calculateRoundTripTimeStats = values => {
-  const stats = {
+StreamWebRtc.calculateRoundTripTimeStats = function (values) {
+  var stats = {
     rtt: 0,
     standardDeviation: 0
   };
-  const n = values.length;
+  var n = values.length;
 
   if (n < 1) {
     return stats;
   }
 
-  stats.rtt = values.reduce((a, b) => a + b, 0) / n;
-  stats.standardDeviation = Math.sqrt(values.reduce((cum, item) => cum + Math.pow(item - stats.rtt, 2), 0) / n);
+  stats.rtt = (0, _reduce.default)(values).call(values, function (a, b) {
+    return a + b;
+  }, 0) / n;
+  stats.standardDeviation = Math.sqrt((0, _reduce.default)(values).call(values, function (cum, item) {
+    return cum + Math.pow(item - stats.rtt, 2);
+  }, 0) / n);
   return stats;
 };

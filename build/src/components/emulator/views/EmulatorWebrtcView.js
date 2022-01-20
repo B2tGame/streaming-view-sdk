@@ -1,11 +1,34 @@
 "use strict";
 
+var _typeof = require("@babel/runtime-corejs3/helpers/typeof");
+
+var _Reflect$construct = require("@babel/runtime-corejs3/core-js-stable/reflect/construct");
+
+var _WeakMap = require("@babel/runtime-corejs3/core-js-stable/weak-map");
+
+var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
+
+var _Object$getOwnPropertyDescriptor = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor");
+
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
-Object.defineProperty(exports, "__esModule", {
+_Object$defineProperty(exports, "__esModule", {
   value: true
 });
+
 exports.default = void 0;
+
+var _promise = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/promise"));
+
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
+
+var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
+
+var _inherits2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/inherits"));
+
+var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/possibleConstructorReturn"));
+
+var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/getPrototypeOf"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
@@ -15,82 +38,95 @@ var _StreamingEvent = _interopRequireDefault(require("../../../StreamingEvent"))
 
 var _StreamCaptureService = _interopRequireDefault(require("../../../service/StreamCaptureService"));
 
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _getRequireWildcardCache(nodeInterop) { if (typeof _WeakMap !== "function") return null; var cacheBabelInterop = new _WeakMap(); var cacheNodeInterop = new _WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = _Object$defineProperty && _Object$getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? _Object$getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { _Object$defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-const rttMeasurementTimeout = 500;
-const touchAnimTime = 200;
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2.default)(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2.default)(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2.default)(this, result); }; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_Reflect$construct) return false; if (_Reflect$construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(_Reflect$construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+var rttMeasurementTimeout = 500;
+var touchAnimTime = 200;
 /**
  * A view on the emulator that is using WebRTC. It will use the Jsep protocol over gRPC to
  * establish the video streams.
  */
 
-class EmulatorWebrtcView extends _react.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
+var EmulatorWebrtcView = /*#__PURE__*/function (_Component) {
+  (0, _inherits2.default)(EmulatorWebrtcView, _Component);
+
+  var _super = _createSuper(EmulatorWebrtcView);
+
+  function EmulatorWebrtcView(props) {
+    var _this;
+
+    (0, _classCallCheck2.default)(this, EmulatorWebrtcView);
+    _this = _super.call(this, props);
+    _this.state = {
       audio: false,
       video: false,
       playing: false
     };
 
-    this.playVideo = () => {
-      const video = this.video.current;
+    _this.playVideo = function () {
+      var video = _this.video.current;
 
       if (video && video.paused) {
-        return (video.play() || Promise.reject(new Error('video.play() was not a promise'))).then(() => {
-          this.requireUserInteractionToPlay = false;
-        }).catch(error => {
-          this.props.logger.error("Fail to start playing stream by user interaction due to ".concat(error.name), error.message);
+        return (video.play() || _promise.default.reject(new Error('video.play() was not a promise'))).then(function () {
+          _this.requireUserInteractionToPlay = false;
+        }).catch(function (error) {
+          _this.props.logger.error("Fail to start playing stream by user interaction due to ".concat(error.name), error.message);
         });
       }
 
-      this.requireUserInteractionToPlay = false;
-      this.props.logger.info('Video stream was already playing');
+      _this.requireUserInteractionToPlay = false;
+
+      _this.props.logger.info('Video stream was already playing');
     };
 
-    this.onUserInteraction = () => {
-      if (this.requireUserInteractionToPlay) {
-        this.playVideo();
+    _this.onUserInteraction = function () {
+      if (_this.requireUserInteractionToPlay) {
+        _this.playVideo();
       }
 
-      this.updateVideoMutedProp();
-      this.updateVideoVolumeProp();
+      _this.updateVideoMutedProp();
 
-      if (this.isMountedInView && this.video.current && this.video.current.paused) {
-        _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_VIDEO_MISSING);
+      _this.updateVideoVolumeProp();
+
+      if (_this.isMountedInView && _this.video.current && _this.video.current.paused) {
+        _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_VIDEO_MISSING);
       }
     };
 
-    this.lastTouchEnd = 0;
+    _this.lastTouchEnd = 0;
 
-    this.onTouchEnd = () => {
-      this.lastTouchEnd = new Date().getTime();
+    _this.onTouchEnd = function () {
+      _this.lastTouchEnd = new Date().getTime();
     };
 
-    this.onTouchStart = event => {
-      if (this.lastTouchEnd + touchAnimTime > new Date().getTime()) {
+    _this.onTouchStart = function (event) {
+      if (_this.lastTouchEnd + touchAnimTime > new Date().getTime()) {
         return;
       }
 
-      if (this.touchTimer !== undefined) {
-        cancelAnimationFrame(this.touchTimer);
+      if (_this.touchTimer !== undefined) {
+        cancelAnimationFrame(_this.touchTimer);
       }
 
-      const startTime = performance.now();
+      var startTime = performance.now();
 
-      const runTouchDetection = timestamp => {
-        const foundCircle = this.streamCaptureService.detectTouch(event.x, event.y, this.props.emulatorWidth, this.props.emulatorHeight);
+      var runTouchDetection = function runTouchDetection(timestamp) {
+        var foundCircle = _this.streamCaptureService.detectTouch(event.x, event.y, _this.props.emulatorWidth, _this.props.emulatorHeight);
 
         if (foundCircle) {
-          const rtt = timestamp - startTime;
+          var rtt = timestamp - startTime;
 
-          _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.TOUCH_RTT, {
+          _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.TOUCH_RTT, {
             rtt: rtt
           });
         } else if (timestamp > startTime + rttMeasurementTimeout) {
-          _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.TOUCH_RTT_TIMOUT, {
+          _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.TOUCH_RTT_TIMOUT, {
             timeout: true,
             time: rttMeasurementTimeout
           });
@@ -99,24 +135,24 @@ class EmulatorWebrtcView extends _react.Component {
         }
       };
 
-      this.touchTimer = requestAnimationFrame(runTouchDetection);
+      _this.touchTimer = requestAnimationFrame(runTouchDetection);
     };
 
-    this.onDisconnect = () => {
-      if (this.isMountedInView) {
-        this.setState({
+    _this.onDisconnect = function () {
+      if (_this.isMountedInView) {
+        _this.setState({
           video: false,
           audio: false
-        }, () => {
-          _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_VIDEO_UNAVAILABLE);
+        }, function () {
+          _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_VIDEO_UNAVAILABLE);
 
-          _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_AUDIO_UNAVAILABLE);
+          _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_AUDIO_UNAVAILABLE);
         });
       }
     };
 
-    this.onConnect = track => {
-      const video = this.video.current;
+    _this.onConnect = function (track) {
+      var video = _this.video.current;
 
       if (!video) {
         // Component was unmounted.
@@ -130,31 +166,36 @@ class EmulatorWebrtcView extends _react.Component {
       video.srcObject.addTrack(track);
 
       if (track.kind === 'video') {
-        this.setState({
+        _this.setState({
           video: true
-        }, () => {
-          _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_VIDEO_AVAILABLE);
+        }, function () {
+          _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_VIDEO_AVAILABLE);
         });
       }
 
       if (track.kind === 'audio') {
-        this.setState({
+        _this.setState({
           audio: true
-        }, () => _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_AUDIO_AVAILABLE));
+        }, function () {
+          return _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_AUDIO_AVAILABLE);
+        });
       }
     };
 
-    this.timeout = timeoutDuration => {
-      return new Promise(resolve => {
-        setTimeout(() => resolve(), timeoutDuration);
+    _this.timeout = function (timeoutDuration) {
+      return new _promise.default(function (resolve) {
+        setTimeout(function () {
+          return resolve();
+        }, timeoutDuration);
       });
     };
 
-    this.onCanPlay = () => {
-      const video = this.video.current;
+    _this.onCanPlay = function () {
+      var video = _this.video.current;
 
       if (!video) {
-        this.props.logger.error('Video DOM element not ready');
+        _this.props.logger.error('Video DOM element not ready');
+
         return; // Component was unmounted.
       } // This code snippet allow us to detect and calculate the amount of time the stream is buffed/delayed on client side between received to displayed for consumer.
       // const requestVideoFrameCallback = (now, metadata) => {
@@ -164,212 +205,222 @@ class EmulatorWebrtcView extends _react.Component {
       // video.requestVideoFrameCallback(requestVideoFrameCallback);
 
 
-      const onUserInteractionCallback = () => {
-        this.playVideo();
-        this.updateVideoMutedProp();
-        this.updateVideoVolumeProp();
+      var onUserInteractionCallback = function onUserInteractionCallback() {
+        _this.playVideo();
+
+        _this.updateVideoMutedProp();
+
+        _this.updateVideoVolumeProp();
       };
 
-      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_VIDEO_CAN_PLAY);
+      _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_VIDEO_CAN_PLAY);
 
-      if (!this.requireUserInteractionToPlay) {
+      if (!_this.requireUserInteractionToPlay) {
         if (video.paused) {
-          return (video.play() || Promise.resolve('video.play() was not a promise')).catch(error => {
+          return (video.play() || _promise.default.resolve('video.play() was not a promise')).catch(function (error) {
             if (error.name === 'NotAllowedError') {
               // The user agent (browser) or operating system doesn't allow playback of media in the current context or situation.
               // This may happen, if the browser requires the user to explicitly start media playback by clicking a "play" button.
-              this.requireUserInteractionToPlay = true;
+              _this.requireUserInteractionToPlay = true;
 
-              _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.REQUIRE_USER_PLAY_INTERACTION, onUserInteractionCallback);
+              _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.REQUIRE_USER_PLAY_INTERACTION, onUserInteractionCallback);
             } else {
-              this.props.logger.error("Fail to start playing stream due to ".concat(error.name), error.message);
+              _this.props.logger.error("Fail to start playing stream due to ".concat(error.name), error.message);
             }
-          }).finally(() => {
-            _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_WEBRTC_READY, onUserInteractionCallback);
+          }).finally(function () {
+            _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_WEBRTC_READY, onUserInteractionCallback);
           });
         } else {
-          _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_WEBRTC_READY, onUserInteractionCallback);
+          _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_WEBRTC_READY, onUserInteractionCallback);
         }
 
-        this.props.logger.info('Video stream was already playing');
+        _this.props.logger.info('Video stream was already playing');
       } else {
-        _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_WEBRTC_READY, onUserInteractionCallback);
+        _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_WEBRTC_READY, onUserInteractionCallback);
       }
     };
 
-    this.onPlaying = () => {
-      this.requireUserInteractionToPlay = false;
-      this.setState({
+    _this.onPlaying = function () {
+      _this.requireUserInteractionToPlay = false;
+
+      _this.setState({
         playing: true
       });
 
-      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_VIDEO_PLAYING);
+      _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_VIDEO_PLAYING);
 
-      this.props.jsep.peerConnection.getStats().then(stats => {
-        stats.forEach(report => {
+      _this.props.jsep.peerConnection.getStats().then(function (stats) {
+        stats.forEach(function (report) {
           if (report.type === 'inbound-rtp') {
-            const codec = (stats.get(report.codecId) || {}).mimeType;
+            var codec = (stats.get(report.codecId) || {}).mimeType;
 
             if (report.kind === 'audio' && codec) {
-              _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_AUDIO_CODEC, codec.replace('audio/', ''));
+              _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_AUDIO_CODEC, codec.replace('audio/', ''));
             } else if (report.kind === 'video' && codec) {
-              _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_VIDEO_CODEC, codec.replace('video/', ''));
+              _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_VIDEO_CODEC, codec.replace('video/', ''));
             }
           }
         });
       });
     };
 
-    this.onContextMenu = e => {
+    _this.onContextMenu = function (e) {
       e.preventDefault();
     };
 
-    this.video = /*#__PURE__*/_react.default.createRef();
-    this.canvas = /*#__PURE__*/_react.default.createRef();
-    this.canvasTouch = /*#__PURE__*/_react.default.createRef();
-    this.isMountedInView = false;
-    this.captureScreenMetaData = [];
-    this.requireUserInteractionToPlay = false;
-    this.streamCaptureService = new _StreamCaptureService.default(this.props.edgeNodeId, this.video, this.canvas, this.canvasTouch);
+    _this.video = /*#__PURE__*/_react.default.createRef();
+    _this.canvas = /*#__PURE__*/_react.default.createRef();
+    _this.canvasTouch = /*#__PURE__*/_react.default.createRef();
+    _this.isMountedInView = false;
+    _this.captureScreenMetaData = [];
+    _this.requireUserInteractionToPlay = false;
+    _this.streamCaptureService = new _StreamCaptureService.default(_this.props.edgeNodeId, _this.video, _this.canvas, _this.canvasTouch);
+    return _this;
   }
 
-  componentDidMount() {
-    this.isMountedInView = true;
+  (0, _createClass2.default)(EmulatorWebrtcView, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      var _this2 = this;
 
-    _StreamingEvent.default.edgeNode(this.props.edgeNodeId).on(_StreamingEvent.default.STREAM_CONNECTED, this.onConnect).on(_StreamingEvent.default.STREAM_DISCONNECTED, this.onDisconnect).on(_StreamingEvent.default.USER_INTERACTION, this.onUserInteraction);
+      this.isMountedInView = true;
 
-    if (this.props.measureTouchRtt) {
-      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).on(_StreamingEvent.default.TOUCH_START, this.onTouchStart);
+      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).on(_StreamingEvent.default.STREAM_CONNECTED, this.onConnect).on(_StreamingEvent.default.STREAM_DISCONNECTED, this.onDisconnect).on(_StreamingEvent.default.USER_INTERACTION, this.onUserInteraction); // if (this.props.measureTouchRtt) {
+      //   StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.TOUCH_START, this.onTouchStart);
+      //   StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.TOUCH_END, this.onTouchEnd);
+      // }
 
-      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).on(_StreamingEvent.default.TOUCH_END, this.onTouchEnd);
+
+      this.setState({
+        video: false,
+        audio: false
+      }, function () {
+        return _this2.props.jsep.startStream();
+      }); // Performing 'health-check' of the stream and reporting events when video is missing
+
+      this.timer = setInterval(function () {
+        if (_this2.requireUserInteractionToPlay) {
+          return; // Do not reporting any StreamingEvent.STREAM_VIDEO_MISSING if the stream is waiting for user interaction in order to start the stream.
+        }
+
+        if (_this2.isMountedInView && _this2.video.current && _this2.video.current.paused) {
+          _StreamingEvent.default.edgeNode(_this2.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_VIDEO_MISSING);
+        } else {// this.streamCaptureService.captureScreenshot(this.props.emulatorWidth, this.props.emulatorHeight);
+        }
+      }, 500);
     }
+  }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {
+      this.isMountedInView = false;
 
-    this.setState({
-      video: false,
-      audio: false
-    }, () => this.props.jsep.startStream()); // Performing 'health-check' of the stream and reporting events when video is missing
-
-    this.timer = setInterval(() => {
-      if (this.requireUserInteractionToPlay) {
-        return; // Do not reporting any StreamingEvent.STREAM_VIDEO_MISSING if the stream is waiting for user interaction in order to start the stream.
+      if (this.timer) {
+        clearInterval(this.timer);
       }
 
-      if (this.isMountedInView && this.video.current && this.video.current.paused) {
-        _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_VIDEO_MISSING);
-      } else {
-        this.streamCaptureService.captureScreenshot(this.props.emulatorWidth, this.props.emulatorHeight);
+      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).off(_StreamingEvent.default.STREAM_CONNECTED, this.onConnect).off(_StreamingEvent.default.STREAM_DISCONNECTED, this.onDisconnect).off(_StreamingEvent.default.USER_INTERACTION, this.onUserInteraction); // if (this.props.measureTouchRtt) {
+      //   StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.TOUCH_START, this.onTouchStart);
+      //   StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.TOUCH_END, this.onTouchEnd);
+      // }
+
+
+      this.props.jsep.disconnect();
+    }
+  }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate(prevProps) {
+      if (prevProps.volume !== this.props.volume) {
+        this.updateVideoVolumeProp();
       }
-    }, 500);
-  }
 
-  componentWillUnmount() {
-    this.isMountedInView = false;
-
-    if (this.timer) {
-      clearInterval(this.timer);
-    }
-
-    _StreamingEvent.default.edgeNode(this.props.edgeNodeId).off(_StreamingEvent.default.STREAM_CONNECTED, this.onConnect).off(_StreamingEvent.default.STREAM_DISCONNECTED, this.onDisconnect).off(_StreamingEvent.default.USER_INTERACTION, this.onUserInteraction);
-
-    if (this.props.measureTouchRtt) {
-      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).off(_StreamingEvent.default.TOUCH_START, this.onTouchStart);
-
-      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).off(_StreamingEvent.default.TOUCH_END, this.onTouchEnd);
-    }
-
-    this.props.jsep.disconnect();
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.volume !== this.props.volume) {
-      this.updateVideoVolumeProp();
-    }
-
-    if (prevProps.muted !== this.props.muted) {
-      this.updateVideoMutedProp();
-    }
-  }
-  /**
-   * Update video muted property based on React property, when there is an update
-   */
-
-
-  updateVideoMutedProp() {
-    if (this.isMountedInView && this.video.current && this.video.current.muted !== this.props.muted) {
-      const streamIsPaused = this.video.current.paused;
-      this.video.current.muted = this.props.muted; // If video was paused after unmuting, fire unmute error event, mute audio and play video
-      // https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
-
-      if (streamIsPaused === false && streamIsPaused !== this.video.current.paused) {
-        _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_AUDIO_UNMUTE_ERROR); // Play muted video, since browser may pause the video when un-muting action has failed
-
-
-        this.video.current.muted = true;
-        this.playVideo();
+      if (prevProps.muted !== this.props.muted) {
+        this.updateVideoMutedProp();
       }
     }
-  }
-  /**
-   * Update video volume property based on React property, when there is an update
-   * Note: iOS - Safari doesn't support volume attribute, so video can be only muted or un-muted (after user interaction)
-   */
+    /**
+     * Update video muted property based on React property, when there is an update
+     */
+
+  }, {
+    key: "updateVideoMutedProp",
+    value: function updateVideoMutedProp() {
+      if (this.isMountedInView && this.video.current && this.video.current.muted !== this.props.muted) {
+        var streamIsPaused = this.video.current.paused;
+        this.video.current.muted = this.props.muted; // If video was paused after unmuting, fire unmute error event, mute audio and play video
+        // https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
+
+        if (streamIsPaused === false && streamIsPaused !== this.video.current.paused) {
+          _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_AUDIO_UNMUTE_ERROR); // Play muted video, since browser may pause the video when un-muting action has failed
 
 
-  updateVideoVolumeProp() {
-    if (this.isMountedInView && this.video.current && this.video.current.volume !== this.props.volume) {
-      this.video.current.volume = this.props.volume;
+          this.video.current.muted = true;
+          this.playVideo();
+        }
+      }
     }
-  }
+    /**
+     * Update video volume property based on React property, when there is an update
+     * Note: iOS - Safari doesn't support volume attribute, so video can be only muted or un-muted (after user interaction)
+     */
 
-  render() {
-    const {
-      emulatorWidth,
-      emulatorHeight
-    } = this.props;
-    const style = {
-      margin: '0 auto',
-      visibility: this.state.playing ? 'visible' : 'hidden',
-      width: '100%',
-      height: '100%'
-    };
-    return /*#__PURE__*/_react.default.createElement("div", {
-      style: {
-        display: 'flex',
+  }, {
+    key: "updateVideoVolumeProp",
+    value: function updateVideoVolumeProp() {
+      if (this.isMountedInView && this.video.current && this.video.current.volume !== this.props.volume) {
+        this.video.current.volume = this.props.volume;
+      }
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this$props = this.props,
+          emulatorWidth = _this$props.emulatorWidth,
+          emulatorHeight = _this$props.emulatorHeight;
+      var style = {
+        margin: '0 auto',
+        visibility: this.state.playing ? 'visible' : 'hidden',
         width: '100%',
-        height: '100%',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }
-    }, /*#__PURE__*/_react.default.createElement("video", {
-      ref: this.video,
-      style: style,
-      className: "video-webrtc" // Initial muted value, un-muting is done dynamically through ref on userInteraction
-      // Known issue: https://github.com/facebook/react/issues/10389
-      ,
-      muted: true,
-      onContextMenu: this.onContextMenu,
-      onCanPlay: this.onCanPlay,
-      onPlaying: this.onPlaying,
-      playsInline: true
-    }), /*#__PURE__*/_react.default.createElement("canvas", {
-      style: {
-        display: 'none'
-      },
-      ref: this.canvas,
-      height: emulatorHeight / _StreamCaptureService.default.CANVAS_SCALE_FACTOR,
-      width: emulatorWidth / _StreamCaptureService.default.CANVAS_SCALE_FACTOR
-    }), /*#__PURE__*/_react.default.createElement("canvas", {
-      style: {
-        display: 'none'
-      },
-      ref: this.canvasTouch,
-      height: "23",
-      width: "23"
-    }));
-  }
-
-}
+        height: '100%'
+      };
+      return /*#__PURE__*/_react.default.createElement("div", {
+        style: {
+          display: 'flex',
+          width: '100%',
+          height: '100%',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }
+      }, /*#__PURE__*/_react.default.createElement("video", {
+        ref: this.video,
+        style: style,
+        className: "video-webrtc" // Initial muted value, un-muting is done dynamically through ref on userInteraction
+        // Known issue: https://github.com/facebook/react/issues/10389
+        ,
+        muted: true,
+        onContextMenu: this.onContextMenu,
+        onCanPlay: this.onCanPlay,
+        onPlaying: this.onPlaying,
+        playsInline: true
+      }), /*#__PURE__*/_react.default.createElement("canvas", {
+        style: {
+          display: 'none'
+        },
+        ref: this.canvas,
+        height: emulatorHeight / _StreamCaptureService.default.CANVAS_SCALE_FACTOR,
+        width: emulatorWidth / _StreamCaptureService.default.CANVAS_SCALE_FACTOR
+      }), /*#__PURE__*/_react.default.createElement("canvas", {
+        style: {
+          display: 'none'
+        },
+        ref: this.canvasTouch,
+        height: "23",
+        width: "23"
+      }));
+    }
+  }]);
+  return EmulatorWebrtcView;
+}(_react.Component);
 
 exports.default = EmulatorWebrtcView;
 EmulatorWebrtcView.propTypes = {
