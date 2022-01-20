@@ -57,10 +57,10 @@ export default class EmulatorWebrtcView extends Component {
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
       .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
 
-    if (this.props.measureTouchRtt) {
-      StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.TOUCH_START, this.onTouchStart);
-      StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.TOUCH_END, this.onTouchEnd);
-    }
+    // if (this.props.measureTouchRtt) {
+    //   StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.TOUCH_START, this.onTouchStart);
+    //   StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.TOUCH_END, this.onTouchEnd);
+    // }
 
     this.setState({ video: false, audio: false }, () => this.props.jsep.startStream());
     // Performing 'health-check' of the stream and reporting events when video is missing
@@ -72,7 +72,7 @@ export default class EmulatorWebrtcView extends Component {
       if (this.isMountedInView && this.video.current && this.video.current.paused) {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_MISSING);
       } else {
-        this.streamCaptureService.captureScreenshot(this.props.emulatorWidth, this.props.emulatorHeight);
+        // this.streamCaptureService.captureScreenshot(this.props.emulatorWidth, this.props.emulatorHeight);
       }
     }, 500);
   }
@@ -87,10 +87,10 @@ export default class EmulatorWebrtcView extends Component {
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
       .off(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
 
-    if (this.props.measureTouchRtt) {
-      StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.TOUCH_START, this.onTouchStart);
-      StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.TOUCH_END, this.onTouchEnd);
-    }
+    // if (this.props.measureTouchRtt) {
+    //   StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.TOUCH_START, this.onTouchStart);
+    //   StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.TOUCH_END, this.onTouchEnd);
+    // }
 
     this.props.jsep.disconnect();
   }
