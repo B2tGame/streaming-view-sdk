@@ -1,4 +1,3 @@
-import parseUrl from 'url-parse';
 import axios from 'axios';
 import { RTCSessionDescription, RTCPeerConnection } from 'wrtc';
 
@@ -15,7 +14,6 @@ export default class WebRtcConnectionClient {
   static createPeerConnection = (host, iceServers, id) => {
     const options = {
       sdpSemantics: 'unified-plan',
-      //TODO-turn: the following can cause issues when the webrtc-rtt-collector is down
       iceServers: iceServers,
       iceTransportPolicy: 'relay'
     };

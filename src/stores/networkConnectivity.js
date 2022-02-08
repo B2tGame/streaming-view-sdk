@@ -192,12 +192,7 @@ const getAdvancedMeasurement = () => {
   const webrtcManagerMultiRegion = (selectedEdges) => {
     return Promise.all(
       selectedEdges.reduce((acc, edge) => {
-        const iceServers = {
-          //TODO-turn: turn off one of these to ease debugging!
-          default: [],
-          ...edge.iceServers
-        };
-        for (const [key, iceCandidates] of Object.entries(iceServers)) {
+        for (const [key, iceCandidates] of Object.entries(edge.iceServers)) {
           const edgeToMeasure = {
             ...edge,
             iceServers: {

@@ -61,7 +61,7 @@ export default class StreamWebRtc extends EventEmitter {
       if (type === 'pong') {
         const sendTime = Math.trunc(timestamp);
         const rtt = Date.now() - sendTime;
-        console.log('PONG - RTT:', rtt);
+        console.log(`PONG - RTT - ${this.iceServersName}: ${rtt}`);
         this.emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
       }
     };
