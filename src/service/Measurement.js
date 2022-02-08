@@ -54,7 +54,7 @@ export default class Measurement {
   initWebRtc(webRtcHost, pingInterval) {
     this.webRtcHost = webRtcHost;
     //TODO-turn: use default ice candidates for now
-    this.streamWebRtc = new StreamWebRtc(webRtcHost, { name: 'default', candidates: [] }, pingInterval);
+    this.streamWebRtc = new StreamWebRtc(this.webRtcHost, { name: 'default', candidates: [] }, pingInterval);
     this.streamWebRtc.on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
     StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
     this.webRtcIntervalHandler = setInterval(() => {
