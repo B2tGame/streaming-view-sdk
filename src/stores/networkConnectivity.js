@@ -116,11 +116,13 @@ const getAdvancedMeasurement = () => {
    * @return {Promise<boolean>}
    */
   const getWebRtcMeasurement = (edge) => {
+    console.log('getWebRtcMeasurement EDGE:', edge);
     if (edge.baseUrls.length === 0) {
       return Promise.resolve(false);
     }
 
     const webRtcHost = `${edge.baseUrls.shift()}/webrtc`;
+    console.log('DEBUG - webRtcHost:', webRtcHost);
     console.log(`WebRtc connect attempt: ${webRtcHost} region:${edge.region}, TURN:${edge.iceServers.name}`);
 
     return new Promise((resolve, reject) => {
@@ -191,6 +193,7 @@ const getAdvancedMeasurement = () => {
     return Promise.all(
       selectedEdges.reduce((acc, edge) => {
         const iceServers = {
+          //TODO-turn: turn off one of these to ease debugging!
           default: [],
           ...edge.iceServers
         };

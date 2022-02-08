@@ -32,9 +32,9 @@ export default class StreamWebRtc extends EventEmitter {
   ) {
     super();
 
-    this.host = host;
     this.iceServersName = iceServers.name;
     this.iceServersCandidates = iceServers.candidates;
+    this.host = `${host}/${this.iceServersName}`;
     this.pingInterval = pingInterval;
     this.measureWebrtcRtt = measureWebrtcRtt;
     this.peerConnection = undefined;
@@ -46,6 +46,7 @@ export default class StreamWebRtc extends EventEmitter {
       iceServersCandidates: this.iceServersCandidates
     }).then((peerConnection) => {
       this.peerConnection = peerConnection;
+      console.log('peerConnection CREATED', this.peerConnection);
     });
   }
 
@@ -60,6 +61,7 @@ export default class StreamWebRtc extends EventEmitter {
       if (type === 'pong') {
         const sendTime = Math.trunc(timestamp);
         const rtt = Date.now() - sendTime;
+        console.log('PONG - RTT:', rtt);
         this.emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
       }
     };
@@ -84,7 +86,7 @@ export default class StreamWebRtc extends EventEmitter {
     };
 
     const onConnectionStateChange = () => {
-      console.log('peerConnection.connectionState=', peerConnection.connectionState);
+      console.log('peerConnection.connectionState:', peerConnection.connectionState);
       switch (peerConnection.connectionState) {
         case 'disconnected':
           if (dataChannel) {

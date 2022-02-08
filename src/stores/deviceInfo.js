@@ -10,6 +10,7 @@ let deviceInfo = {};
  * @returns {Promise<*>}
  */
 function requestNetworkDeviceInfo(apiEndpoint) {
+  console.log('requestNetworkDeviceInfo apiEndpoint:', apiEndpoint);
   return axios.get(`${apiEndpoint}/api/streaming-games/edge-node/device-info`, { timeout: 2500 }).then((result) => result.data);
 }
 
