@@ -199,16 +199,6 @@ export default class StreamingView extends Component {
       });
   }
 
-  componentDidUpdate() {
-    // If for some reason the measure touchrtt is
-    if (this.props.measureTouchRtt === undefined && this.state.shouldRandomlyMeasureRtt === undefined) {
-      // Run coinflip to in 50% of cases measure rtt
-      this.setState({
-        shouldRandomlyMeasureRtt: Math.random() < 0.5
-      });
-    }
-  }
-
   componentWillUnmount() {
     this.logger.info('StreamingView component will unmount', {
       measurement: this.measurement ? 'should-be-destroy' : 'skip',

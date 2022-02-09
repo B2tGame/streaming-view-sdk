@@ -263,17 +263,6 @@ var StreamingView = /*#__PURE__*/function (_Component) {
       });
     }
   }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      // If for some reason the measure touchrtt is 
-      if (this.props.measureTouchRtt === undefined && this.state.shouldRandomlyMeasureRtt === undefined) {
-        // Run coinflip to in 50% of cases measure rtt
-        this.setState({
-          shouldRandomlyMeasureRtt: Math.random() < 0.5
-        });
-      }
-    }
-  }, {
     key: "componentWillUnmount",
     value: function componentWillUnmount() {
       var _this3 = this;
