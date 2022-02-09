@@ -10,8 +10,6 @@ var _filterInstanceProperty = require("@babel/runtime-corejs3/core-js-stable/ins
 
 var _Object$getOwnPropertyDescriptor = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor");
 
-var _forEachInstanceProperty = require("@babel/runtime-corejs3/core-js-stable/instance/for-each");
-
 var _Object$getOwnPropertyDescriptors = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptors");
 
 var _Object$defineProperties = require("@babel/runtime-corejs3/core-js-stable/object/define-properties");
@@ -54,14 +52,14 @@ var _events = require("events");
 
 function ownKeys(object, enumerableOnly) { var keys = _Object$keys(object); if (_Object$getOwnPropertySymbols) { var symbols = _Object$getOwnPropertySymbols(object); enumerableOnly && (symbols = _filterInstanceProperty(symbols).call(symbols, function (sym) { return _Object$getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var _context, _context2; var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? _forEachInstanceProperty(_context = ownKeys(Object(source), !0)).call(_context, function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }) : _Object$getOwnPropertyDescriptors ? _Object$defineProperties(target, _Object$getOwnPropertyDescriptors(source)) : _forEachInstanceProperty(_context2 = ownKeys(Object(source))).call(_context2, function (key) { _Object$defineProperty(target, key, _Object$getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { (0, _defineProperty2.default)(target, key, source[key]); }) : _Object$getOwnPropertyDescriptors ? _Object$defineProperties(target, _Object$getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { _Object$defineProperty(target, key, _Object$getOwnPropertyDescriptor(source, key)); }); } return target; }
 
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2.default)(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2.default)(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2.default)(this, result); }; }
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_Reflect$construct) return false; if (_Reflect$construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(_Reflect$construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
-var NopAuthenticator = /*#__PURE__*/(0, _createClass2["default"])(function NopAuthenticator() {
-  (0, _classCallCheck2["default"])(this, NopAuthenticator);
+var NopAuthenticator = /*#__PURE__*/(0, _createClass2.default)(function NopAuthenticator() {
+  (0, _classCallCheck2.default)(this, NopAuthenticator);
 
   this.authHeader = function () {
     return {};
@@ -81,14 +79,14 @@ var NopAuthenticator = /*#__PURE__*/(0, _createClass2["default"])(function NopAu
 exports.NopAuthenticator = NopAuthenticator;
 
 var EmulatorWebClient = /*#__PURE__*/function (_GrpcWebClientBase) {
-  (0, _inherits2["default"])(EmulatorWebClient, _GrpcWebClientBase);
+  (0, _inherits2.default)(EmulatorWebClient, _GrpcWebClientBase);
 
   var _super = _createSuper(EmulatorWebClient);
 
   function EmulatorWebClient(options, auth) {
     var _thisSuper, _thisSuper2, _this;
 
-    (0, _classCallCheck2["default"])(this, EmulatorWebClient);
+    (0, _classCallCheck2.default)(this, EmulatorWebClient);
     _this = _super.call(this, options);
 
     _this.on = function (name, fn) {
@@ -100,8 +98,8 @@ var EmulatorWebClient = /*#__PURE__*/function (_GrpcWebClientBase) {
 
       var meta = _objectSpread(_objectSpread({}, metadata), authHeader);
 
-      var self = (0, _assertThisInitialized2["default"])(_this);
-      return (0, _get2["default"])((_thisSuper = (0, _assertThisInitialized2["default"])(_this), (0, _getPrototypeOf2["default"])(EmulatorWebClient.prototype)), "rpcCall", _thisSuper).call(_thisSuper, method, request, meta, methodinfo, function (err, res) {
+      var self = (0, _assertThisInitialized2.default)(_this);
+      return (0, _get2.default)((_thisSuper = (0, _assertThisInitialized2.default)(_this), (0, _getPrototypeOf2.default)(EmulatorWebClient.prototype)), "rpcCall", _thisSuper).call(_thisSuper, method, request, meta, methodinfo, function (err, res) {
         if (err) {
           if (err.code === 401) self.auth.unauthorized();
           if (self.events) self.events.emit('error', err);
@@ -116,8 +114,8 @@ var EmulatorWebClient = /*#__PURE__*/function (_GrpcWebClientBase) {
 
       var meta = _objectSpread(_objectSpread({}, metadata), authHeader);
 
-      var stream = (0, _get2["default"])((_thisSuper2 = (0, _assertThisInitialized2["default"])(_this), (0, _getPrototypeOf2["default"])(EmulatorWebClient.prototype)), "serverStreaming", _thisSuper2).call(_thisSuper2, method, request, meta, methodInfo);
-      var self = (0, _assertThisInitialized2["default"])(_this); // Intercept errors.
+      var stream = (0, _get2.default)((_thisSuper2 = (0, _assertThisInitialized2.default)(_this), (0, _getPrototypeOf2.default)(EmulatorWebClient.prototype)), "serverStreaming", _thisSuper2).call(_thisSuper2, method, request, meta, methodInfo);
+      var self = (0, _assertThisInitialized2.default)(_this); // Intercept errors.
 
       stream.on('error', function (e) {
         if (e.code === 401) {
@@ -133,13 +131,13 @@ var EmulatorWebClient = /*#__PURE__*/function (_GrpcWebClientBase) {
     _this.events = new _events.EventEmitter();
 
     _this.events.on('error', function (e) {
-      console.log('low level gRPC error: ' + (0, _stringify["default"])(e));
+      console.log('low level gRPC error: ' + (0, _stringify.default)(e));
     });
 
     return _this;
   }
 
-  return (0, _createClass2["default"])(EmulatorWebClient);
+  return (0, _createClass2.default)(EmulatorWebClient);
 }(_grpcWeb.GrpcWebClientBase);
 /**
  * An EmulatorControllerService is an EmulatorControllerClient that inject authentication headers.
@@ -160,7 +158,7 @@ var EmulatorWebClient = /*#__PURE__*/function (_GrpcWebClientBase) {
 
 
 var EmulatorControllerService = /*#__PURE__*/function (_EmulatorControllerCl) {
-  (0, _inherits2["default"])(EmulatorControllerService, _EmulatorControllerCl);
+  (0, _inherits2.default)(EmulatorControllerService, _EmulatorControllerCl);
 
   var _super2 = _createSuper(EmulatorControllerService);
 
@@ -174,7 +172,7 @@ var EmulatorControllerService = /*#__PURE__*/function (_EmulatorControllerCl) {
   function EmulatorControllerService(uri, authenticator, onError) {
     var _this2;
 
-    (0, _classCallCheck2["default"])(this, EmulatorControllerService);
+    (0, _classCallCheck2.default)(this, EmulatorControllerService);
     _this2 = _super2.call(this, uri);
     if (!authenticator) authenticator = new NopAuthenticator();
     _this2.client_ = new EmulatorWebClient({}, authenticator);
@@ -184,7 +182,7 @@ var EmulatorControllerService = /*#__PURE__*/function (_EmulatorControllerCl) {
     return _this2;
   }
 
-  return (0, _createClass2["default"])(EmulatorControllerService);
+  return (0, _createClass2.default)(EmulatorControllerService);
 }(_emulator_controller_grpc_web_pb.EmulatorControllerClient);
 /**
  * An RtcService is an RtcClient that inject authentication headers.
@@ -204,7 +202,7 @@ var EmulatorControllerService = /*#__PURE__*/function (_EmulatorControllerCl) {
 exports.EmulatorControllerService = EmulatorControllerService;
 
 var RtcService = /*#__PURE__*/function (_RtcClient) {
-  (0, _inherits2["default"])(RtcService, _RtcClient);
+  (0, _inherits2.default)(RtcService, _RtcClient);
 
   var _super3 = _createSuper(RtcService);
 
@@ -218,7 +216,7 @@ var RtcService = /*#__PURE__*/function (_RtcClient) {
   function RtcService(uri, authenticator, onError) {
     var _this3;
 
-    (0, _classCallCheck2["default"])(this, RtcService);
+    (0, _classCallCheck2.default)(this, RtcService);
     _this3 = _super3.call(this, uri);
     if (!authenticator) authenticator = new NopAuthenticator();
     _this3.client_ = new EmulatorWebClient({}, authenticator);
@@ -228,7 +226,7 @@ var RtcService = /*#__PURE__*/function (_RtcClient) {
     return _this3;
   }
 
-  return (0, _createClass2["default"])(RtcService);
+  return (0, _createClass2.default)(RtcService);
 }(_rtc_service_grpc_web_pb.RtcClient);
 
 exports.RtcService = RtcService;

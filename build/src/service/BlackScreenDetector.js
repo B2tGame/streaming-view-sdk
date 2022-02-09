@@ -8,13 +8,9 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports["default"] = void 0;
-
-var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/date/now"));
+exports.default = void 0;
 
 var _includes = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/includes"));
-
-var _setInterval2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-interval"));
 
 var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
 
@@ -37,18 +33,18 @@ var BlackScreenDetector = /*#__PURE__*/function () {
   function BlackScreenDetector(edgeNodeId, streamingViewId) {
     var _this = this;
 
-    (0, _classCallCheck2["default"])(this, BlackScreenDetector);
+    (0, _classCallCheck2.default)(this, BlackScreenDetector);
 
     this.onStreamVideoScreenshot = function (event) {
       if (event.hasVideo) {
-        _this.workingStreamLatestTimestamp = (0, _now["default"])();
+        _this.workingStreamLatestTimestamp = Date.now();
       }
     };
 
     this.onEvent = function (event, payload) {
       var _context;
 
-      if ((0, _includes["default"])(_context = BlackScreenDetector.EVENTS_TO_IGNORE).call(_context, event) === false) {
+      if ((0, _includes.default)(_context = BlackScreenDetector.EVENTS_TO_IGNORE).call(_context, event) === false) {
         if (_this.recentEvents.length > BlackScreenDetector.NUMBER_OF_RECENT_EVENTS) {
           _this.recentEvents.shift();
         }
@@ -62,22 +58,22 @@ var BlackScreenDetector = /*#__PURE__*/function () {
 
     this.edgeNodeId = edgeNodeId;
     this.streamingViewId = streamingViewId;
-    this.workingStreamLatestTimestamp = (0, _now["default"])(); // Period to "delay report of black screen" when browser is loading video stream after stream is visible
+    this.workingStreamLatestTimestamp = Date.now(); // Period to "delay report of black screen" when browser is loading video stream after stream is visible
 
     this.notVisibleHoldOffPeriod = 0;
     this.recentEvents = [];
 
-    _StreamingEvent["default"].edgeNode(this.edgeNodeId).on('event', this.onEvent).on(_StreamingEvent["default"].STREAM_VIDEO_SCREENSHOT, this.onStreamVideoScreenshot);
+    _StreamingEvent.default.edgeNode(this.edgeNodeId).on('event', this.onEvent).on(_StreamingEvent.default.STREAM_VIDEO_SCREENSHOT, this.onStreamVideoScreenshot);
 
-    this.monitorInterval = (0, _setInterval2["default"])(function () {
+    this.monitorInterval = setInterval(function () {
       if (_this.browserTabIsVisible() && _this.streamVisibleOnViewport()) {
-        if (_this.workingStreamLatestTimestamp < (0, _now["default"])() - BlackScreenDetector.THRESHOLD && _this.notVisibleHoldOffPeriod < (0, _now["default"])()) {
-          _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].STREAM_BLACK_SCREEN, {
-            cause: (0, _stringify["default"])(_this.recentEvents)
+        if (_this.workingStreamLatestTimestamp < Date.now() - BlackScreenDetector.THRESHOLD && _this.notVisibleHoldOffPeriod < Date.now()) {
+          _StreamingEvent.default.edgeNode(_this.edgeNodeId).emit(_StreamingEvent.default.STREAM_BLACK_SCREEN, {
+            cause: (0, _stringify.default)(_this.recentEvents)
           });
         }
       } else {
-        _this.notVisibleHoldOffPeriod = (0, _now["default"])() + BlackScreenDetector.THRESHOLD;
+        _this.notVisibleHoldOffPeriod = Date.now() + BlackScreenDetector.THRESHOLD;
       }
     }, 1000);
   }
@@ -86,7 +82,7 @@ var BlackScreenDetector = /*#__PURE__*/function () {
    */
 
 
-  (0, _createClass2["default"])(BlackScreenDetector, [{
+  (0, _createClass2.default)(BlackScreenDetector, [{
     key: "browserTabIsVisible",
     value:
     /**
@@ -133,7 +129,7 @@ var BlackScreenDetector = /*#__PURE__*/function () {
         clearInterval(this.monitorInterval);
       }
 
-      _StreamingEvent["default"].edgeNode(this.edgeNodeId).off('event', this.onEvent).off(_StreamingEvent["default"].STREAM_VIDEO_SCREENSHOT, this.onStreamVideoScreenshot);
+      _StreamingEvent.default.edgeNode(this.edgeNodeId).off('event', this.onEvent).off(_StreamingEvent.default.STREAM_VIDEO_SCREENSHOT, this.onStreamVideoScreenshot);
     }
   }], [{
     key: "THRESHOLD",
@@ -163,10 +159,10 @@ var BlackScreenDetector = /*#__PURE__*/function () {
   }, {
     key: "EVENTS_TO_IGNORE",
     get: function get() {
-      return [_StreamingEvent["default"].ROUND_TRIP_TIME_MEASUREMENT, _StreamingEvent["default"].WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, _StreamingEvent["default"].REQUEST_WEB_RTC_MEASUREMENT, _StreamingEvent["default"].WEB_RTC_MEASUREMENT, _StreamingEvent["default"].REPORT_MEASUREMENT, _StreamingEvent["default"].STREAM_BLACK_SCREEN, _StreamingEvent["default"].STREAM_VIDEO_SCREENSHOT, _StreamingEvent["default"].MOMENT_DETECTOR_EVENT];
+      return [_StreamingEvent.default.ROUND_TRIP_TIME_MEASUREMENT, _StreamingEvent.default.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, _StreamingEvent.default.REQUEST_WEB_RTC_MEASUREMENT, _StreamingEvent.default.WEB_RTC_MEASUREMENT, _StreamingEvent.default.REPORT_MEASUREMENT, _StreamingEvent.default.STREAM_BLACK_SCREEN, _StreamingEvent.default.STREAM_VIDEO_SCREENSHOT, _StreamingEvent.default.MOMENT_DETECTOR_EVENT];
     }
   }]);
   return BlackScreenDetector;
 }();
 
-exports["default"] = BlackScreenDetector;
+exports.default = BlackScreenDetector;
