@@ -11,7 +11,7 @@ import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
 import BlackScreenDetector from './service/BlackScreenDetector';
 import StreamWebRtc from './service/StreamWebRtc';
-import parseUrl from 'url-parse'
+import parseUrl from 'url-parse';
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
@@ -27,6 +27,7 @@ export default class StreamingView extends Component {
     emulatorWidth: undefined,
     emulatorHeight: undefined,
     emulatorVersion: undefined,
+    shouldRandomlyMeasureRtt: undefined,
     height: window.innerHeight + 'px',
     width: window.innerWidth + 'px'
   };
@@ -94,6 +95,10 @@ export default class StreamingView extends Component {
     this.isMountedInView = false;
     this.streamingViewId = uuid();
     this.emulatorIsReady = false;
+    // Simple coinflip if we should measure rtt... if prop is not passed!
+    if (props.measureTouchRtt === undefined) {
+      this.shouldRandomlyMeasureRtt = Math.random() < 0.5;
+    }
   }
 
   componentDidMount() {
@@ -110,6 +115,13 @@ export default class StreamingView extends Component {
 
     if (onEvent) {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
+    }
+
+    if (this.props.measureTouchRtt === undefined) {
+      // Run coinflip to in 50% of cases measure rtt
+      this.setState({
+        shouldRandomlyMeasureRtt: Math.random() < 0.5
+      });
     }
 
     this.logger.info(
@@ -185,6 +197,16 @@ export default class StreamingView extends Component {
         }
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, `Due to ${err.message}: ${err}`);
       });
+  }
+
+  componentDidUpdate() {
+    // If for some reason the measure touchrtt is
+    if (this.props.measureTouchRtt === undefined && this.state.shouldRandomlyMeasureRtt === undefined) {
+      // Run coinflip to in 50% of cases measure rtt
+      this.setState({
+        shouldRandomlyMeasureRtt: Math.random() < 0.5
+      });
+    }
   }
 
   componentWillUnmount() {
@@ -351,7 +373,7 @@ export default class StreamingView extends Component {
               logger={this.logger}
               edgeNodeId={edgeNodeId}
               maxConnectionRetries={this.props.maxConnectionRetries}
-              measureTouchRtt={this.props.measureTouchRtt}
+              measureTouchRtt={this.props.measureTouchRtt ?? this.state.shouldRandomlyMeasureRtt}
               playoutDelayHint={playoutDelayHint}
             />
           </div>
