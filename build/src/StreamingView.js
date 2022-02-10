@@ -155,7 +155,8 @@ var StreamingView = /*#__PURE__*/function (_Component) {
           internalSession = _this$props.internalSession,
           turnEndpoint = _this$props.turnEndpoint,
           onEvent = _this$props.onEvent,
-          pingInterval = _this$props.pingInterval;
+          pingInterval = _this$props.pingInterval,
+          measureWebrtcRtt = _this$props.measureWebrtcRtt;
 
       if (!internalSession) {
         this.LogQueueService = new _LogQueueService.default(edgeNodeId, apiEndpoint, userId, this.streamingViewId);
@@ -163,7 +164,10 @@ var StreamingView = /*#__PURE__*/function (_Component) {
 
       this.blackScreenDetector = new _BlackScreenDetector.default(edgeNodeId, this.streamingViewId);
       this.logger = new _Logger.default();
-      this.measurement = new _Measurement.default(edgeNodeId, this.streamingViewId, this.logger);
+
+      if (measureWebrtcRtt) {
+        this.measurement = new _Measurement.default(edgeNodeId, this.streamingViewId, this.logger);
+      }
 
       if (onEvent) {
         _StreamingEvent.default.edgeNode(edgeNodeId).on('event', onEvent);
@@ -231,7 +235,9 @@ var StreamingView = /*#__PURE__*/function (_Component) {
         // public endpoint received from Service Coordinator.
         return internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
       }).then(function (streamEndpoint) {
-        _this2.measurement.initWebRtc("".concat((0, _urlParse.default)(streamEndpoint).origin, "/measurement/webrtc"), pingInterval);
+        if (_this2.measurement) {
+          _this2.measurement.initWebRtc("".concat((0, _urlParse.default)(streamEndpoint).origin, "/measurement/webrtc"), pingInterval);
+        }
 
         if (!_this2.isMountedInView) {
           _this2.logger.log('Cancel action due to view is not mounted.');
@@ -265,7 +271,7 @@ var StreamingView = /*#__PURE__*/function (_Component) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      // If for some reason the measure touchrtt is 
+      // If for some reason the measure touchrtt is
       if (this.props.measureTouchRtt === undefined && this.state.shouldRandomlyMeasureRtt === undefined) {
         // Run coinflip to in 50% of cases measure rtt
         this.setState({
@@ -424,7 +430,8 @@ var StreamingView = /*#__PURE__*/function (_Component) {
           edgeNodeId = _this$props2.edgeNodeId,
           propsHeight = _this$props2.height,
           propsWidth = _this$props2.width,
-          playoutDelayHint = _this$props2.playoutDelayHint;
+          playoutDelayHint = _this$props2.playoutDelayHint,
+          iceServers = _this$props2.iceServers;
       var _this$state = this.state,
           stateHeight = _this$state.height,
           stateWidth = _this$state.width;
@@ -453,7 +460,8 @@ var StreamingView = /*#__PURE__*/function (_Component) {
             edgeNodeId: edgeNodeId,
             maxConnectionRetries: this.props.maxConnectionRetries,
             measureTouchRtt: (_this$props$measureTo = this.props.measureTouchRtt) !== null && _this$props$measureTo !== void 0 ? _this$props$measureTo : this.state.shouldRandomlyMeasureRtt,
-            playoutDelayHint: playoutDelayHint
+            playoutDelayHint: playoutDelayHint,
+            iceServers: iceServers
           }));
 
         case false:
@@ -516,7 +524,9 @@ var StreamingView = /*#__PURE__*/function (_Component) {
         width: _propTypes.default.string,
         pingInterval: _propTypes.default.number,
         measureTouchRtt: _propTypes.default.bool,
-        playoutDelayHint: _propTypes.default.number
+        playoutDelayHint: _propTypes.default.number,
+        iceServers: _propTypes.default.array,
+        measureWebrtcRtt: _propTypes.default.bool
       };
     }
   }, {
@@ -553,5 +563,7 @@ StreamingView.defaultProps = {
   muted: false,
   pingInterval: _StreamWebRtc.default.WEBRTC_PING_INTERVAL,
   measureTouchRtt: true,
-  playoutDelayHint: 0
+  playoutDelayHint: 0,
+  iceServers: [],
+  measureWebrtcRtt: true
 };

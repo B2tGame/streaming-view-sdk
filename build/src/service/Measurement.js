@@ -132,8 +132,12 @@ var Measurement = /*#__PURE__*/function () {
     value: function initWebRtc(webRtcHost, pingInterval) {
       var _this2 = this;
 
-      this.webRtcHost = webRtcHost;
-      this.streamWebRtc = new _StreamWebRtc.default(webRtcHost, pingInterval);
+      this.webRtcHost = webRtcHost; //TODO-turn: use default ice candidates for now
+
+      this.streamWebRtc = new _StreamWebRtc.default(this.webRtcHost, {
+        name: 'default',
+        candidates: []
+      }, pingInterval);
       this.streamWebRtc.on(_StreamingEvent.default.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
 
       _StreamingEvent.default.edgeNode(this.edgeNodeId).on(_StreamingEvent.default.STREAM_UNREACHABLE, this.streamWebRtc.close);

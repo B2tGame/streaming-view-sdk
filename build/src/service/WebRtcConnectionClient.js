@@ -24,6 +24,8 @@ exports.default = void 0;
 
 var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
 
+var _promise = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/promise"));
+
 var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/defineProperty"));
@@ -31,8 +33,6 @@ var _defineProperty2 = _interopRequireDefault(require("@babel/runtime-corejs3/he
 var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
-
-var _urlParse = _interopRequireDefault(require("url-parse"));
 
 var _axios = _interopRequireDefault(require("axios"));
 
@@ -50,37 +50,16 @@ var WebRtcConnectionClient = /*#__PURE__*/(0, _createClass2.default)(function We
 });
 exports.default = WebRtcConnectionClient;
 
-WebRtcConnectionClient.getIceConfiguration = function (host) {
-  var hostname = (0, _urlParse.default)(host).hostname;
-  var endpoint = "turn:".concat(hostname, ":3478");
-  return {
-    urls: ["".concat(endpoint, "?transport=udp"), "".concat(endpoint, "?transport=tcp")],
-    username: 'webclient',
-    credential: 'webclient',
-    ttl: 86400
-  };
-};
-
 WebRtcConnectionClient.createPeerConnection = function (host, iceServers, id) {
-  var peerConnection = new _wrtc.RTCPeerConnection({
+  var options = {
     sdpSemantics: 'unified-plan',
-    iceServers: iceServers.length ? iceServers : [WebRtcConnectionClient.getIceConfiguration(host)],
+    iceServers: iceServers,
     iceTransportPolicy: 'relay'
-  });
-
-  var onIceCandidateError = function onIceCandidateError(event) {
-    console.log('onIceCandidateError was called with event:', event); // if (event.errorCode >= 300 && event.errorCode <= 699) {
-    //   // STUN errors are in the range 300-699. See RFC 5389, section 15.6
-    //   // for a list of codes. TURN adds a few more error codes; see
-    //   // RFC 5766, section 15 for details.
-    // } else if (event.errorCode >= 700 && event.errorCode <= 799) {
-    //   // Server could not be reached; a specific error number is
-    //   // provided but these are not yet specified.
-    // }
   };
+  console.log('RTCPeerConnection options:', options);
+  var peerConnection = new _wrtc.RTCPeerConnection(options);
 
   var onConnectionStateChange = function onConnectionStateChange() {
-    // console.log('peerConnection.connectionState=', peerConnection.connectionState);
     if (peerConnection.connectionState === 'disconnected') {
       var _context;
 
@@ -89,12 +68,10 @@ WebRtcConnectionClient.createPeerConnection = function (host, iceServers, id) {
       });
 
       peerConnection.removeEventListener('connectionstatechange', onConnectionStateChange);
-      peerConnection.removeEventListener('onicecandidateerror', onIceCandidateError);
     }
   };
 
   peerConnection.addEventListener('connectionstatechange', onConnectionStateChange);
-  peerConnection.addEventListener('onicecandidateerror', onIceCandidateError);
   return peerConnection;
 };
 
@@ -109,33 +86,77 @@ WebRtcConnectionClient.createConnection = function () {
   var host = createOptions.host,
       iceServersCandidates = createOptions.iceServersCandidates,
       beforeAnswer = createOptions.beforeAnswer;
+  console.log('WebRtcConnectionClient.createConnection', {
+    host: host,
+    iceServersCandidates: iceServersCandidates
+  });
   var remotePeerConnectionId = undefined;
   var peerConnection = undefined;
+
+  var waitUntilIceGatheringStateComplete = function waitUntilIceGatheringStateComplete() {
+    if (peerConnection.iceGatheringState === 'complete') {
+      return;
+    }
+
+    var deferred = {};
+    deferred.promise = new _promise.default(function (resolve, reject) {
+      deferred.resolve = resolve;
+      deferred.reject = reject;
+    });
+
+    var onIceCandidate = function onIceCandidate(candidate) {
+      if (candidate.candidate !== null && candidate.candidate !== undefined) {
+        clearTimeout(timeout);
+        peerConnection.removeEventListener('icecandidate', onIceCandidate);
+        deferred.resolve(peerConnection);
+      }
+    };
+
+    var timeout = setTimeout(function () {
+      peerConnection.removeEventListener('icecandidate', onIceCandidate);
+      deferred.reject(new Error('Timed out waiting for host candidates'));
+    }, 3000);
+    peerConnection.addEventListener('icecandidate', onIceCandidate);
+    return deferred.promise;
+  };
+
+  console.log("axios POST to: ".concat(host, "/connections"));
   return _axios.default.post("".concat(host, "/connections")).then(function (response) {
     var remotePeerConnection = response.data || {};
+    console.log("remotePeerConnection received form ".concat(host, "/connections"), remotePeerConnection);
     remotePeerConnectionId = remotePeerConnection.id;
     peerConnection = WebRtcConnectionClient.createPeerConnection(host, iceServersCandidates, remotePeerConnectionId);
+    console.log("set remotePeerConnection.localDescription as remote description", remotePeerConnection.localDescription);
     return peerConnection.setRemoteDescription(remotePeerConnection.localDescription);
   }).then(function () {
+    console.log("setting peerConnection.setRemoteDescription DONE");
+    console.log('peerConnection.connectionState:', peerConnection.connectionState);
+    console.log('beforeAnswer; adding ping-pong event handlers');
     return beforeAnswer(peerConnection);
   }).then(function () {
     return peerConnection.createAnswer();
   }).then(function (originalAnswer) {
+    console.log('peerConnection.createAnswer:', originalAnswer);
+    console.log('peerConnection.setLocalDescription');
     return peerConnection.setLocalDescription(new _wrtc.RTCSessionDescription({
       type: 'answer',
       sdp: createOptions.stereo ? originalAnswer.sdp.replace(/a=fmtp:111/, 'a=fmtp:111 stereo=1\r\na=fmtp:111') : originalAnswer.sdp
     }));
   }).then(function () {
-    var _context2;
+    return waitUntilIceGatheringStateComplete();
+  }).then(function () {
+    var _context2, _context3;
 
-    return (0, _axios.default)((0, _concat.default)(_context2 = "".concat(host, "/connections/")).call(_context2, remotePeerConnectionId, "/remote-description"), {
+    console.log((0, _concat.default)(_context2 = "sending answer to: ".concat(host, "/connections/")).call(_context2, remotePeerConnectionId, "/remote-description with peerConnection.localDescription:"), peerConnection.localDescription);
+    return (0, _axios.default)((0, _concat.default)(_context3 = "".concat(host, "/connections/")).call(_context3, remotePeerConnectionId, "/remote-description"), {
       method: 'POST',
       data: (0, _stringify.default)(peerConnection.localDescription),
       headers: {
         'Content-Type': 'application/json'
       }
     });
-  }).then(function () {
+  }).then(function (response) {
+    console.log('response from server:', response);
     return peerConnection;
   }).catch(function (error) {
     if (peerConnection) {
