@@ -133,7 +133,7 @@ var Measurement = /*#__PURE__*/function () {
       var _this2 = this;
 
       this.webRtcHost = webRtcHost;
-      this.streamWebRtc = new _StreamWebRtc.default(webRtcHost, [], pingInterval);
+      this.streamWebRtc = new _StreamWebRtc.default(webRtcHost, pingInterval);
       this.streamWebRtc.on(_StreamingEvent.default.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
 
       _StreamingEvent.default.edgeNode(this.edgeNodeId).on(_StreamingEvent.default.STREAM_UNREACHABLE, this.streamWebRtc.close);

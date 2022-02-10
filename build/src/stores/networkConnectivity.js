@@ -28,13 +28,9 @@ var _find = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stabl
 
 var _slice = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/slice"));
 
-var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
-
-var _reduce = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/reduce"));
+var _map = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/map"));
 
 var _entries = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/object/entries"));
-
-var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
 
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/slicedToArray"));
 
@@ -138,10 +134,9 @@ var getAdvancedMeasurement = function getAdvancedMeasurement() {
   /**
    * Recursive function to manage download speed measurement and fallback case.
    * @param {[]} recommendation Array of possible recommendations
-   * @param {{}} iceServers Ice server options
    * @return {Promise<boolean>}
    */
-  var connectionManagerMultiRegion = function connectionManagerMultiRegion(recommendation, iceServers) {
+  var connectionManagerMultiRegion = function connectionManagerMultiRegion(recommendation) {
     var countRecommendation = 0;
 
     for (var i = 0; i < recommendation.length; ++i) {
@@ -160,8 +155,7 @@ var getAdvancedMeasurement = function getAdvancedMeasurement() {
 
         selectedEdges.push({
           baseUrls: (0, _slice.default)(_context2 = recommendation[_i].measurementEndpoints).call(_context2, 0, MAX_RECOMMENDATION_COUNT),
-          region: recommendation[_i].edgeRegion,
-          iceServers: iceServers
+          region: recommendation[_i].edgeRegion
         });
       }
     }
@@ -176,55 +170,39 @@ var getAdvancedMeasurement = function getAdvancedMeasurement() {
   };
   /**
    * Recursive function to manage webrtc rtt measurement
-   * @param {{baseUrls: string[], region: string, iceServers: {}}} edge
+   * @param {{baseUrls: string[], region: string}} edge
    * @return {Promise<boolean>}
    */
 
 
   var getWebRtcMeasurement = function getWebRtcMeasurement(edge) {
-    var _context3, _context4;
-
     if (edge.baseUrls.length === 0) {
       return _promise.default.resolve(false);
     }
 
     var webRtcHost = "".concat(edge.baseUrls.shift(), "/webrtc");
-    console.log((0, _concat.default)(_context3 = (0, _concat.default)(_context4 = "WebRtc connect attempt: ".concat(webRtcHost, " region:")).call(_context4, edge.region, ", TURN:")).call(_context3, edge.iceServers.name));
+    console.log('WebRtc connect attempt:', webRtcHost, 'for:', edge.region);
     return new _promise.default(function (resolve, reject) {
       var streamWebRtc = undefined;
 
       var onWebRtcClientConnected = function onWebRtcClientConnected() {
-        var _context5;
-
-        console.log((0, _concat.default)(_context5 = "WebRtc connected to: ".concat(edge.region, ", TURN: ")).call(_context5, edge.iceServers.name));
-
-        if (webrtcRoundTripTimeValuesMulti[edge.region] === undefined) {
-          webrtcRoundTripTimeValuesMulti[edge.region] = {};
-        }
-
-        if (webrtcRoundTripTimeValuesMulti[edge.region][edge.iceServers.name] === undefined) {
-          webrtcRoundTripTimeValuesMulti[edge.region][edge.iceServers.name] = [];
-        }
-
+        console.log('WebRtc connected to:', edge.region);
+        webrtcRoundTripTimeValuesMulti[edge.region] = [];
         setTimeout(function () {
           return stopMeasurement();
         }, ADVANCED_MEASUREMENT_TIMEOUT);
       };
 
       var onWebRtcRoundTripTimeMeasurement = function onWebRtcRoundTripTimeMeasurement(webrtcRtt) {
-        webrtcRoundTripTimeValuesMulti[edge.region][edge.iceServers.name].push(webrtcRtt);
+        webrtcRoundTripTimeValuesMulti[edge.region].push(webrtcRtt);
         predictedGameExperienceMulti[edge.region] = _Measurement.default.calculatePredictedGameExperience(webrtcRtt, 0, edge.region)[_Measurement.default.PREDICTED_GAME_EXPERIENCE_DEFAULT];
       };
 
       var stopMeasurement = function stopMeasurement() {
         var closeAction = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
 
-        if (((webrtcRoundTripTimeValuesMulti[edge.region] || {})[edge.iceServers.name] || []).length > 0) {
-          if (webrtcRoundTripTimeStatsMulti[edge.region] === undefined) {
-            webrtcRoundTripTimeStatsMulti[edge.region] = {};
-          }
-
-          webrtcRoundTripTimeStatsMulti[edge.region][edge.iceServers.name] = _StreamWebRtc.default.calculateRoundTripTimeStats(webrtcRoundTripTimeValuesMulti[edge.region][edge.iceServers.name]);
+        if ((webrtcRoundTripTimeValuesMulti[edge.region] || []).length > 0) {
+          webrtcRoundTripTimeStatsMulti[edge.region] = _StreamWebRtc.default.calculateRoundTripTimeStats(webrtcRoundTripTimeValuesMulti[edge.region]);
         }
 
         streamWebRtc.off(_StreamingEvent.default.WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected).off(_StreamingEvent.default.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement).close();
@@ -232,12 +210,12 @@ var getAdvancedMeasurement = function getAdvancedMeasurement() {
         if (closeAction) {
           closeAction();
         } else {
-          resolve(((webrtcRoundTripTimeValuesMulti[edge.region] || {})[edge.iceServers.name] || []).length > 0);
+          resolve((webrtcRoundTripTimeValuesMulti[edge.region] || []).length > 0);
         }
       };
 
       try {
-        streamWebRtc = new _StreamWebRtc.default(webRtcHost, edge.iceServers);
+        streamWebRtc = new _StreamWebRtc.default(webRtcHost);
         setTimeout(function () {
           return stopMeasurement();
         }, WEBRTC_TIME_TO_CONNECTED);
@@ -263,28 +241,9 @@ var getAdvancedMeasurement = function getAdvancedMeasurement() {
 
 
   var webrtcManagerMultiRegion = function webrtcManagerMultiRegion(selectedEdges) {
-    return _promise.default.all((0, _reduce.default)(selectedEdges).call(selectedEdges, function (acc, edge) {
-      var iceServers = _objectSpread({
-        default: []
-      }, edge.iceServers);
-
-      for (var _i2 = 0, _Object$entries = (0, _entries.default)(iceServers); _i2 < _Object$entries.length; _i2++) {
-        var _Object$entries$_i = (0, _slicedToArray2.default)(_Object$entries[_i2], 2),
-            key = _Object$entries$_i[0],
-            iceCandidates = _Object$entries$_i[1];
-
-        var edgeToMeasure = _objectSpread(_objectSpread({}, edge), {}, {
-          iceServers: {
-            name: key,
-            candidates: iceCandidates
-          }
-        });
-
-        acc.push(getWebRtcMeasurement(JSON.parse((0, _stringify.default)(edgeToMeasure))));
-      }
-
-      return acc;
-    }, [])).then(function (successful) {
+    return _promise.default.all((0, _map.default)(selectedEdges).call(selectedEdges, function (edge) {
+      return getWebRtcMeasurement(edge);
+    })).then(function (successful) {
       for (var success in successful) {
         if (success) {
           return true;
@@ -296,38 +255,25 @@ var getAdvancedMeasurement = function getAdvancedMeasurement() {
   };
 
   return (0, _deviceInfo.getDeviceInfo)().then(function (deviceInfo) {
-    console.log('DeviceInfo:', deviceInfo);
-    var recommendation = (deviceInfo || {}).recommendation || [];
-    var iceServers = (deviceInfo || {}).iceServers || {};
-    return connectionManagerMultiRegion(recommendation, iceServers);
+    return connectionManagerMultiRegion((deviceInfo || {}).recommendation || []);
   }).then(function () {
     var minRtt = undefined;
     var finalResult = {};
 
-    for (var _i3 = 0, _Object$entries3 = (0, _entries.default)(webrtcRoundTripTimeStatsMulti); _i3 < _Object$entries3.length; _i3++) {
-      var _Object$entries3$_i = (0, _slicedToArray2.default)(_Object$entries3[_i3], 2),
-          region = _Object$entries3$_i[0],
-          turns = _Object$entries3$_i[1];
+    for (var _i2 = 0, _Object$entries = (0, _entries.default)(webrtcRoundTripTimeStatsMulti); _i2 < _Object$entries.length; _i2++) {
+      var _Object$entries$_i = (0, _slicedToArray2.default)(_Object$entries[_i2], 2),
+          region = _Object$entries$_i[0],
+          stats = _Object$entries$_i[1];
 
-      for (var _i4 = 0, _Object$entries4 = (0, _entries.default)(turns); _i4 < _Object$entries4.length; _i4++) {
-        var _Object$entries4$_i = (0, _slicedToArray2.default)(_Object$entries4[_i4], 2),
-            turn = _Object$entries4$_i[0],
-            stats = _Object$entries4$_i[1];
-
-        if (minRtt === undefined || minRtt > stats.rtt) {
-          minRtt = stats.rtt;
-          networkConnectivity.recommendedRegion = region;
-        }
-
-        if (finalResult[region] === undefined) {
-          finalResult[region] = {};
-        }
-
-        finalResult[region][turn] = {
-          rtt: _Measurement.default.roundToDecimals(stats.rtt, 0),
-          stdDev: _Measurement.default.roundToDecimals(stats.standardDeviation, 0)
-        };
+      if (minRtt === undefined || minRtt > stats.rtt) {
+        minRtt = stats.rtt;
+        networkConnectivity.recommendedRegion = region;
       }
+
+      finalResult[region] = {
+        rtt: _Measurement.default.roundToDecimals(stats.rtt, 0),
+        stdDev: _Measurement.default.roundToDecimals(stats.standardDeviation, 0)
+      };
     }
 
     networkConnectivity.rttRegionMeasurements = finalResult;
@@ -342,14 +288,12 @@ var getAdvancedMeasurement = function getAdvancedMeasurement() {
  * Measure network connectivity on different levels
  *
  * @param browserConnection NetworkInformation from the browser
- * @param measureWebrtcRtt
  * @return {Promise<{measurementLevel: undefined, downloadSpeed: undefined, recommendedRegion: undefined, rttRegionMeasurements: undefined, roundTripTime: undefined}>}
  */
 
 
 var measureNetworkConnectivity = function measureNetworkConnectivity() {
   var browserConnection = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
-  var measureWebrtcRtt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
   return getBrowserMeasurement(browserConnection).then(function (browserMeasurement) {
     networkConnectivity = _objectSpread(_objectSpread({}, networkConnectivity), browserMeasurement);
   }).then(function () {
@@ -357,16 +301,15 @@ var measureNetworkConnectivity = function measureNetworkConnectivity() {
   }).then(function (basicMeasurement) {
     networkConnectivity = _objectSpread(_objectSpread({}, networkConnectivity), basicMeasurement);
   }).then(function () {
-    return measureWebrtcRtt ? new _promise.default(function (resolve) {
+    return new _promise.default(function (resolve) {
       return setTimeout(function () {
         return resolve(getAdvancedMeasurement());
       }, DELAY_DEVICE_INFO_MS);
     } // delay the execution
-    ) : _promise.default.resolve({});
+    );
   }).then(function (advancedMeasurement) {
     networkConnectivity = _objectSpread(_objectSpread({}, networkConnectivity), advancedMeasurement);
     console.log('networkConnectivity:', networkConnectivity);
-    console.log('rttRegionMeasurements:', networkConnectivity.rttRegionMeasurements);
   }).then(function () {
     return networkConnectivity;
   });

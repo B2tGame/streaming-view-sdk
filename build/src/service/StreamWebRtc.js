@@ -48,21 +48,13 @@ var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
 
   /**
    * @param {string} host
-   * @param {{name: string, candidates: []}} iceServers
    * @param {number} pingInterval
-   * @param {boolean} measureWebrtcRtt
    */
   function StreamWebRtc(host) {
     var _this;
 
-    var iceServers = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
-      name: 'default',
-      candidates: []
-    };
+    var _pingInterval = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : StreamWebRtc.WEBRTC_PING_INTERVAL;
 
-    var _pingInterval = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : StreamWebRtc.WEBRTC_PING_INTERVAL;
-
-    var measureWebrtcRtt = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
     (0, _classCallCheck2.default)(this, StreamWebRtc);
     _this = _super.call(this);
 
@@ -109,8 +101,6 @@ var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
       };
 
       var onConnectionStateChange = function onConnectionStateChange() {
-        console.log('peerConnection.connectionState=', peerConnection.connectionState);
-
         switch (peerConnection.connectionState) {
           case 'disconnected':
             if (dataChannel) {
@@ -141,22 +131,17 @@ var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
       if (_this.peerConnection) {
         _this.peerConnection.close();
 
-        _this.peerConnection = null;
+        _this.peerConnection = undefined;
       }
     };
 
     _this.host = host;
-    _this.iceServersName = iceServers.name;
-    _this.iceServersCandidates = iceServers.candidates;
     _this.pingInterval = _pingInterval;
-    _this.measureWebrtcRtt = measureWebrtcRtt;
     _this.peerConnection = undefined;
 
     _WebRtcConnectionClient.default.createConnection({
       beforeAnswer: _this.beforeAnswer,
-      host: _this.host,
-      iceServersName: _this.iceServersName,
-      iceServersCandidates: _this.iceServersCandidates
+      host: _this.host
     }).then(function (peerConnection) {
       _this.peerConnection = peerConnection;
     });

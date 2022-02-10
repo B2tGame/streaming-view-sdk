@@ -249,7 +249,7 @@ var EmulatorWebrtcView = /*#__PURE__*/function (_Component) {
 
       _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_VIDEO_PLAYING);
 
-      _this.props.jsep.peerConnection && _this.props.jsep.peerConnection.getStats().then(function (stats) {
+      _this.props.jsep.peerConnection.getStats().then(function (stats) {
         stats.forEach(function (report) {
           if (report.type === 'inbound-rtp') {
             var codec = (stats.get(report.codecId) || {}).mimeType;
