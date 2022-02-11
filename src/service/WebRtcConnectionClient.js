@@ -45,32 +45,26 @@ export default class WebRtcConnectionClient {
     let remotePeerConnectionId = undefined;
     let peerConnection = undefined;
 
-    const waitUntilIceGatheringStateComplete = () => {
-      if (peerConnection.iceGatheringState === 'complete') {
-        return;
-      }
-      const deferred = {};
-      deferred.promise = new Promise((resolve, reject) => {
-        deferred.resolve = resolve;
-        deferred.reject = reject;
-      });
-
-      const onIceCandidate = (candidate) => {
-        if (candidate.candidate !== null && candidate.candidate !== undefined) {
-          clearTimeout(timeout);
-          peerConnection.removeEventListener('icecandidate', onIceCandidate);
-          deferred.resolve(peerConnection);
+    const waitUntilIceGatheringStateComplete = () =>
+      new Promise((resolve, reject) => {
+        if (peerConnection.iceGatheringState === 'complete') {
+          return;
         }
-      };
 
-      const timeout = setTimeout(() => {
-        peerConnection.removeEventListener('icecandidate', onIceCandidate);
-        deferred.reject(new Error('Timed out waiting for host candidates'));
-      }, 3000);
-      peerConnection.addEventListener('icecandidate', onIceCandidate);
+        const onIceCandidate = (candidate) => {
+          if (candidate.candidate !== null && candidate.candidate !== undefined) {
+            clearTimeout(timeout);
+            peerConnection.removeEventListener('icecandidate', onIceCandidate);
+            resolve(peerConnection);
+          }
+        };
 
-      return deferred.promise;
-    };
+        const timeout = setTimeout(() => {
+          peerConnection.removeEventListener('icecandidate', onIceCandidate);
+          reject(new Error('Timed out waiting for host candidates'));
+        }, 3000);
+        peerConnection.addEventListener('icecandidate', onIceCandidate);
+      });
 
     console.log(`axios POST to: ${host}/connections`);
     return axios

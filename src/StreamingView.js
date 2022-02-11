@@ -11,7 +11,7 @@ import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
 import BlackScreenDetector from './service/BlackScreenDetector';
 import StreamWebRtc from './service/StreamWebRtc';
-import { default as urlParse } from 'url-parse';
+import urlParse from 'url-parse';
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
