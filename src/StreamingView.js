@@ -11,7 +11,7 @@ import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
 import BlackScreenDetector from './service/BlackScreenDetector';
 import StreamWebRtc from './service/StreamWebRtc';
-import parseUrl from 'url-parse';
+import urlParse from 'url-parse';
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
@@ -57,7 +57,9 @@ export default class StreamingView extends Component {
       width: PropTypes.string,
       pingInterval: PropTypes.number,
       measureTouchRtt: PropTypes.bool,
-      playoutDelayHint: PropTypes.number
+      playoutDelayHint: PropTypes.number,
+      iceServers: PropTypes.array,
+      measureWebrtcRtt: PropTypes.bool
     };
   }
 
@@ -71,7 +73,9 @@ export default class StreamingView extends Component {
     muted: false,
     pingInterval: StreamWebRtc.WEBRTC_PING_INTERVAL,
     measureTouchRtt: true,
-    playoutDelayHint: 0
+    playoutDelayHint: 0,
+    iceServers: [],
+    measureWebrtcRtt: true
   };
 
   /**
@@ -103,7 +107,8 @@ export default class StreamingView extends Component {
 
   componentDidMount() {
     this.isMountedInView = true;
-    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, onEvent, pingInterval } = this.props;
+    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, onEvent, pingInterval, measureWebrtcRtt } =
+      this.props;
     if (!internalSession) {
       this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId, this.streamingViewId);
     }
@@ -111,7 +116,9 @@ export default class StreamingView extends Component {
     this.blackScreenDetector = new BlackScreenDetector(edgeNodeId, this.streamingViewId);
 
     this.logger = new Logger();
-    this.measurement = new Measurement(edgeNodeId, this.streamingViewId, this.logger);
+    if (measureWebrtcRtt) {
+      this.measurement = new Measurement(edgeNodeId, this.streamingViewId, this.logger);
+    }
 
     if (onEvent) {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
@@ -175,7 +182,9 @@ export default class StreamingView extends Component {
         return internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
       })
       .then((streamEndpoint) => {
-        this.measurement.initWebRtc(`${parseUrl(streamEndpoint).origin}/measurement/webrtc`, pingInterval);
+        if (this.measurement) {
+          this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, pingInterval);
+        }
         if (!this.isMountedInView) {
           this.logger.log('Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
@@ -350,7 +359,8 @@ export default class StreamingView extends Component {
       edgeNodeId,
       height: propsHeight,
       width: propsWidth,
-      playoutDelayHint
+      playoutDelayHint,
+      iceServers
     } = this.props;
     const { height: stateHeight, width: stateWidth } = this.state;
 
@@ -375,6 +385,7 @@ export default class StreamingView extends Component {
               maxConnectionRetries={this.props.maxConnectionRetries}
               measureTouchRtt={this.props.measureTouchRtt ?? this.state.shouldRandomlyMeasureRtt}
               playoutDelayHint={playoutDelayHint}
+              iceServers={iceServers}
             />
           </div>
         );

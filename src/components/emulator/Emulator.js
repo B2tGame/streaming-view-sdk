@@ -105,7 +105,9 @@ class Emulator extends Component {
     /** Defines if touch rtt should be measured */
     measureTouchRtt: PropTypes.bool,
     /** Playout Delay Hint */
-    playoutDelayHint: PropTypes.number
+    playoutDelayHint: PropTypes.number,
+    /** Ice Server Candidates */
+    iceServers: PropTypes.array
   };
 
   static defaultProps = {
@@ -144,7 +146,8 @@ class Emulator extends Component {
       this.props.edgeNodeId,
       this.props.logger,
       this.props.turnEndpoint,
-      this.props.playoutDelayHint
+      this.props.playoutDelayHint,
+      this.props.iceServers
     );
 
     StreamingEvent.edgeNode(this.props.edgeNodeId)
@@ -219,6 +222,7 @@ class Emulator extends Component {
     if ((this.reloadHoldOff || 0) < Date.now() && this.isMountedInView) {
       this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
       if (this.reloadCount >= this.props.maxConnectionRetries) {
+        this.props.logger.info(`reload count: ${this.reloadCount} of ${this.props.maxConnectionRetries}`);
         // Give up and exit the stream.
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(
           StreamingEvent.STREAM_UNREACHABLE,

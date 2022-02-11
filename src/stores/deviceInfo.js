@@ -3,6 +3,7 @@ import { getNetworkConnectivity } from './networkConnectivity';
 import Logger from './../Logger';
 
 let deviceInfo = {};
+let iceServers = {};
 
 /**
  *
@@ -11,6 +12,15 @@ let deviceInfo = {};
  */
 function requestNetworkDeviceInfo(apiEndpoint) {
   return axios.get(`${apiEndpoint}/api/streaming-games/edge-node/device-info`, { timeout: 2500 }).then((result) => result.data);
+}
+
+/**
+ *
+ * @param {string} apiEndpoint
+ * @returns {Promise<*>}
+ */
+function requestIceServers(apiEndpoint) {
+  return axios.get(`${apiEndpoint}/api/streaming-games/edge-node/ice-server`, { timeout: 2500 }).then((result) => result.data || {});
 }
 
 /**
@@ -50,6 +60,20 @@ function getNetworkDeviceInfo(apiEndpoint) {
 }
 
 /**
+ *
+ * @param {string} apiEndpoint
+ * @returns {Promise<*>}
+ */
+function getIceServers(apiEndpoint) {
+  return Object.keys(iceServers).length === 0
+    ? requestIceServers(apiEndpoint).then((iceServerCandidates) => {
+        iceServers = { ...iceServerCandidates };
+        return iceServers;
+      })
+    : Promise.resolve(iceServers);
+}
+
+/**
  * Get device info, network device info is cached and browser/network connectivity information are fetched every time
  * @param {string} apiEndpoint
  * @param browserConnection NetworkInformation from the browser
@@ -59,9 +83,10 @@ function getDeviceInfo(apiEndpoint, browserConnection = undefined) {
   return Promise.all([
     getNetworkDeviceInfo(apiEndpoint),
     getBrowserDeviceInfo(browserConnection),
-    getNetworkConnectivity(browserConnection)
-  ]).then(([networkDeviceInfo, browserDeviceInfo, networkConnectivity]) => {
-    const deviceInfo = { ...networkDeviceInfo, ...browserDeviceInfo, ...networkConnectivity };
+    getNetworkConnectivity(browserConnection),
+    getIceServers(apiEndpoint)
+  ]).then(([networkDeviceInfo, browserDeviceInfo, networkConnectivity, iceServers]) => {
+    const deviceInfo = { ...networkDeviceInfo, ...browserDeviceInfo, ...networkConnectivity, iceServers: { ...iceServers } };
     new Logger().info('deviceInfo is ready', deviceInfo);
     return deviceInfo;
   });

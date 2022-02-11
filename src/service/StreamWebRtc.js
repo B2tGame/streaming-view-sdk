@@ -20,20 +20,33 @@ export default class StreamWebRtc extends EventEmitter {
 
   /**
    * @param {string} host
+   * @param {{name: string, candidates: []}} iceServers
    * @param {number} pingInterval
+   * @param {boolean} measureWebrtcRtt
    */
-  constructor(host, pingInterval = StreamWebRtc.WEBRTC_PING_INTERVAL) {
+  constructor(
+    host,
+    iceServers = { name: 'default', candidates: [] },
+    pingInterval = StreamWebRtc.WEBRTC_PING_INTERVAL,
+    measureWebrtcRtt = true
+  ) {
     super();
 
-    this.host = host;
+    this.iceServersName = iceServers.name;
+    this.iceServersCandidates = iceServers.candidates;
+    this.host = `${host}/${this.iceServersName}`;
     this.pingInterval = pingInterval;
+    this.measureWebrtcRtt = measureWebrtcRtt;
     this.peerConnection = undefined;
 
     WebRtcConnectionClient.createConnection({
       beforeAnswer: this.beforeAnswer,
-      host: this.host
+      host: this.host,
+      iceServersName: this.iceServersName,
+      iceServersCandidates: this.iceServersCandidates
     }).then((peerConnection) => {
       this.peerConnection = peerConnection;
+      console.log('peerConnection CREATED', this.peerConnection);
     });
   }
 
@@ -48,6 +61,7 @@ export default class StreamWebRtc extends EventEmitter {
       if (type === 'pong') {
         const sendTime = Math.trunc(timestamp);
         const rtt = Date.now() - sendTime;
+        console.log(`PONG - RTT - ${this.iceServersName}: ${rtt}`);
         this.emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
       }
     };
@@ -72,6 +86,7 @@ export default class StreamWebRtc extends EventEmitter {
     };
 
     const onConnectionStateChange = () => {
+      console.log('peerConnection.connectionState:', peerConnection.connectionState);
       switch (peerConnection.connectionState) {
         case 'disconnected':
           if (dataChannel) {
@@ -113,7 +128,7 @@ export default class StreamWebRtc extends EventEmitter {
   close = () => {
     if (this.peerConnection) {
       this.peerConnection.close();
-      this.peerConnection = undefined;
+      this.peerConnection = null;
     }
   };
 }

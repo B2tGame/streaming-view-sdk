@@ -1,4 +1,3 @@
-import parseUrl from 'url-parse';
 import axios from 'axios';
 import { RTCSessionDescription, RTCPeerConnection } from 'wrtc';
 
@@ -7,30 +6,18 @@ import { RTCSessionDescription, RTCPeerConnection } from 'wrtc';
  */
 export default class WebRtcConnectionClient {
   /**
-   * Get Ice configuration from emulator hostname
-   * @returns {any|{urls: string[], credential: string, username: string}}
-   */
-  static getIceConfiguration = (host) => {
-    const hostname = parseUrl(host).hostname;
-    const endpoint = `turn:${hostname}:3478`;
-
-    return {
-      urls: [`${endpoint}?transport=udp`, `${endpoint}?transport=tcp`],
-      username: 'webclient',
-      credential: 'webclient',
-      ttl: 86400
-    };
-  };
-
-  /**
    *
    * @param {string} host
+   * @param {[]} iceServers
    * @param {string} id
    */
-  static createPeerConnection = (host, id) => {
-    const options = { sdpSemantics: 'unified-plan' };
-    options.iceServers = [WebRtcConnectionClient.getIceConfiguration(host)];
-    options.iceTransportPolicy = 'relay';
+  static createPeerConnection = (host, iceServers, id) => {
+    const options = {
+      sdpSemantics: 'unified-plan',
+      iceServers: iceServers,
+      iceTransportPolicy: 'relay'
+    };
+    console.log('RTCPeerConnection options:', options);
     const peerConnection = new RTCPeerConnection(options);
 
     const onConnectionStateChange = () => {
@@ -52,40 +39,84 @@ export default class WebRtcConnectionClient {
       stereo: false,
       ...options
     };
-    const { host, beforeAnswer } = createOptions;
+    const { host, iceServersCandidates, beforeAnswer } = createOptions;
+    console.log('WebRtcConnectionClient.createConnection', { host, iceServersCandidates });
+
     let remotePeerConnectionId = undefined;
     let peerConnection = undefined;
+
+    const waitUntilIceGatheringStateComplete = () =>
+      new Promise((resolve, reject) => {
+        if (peerConnection.iceGatheringState === 'complete') {
+          resolve(peerConnection);
+        }
+
+        const onIceCandidate = (candidate) => {
+          if (candidate.candidate !== null && candidate.candidate !== undefined) {
+            clearTimeout(timeout);
+            peerConnection.removeEventListener('icecandidate', onIceCandidate);
+            resolve(peerConnection);
+          }
+        };
+
+        const timeout = setTimeout(() => {
+          peerConnection.removeEventListener('icecandidate', onIceCandidate);
+          reject(new Error('Timed out waiting for host candidates'));
+        }, 3000);
+        peerConnection.addEventListener('icecandidate', onIceCandidate);
+      });
+
+    console.log(`axios POST to: ${host}/connections`);
     return axios
       .post(`${host}/connections`)
       .then((response) => {
         const remotePeerConnection = response.data || {};
+        console.log(`remotePeerConnection received form ${host}/connections`, remotePeerConnection);
         remotePeerConnectionId = remotePeerConnection.id;
-        peerConnection = WebRtcConnectionClient.createPeerConnection(host, remotePeerConnectionId);
+        peerConnection = WebRtcConnectionClient.createPeerConnection(host, iceServersCandidates, remotePeerConnectionId);
+
+        console.log(`set remotePeerConnection.localDescription as remote description`, remotePeerConnection.localDescription);
         return peerConnection.setRemoteDescription(remotePeerConnection.localDescription);
       })
-      .then(() => beforeAnswer(peerConnection))
+      .then(() => {
+        console.log(`setting peerConnection.setRemoteDescription DONE`);
+        console.log('peerConnection.connectionState:', peerConnection.connectionState);
+        console.log('beforeAnswer; adding ping-pong event handlers');
+        return beforeAnswer(peerConnection);
+      })
       .then(() => peerConnection.createAnswer())
-      .then((originalAnswer) =>
-        peerConnection.setLocalDescription(
+      .then((originalAnswer) => {
+        console.log('peerConnection.createAnswer:', originalAnswer);
+        console.log('peerConnection.setLocalDescription');
+        return peerConnection.setLocalDescription(
           new RTCSessionDescription({
             type: 'answer',
             sdp: createOptions.stereo ? originalAnswer.sdp.replace(/a=fmtp:111/, 'a=fmtp:111 stereo=1\r\na=fmtp:111') : originalAnswer.sdp
           })
-        )
-      )
-      .then(() =>
-        axios(`${host}/connections/${remotePeerConnectionId}/remote-description`, {
+        );
+      })
+      .then(() => waitUntilIceGatheringStateComplete())
+      .then(() => {
+        console.log(
+          `sending answer to: ${host}/connections/${remotePeerConnectionId}/remote-description with peerConnection.localDescription:`,
+          peerConnection.localDescription
+        );
+        return axios(`${host}/connections/${remotePeerConnectionId}/remote-description`, {
           method: 'POST',
           data: JSON.stringify(peerConnection.localDescription),
           headers: {
             'Content-Type': 'application/json'
           }
-        })
-      )
-      .then(() => peerConnection)
+        });
+      })
+      .then((response) => {
+        console.log('response from server:', response);
+        return peerConnection;
+      })
       .catch((error) => {
         if (peerConnection) {
           peerConnection.close();
+          peerConnection = null;
         }
         throw error;
       });

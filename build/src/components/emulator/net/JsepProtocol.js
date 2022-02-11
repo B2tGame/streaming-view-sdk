@@ -52,6 +52,7 @@ var JsepProtocol = /*#__PURE__*/function () {
 
     var turnEndpoint = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : undefined;
     var playoutDelayHint = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 0;
+    var iceServers = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : [];
     (0, _classCallCheck2.default)(this, JsepProtocol);
 
     this.disconnect = function () {
@@ -59,13 +60,13 @@ var JsepProtocol = /*#__PURE__*/function () {
       _this.streamConnectedTimestamp = undefined;
 
       if (_this.peerConnection) {
-        _this.peerConnection.close();
-
         _this.peerConnection.removeEventListener('track', _this._handlePeerConnectionTrack);
 
         _this.peerConnection.removeEventListener('icecandidate', _this._handlePeerIceCandidate);
 
         _this.peerConnection.removeEventListener('connectionstatechange', _this._handlePeerConnectionStateChange);
+
+        _this.peerConnection.close();
 
         _this.peerConnection = null;
       }
@@ -101,6 +102,9 @@ var JsepProtocol = /*#__PURE__*/function () {
       _this.rtc.requestRtcStream(request, {}, function (err, response) {
         if (err) {
           _this.logger.error('Failed to configure rtc stream: ' + (0, _stringify.default)(err));
+
+          console.log('JsepProtocol.startStream: Failed to configure rtc stream:', (0, _stringify.default)(err));
+          console.log('JsepProtocol.startStream: Disconnecting');
 
           _this.disconnect();
 
@@ -142,6 +146,10 @@ var JsepProtocol = /*#__PURE__*/function () {
     };
 
     this._handlePeerConnectionStateChange = function () {
+      console.log('JsepProtocol._handlePeerConnectionStateChange:', {
+        connectionState: _this.peerConnection.connectionState
+      });
+
       switch (_this.peerConnection.connectionState) {
         case 'disconnected':
           // At least one of the ICE transports for the connection is in the "disconnected" state
@@ -203,11 +211,20 @@ var JsepProtocol = /*#__PURE__*/function () {
       }
     };
 
+    this._handlePeerOnIceCandidateError = function (e) {
+      console.log('JsepProtocol._handlePeerOnIceCandidateError:', e);
+    };
+
     this._handleDataChannelStatusChange = function (e) {
+      console.log('JsepProtocol._handleDataChannelStatusChange:', e);
+
       _this.logger.log('Data status change ' + e);
     };
 
     this._handlePeerIceCandidate = function (e) {
+      console.log('JsepProtocol._handlePeerIceCandidate:', {
+        candidate: e.candidate
+      });
       if (e.candidate === null) return;
 
       _this._sendJsep({
@@ -222,9 +239,11 @@ var JsepProtocol = /*#__PURE__*/function () {
 
     this._handleStart = function (signal) {
       signal.start = {
-        iceServers: [_this.getIceConfiguration()],
+        sdpSemantics: 'unified-plan',
+        iceServers: !_this.iceServers.length ? [_this.getIceConfiguration()] : _this.iceServers,
         iceTransportPolicy: 'relay'
       };
+      console.log('JsepProtocol._handleStart:', signal);
       _this.peerConnection = new RTCPeerConnection(signal.start);
 
       _StreamingEvent.default.edgeNode(_this.edgeNodeId).on(_StreamingEvent.default.REQUEST_WEB_RTC_MEASUREMENT, _this.onRequestWebRtcMeasurement);
@@ -234,6 +253,8 @@ var JsepProtocol = /*#__PURE__*/function () {
       _this.peerConnection.addEventListener('icecandidate', _this._handlePeerIceCandidate, false);
 
       _this.peerConnection.addEventListener('connectionstatechange', _this._handlePeerConnectionStateChange, false);
+
+      _this.peerConnection.addEventListener('onicecandidateerror', _this._handlePeerOnIceCandidateError, false);
 
       _this.peerConnection.ondatachannel = function (e) {
         return _this._handleDataChannel(e);
@@ -255,12 +276,14 @@ var JsepProtocol = /*#__PURE__*/function () {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                _this.peerConnection.setRemoteDescription(new RTCSessionDescription(signal));
+                _context.next = 2;
+                return _this.peerConnection.setRemoteDescription(new RTCSessionDescription(signal));
 
-                _context.next = 3;
+              case 2:
+                _context.next = 4;
                 return _this.peerConnection.createAnswer();
 
-              case 3:
+              case 4:
                 answer = _context.sent;
                 sdp = new _SdpModifier.default(answer.sdp); // This will set the target bandwidth usage to 1 mbits/sec for both video and audio stream.
                 // The code is disable for now due to increased latency for everything above the default bandwidth.
@@ -269,6 +292,7 @@ var JsepProtocol = /*#__PURE__*/function () {
                 // sdp.restrictVideoCodec(['VP9']);
 
                 answer.sdp = sdp.toString();
+                console.log('JsepProtocol._handleSDP:', answer);
 
                 if (answer) {
                   _this.peerConnection.setLocalDescription(answer);
@@ -280,7 +304,7 @@ var JsepProtocol = /*#__PURE__*/function () {
                   _this.disconnect();
                 }
 
-              case 7:
+              case 9:
               case "end":
                 return _context.stop();
             }
@@ -298,6 +322,8 @@ var JsepProtocol = /*#__PURE__*/function () {
     };
 
     this._handleJsepMessage = function (message) {
+      console.log('JsepProtocol._handleJsepMessage:', message);
+
       try {
         var signal = JSON.parse(message);
         if (signal.start) _this._handleStart(signal);
@@ -311,6 +337,8 @@ var JsepProtocol = /*#__PURE__*/function () {
 
     this._handleBye = function () {
       if (_this.connected) {
+        console.log('JsepProtocol._handleBye: Disconnecting');
+
         _this.disconnect();
       }
     };
@@ -320,6 +348,7 @@ var JsepProtocol = /*#__PURE__*/function () {
       var request = new proto.android.emulation.control.JsepMsg();
       request.setId(_this.guid);
       request.setMessage((0, _stringify.default)(jsonObject));
+      console.log('JsepProtocol._sendJsep:', request);
 
       _this.rtc.sendJsepMessage(request);
     };
@@ -385,6 +414,7 @@ var JsepProtocol = /*#__PURE__*/function () {
     this.eventForwarders = {};
     this.poll = poll || typeof this.rtc.receiveJsepMessages !== 'function';
     this.playoutDelayHint = playoutDelayHint;
+    this.iceServers = iceServers;
     this.logger = logger;
   }
   /**

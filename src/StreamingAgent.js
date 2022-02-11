@@ -14,13 +14,15 @@ export default class StreamingAgent extends Component {
   static propTypes = {
     apiEndpoint: PropTypes.string.isRequired,
     pingInterval: PropTypes.number,
-    internalSession: PropTypes.bool
+    internalSession: PropTypes.bool,
+    measureWebrtcRtt: PropTypes.bool
   };
 
   constructor(props) {
     super(props);
     this.logger = new Logger();
     this.connection = {};
+    this.measureWebrtcRtt = this.props.measureWebrtcRtt;
   }
 
   logError(error) {
@@ -59,7 +61,7 @@ export default class StreamingAgent extends Component {
     this.clearStoresCache();
     if (!this.props.internalSession && this.props.apiEndpoint) {
       getDeviceInfo(this.props.apiEndpoint, this.connection)
-        .then(() => measureNetworkConnectivity(this.connection))
+        .then(() => measureNetworkConnectivity(this.connection, this.measureWebrtcRtt))
         .catch((err) => this.logError(err));
     }
   }

@@ -18,6 +18,8 @@ _Object$defineProperty(exports, "__esModule", {
 
 exports.default = void 0;
 
+var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
+
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
@@ -148,7 +150,7 @@ var Emulator = /*#__PURE__*/function (_Component) {
         poll = _this$props.poll;
     _this.emulator = new _emulator_web_client.EmulatorControllerService(uri, auth, _this.onError);
     _this.rtc = new _emulator_web_client.RtcService(uri, auth, _this.onError);
-    _this.jsep = new _JsepProtocol.default(_this.emulator, _this.rtc, poll, _this.props.edgeNodeId, _this.props.logger, _this.props.turnEndpoint, _this.props.playoutDelayHint);
+    _this.jsep = new _JsepProtocol.default(_this.emulator, _this.rtc, poll, _this.props.edgeNodeId, _this.props.logger, _this.props.turnEndpoint, _this.props.playoutDelayHint, _this.props.iceServers);
 
     _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).on(_StreamingEvent.default.STREAM_DISCONNECTED, _this.onDisconnect).on(_StreamingEvent.default.STREAM_VIDEO_UNAVAILABLE, _this.onVideoUnavailable).on(_StreamingEvent.default.STREAM_VIDEO_MISSING, _this.onVideoMissing).on(_StreamingEvent.default.STREAM_CONNECTED, _this.onConnect);
 
@@ -181,7 +183,10 @@ var Emulator = /*#__PURE__*/function (_Component) {
         this.reloadHoldOff = Date.now() + Emulator.RELOAD_HOLD_OFF_TIMEOUT;
 
         if (this.reloadCount >= this.props.maxConnectionRetries) {
-          // Give up and exit the stream.
+          var _context;
+
+          this.props.logger.info((0, _concat.default)(_context = "reload count: ".concat(this.reloadCount, " of ")).call(_context, this.props.maxConnectionRetries)); // Give up and exit the stream.
+
           _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_UNREACHABLE, "Reached max number of reload tries: ".concat(this.reloadCount));
         } else {
           this.reloadCount++;
@@ -318,7 +323,10 @@ Emulator.propTypes = {
   measureTouchRtt: _propTypes.default.bool,
 
   /** Playout Delay Hint */
-  playoutDelayHint: _propTypes.default.number
+  playoutDelayHint: _propTypes.default.number,
+
+  /** Ice Server Candidates */
+  iceServers: _propTypes.default.array
 };
 Emulator.defaultProps = {
   auth: null,
