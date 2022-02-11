@@ -48,7 +48,7 @@ export default class WebRtcConnectionClient {
     const waitUntilIceGatheringStateComplete = () =>
       new Promise((resolve, reject) => {
         if (peerConnection.iceGatheringState === 'complete') {
-          return;
+          resolve(peerConnection);
         }
 
         const onIceCandidate = (candidate) => {
