@@ -8,6 +8,7 @@
     "url": "git+ssh://git@bitbucket.org:appland/streaming-view-sdk.git"
   },
   "scripts": {
+    "test": "jest",
     "build": "rm -rf build && babel index.js -d build && babel src -d build/src --copy-files"
   },
   "author": "Appland",
@@ -39,6 +40,15 @@
     "@babel/plugin-transform-runtime": "^7.15.8",
     "@babel/preset-env": "^7.15.8",
     "@babel/preset-react": "^7.14.5",
-    "babel-cli": "^6.26.0"
+    "@babel/runtime": "^7.17.2",
+    "@babel/runtime-corejs3": "^7.17.2",
+    "babel-cli": "^6.26.0",
+    "jest": "^27.5.1",
+    "jest-localstorage-mock": "^2.4.19",
+    "nock": "^13.2.4"
+  },
+  "jest": {
+    "resetMocks": false,
+    "setupFiles": ["jest-localstorage-mock"]
   }
 }

@@ -285,8 +285,8 @@ class StreamingController {
    * Get device info from the device including geolocation, screen configuration etc.
    * @returns {Promise<object>}
    */
-  getDeviceInfo() {
-    return getDeviceInfo(this.getApiEndpoint());
+  getDeviceInfo(body = {}) {
+    return getDeviceInfo(this.getApiEndpoint(), body);
   }
 
   /**
