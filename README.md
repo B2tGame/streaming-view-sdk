@@ -102,6 +102,11 @@ Run shell script:
 ```
 ./build-sdk.sh
 ```
+
+## How to run tests
+ ```sh
+   npm test
+   ```
    
 ### Last Commit Id of merged Google repository
 
