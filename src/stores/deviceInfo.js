@@ -5,6 +5,7 @@ import DeviceInfoService from '../service/DeviceInfoService';
 
 let deviceInfo = {};
 let iceServers = {};
+let cachedApiEndpoint;
 
 /**
  *
@@ -38,17 +39,17 @@ function getBrowserDeviceInfo(browserConnection = undefined) {
 }
 
 /**
- *
- * @param apiEndpoint
- * @param {{userId: string} | undefined } options
- * @return {Promise<*>|Promise<{}>}
+ * @param {string} apiEndpoint
+ * @return {Promise<{*}>}
  */
-function getNetworkDeviceInfo(apiEndpoint, options = {}) {
+function getNetworkDeviceInfo(apiEndpoint) {
   if (Object.keys(deviceInfo).length > 0) {
     return Promise.resolve(deviceInfo);
   }
 
-  return new DeviceInfoService(apiEndpoint).createdDeviceInfo(options).then((networkDeviceInfo) => {
+  cachedApiEndpoint = apiEndpoint;
+
+  return DeviceInfoService.createDeviceInfo(apiEndpoint).then((networkDeviceInfo) => {
     deviceInfo = networkDeviceInfo;
     return networkDeviceInfo;
   });
@@ -71,13 +72,12 @@ function getIceServers(apiEndpoint) {
 /**
  * Get device info, network device info is cached and browser/network connectivity information are fetched every time
  * @param {string} apiEndpoint
- * @param {{browserConnection: any; userId:string } | undefined } options NetworkInformation from the browser
+ * @param browserConnection NetworkInformation from the browser
  * @returns {Promise<{}>}
  */
-function getDeviceInfo(apiEndpoint, options = {}) {
-  const { browserConnection, userId } = options;
+function getDeviceInfo(apiEndpoint, browserConnection = undefined) {
   return Promise.all([
-    getNetworkDeviceInfo(apiEndpoint, { userId }),
+    getNetworkDeviceInfo(apiEndpoint),
     getBrowserDeviceInfo(browserConnection),
     getNetworkConnectivity(browserConnection),
     getIceServers(apiEndpoint)
@@ -89,10 +89,20 @@ function getDeviceInfo(apiEndpoint, options = {}) {
 }
 
 /**
+ * Update the last created devic-info
+ * @param {*} body
+ * @param {string | undefined} apiEndpoint
+ * @returns {Promise<{*}>}
+ */
+function updateDeviceInfo(body, apiEndpoint) {
+  return DeviceInfoService.updateDeviceInfo(apiEndpoint ? apiEndpoint : cachedApiEndpoint, body);
+}
+
+/**
  * Reset all device information
  */
 function resetDeviceInfo() {
   deviceInfo = {};
 }
 
-export { getDeviceInfo, resetDeviceInfo };
+export { getDeviceInfo, resetDeviceInfo, updateDeviceInfo, getNetworkDeviceInfo };

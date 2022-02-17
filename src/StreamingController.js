@@ -283,11 +283,10 @@ class StreamingController {
 
   /**
    * Get device info from the device including geolocation, screen configuration etc.
-   * @param {{userId: string} | undefined} options
    * @returns {Promise<object>}
    */
-  getDeviceInfo(options = {}) {
-    return getDeviceInfo(this.getApiEndpoint(), options);
+  getDeviceInfo() {
+    return getDeviceInfo(this.getApiEndpoint());
   }
 
   /**

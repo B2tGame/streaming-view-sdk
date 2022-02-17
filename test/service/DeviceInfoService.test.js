@@ -3,7 +3,7 @@ import uuid from '../mocks/uuid';
 import DeviceInfoService from '../../src/service/DeviceInfoService';
 
 const createDeviceInfoResponse = { deviceInfoId: uuid() };
-const deviceInfoService = new DeviceInfoService('http://localhost');
+const apiEndpoint = 'http://localhost';
 
 describe('DeviceInfoService', () => {
   beforeAll(() => {
@@ -22,13 +22,13 @@ describe('DeviceInfoService', () => {
 
   describe('createDeviceInfo', () => {
     test('POST can create a device-info without providing a userId', async () => {
-      const result = await deviceInfoService.createDeviceInfo();
+      const result = await DeviceInfoService.createDeviceInfo(apiEndpoint);
       expect(result).toStrictEqual(createDeviceInfoResponse);
       expect(DeviceInfoService.getStoredUserId()).toEqual(uuid());
       expect(DeviceInfoService.getStoredDeviceInfoId()).toEqual(uuid());
     });
     test('POST can create a device-info providing a custom userId', async () => {
-      const result = await deviceInfoService.createDeviceInfo({ userId: uuid() });
+      const result = await DeviceInfoService.createDeviceInfo(apiEndpoint, { userId: uuid() });
       expect(result).toStrictEqual(createDeviceInfoResponse);
       expect(DeviceInfoService.getStoredUserId()).toBeNull();
       expect(DeviceInfoService.getStoredDeviceInfoId()).toEqual(uuid());
@@ -37,11 +37,11 @@ describe('DeviceInfoService', () => {
   describe('updateDeviceInfoId', () => {
     test('POST can update an existing deviceInfo using the stored deviceInfoId', async () => {
       // create a device-info.
-      await deviceInfoService.createDeviceInfo();
+      await DeviceInfoService.createDeviceInfo(apiEndpoint);
       // get stored id from localStorage
       const deviceInfoId = DeviceInfoService.getStoredDeviceInfoId();
       expect(deviceInfoId).toEqual(uuid());
-      const res = await deviceInfoService.updateDeviceInfo(uuid(), {
+      const res = await DeviceInfoService.updateDeviceInfo(apiEndpoint, {
         rttRegionMeasurement: {
           'eu-central-1': {
             default: {

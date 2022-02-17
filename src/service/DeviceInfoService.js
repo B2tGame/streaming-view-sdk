@@ -5,10 +5,10 @@ import { v4 as uuid } from 'uuid';
  * Class responsible for DeviceInfo operations. create or update a device info.
  */
 export default class DeviceInfoService {
-  static USER_ID_KEY() {
+  static get USER_ID_KEY() {
     return 'streaming-appland-user-id';
   }
-  static DEVICE_INFO_ID_KEY() {
+  static get DEVICE_INFO_ID_KEY() {
     return 'streaming-appland-device-info-id';
   }
   /**
@@ -29,37 +29,41 @@ export default class DeviceInfoService {
     return localStorage.getItem(DeviceInfoService.DEVICE_INFO_ID_KEY);
   }
 
-  constructor(apiEndpoint) {
-    this.apiEndpoint = apiEndpoint;
-  }
-
   /**
    * Create a device-info and return it.
-   *
+   * @param {string} apiEndpoint
    * @param {{userId: string } | undefined } options
    * @returns {{*}}
    */
-  createDeviceInfo(options = {}) {
+  static createDeviceInfo(apiEndpoint, options = {}) {
     const { userId } = options;
 
     // If the user of this method does not provide a userId we create one and store it
     // in localStorage and use it in all sebsequent calls.
     if (!userId) {
-      let id = localStorage.getItem(DeviceInfoService.USER_ID_KEY);
-      if (!id) {
-        id = uuid();
-        localStorage.setItem(DeviceInfoService.USER_ID_KEY, id);
+      let storedUserId = DeviceInfoService.getStoredUserId();
+      if (!storedUserId) {
+        storedUserId = uuid();
+        localStorage.setItem(DeviceInfoService.USER_ID_KEY, storedUserId);
       }
-      options.userId = id;
+      options.userId = storedUserId;
     }
 
-    return axios.post(`${this.apiEndpoint}/api/streaming-games/edge-node/device-info`, options, { timeout: 2500 }).then((result) => {
+    return axios.post(`${apiEndpoint}/api/streaming-games/edge-node/device-info`, options, { timeout: 2500 }).then((result) => {
       localStorage.setItem(DeviceInfoService.DEVICE_INFO_ID_KEY, result.data.deviceInfoId);
       return result.data;
     });
   }
 
-  updateDeviceInfo(deviceInfoId, body) {
-    return axios.post(`${this.apiEndpoint}/api/streaming-games/edge-node/device-info/${deviceInfoId}`, body, { timeout: 2500 });
+  /**
+   * Update the latest created device-info
+   * @param {string} apiEndpoint
+   * @param {{*}} body
+   * @returns {Promise<{*}>}
+   */
+  static updateDeviceInfo(apiEndpoint, body) {
+    return axios.post(`${apiEndpoint}/api/streaming-games/edge-node/device-info/${DeviceInfoService.getStoredDeviceInfoId()}`, body, {
+      timeout: 2500
+    });
   }
 }
