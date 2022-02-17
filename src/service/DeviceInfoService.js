@@ -33,8 +33,14 @@ export default class DeviceInfoService {
     this.apiEndpoint = apiEndpoint;
   }
 
-  createDeviceInfo(body = {}) {
-    const { userId } = body;
+  /**
+   * Create a device-info and return it.
+   *
+   * @param {{userId: string } | undefined } options
+   * @returns {{*}}
+   */
+  createDeviceInfo(options = {}) {
+    const { userId } = options;
 
     // If the user of this method does not provide a userId we create one and store it
     // in localStorage and use it in all sebsequent calls.
@@ -44,10 +50,10 @@ export default class DeviceInfoService {
         id = uuid();
         localStorage.setItem(DeviceInfoService.USER_ID_KEY, id);
       }
-      body.userId = id;
+      options.userId = id;
     }
 
-    return axios.post(`${this.apiEndpoint}/api/streaming-games/edge-node/device-info`, body, { timeout: 2500 }).then((result) => {
+    return axios.post(`${this.apiEndpoint}/api/streaming-games/edge-node/device-info`, options, { timeout: 2500 }).then((result) => {
       localStorage.setItem(DeviceInfoService.DEVICE_INFO_ID_KEY, result.data.deviceInfoId);
       return result.data;
     });

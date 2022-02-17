@@ -45,10 +45,12 @@
     "babel-cli": "^6.26.0",
     "jest": "^27.5.1",
     "jest-localstorage-mock": "^2.4.19",
-    "nock": "^13.2.4"
+    "msw": "^0.36.8"
   },
   "jest": {
     "resetMocks": false,
-    "setupFiles": ["jest-localstorage-mock"]
+    "setupFiles": [
+      "jest-localstorage-mock"
+    ]
   }
 }

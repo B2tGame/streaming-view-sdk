@@ -11,15 +11,6 @@ let iceServers = {};
  * @param {string} apiEndpoint
  * @returns {Promise<*>}
  */
-function requestNetworkDeviceInfo(apiEndpoint) {
-  return new DeviceInfoService(apiEndpoint).createDeviceInfo();
-}
-
-/**
- *
- * @param {string} apiEndpoint
- * @returns {Promise<*>}
- */
 function requestIceServers(apiEndpoint) {
   return axios.get(`${apiEndpoint}/api/streaming-games/edge-node/ice-server`, { timeout: 2500 }).then((result) => result.data || {});
 }
@@ -49,14 +40,15 @@ function getBrowserDeviceInfo(browserConnection = undefined) {
 /**
  *
  * @param apiEndpoint
+ * @param {{userId: string} | undefined } options
  * @return {Promise<*>|Promise<{}>}
  */
-function getNetworkDeviceInfo(apiEndpoint) {
+function getNetworkDeviceInfo(apiEndpoint, options = {}) {
   if (Object.keys(deviceInfo).length > 0) {
     return Promise.resolve(deviceInfo);
   }
 
-  return requestNetworkDeviceInfo(apiEndpoint).then((networkDeviceInfo) => {
+  return new DeviceInfoService(apiEndpoint).createdDeviceInfo(options).then((networkDeviceInfo) => {
     deviceInfo = networkDeviceInfo;
     return networkDeviceInfo;
   });
@@ -79,13 +71,13 @@ function getIceServers(apiEndpoint) {
 /**
  * Get device info, network device info is cached and browser/network connectivity information are fetched every time
  * @param {string} apiEndpoint
- * @param {{browserConnection: any; userId:string }} options NetworkInformation from the browser
+ * @param {{browserConnection: any; userId:string } | undefined } options NetworkInformation from the browser
  * @returns {Promise<{}>}
  */
-function getDeviceInfo(apiEndpoint, options) {
+function getDeviceInfo(apiEndpoint, options = {}) {
   const { browserConnection, userId } = options;
   return Promise.all([
-    getNetworkDeviceInfo(apiEndpoint),
+    getNetworkDeviceInfo(apiEndpoint, { userId }),
     getBrowserDeviceInfo(browserConnection),
     getNetworkConnectivity(browserConnection),
     getIceServers(apiEndpoint)
