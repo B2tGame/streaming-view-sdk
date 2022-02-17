@@ -89,8 +89,8 @@ function getDeviceInfo(apiEndpoint, browserConnection = undefined) {
 }
 
 /**
- * Update the last created devic-info
- * @param {*} body
+ * Update the last created device-info
+ * @param {{*}} body
  * @param {string | undefined} apiEndpoint
  * @returns {Promise<{*}>}
  */

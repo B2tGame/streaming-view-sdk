@@ -39,7 +39,7 @@ export default class DeviceInfoService {
     const { userId } = options;
 
     // If the user of this method does not provide a userId we create one and store it
-    // in localStorage and use it in all sebsequent calls.
+    // in localStorage and use it in all subsequent calls.
     if (!userId) {
       let storedUserId = DeviceInfoService.getStoredUserId();
       if (!storedUserId) {
