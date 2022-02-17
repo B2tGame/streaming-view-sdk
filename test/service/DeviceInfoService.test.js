@@ -1,8 +1,8 @@
 import { server } from '../mocks/server';
 import uuid from '../mocks/uuid';
+import { createDeviceInfoResponse } from '../mocks/response';
 import DeviceInfoService from '../../src/service/DeviceInfoService';
 
-const createDeviceInfoResponse = { deviceInfoId: uuid() };
 const apiEndpoint = 'http://localhost';
 
 describe('DeviceInfoService', () => {

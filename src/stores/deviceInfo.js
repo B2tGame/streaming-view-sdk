@@ -40,16 +40,17 @@ function getBrowserDeviceInfo(browserConnection = undefined) {
 
 /**
  * @param {string} apiEndpoint
+ * @param {{userId: string} | undefined} options
  * @return {Promise<{*}>}
  */
-function getNetworkDeviceInfo(apiEndpoint) {
+function getNetworkDeviceInfo(apiEndpoint, options) {
   if (Object.keys(deviceInfo).length > 0) {
     return Promise.resolve(deviceInfo);
   }
 
   cachedApiEndpoint = apiEndpoint;
 
-  return DeviceInfoService.createDeviceInfo(apiEndpoint).then((networkDeviceInfo) => {
+  return DeviceInfoService.createDeviceInfo(apiEndpoint, options).then((networkDeviceInfo) => {
     deviceInfo = networkDeviceInfo;
     return networkDeviceInfo;
   });
@@ -72,12 +73,13 @@ function getIceServers(apiEndpoint) {
 /**
  * Get device info, network device info is cached and browser/network connectivity information are fetched every time
  * @param {string} apiEndpoint
- * @param browserConnection NetworkInformation from the browser
+ * @param {{ browserConnection: NetworkInformation | undefined; userId: string | undefined } | undefined } options
  * @returns {Promise<{}>}
  */
-function getDeviceInfo(apiEndpoint, browserConnection = undefined) {
+function getDeviceInfo(apiEndpoint, options = {}) {
+  const { browserConnection, userId } = options;
   return Promise.all([
-    getNetworkDeviceInfo(apiEndpoint),
+    getNetworkDeviceInfo(apiEndpoint, { userId }),
     getBrowserDeviceInfo(browserConnection),
     getNetworkConnectivity(browserConnection),
     getIceServers(apiEndpoint)

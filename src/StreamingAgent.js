@@ -60,7 +60,7 @@ export default class StreamingAgent extends Component {
   onConnectivityUpdate() {
     this.clearStoresCache();
     if (!this.props.internalSession && this.props.apiEndpoint) {
-      getDeviceInfo(this.props.apiEndpoint, this.connection)
+      getDeviceInfo(this.props.apiEndpoint, { browserConnection: this.connection })
         .then(() => measureNetworkConnectivity(this.connection, this.measureWebrtcRtt))
         .catch((err) => this.logError(err));
     }

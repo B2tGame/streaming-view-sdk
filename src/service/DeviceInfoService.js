@@ -13,7 +13,6 @@ export default class DeviceInfoService {
   }
   /**
    * returns the stored userId stored in localStorage.
-   *
    * @returns {string|undefined}
    */
   static getStoredUserId() {
@@ -22,7 +21,6 @@ export default class DeviceInfoService {
 
   /**
    * returns the deviceInfoId of the latest device-info fetched from the api stored in localStorage.
-   *
    * @returns {string|undefined}
    */
   static getStoredDeviceInfoId() {

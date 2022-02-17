@@ -1,9 +1,9 @@
 import { server } from '../mocks/server';
 import uuid from '../mocks/uuid';
 import DeviceInfoService from '../../src/service/DeviceInfoService';
+import { createDeviceInfoResponse } from '../mocks/response';
 import { getNetworkDeviceInfo, updateDeviceInfo } from '../../src/stores/deviceInfo';
 
-const createDeviceInfoResponse = { deviceInfoId: uuid() };
 const apiEndpoint = 'http://localhost';
 
 describe('deviceinfo', () => {
@@ -22,7 +22,7 @@ describe('deviceinfo', () => {
   });
 
   describe('getNetworkDeviceInfo', () => {
-    test('can get a device-info from api and save it in local-storage', async () => {
+    test('can get a device-info from api and save it in local-storage without providing a userId', async () => {
       const res = await getNetworkDeviceInfo(apiEndpoint);
       expect(res).toStrictEqual(createDeviceInfoResponse);
       expect(DeviceInfoService.getStoredDeviceInfoId()).toEqual(uuid());
