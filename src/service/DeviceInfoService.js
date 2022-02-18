@@ -37,7 +37,7 @@ export default class DeviceInfoService {
     const { userId } = body;
 
     const getOrCreateUserId = () => {
-      let storedUserId = DeviceInfoService.getStoredUserId();
+      const storedUserId = DeviceInfoService.getStoredUserId();
       if (storedUserId) {
         return storedUserId;
       }
