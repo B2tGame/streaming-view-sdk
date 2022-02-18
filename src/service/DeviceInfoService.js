@@ -2,7 +2,7 @@ import axios from 'axios';
 import { v4 as uuid } from 'uuid';
 
 /**
- * Class responsible for DeviceInfo operations. create or update a device info.
+ * This class is responsible for interacting with the device-info api. For example to create and update a device-info.
  */
 export default class DeviceInfoService {
   static get USER_ID_KEY() {
@@ -20,7 +20,7 @@ export default class DeviceInfoService {
   }
 
   /**
-   * returns the deviceInfoId of the latest device-info fetched from the api stored in localStorage.
+   * returns the deviceInfoId of the last device-info fetched from the api and stored in localStorage.
    * @returns {string|undefined}
    */
   static getStoredDeviceInfoId() {
@@ -28,33 +28,39 @@ export default class DeviceInfoService {
   }
 
   /**
-   * Create a device-info and return it.
+   * Creates a device-info and stores its id in localstorage.
    * @param {string} apiEndpoint
-   * @param {{userId: string } | undefined } options
+   * @param {{userId: string } | undefined } body
    * @returns {{*}}
    */
-  static createDeviceInfo(apiEndpoint, options = {}) {
-    const { userId } = options;
+  static createDeviceInfo(apiEndpoint, body = {}) {
+    const { userId } = body;
+
+    const getOrCreateUserId = () => {
+      let storedUserId = DeviceInfoService.getStoredUserId();
+      if (storedUserId) {
+        return storedUserId;
+      }
+      const id = uuid();
+      localStorage.setItem(DeviceInfoService.USER_ID_KEY, id);
+      return id;
+    };
 
     // If the user of this method does not provide a userId we create one and store it
     // in localStorage and use it in all subsequent calls.
     if (!userId) {
-      let storedUserId = DeviceInfoService.getStoredUserId();
-      if (!storedUserId) {
-        storedUserId = uuid();
-        localStorage.setItem(DeviceInfoService.USER_ID_KEY, storedUserId);
-      }
-      options.userId = storedUserId;
+      body.userId = getOrCreateUserId();
     }
 
-    return axios.post(`${apiEndpoint}/api/streaming-games/edge-node/device-info`, options, { timeout: 2500 }).then((result) => {
+    return axios.post(`${apiEndpoint}/api/streaming-games/edge-node/device-info`, body, { timeout: 2500 }).then((result) => {
+      // deviceInfoId is stored in localStorage. Later it will be used to update the device-info with new data.
       localStorage.setItem(DeviceInfoService.DEVICE_INFO_ID_KEY, result.data.deviceInfoId);
       return result.data;
     });
   }
 
   /**
-   * Update the latest created device-info
+   * Update the last created device-info
    * @param {string} apiEndpoint
    * @param {{*}} body
    * @returns {Promise<{*}>}
