@@ -34,21 +34,19 @@ export default class DeviceInfoService {
    * @returns {{*}}
    */
   static createDeviceInfo(apiEndpoint, body = {}) {
-    const { userId } = body;
-
     const getOrCreateUserId = () => {
       const storedUserId = DeviceInfoService.getStoredUserId();
       if (storedUserId) {
         return storedUserId;
       }
-      const id = uuid();
-      localStorage.setItem(DeviceInfoService.USER_ID_KEY, id);
-      return id;
+      const userId = uuid();
+      localStorage.setItem(DeviceInfoService.USER_ID_KEY, userId);
+      return userId;
     };
 
     // If the user of this method does not provide a userId we create one and store it
     // in localStorage and use it in all subsequent calls.
-    if (!userId) {
+    if (!body.userId) {
       body.userId = getOrCreateUserId();
     }
 
