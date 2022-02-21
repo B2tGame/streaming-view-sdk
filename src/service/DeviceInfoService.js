@@ -31,7 +31,7 @@ export default class DeviceInfoService {
    * Creates a device-info and stores its id in localstorage.
    * @param {string} apiEndpoint
    * @param {{userId: string } | undefined } body
-   * @returns {{*}}
+   * @returns {Promise<{*}>}
    */
   static createDeviceInfo(apiEndpoint, body = {}) {
     const getOrCreateUserId = () => {
