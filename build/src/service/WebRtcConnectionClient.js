@@ -94,30 +94,25 @@ WebRtcConnectionClient.createConnection = function () {
   var peerConnection = undefined;
 
   var waitUntilIceGatheringStateComplete = function waitUntilIceGatheringStateComplete() {
-    if (peerConnection.iceGatheringState === 'complete') {
-      return;
-    }
-
-    var deferred = {};
-    deferred.promise = new _promise.default(function (resolve, reject) {
-      deferred.resolve = resolve;
-      deferred.reject = reject;
-    });
-
-    var onIceCandidate = function onIceCandidate(candidate) {
-      if (candidate.candidate !== null && candidate.candidate !== undefined) {
-        clearTimeout(timeout);
-        peerConnection.removeEventListener('icecandidate', onIceCandidate);
-        deferred.resolve(peerConnection);
+    return new _promise.default(function (resolve, reject) {
+      if (peerConnection.iceGatheringState === 'complete') {
+        resolve(peerConnection);
       }
-    };
 
-    var timeout = setTimeout(function () {
-      peerConnection.removeEventListener('icecandidate', onIceCandidate);
-      deferred.reject(new Error('Timed out waiting for host candidates'));
-    }, 3000);
-    peerConnection.addEventListener('icecandidate', onIceCandidate);
-    return deferred.promise;
+      var onIceCandidate = function onIceCandidate(candidate) {
+        if (candidate.candidate !== null && candidate.candidate !== undefined) {
+          clearTimeout(timeout);
+          peerConnection.removeEventListener('icecandidate', onIceCandidate);
+          resolve(peerConnection);
+        }
+      };
+
+      var timeout = setTimeout(function () {
+        peerConnection.removeEventListener('icecandidate', onIceCandidate);
+        reject(new Error('Timed out waiting for host candidates'));
+      }, 3000);
+      peerConnection.addEventListener('icecandidate', onIceCandidate);
+    });
   };
 
   console.log("axios POST to: ".concat(host, "/connections"));
