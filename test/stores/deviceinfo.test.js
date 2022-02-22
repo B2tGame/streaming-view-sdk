@@ -31,23 +31,20 @@ describe('deviceinfo', () => {
   describe('updateDeviceInfo', () => {
     test('can update the latest created device-info fetched from api', async () => {
       await getNetworkDeviceInfo(apiEndpoint);
-      const res = await updateDeviceInfo(
-        {
-          rttRegionMeasurement: {
-            'eu-central-1': {
-              default: {
-                rtt: 10,
-                stdDev: 3
-              },
-              subspace: {
-                rtt: 20,
-                stdDev: 5
-              }
+      const res = await updateDeviceInfo(apiEndpoint, {
+        rttRegionMeasurement: {
+          'eu-central-1': {
+            default: {
+              rtt: 10,
+              stdDev: 3
+            },
+            subspace: {
+              rtt: 20,
+              stdDev: 5
             }
           }
-        },
-        apiEndpoint
-      );
+        }
+      });
       expect(res.status).toBe(200);
     });
   });

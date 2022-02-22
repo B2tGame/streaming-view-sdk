@@ -93,10 +93,10 @@ function getDeviceInfo(apiEndpoint, options = {}) {
 /**
  * Update the last created device-info
  * @param {{*}} body
- * @param {string | undefined} apiEndpoint
+ * @param {string | null} apiEndpoint
  * @returns {Promise<{*}>}
  */
-function updateDeviceInfo(body, apiEndpoint) {
+function updateDeviceInfo(apiEndpoint, body) {
   return DeviceInfoService.updateDeviceInfo(apiEndpoint ? apiEndpoint : cachedApiEndpoint, body);
 }
 

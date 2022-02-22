@@ -242,7 +242,7 @@ const getAdvancedMeasurement = () => {
       }
       networkConnectivity.rttRegionMeasurements = finalResult;
     })
-    .then(() => updateDeviceInfo({ rttRegionMeasurements: networkConnectivity.rttRegionMeasurements }))
+    .then(() => updateDeviceInfo(null, { rttRegionMeasurements: networkConnectivity.rttRegionMeasurements }))
     .then(() => ({
       predictedGameExperience: predictedGameExperienceMulti[networkConnectivity.recommendedRegion],
       measurementLevel: MEASUREMENT_LEVEL_ADVANCED
