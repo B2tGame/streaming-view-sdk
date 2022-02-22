@@ -34,20 +34,17 @@ export default class DeviceInfoService {
    * @returns {Promise<{*}>}
    */
   static createDeviceInfo(apiEndpoint, body = {}) {
-    const getOrCreateUserId = () => {
-      const storedUserId = DeviceInfoService.getStoredUserId();
-      if (storedUserId) {
-        return storedUserId;
-      }
-      const userId = uuid();
-      localStorage.setItem(DeviceInfoService.USER_ID_KEY, userId);
-      return userId;
-    };
-
     // If the user of this method does not provide a userId we create one and store it
     // in localStorage and use it in all subsequent calls.
     if (!body.userId) {
-      body.userId = getOrCreateUserId();
+      const storedUserId = DeviceInfoService.getStoredUserId();
+      if (storedUserId) {
+        body.userId = storedUserId;
+      } else {
+        const userId = uuid();
+        localStorage.setItem(DeviceInfoService.USER_ID_KEY, userId);
+        body.userId = userId;
+      }
     }
 
     return axios.post(`${apiEndpoint}/api/streaming-games/edge-node/device-info`, body, { timeout: 2500 }).then((result) => {
