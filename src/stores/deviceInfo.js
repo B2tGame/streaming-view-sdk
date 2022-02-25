@@ -69,7 +69,6 @@ function getNetworkDeviceInfo(apiEndpoint) {
 function getIceServers(apiEndpoint, region) {
   return Object.keys(iceServers).length === 0
     ? requestIceServers(apiEndpoint, region).then((iceServerCandidates) => {
-      console.log('iceServerCandidates: ', iceServerCandidates);
       iceServers = { ...iceServerCandidates };
       return iceServers;
     })
