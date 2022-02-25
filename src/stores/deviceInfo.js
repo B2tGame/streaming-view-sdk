@@ -17,10 +17,11 @@ function requestNetworkDeviceInfo(apiEndpoint) {
 /**
  *
  * @param {string} apiEndpoint
+ * @param {string} region
  * @returns {Promise<*>}
  */
-function requestIceServers(apiEndpoint) {
-  return axios.get(`${apiEndpoint}/api/streaming-games/edge-node/ice-server`, { timeout: 2500 }).then((result) => result.data || {});
+function requestIceServers(apiEndpoint, region) {
+  return axios.get(`${apiEndpoint}/api/streaming-games/edge-node/ice-server/${region}`, { timeout: 2500 }).then((result) => result.data || {});
 }
 
 /**
@@ -53,38 +54,40 @@ function getBrowserDeviceInfo(browserConnection = undefined) {
 function getNetworkDeviceInfo(apiEndpoint) {
   return Object.keys(deviceInfo).length === 0
     ? requestNetworkDeviceInfo(apiEndpoint).then((networkDeviceInfo) => {
-        deviceInfo = networkDeviceInfo;
-        return networkDeviceInfo;
-      })
+      deviceInfo = networkDeviceInfo;
+      return networkDeviceInfo;
+    })
     : Promise.resolve(deviceInfo);
 }
 
 /**
  *
  * @param {string} apiEndpoint
+ * @param {string} region
  * @returns {Promise<*>}
  */
-function getIceServers(apiEndpoint) {
+function getIceServers(apiEndpoint, region) {
   return Object.keys(iceServers).length === 0
-    ? requestIceServers(apiEndpoint).then((iceServerCandidates) => {
-        iceServers = { ...iceServerCandidates };
-        return iceServers;
-      })
+    ? requestIceServers(apiEndpoint, region).then((iceServerCandidates) => {
+      iceServers = { ...iceServerCandidates };
+      return iceServers;
+    })
     : Promise.resolve(iceServers);
 }
 
 /**
  * Get device info, network device info is cached and browser/network connectivity information are fetched every time
  * @param {string} apiEndpoint
+ * @param {string} region
  * @param browserConnection NetworkInformation from the browser
  * @returns {Promise<{}>}
  */
-function getDeviceInfo(apiEndpoint, browserConnection = undefined) {
+function getDeviceInfo(apiEndpoint, region, browserConnection = undefined) {
   return Promise.all([
     getNetworkDeviceInfo(apiEndpoint),
     getBrowserDeviceInfo(browserConnection),
     getNetworkConnectivity(browserConnection),
-    getIceServers(apiEndpoint)
+    getIceServers(apiEndpoint, region)
   ]).then(([networkDeviceInfo, browserDeviceInfo, networkConnectivity, iceServers]) => {
     const deviceInfo = { ...networkDeviceInfo, ...browserDeviceInfo, ...networkConnectivity, iceServers: { ...iceServers } };
     new Logger().info('deviceInfo is ready', deviceInfo);
