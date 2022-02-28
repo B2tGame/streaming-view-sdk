@@ -1,4 +1,4 @@
-import { getDeviceInfo } from './deviceInfo';
+import { getDeviceInfo, updateDeviceInfo } from './deviceInfo';
 import StreamingEvent from '../StreamingEvent';
 import StreamWebRtc from '../service/StreamWebRtc';
 import Measurement from '../service/Measurement';
@@ -242,6 +242,7 @@ const getAdvancedMeasurement = () => {
       }
       networkConnectivity.rttRegionMeasurements = finalResult;
     })
+    .then(() => updateDeviceInfo(null, { rttRegionMeasurements: networkConnectivity.rttRegionMeasurements }))
     .then(() => ({
       predictedGameExperience: predictedGameExperienceMulti[networkConnectivity.recommendedRegion],
       measurementLevel: MEASUREMENT_LEVEL_ADVANCED

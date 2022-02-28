@@ -1,18 +1,11 @@
 import axios from 'axios';
 import { getNetworkConnectivity } from './networkConnectivity';
 import Logger from './../Logger';
+import DeviceInfoService from '../service/DeviceInfoService';
 
 let deviceInfo = {};
 let iceServers = {};
-
-/**
- *
- * @param {string} apiEndpoint
- * @returns {Promise<*>}
- */
-function requestNetworkDeviceInfo(apiEndpoint) {
-  return axios.get(`${apiEndpoint}/api/streaming-games/edge-node/device-info`, { timeout: 2500 }).then((result) => result.data);
-}
+let cachedApiEndpoint;
 
 /**
  *
@@ -21,7 +14,9 @@ function requestNetworkDeviceInfo(apiEndpoint) {
  * @returns {Promise<*>}
  */
 function requestIceServers(apiEndpoint, region) {
-  return axios.get(`${apiEndpoint}/api/streaming-games/edge-node/ice-server/${region}`, { timeout: 2500 }).then((result) => result.data || {});
+  return axios
+    .get(`${apiEndpoint}/api/streaming-games/edge-node/ice-server/${region}`, { timeout: 2500 })
+    .then((result) => result.data || {});
 }
 
 /**
@@ -47,17 +42,21 @@ function getBrowserDeviceInfo(browserConnection = undefined) {
 }
 
 /**
- *
- * @param apiEndpoint
- * @return {Promise<*>|Promise<{}>}
+ * @param {string} apiEndpoint
+ * @param {{userId: string} | undefined} options
+ * @return {Promise<{*}>}
  */
-function getNetworkDeviceInfo(apiEndpoint) {
-  return Object.keys(deviceInfo).length === 0
-    ? requestNetworkDeviceInfo(apiEndpoint).then((networkDeviceInfo) => {
-      deviceInfo = networkDeviceInfo;
-      return networkDeviceInfo;
-    })
-    : Promise.resolve(deviceInfo);
+function getNetworkDeviceInfo(apiEndpoint, options) {
+  if (Object.keys(deviceInfo).length > 0) {
+    return Promise.resolve(deviceInfo);
+  }
+
+  cachedApiEndpoint = apiEndpoint;
+
+  return DeviceInfoService.createDeviceInfo(apiEndpoint, options).then((networkDeviceInfo) => {
+    deviceInfo = networkDeviceInfo;
+    return networkDeviceInfo;
+  });
 }
 
 /**
@@ -69,22 +68,22 @@ function getNetworkDeviceInfo(apiEndpoint) {
 function getIceServers(apiEndpoint, region) {
   return Object.keys(iceServers).length === 0
     ? requestIceServers(apiEndpoint, region).then((iceServerCandidates) => {
-      iceServers = { ...iceServerCandidates };
-      return iceServers;
-    })
+        iceServers = { ...iceServerCandidates };
+        return iceServers;
+      })
     : Promise.resolve(iceServers);
 }
 
 /**
  * Get device info, network device info is cached and browser/network connectivity information are fetched every time
  * @param {string} apiEndpoint
- * @param {string} region
- * @param browserConnection NetworkInformation from the browser
+ * @param {{ browserConnection: NetworkInformation | undefined; userId: string | undefined } | undefined; region: string | undefined } options
  * @returns {Promise<{}>}
  */
-function getDeviceInfo(apiEndpoint, region, browserConnection = undefined) {
+function getDeviceInfo(apiEndpoint, options = {}) {
+  const { browserConnection, userId, region } = options;
   return Promise.all([
-    getNetworkDeviceInfo(apiEndpoint),
+    getNetworkDeviceInfo(apiEndpoint, { userId }),
     getBrowserDeviceInfo(browserConnection),
     getNetworkConnectivity(browserConnection),
     getIceServers(apiEndpoint, region)
@@ -96,10 +95,20 @@ function getDeviceInfo(apiEndpoint, region, browserConnection = undefined) {
 }
 
 /**
+ * Update the last created device-info
+ * @param {{*}} body
+ * @param {string | null} apiEndpoint
+ * @returns {Promise<{*}>}
+ */
+function updateDeviceInfo(apiEndpoint, body) {
+  return DeviceInfoService.updateDeviceInfo(apiEndpoint ? apiEndpoint : cachedApiEndpoint, body);
+}
+
+/**
  * Reset all device information
  */
 function resetDeviceInfo() {
   deviceInfo = {};
 }
 
-export { getDeviceInfo, resetDeviceInfo };
+export { getDeviceInfo, resetDeviceInfo, updateDeviceInfo, getNetworkDeviceInfo };
