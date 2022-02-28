@@ -13,6 +13,7 @@ import Logger from './Logger';
 export default class StreamingAgent extends Component {
   static propTypes = {
     apiEndpoint: PropTypes.string.isRequired,
+    region: PropTypes.string.isRequired,
     pingInterval: PropTypes.number,
     internalSession: PropTypes.bool,
     measureWebrtcRtt: PropTypes.bool
@@ -58,9 +59,10 @@ export default class StreamingAgent extends Component {
    * This will also clear any existing data.
    */
   onConnectivityUpdate() {
+    const { internalSession, apiEndpoint, region } = this.props;
     this.clearStoresCache();
-    if (!this.props.internalSession && this.props.apiEndpoint) {
-      getDeviceInfo(this.props.apiEndpoint, { browserConnection: this.connection })
+    if (!internalSession && apiEndpoint) {
+      getDeviceInfo(apiEndpoint, { browserConnection: this.connection, region })
         .then(() => measureNetworkConnectivity(this.connection, this.measureWebrtcRtt))
         .catch((err) => this.logError(err));
     }
