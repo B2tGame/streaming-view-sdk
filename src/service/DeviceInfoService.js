@@ -47,7 +47,7 @@ export default class DeviceInfoService {
       }
     }
 
-    return axios.post(`${apiEndpoint}/api/streaming-games/edge-node/device-info`, body, { timeout: 2500 }).then((result) => {
+    return axios.post(`${apiEndpoint}/api/streaming-games/edge-node/device-info`, body, { timeout: 3000 }).then((result) => {
       // deviceInfoId is stored in localStorage. Later it will be used to update the device-info with new data.
       localStorage.setItem(DeviceInfoService.DEVICE_INFO_ID_KEY, result.data.deviceInfoId);
       return result.data;
@@ -62,7 +62,7 @@ export default class DeviceInfoService {
    */
   static updateDeviceInfo(apiEndpoint, body) {
     return axios.post(`${apiEndpoint}/api/streaming-games/edge-node/device-info/${DeviceInfoService.getStoredDeviceInfoId()}`, body, {
-      timeout: 2500
+      timeout: 3000
     });
   }
 }
