@@ -6,6 +6,9 @@ phases:
   install:
     commands:
        - npm install
+       - npm --version
+       - node --version
+       - echo "$CODEBUILD_SOURCE_VERSION"
   pre_build:
     commands:
        - "git config --global user.email 'dev@appland.se'"
