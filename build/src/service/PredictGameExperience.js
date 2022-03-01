@@ -10,7 +10,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _values = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/values"));
 
@@ -34,7 +34,7 @@ var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpe
 
 var _PredictGameExperienceBase = _interopRequireDefault(require("./PredictGameExperienceBase"));
 
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2.default)(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2.default)(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2.default)(this, result); }; }
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_Reflect$construct) return false; if (_Reflect$construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(_Reflect$construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
@@ -43,11 +43,11 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_R
  */
 var RisingEdgeDetector = /*#__PURE__*/function () {
   function RisingEdgeDetector() {
-    (0, _classCallCheck2.default)(this, RisingEdgeDetector);
+    (0, _classCallCheck2["default"])(this, RisingEdgeDetector);
     this.isHigh = false;
   }
 
-  (0, _createClass2.default)(RisingEdgeDetector, [{
+  (0, _createClass2["default"])(RisingEdgeDetector, [{
     key: "next",
     value: function next(value, threshold) {
       if (value > threshold) {
@@ -72,29 +72,29 @@ var RisingEdgeDetector = /*#__PURE__*/function () {
 
 var RollingWindow = /*#__PURE__*/function () {
   function RollingWindow(sampleSize) {
-    (0, _classCallCheck2.default)(this, RollingWindow);
+    (0, _classCallCheck2["default"])(this, RollingWindow);
     this.sampleSize = sampleSize;
     this.values = [];
   }
 
-  (0, _createClass2.default)(RollingWindow, [{
+  (0, _createClass2["default"])(RollingWindow, [{
     key: "add",
     value: function add(value) {
-      (0, _values.default)(this).push(value);
+      (0, _values["default"])(this).push(value);
 
-      if ((0, _values.default)(this).length > this.sampleSize) {
-        (0, _values.default)(this).shift();
+      if ((0, _values["default"])(this).length > this.sampleSize) {
+        (0, _values["default"])(this).shift();
       }
     }
   }, {
     key: "getValues",
     value: function getValues() {
-      return (0, _values.default)(this);
+      return (0, _values["default"])(this);
     }
   }, {
     key: "getLastValue",
     value: function getLastValue() {
-      return (0, _values.default)(this)[(0, _values.default)(this).length - 1];
+      return (0, _values["default"])(this)[(0, _values["default"])(this).length - 1];
     }
   }]);
   return RollingWindow;
@@ -105,7 +105,7 @@ var RollingWindow = /*#__PURE__*/function () {
 
 
 var PredictGameExperience = /*#__PURE__*/function (_PredictGameExperienc) {
-  (0, _inherits2.default)(PredictGameExperience, _PredictGameExperienc);
+  (0, _inherits2["default"])(PredictGameExperience, _PredictGameExperienc);
 
   var _super = _createSuper(PredictGameExperience);
 
@@ -126,7 +126,7 @@ var PredictGameExperience = /*#__PURE__*/function (_PredictGameExperienc) {
     var risingEdgeCountGain = arguments.length > 11 && arguments[11] !== undefined ? arguments[11] : 0.7;
     var risingEdgeCountPower = arguments.length > 12 && arguments[12] !== undefined ? arguments[12] : 1.25;
     var finalGain = arguments.length > 13 && arguments[13] !== undefined ? arguments[13] : 1.1;
-    (0, _classCallCheck2.default)(this, PredictGameExperience);
+    (0, _classCallCheck2["default"])(this, PredictGameExperience);
     _this = _super.call(this);
     _this.sampleSize = sampleSize;
     _this.averageDetectionUpperRange = averageDetectionUpperRange;
@@ -160,7 +160,7 @@ var PredictGameExperience = /*#__PURE__*/function (_PredictGameExperienc) {
    */
 
 
-  (0, _createClass2.default)(PredictGameExperience, [{
+  (0, _createClass2["default"])(PredictGameExperience, [{
     key: "predict",
     value: function predict(roundTripTime, packageLostPercentage) {
       this.count++;
@@ -182,27 +182,27 @@ var PredictGameExperience = /*#__PURE__*/function (_PredictGameExperienc) {
 
       var lowerBound = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
       var upperBound = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
-      var data = (0, _sort.default)(_context = (0, _toConsumableArray2.default)(dataset)).call(_context, function (a, b) {
+      var data = (0, _sort["default"])(_context = (0, _toConsumableArray2["default"])(dataset)).call(_context, function (a, b) {
         return a < b ? -1 : 1;
       });
-      return this.average((0, _slice.default)(data).call(data, Math.round((data.length - 1) * lowerBound), Math.round((data.length - 1) * upperBound)));
+      return this.average((0, _slice["default"])(data).call(data, Math.round((data.length - 1) * lowerBound), Math.round((data.length - 1) * upperBound)));
     }
   }, {
     key: "average",
     value: function average(dataset) {
-      return (0, _reduce.default)(dataset).call(dataset, function (a, b) {
+      return (0, _reduce["default"])(dataset).call(dataset, function (a, b) {
         return a + b;
       }, 0) / dataset.length || 0;
     }
   }, {
     key: "sum",
     value: function sum(dataset) {
-      return (0, _reduce.default)(dataset).call(dataset, function (a, b) {
+      return (0, _reduce["default"])(dataset).call(dataset, function (a, b) {
         return a + b;
       }, 0);
     }
   }]);
   return PredictGameExperience;
-}(_PredictGameExperienceBase.default);
+}(_PredictGameExperienceBase["default"]);
 
-exports.default = PredictGameExperience;
+exports["default"] = PredictGameExperience;
