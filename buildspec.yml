@@ -5,7 +5,10 @@ phases:
 
   install:
     commands:
-       - npm install -g npm
+       - "git config --global user.email 'dev@appland.se'"
+       - "git config --global user.name 'AWS CodeBuild'"
+       - "git checkout $CODEBUILD_SOURCE_VERSION"
+       - npm install -g npm@8.5.2
        - npm install
        - npm --version
        - node --version
@@ -13,9 +16,6 @@ phases:
        - echo "$CODEBUILD_SOURCE_VERSION"
   pre_build:
     commands:
-       - "git config --global user.email 'dev@appland.se'"
-       - "git config --global user.name 'AWS CodeBuild'"
-       - "git checkout $CODEBUILD_SOURCE_VERSION"
        - "for i in $(seq 1 99); do if ! git tag | grep \"`date \"+%Y%m%d\"`-$i\" > /dev/null; then date \"+%Y%m%d-$i\" | tee /tmp/build-info; break; fi; done"
        - export TAG=`cat /tmp/build-info`
        - 'echo "{\"tag\":\"$TAG\"}" | tee src/build-info.json'
