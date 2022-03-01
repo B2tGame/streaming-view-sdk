@@ -108,10 +108,17 @@ var StreamingAgent = /*#__PURE__*/function (_Component) {
     value: function onConnectivityUpdate() {
       var _this3 = this;
 
+      var _this$props = this.props,
+          internalSession = _this$props.internalSession,
+          apiEndpoint = _this$props.apiEndpoint,
+          region = _this$props.region;
       this.clearStoresCache();
 
-      if (!this.props.internalSession && this.props.apiEndpoint) {
-        (0, _deviceInfo.getDeviceInfo)(this.props.apiEndpoint, this.connection).then(function () {
+      if (!internalSession && apiEndpoint) {
+        (0, _deviceInfo.getDeviceInfo)(apiEndpoint, {
+          browserConnection: this.connection,
+          region: region
+        }).then(function () {
           return (0, _networkConnectivity.measureNetworkConnectivity)(_this3.connection, _this3.measureWebrtcRtt);
         }).catch(function (err) {
           return _this3.logError(err);
@@ -130,6 +137,7 @@ var StreamingAgent = /*#__PURE__*/function (_Component) {
 exports.default = StreamingAgent;
 StreamingAgent.propTypes = {
   apiEndpoint: _propTypes.default.string.isRequired,
+  region: _propTypes.default.string.isRequired,
   pingInterval: _propTypes.default.number,
   internalSession: _propTypes.default.bool,
   measureWebrtcRtt: _propTypes.default.bool

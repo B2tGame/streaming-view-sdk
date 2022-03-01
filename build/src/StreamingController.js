@@ -358,13 +358,15 @@ var StreamingController = /*#__PURE__*/function () {
     }
     /**
      * Get device info from the device including geolocation, screen configuration etc.
+     * @param {{userId: string} | undefined} options
      * @returns {Promise<object>}
      */
 
   }, {
     key: "getDeviceInfo",
     value: function getDeviceInfo() {
-      return (0, _deviceInfo.getDeviceInfo)(this.getApiEndpoint());
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return (0, _deviceInfo.getDeviceInfo)(this.getApiEndpoint(), options);
     }
     /**
      * Get connectivity info

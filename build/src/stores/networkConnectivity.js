@@ -331,6 +331,10 @@ var getAdvancedMeasurement = function getAdvancedMeasurement() {
 
     networkConnectivity.rttRegionMeasurements = finalResult;
   }).then(function () {
+    return (0, _deviceInfo.updateDeviceInfo)(null, {
+      rttRegionMeasurements: networkConnectivity.rttRegionMeasurements
+    });
+  }).then(function () {
     return {
       predictedGameExperience: predictedGameExperienceMulti[networkConnectivity.recommendedRegion],
       measurementLevel: MEASUREMENT_LEVEL_ADVANCED
