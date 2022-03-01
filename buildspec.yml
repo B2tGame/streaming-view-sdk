@@ -5,9 +5,11 @@ phases:
 
   install:
     commands:
+       - npm install -g npm
        - npm install
        - npm --version
        - node --version
+       - git status
        - echo "$CODEBUILD_SOURCE_VERSION"
   pre_build:
     commands:
