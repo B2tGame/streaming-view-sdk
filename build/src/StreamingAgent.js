@@ -119,7 +119,7 @@ var StreamingAgent = /*#__PURE__*/function (_Component) {
           browserConnection: this.connection,
           region: region
         }).then(function () {
-          return (0, _networkConnectivity.measureNetworkConnectivity)(_this3.connection, _this3.measureWebrtcRtt);
+          return (0, _networkConnectivity.measureNetworkConnectivity)(apiEndpoint, _this3.connection, _this3.measureWebrtcRtt);
         })["catch"](function (err) {
           return _this3.logError(err);
         });

@@ -24,13 +24,13 @@ _Object$defineProperty(exports, "__esModule", {
 
 exports.resetNetworkConnectivity = exports.measureNetworkConnectivity = exports.getNetworkConnectivity = void 0;
 
+var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
+
 var _promise = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/promise"));
 
 var _find = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/find"));
 
 var _slice = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/slice"));
-
-var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
 
 var _setTimeout2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-timeout"));
 
@@ -44,6 +44,8 @@ var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime-corejs3/hel
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/defineProperty"));
 
+var _axios = _interopRequireDefault(require("axios"));
+
 var _deviceInfo = require("./deviceInfo");
 
 var _StreamingEvent = _interopRequireDefault(require("../StreamingEvent"));
@@ -54,7 +56,7 @@ var _Measurement = _interopRequireDefault(require("../service/Measurement"));
 
 function ownKeys(object, enumerableOnly) { var keys = _Object$keys(object); if (_Object$getOwnPropertySymbols) { var symbols = _Object$getOwnPropertySymbols(object); enumerableOnly && (symbols = _filterInstanceProperty(symbols).call(symbols, function (sym) { return _Object$getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var _context6, _context7; var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? _forEachInstanceProperty(_context6 = ownKeys(Object(source), !0)).call(_context6, function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }) : _Object$getOwnPropertyDescriptors ? _Object$defineProperties(target, _Object$getOwnPropertyDescriptors(source)) : _forEachInstanceProperty(_context7 = ownKeys(Object(source))).call(_context7, function (key) { _Object$defineProperty(target, key, _Object$getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var _context7, _context8; var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? _forEachInstanceProperty(_context7 = ownKeys(Object(source), !0)).call(_context7, function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }) : _Object$getOwnPropertyDescriptors ? _Object$defineProperties(target, _Object$getOwnPropertyDescriptors(source)) : _forEachInstanceProperty(_context8 = ownKeys(Object(source))).call(_context8, function (key) { _Object$defineProperty(target, key, _Object$getOwnPropertyDescriptor(source, key)); }); } return target; }
 
 var MEASUREMENT_LEVEL_BROWSER = 'browser-measurement';
 var MEASUREMENT_LEVEL_BASIC = 'basic';
@@ -99,6 +101,23 @@ var convertMbitToBytes = function convertMbitToBytes(downloadSpeed) {
   return undefined;
 };
 /**
+   *
+   * @param {string} apiEndpoint
+   * @param {string} region
+   * @returns {Promise<*>}
+   */
+
+
+var requestIceServers = function requestIceServers(apiEndpoint, region) {
+  var _context;
+
+  return _axios["default"].get((0, _concat["default"])(_context = "".concat(apiEndpoint, "/api/streaming-games/edge-node/ice-server/")).call(_context, region), {
+    timeout: 2500
+  }).then(function (result) {
+    return result.data || {};
+  });
+};
+/**
  * Get Browser measurement attributes
  * @param browserConnection NetworkInformation from the browser
  * @return {Promise<{roundTripTime: number|undefined, downloadSpeed: number|undefined, measurementLevel: string|undefined}>}
@@ -122,10 +141,10 @@ var getBrowserMeasurement = function getBrowserMeasurement() {
 
 var getBasicMeasurement = function getBasicMeasurement() {
   return (0, _deviceInfo.getDeviceInfo)().then(function (deviceInfo) {
-    var _context;
+    var _context2;
 
     return {
-      recommendedRegion: ((0, _find["default"])(_context = (deviceInfo || {}).recommendation || []).call(_context, function () {
+      recommendedRegion: ((0, _find["default"])(_context2 = (deviceInfo || {}).recommendation || []).call(_context2, function () {
         return true;
       }) || {}).edgeRegion,
       measurementLevel: MEASUREMENT_LEVEL_BASIC
@@ -138,7 +157,7 @@ var getBasicMeasurement = function getBasicMeasurement() {
  */
 
 
-var getAdvancedMeasurement = function getAdvancedMeasurement() {
+var getAdvancedMeasurement = function getAdvancedMeasurement(apiEndpoint) {
   /**
    * Recursive function to manage download speed measurement and fallback case.
    * @param {[]} recommendation Array of possible recommendations
@@ -160,11 +179,13 @@ var getAdvancedMeasurement = function getAdvancedMeasurement() {
 
     for (var _i = 0; _i < recommendation.length && selectedEdges.length < MAX_RECOMMENDATION_COUNT; ++_i) {
       if (recommendation[_i].measurementEndpoints.length) {
-        var _context2;
+        var _context3;
 
+        var region = recommendation[_i].edgeRegion;
         selectedEdges.push({
-          baseUrls: (0, _slice["default"])(_context2 = recommendation[_i].measurementEndpoints).call(_context2, 0, MAX_RECOMMENDATION_COUNT),
-          region: recommendation[_i].edgeRegion,
+          baseUrls: (0, _slice["default"])(_context3 = recommendation[_i].measurementEndpoints).call(_context3, 0, MAX_RECOMMENDATION_COUNT),
+          region: region,
+          apiEndpoint: apiEndpoint,
           iceServers: iceServers
         });
       }
@@ -175,7 +196,7 @@ var getAdvancedMeasurement = function getAdvancedMeasurement() {
         return webrtcManagerSuccessful;
       }
 
-      return connectionManagerMultiRegion(recommendation);
+      return connectionManagerMultiRegion(recommendation, iceServers);
     });
   };
   /**
@@ -186,7 +207,7 @@ var getAdvancedMeasurement = function getAdvancedMeasurement() {
 
 
   var getWebRtcMeasurement = function getWebRtcMeasurement(edge) {
-    var _context3, _context4;
+    var _context4, _context5;
 
     console.log('getWebRtcMeasurement EDGE:', edge);
 
@@ -195,15 +216,16 @@ var getAdvancedMeasurement = function getAdvancedMeasurement() {
     }
 
     var webRtcHost = "".concat(edge.baseUrls.shift(), "/webrtc");
+    var turnName = edge.iceServers.name;
     console.log('DEBUG - webRtcHost:', webRtcHost);
-    console.log((0, _concat["default"])(_context3 = (0, _concat["default"])(_context4 = "WebRtc connect attempt: ".concat(webRtcHost, " region:")).call(_context4, edge.region, ", TURN:")).call(_context3, edge.iceServers.name));
+    console.log((0, _concat["default"])(_context4 = (0, _concat["default"])(_context5 = "WebRtc connect attempt: ".concat(webRtcHost, " region:")).call(_context5, edge.region, ", TURN:")).call(_context4, edge.iceServers.name));
     return new _promise["default"](function (resolve, reject) {
       var streamWebRtc = undefined;
 
       var onWebRtcClientConnected = function onWebRtcClientConnected() {
-        var _context5;
+        var _context6;
 
-        console.log((0, _concat["default"])(_context5 = "WebRtc connected to: ".concat(edge.region, ", TURN: ")).call(_context5, edge.iceServers.name));
+        console.log((0, _concat["default"])(_context6 = "WebRtc connected to: ".concat(edge.region, ", TURN: ")).call(_context6, edge.iceServers.name));
 
         if (webrtcRoundTripTimeValuesMulti[edge.region] === undefined) {
           webrtcRoundTripTimeValuesMulti[edge.region] = {};
@@ -244,11 +266,16 @@ var getAdvancedMeasurement = function getAdvancedMeasurement() {
       };
 
       try {
-        streamWebRtc = new _StreamWebRtc["default"](webRtcHost, edge.iceServers);
-        (0, _setTimeout2["default"])(function () {
-          return stopMeasurement();
-        }, WEBRTC_TIME_TO_CONNECTED);
-        streamWebRtc.on(_StreamingEvent["default"].WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected).on(_StreamingEvent["default"].WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
+        requestIceServers(edge.apiEndpoint, edge.region).then(function (iceServers) {
+          streamWebRtc = new _StreamWebRtc["default"](webRtcHost, {
+            name: turnName,
+            candidates: iceServers[turnName]
+          });
+          (0, _setTimeout2["default"])(function () {
+            return stopMeasurement();
+          }, WEBRTC_TIME_TO_CONNECTED);
+          streamWebRtc.on(_StreamingEvent["default"].WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected).on(_StreamingEvent["default"].WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
+        });
       } catch (e) {
         stopMeasurement(function () {
           return reject(false);
@@ -279,7 +306,7 @@ var getAdvancedMeasurement = function getAdvancedMeasurement() {
         var edgeToMeasure = _objectSpread(_objectSpread({}, edge), {}, {
           iceServers: {
             name: key,
-            candidates: iceCandidates
+            candidates: iceCandidates[key]
           }
         });
 
@@ -348,15 +375,16 @@ var getAdvancedMeasurement = function getAdvancedMeasurement() {
 /**
  * Measure network connectivity on different levels
  *
+ * @param {string} apiEndpoint
  * @param browserConnection NetworkInformation from the browser
  * @param measureWebrtcRtt
  * @return {Promise<{measurementLevel: undefined, downloadSpeed: undefined, recommendedRegion: undefined, rttRegionMeasurements: undefined, roundTripTime: undefined}>}
  */
 
 
-var measureNetworkConnectivity = function measureNetworkConnectivity() {
-  var browserConnection = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
-  var measureWebrtcRtt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+var measureNetworkConnectivity = function measureNetworkConnectivity(apiEndpoint) {
+  var browserConnection = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+  var measureWebrtcRtt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
   return getBrowserMeasurement(browserConnection).then(function (browserMeasurement) {
     networkConnectivity = _objectSpread(_objectSpread({}, networkConnectivity), browserMeasurement);
   }).then(function () {
@@ -366,7 +394,7 @@ var measureNetworkConnectivity = function measureNetworkConnectivity() {
   }).then(function () {
     return measureWebrtcRtt ? new _promise["default"](function (resolve) {
       return (0, _setTimeout2["default"])(function () {
-        return resolve(getAdvancedMeasurement());
+        return resolve(getAdvancedMeasurement(apiEndpoint));
       }, DELAY_DEVICE_INFO_MS);
     } // delay the execution
     ) : _promise["default"].resolve({});

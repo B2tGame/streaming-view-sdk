@@ -16,11 +16,11 @@ var _trunc = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stab
 
 var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/date/now"));
 
-var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
-
 var _setInterval2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-interval"));
 
 var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
+
+var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
 
 var _reduce = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/reduce"));
 
@@ -59,7 +59,7 @@ var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
    * @param {boolean} measureWebrtcRtt
    */
   function StreamWebRtc(host) {
-    var _context2;
+    var _context;
 
     var _this;
 
@@ -88,11 +88,8 @@ var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
             timestamp = _JSON$parse.timestamp;
 
         if (type === 'pong') {
-          var _context;
-
           var sendTime = (0, _trunc["default"])(timestamp);
           var rtt = (0, _now["default"])() - sendTime;
-          console.log((0, _concat["default"])(_context = "PONG - RTT - ".concat(_this.iceServersName, ": ")).call(_context, rtt));
 
           _this.emit(_StreamingEvent["default"].WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
         }
@@ -158,7 +155,7 @@ var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
 
     _this.iceServersName = iceServers.name;
     _this.iceServersCandidates = iceServers.candidates;
-    _this.host = (0, _concat["default"])(_context2 = "".concat(host, "/")).call(_context2, _this.iceServersName);
+    _this.host = (0, _concat["default"])(_context = "".concat(host, "/")).call(_context, _this.iceServersName);
     _this.pingInterval = _pingInterval;
     _this.measureWebrtcRtt = measureWebrtcRtt;
     _this.peerConnection = undefined;
