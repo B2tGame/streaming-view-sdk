@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { getDeviceInfo, updateDeviceInfo } from './deviceInfo';
 import StreamingEvent from '../StreamingEvent';
 import StreamWebRtc from '../service/StreamWebRtc';
@@ -44,6 +45,18 @@ const convertMbitToBytes = (downloadSpeed) => {
 };
 
 /**
+   *
+   * @param {string} apiEndpoint
+   * @param {string} region
+   * @returns {Promise<*>}
+   */
+const requestIceServers = (apiEndpoint, region) => {
+  return axios
+    .get(`${apiEndpoint}/api/streaming-games/edge-node/ice-server/${region}`, { timeout: 2500 })
+    .then((result) => result.data || {});
+}
+
+/**
  * Get Browser measurement attributes
  * @param browserConnection NetworkInformation from the browser
  * @return {Promise<{roundTripTime: number|undefined, downloadSpeed: number|undefined, measurementLevel: string|undefined}>}
@@ -75,7 +88,7 @@ const getBasicMeasurement = () => {
  * Get Advanced measurement attributes, designed to be used in getBrowserMeasurement.
  * @return {Promise<{measurementLevel: string, downloadSpeed: any}>}
  */
-const getAdvancedMeasurement = () => {
+const getAdvancedMeasurement = (apiEndpoint) => {
   /**
    * Recursive function to manage download speed measurement and fallback case.
    * @param {[]} recommendation Array of possible recommendations
@@ -94,9 +107,11 @@ const getAdvancedMeasurement = () => {
     const selectedEdges = [];
     for (let i = 0; i < recommendation.length && selectedEdges.length < MAX_RECOMMENDATION_COUNT; ++i) {
       if (recommendation[i].measurementEndpoints.length) {
+        const region = recommendation[i].edgeRegion;
         selectedEdges.push({
           baseUrls: recommendation[i].measurementEndpoints.slice(0, MAX_RECOMMENDATION_COUNT),
-          region: recommendation[i].edgeRegion,
+          region: region,
+          apiEndpoint: apiEndpoint,
           iceServers: iceServers
         });
       }
@@ -106,7 +121,7 @@ const getAdvancedMeasurement = () => {
       if (webrtcManagerSuccessful) {
         return webrtcManagerSuccessful;
       }
-      return connectionManagerMultiRegion(recommendation);
+      return connectionManagerMultiRegion(recommendation, iceServers);
     });
   };
 
@@ -122,6 +137,7 @@ const getAdvancedMeasurement = () => {
     }
 
     const webRtcHost = `${edge.baseUrls.shift()}/webrtc`;
+    const turnName = edge.iceServers.name;
     console.log('DEBUG - webRtcHost:', webRtcHost);
     console.log(`WebRtc connect attempt: ${webRtcHost} region:${edge.region}, TURN:${edge.iceServers.name}`);
 
@@ -167,11 +183,13 @@ const getAdvancedMeasurement = () => {
       };
 
       try {
-        streamWebRtc = new StreamWebRtc(webRtcHost, edge.iceServers);
-        setTimeout(() => stopMeasurement(), WEBRTC_TIME_TO_CONNECTED);
-        streamWebRtc
-          .on(StreamingEvent.WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected)
-          .on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
+        requestIceServers(edge.apiEndpoint, edge.region).then((iceServers) => {
+          streamWebRtc = new StreamWebRtc(webRtcHost, { name: turnName, candidates: iceServers[turnName] });
+          setTimeout(() => stopMeasurement(), WEBRTC_TIME_TO_CONNECTED);
+          streamWebRtc
+            .on(StreamingEvent.WEBRTC_CLIENT_CONNECTED, onWebRtcClientConnected)
+            .on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onWebRtcRoundTripTimeMeasurement);
+        });
       } catch (e) {
         stopMeasurement(() => reject(false));
       }
@@ -197,7 +215,7 @@ const getAdvancedMeasurement = () => {
             ...edge,
             iceServers: {
               name: key,
-              candidates: iceCandidates
+              candidates: iceCandidates[key]
             }
           };
           acc.push(getWebRtcMeasurement(JSON.parse(JSON.stringify(edgeToMeasure))));
@@ -252,11 +270,12 @@ const getAdvancedMeasurement = () => {
 /**
  * Measure network connectivity on different levels
  *
+ * @param {string} apiEndpoint
  * @param browserConnection NetworkInformation from the browser
  * @param measureWebrtcRtt
  * @return {Promise<{measurementLevel: undefined, downloadSpeed: undefined, recommendedRegion: undefined, rttRegionMeasurements: undefined, roundTripTime: undefined}>}
  */
-const measureNetworkConnectivity = (browserConnection = undefined, measureWebrtcRtt = true) => {
+const measureNetworkConnectivity = (apiEndpoint, browserConnection = undefined, measureWebrtcRtt = true) => {
   return getBrowserMeasurement(browserConnection)
     .then((browserMeasurement) => {
       networkConnectivity = { ...networkConnectivity, ...browserMeasurement };
@@ -268,8 +287,8 @@ const measureNetworkConnectivity = (browserConnection = undefined, measureWebrtc
     .then(() =>
       measureWebrtcRtt
         ? new Promise(
-            (resolve) => setTimeout(() => resolve(getAdvancedMeasurement()), DELAY_DEVICE_INFO_MS) // delay the execution
-          )
+          (resolve) => setTimeout(() => resolve(getAdvancedMeasurement(apiEndpoint)), DELAY_DEVICE_INFO_MS) // delay the execution
+        )
         : Promise.resolve({})
     )
     .then((advancedMeasurement) => {

@@ -39,7 +39,7 @@ export default class StreamingAgent extends Component {
   }
 
   componentWillUnmount() {
-    this.connection.onchange = () => {};
+    this.connection.onchange = () => { };
     this.clearStoresCache();
   }
 
@@ -62,8 +62,8 @@ export default class StreamingAgent extends Component {
     const { internalSession, apiEndpoint, region } = this.props;
     this.clearStoresCache();
     if (!internalSession && apiEndpoint) {
-      getDeviceInfo(apiEndpoint, { browserConnection: this.connection, region })
-        .then(() => measureNetworkConnectivity(this.connection, this.measureWebrtcRtt))
+      getDeviceInfo(apiEndpoint, { browserConnection: this.connection, region: region })
+        .then(() => measureNetworkConnectivity(apiEndpoint, this.connection, this.measureWebrtcRtt))
         .catch((err) => this.logError(err));
     }
   }
