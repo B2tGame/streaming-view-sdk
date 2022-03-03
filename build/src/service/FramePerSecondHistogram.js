@@ -8,7 +8,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
 
@@ -16,7 +16,7 @@ var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpe
 
 var FramePerSecondHistogram = /*#__PURE__*/function () {
   function FramePerSecondHistogram() {
-    (0, _classCallCheck2.default)(this, FramePerSecondHistogram);
+    (0, _classCallCheck2["default"])(this, FramePerSecondHistogram);
     this.data = '';
   }
   /**
@@ -25,7 +25,7 @@ var FramePerSecondHistogram = /*#__PURE__*/function () {
    */
 
 
-  (0, _createClass2.default)(FramePerSecondHistogram, [{
+  (0, _createClass2["default"])(FramePerSecondHistogram, [{
     key: "inject",
     value: function inject(fps) {
       if (this.data.length < 1000) {
@@ -71,4 +71,4 @@ var FramePerSecondHistogram = /*#__PURE__*/function () {
   return FramePerSecondHistogram;
 }();
 
-exports.default = FramePerSecondHistogram;
+exports["default"] = FramePerSecondHistogram;

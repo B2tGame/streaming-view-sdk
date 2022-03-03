@@ -8,7 +8,13 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
+
+var _setInterval2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-interval"));
+
+var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/date/now"));
+
+var _forEach = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/for-each"));
 
 var _reduce = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/reduce"));
 
@@ -44,7 +50,7 @@ var Measurement = /*#__PURE__*/function () {
   function Measurement(edgeNodeId, streamingViewId, logger) {
     var _this = this;
 
-    (0, _classCallCheck2.default)(this, Measurement);
+    (0, _classCallCheck2["default"])(this, Measurement);
 
     this.onStreamQualityRating = function (rating) {
       _this.streamQualityRating = rating.streamQualityRating;
@@ -113,13 +119,13 @@ var Measurement = /*#__PURE__*/function () {
     this.measurement = {};
     this.webRtcHost = undefined;
     this.webRtcIntervalHandler = undefined;
-    this.metricsFramesDecodedPerSecond = new _Metric.default();
-    this.metricsInterFrameDelayStandardDeviation = new _Metric.default();
-    this.framesDecodedPerSecondHistogram = new _FramePerSecondHistogram.default();
-    this.browser = new _UserAgentParser.default();
+    this.metricsFramesDecodedPerSecond = new _Metric["default"]();
+    this.metricsInterFrameDelayStandardDeviation = new _Metric["default"]();
+    this.framesDecodedPerSecondHistogram = new _FramePerSecondHistogram["default"]();
+    this.browser = new _UserAgentParser["default"]();
     this.isClassificationReportCreated = false;
 
-    _StreamingEvent.default.edgeNode(edgeNodeId).on(_StreamingEvent.default.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement).on(_StreamingEvent.default.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement).on(_StreamingEvent.default.STREAM_QUALITY_RATING, this.onStreamQualityRating).on(_StreamingEvent.default.STREAM_BLACK_SCREEN, this.onStreamBlackScreen).on(_StreamingEvent.default.STREAM_DISCONNECTED, this.onStreamDisconnected).on(_StreamingEvent.default.STREAM_TERMINATED, this.onStreamTerminated).on(_StreamingEvent.default.STREAM_RESUMED, this.onStreamResumed).on(_StreamingEvent.default.EMULATOR_CONFIGURATION, this.onEmulatorConfiguration);
+    _StreamingEvent["default"].edgeNode(edgeNodeId).on(_StreamingEvent["default"].ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement).on(_StreamingEvent["default"].WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement).on(_StreamingEvent["default"].STREAM_QUALITY_RATING, this.onStreamQualityRating).on(_StreamingEvent["default"].STREAM_BLACK_SCREEN, this.onStreamBlackScreen).on(_StreamingEvent["default"].STREAM_DISCONNECTED, this.onStreamDisconnected).on(_StreamingEvent["default"].STREAM_TERMINATED, this.onStreamTerminated).on(_StreamingEvent["default"].STREAM_RESUMED, this.onStreamResumed).on(_StreamingEvent["default"].EMULATOR_CONFIGURATION, this.onEmulatorConfiguration);
   }
   /**
    * @param {string} webRtcHost
@@ -127,24 +133,24 @@ var Measurement = /*#__PURE__*/function () {
    */
 
 
-  (0, _createClass2.default)(Measurement, [{
+  (0, _createClass2["default"])(Measurement, [{
     key: "initWebRtc",
     value: function initWebRtc(webRtcHost, pingInterval) {
       var _this2 = this;
 
       this.webRtcHost = webRtcHost; //TODO-turn: use default ice candidates for now
 
-      this.streamWebRtc = new _StreamWebRtc.default(this.webRtcHost, {
+      this.streamWebRtc = new _StreamWebRtc["default"](this.webRtcHost, {
         name: 'default',
         candidates: []
       }, pingInterval);
-      this.streamWebRtc.on(_StreamingEvent.default.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
+      this.streamWebRtc.on(_StreamingEvent["default"].WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
 
-      _StreamingEvent.default.edgeNode(this.edgeNodeId).on(_StreamingEvent.default.STREAM_UNREACHABLE, this.streamWebRtc.close);
+      _StreamingEvent["default"].edgeNode(this.edgeNodeId).on(_StreamingEvent["default"].STREAM_UNREACHABLE, this.streamWebRtc.close);
 
-      this.webRtcIntervalHandler = setInterval(function () {
-        _StreamingEvent.default.edgeNode(_this2.edgeNodeId).emit(_StreamingEvent.default.REQUEST_WEB_RTC_MEASUREMENT);
-      }, _StreamSocket.default.WEBSOCKET_PING_INTERVAL);
+      this.webRtcIntervalHandler = (0, _setInterval2["default"])(function () {
+        _StreamingEvent["default"].edgeNode(_this2.edgeNodeId).emit(_StreamingEvent["default"].REQUEST_WEB_RTC_MEASUREMENT);
+      }, _StreamSocket["default"].WEBSOCKET_PING_INTERVAL);
     }
     /**
      *
@@ -156,7 +162,7 @@ var Measurement = /*#__PURE__*/function () {
     value: function destroy() {
       this.logger.info('measurement module is destroyed');
 
-      _StreamingEvent.default.edgeNode(this.edgeNodeId).off(_StreamingEvent.default.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement).off(_StreamingEvent.default.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement).off(_StreamingEvent.default.STREAM_QUALITY_RATING, this.onStreamQualityRating).off(_StreamingEvent.default.STREAM_BLACK_SCREEN, this.onStreamBlackScreen).off(_StreamingEvent.default.STREAM_DISCONNECTED, this.onStreamDisconnected).off(_StreamingEvent.default.STREAM_RESUMED, this.onStreamResumed).off(_StreamingEvent.default.EMULATOR_CONFIGURATION, this.onEmulatorConfiguration).off(_StreamingEvent.default.STREAM_TERMINATED, this.onStreamTerminated);
+      _StreamingEvent["default"].edgeNode(this.edgeNodeId).off(_StreamingEvent["default"].ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement).off(_StreamingEvent["default"].WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement).off(_StreamingEvent["default"].STREAM_QUALITY_RATING, this.onStreamQualityRating).off(_StreamingEvent["default"].STREAM_BLACK_SCREEN, this.onStreamBlackScreen).off(_StreamingEvent["default"].STREAM_DISCONNECTED, this.onStreamDisconnected).off(_StreamingEvent["default"].STREAM_RESUMED, this.onStreamResumed).off(_StreamingEvent["default"].EMULATOR_CONFIGURATION, this.onEmulatorConfiguration).off(_StreamingEvent["default"].STREAM_TERMINATED, this.onStreamTerminated);
 
       this.createClassificationReport();
 
@@ -166,9 +172,9 @@ var Measurement = /*#__PURE__*/function () {
       }
 
       if (this.streamWebRtc) {
-        _StreamingEvent.default.edgeNode(this.edgeNodeId).off(_StreamingEvent.default.STREAM_UNREACHABLE, this.streamWebRtc.close);
+        _StreamingEvent["default"].edgeNode(this.edgeNodeId).off(_StreamingEvent["default"].STREAM_UNREACHABLE, this.streamWebRtc.close);
 
-        this.streamWebRtc.off(_StreamingEvent.default.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
+        this.streamWebRtc.off(_StreamingEvent["default"].WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
         this.streamWebRtc.close();
       }
     }
@@ -184,14 +190,14 @@ var Measurement = /*#__PURE__*/function () {
 
       this.logger.info('create classification report');
       this.isClassificationReportCreated = true;
-      var framesDecodedPerSecondStart = this.metricsFramesDecodedPerSecond.getMetric(_Metric.default.START);
-      var framesDecodedPerSecondBeginning = this.metricsFramesDecodedPerSecond.getMetric(_Metric.default.BEGINNING);
-      var framesDecodedPerSecondOverall = this.metricsFramesDecodedPerSecond.getMetric(_Metric.default.OVERALL);
-      var framesDecodedPerSecondCurrent = this.metricsFramesDecodedPerSecond.getMetric(_Metric.default.CURRENT);
-      var interFrameDelayStandardDeviationStart = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric.default.START);
-      var interFrameDelayStandardDeviationBeginning = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric.default.BEGINNING);
-      var interFrameDelayStandardDeviationOverall = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric.default.OVERALL);
-      var interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric.default.CURRENT);
+      var framesDecodedPerSecondStart = this.metricsFramesDecodedPerSecond.getMetric(_Metric["default"].START);
+      var framesDecodedPerSecondBeginning = this.metricsFramesDecodedPerSecond.getMetric(_Metric["default"].BEGINNING);
+      var framesDecodedPerSecondOverall = this.metricsFramesDecodedPerSecond.getMetric(_Metric["default"].OVERALL);
+      var framesDecodedPerSecondCurrent = this.metricsFramesDecodedPerSecond.getMetric(_Metric["default"].CURRENT);
+      var interFrameDelayStandardDeviationStart = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric["default"].START);
+      var interFrameDelayStandardDeviationBeginning = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric["default"].BEGINNING);
+      var interFrameDelayStandardDeviationOverall = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric["default"].OVERALL);
+      var interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric["default"].CURRENT);
       /**
        *  There are three "types" of classification,
        *  good, bad and error. They are put in an
@@ -296,7 +302,7 @@ var Measurement = /*#__PURE__*/function () {
 
       var classificationReport = createClassification();
 
-      _StreamingEvent.default.edgeNode(this.edgeNodeId).emit(_StreamingEvent.default.CLASSIFICATION_REPORT, {
+      _StreamingEvent["default"].edgeNode(this.edgeNodeId).emit(_StreamingEvent["default"].CLASSIFICATION_REPORT, {
         // The "most significant" classification
         classification: legacyClassification(),
         classificationReport: classificationReport,
@@ -338,7 +344,7 @@ var Measurement = /*#__PURE__*/function () {
         packetsLost: 0,
         packetsReceived: 0,
         jitter: null,
-        measureAt: Date.now()
+        measureAt: (0, _now["default"])()
       };
     }
     /**
@@ -351,10 +357,10 @@ var Measurement = /*#__PURE__*/function () {
     value: function reportWebRtcMeasurement(stats) {
       var _this4 = this;
 
-      this.measurement.measureAt = Date.now();
+      this.measurement.measureAt = (0, _now["default"])();
       this.measurement.measureDuration = (this.measurement.measureAt - this.previousMeasurement.measureAt) / 1000; // Process all reports and collect measurement data
 
-      stats.forEach(function (report) {
+      (0, _forEach["default"])(stats).call(stats, function (report) {
         _this4.processInboundRtpVideoReport(report);
 
         _this4.processTrackVideoReport(report);
@@ -371,10 +377,10 @@ var Measurement = /*#__PURE__*/function () {
       this.measurement.numberOfBlackScreens = this.numberOfBlackScreens || 0; // If predictedGameExperience is defined, report it as a float with 1 decimal
 
       if (this.measurement.predictedGameExperience) {
-        _StreamingEvent.default.edgeNode(this.edgeNodeId).emit(_StreamingEvent.default.PREDICTED_GAME_EXPERIENCE, Measurement.roundToDecimals(this.measurement.predictedGameExperience[Measurement.PREDICTED_GAME_EXPERIENCE_DEFAULT], 1));
+        _StreamingEvent["default"].edgeNode(this.edgeNodeId).emit(_StreamingEvent["default"].PREDICTED_GAME_EXPERIENCE, Measurement.roundToDecimals(this.measurement.predictedGameExperience[Measurement.PREDICTED_GAME_EXPERIENCE_DEFAULT], 1));
       }
 
-      _StreamingEvent.default.edgeNode(this.edgeNodeId).emit(_StreamingEvent.default.REPORT_MEASUREMENT, {
+      _StreamingEvent["default"].edgeNode(this.edgeNodeId).emit(_StreamingEvent["default"].REPORT_MEASUREMENT, {
         networkRoundTripTime: this.networkRoundTripTime,
         extra: this.measurement
       });
@@ -426,7 +432,7 @@ var Measurement = /*#__PURE__*/function () {
   }, {
     key: "processWebRtcRoundTripTimeStats",
     value: function processWebRtcRoundTripTimeStats() {
-      this.webrtcRoundTripTime = _StreamWebRtc.default.calculateRoundTripTimeStats(this.webrtcRoundTripTimeValues).rtt;
+      this.webrtcRoundTripTime = _StreamWebRtc["default"].calculateRoundTripTimeStats(this.webrtcRoundTripTimeValues).rtt;
       this.webrtcRoundTripTimeValues = [];
       this.measurement.predictedGameExperience = Measurement.calculatePredictedGameExperience(this.networkRoundTripTime, this.measurement.packetsLostPercent);
       this.measurement.webrtcRoundTripTime = this.webrtcRoundTripTime;
@@ -614,11 +620,11 @@ var Measurement = /*#__PURE__*/function () {
 
       if (Measurement.predictGameExperience[region] === undefined) {
         Measurement.predictGameExperience[region] = {};
-        Measurement.predictGameExperience[region][Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA] = new _PredictGameExperience.default();
-        Measurement.predictGameExperience[region][Measurement.PREDICTED_GAME_EXPERIENCE_NEURAL1] = new _PredictGameExperienceWithNeuralNetwork.default(require('./neural-network-models/b540f780-9367-427c-8b05-232cebb9ec49'));
+        Measurement.predictGameExperience[region][Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA] = new _PredictGameExperience["default"]();
+        Measurement.predictGameExperience[region][Measurement.PREDICTED_GAME_EXPERIENCE_NEURAL1] = new _PredictGameExperienceWithNeuralNetwork["default"](require('./neural-network-models/b540f780-9367-427c-8b05-232cebb9ec49'));
       }
 
-      return (0, _reduce.default)(_context = Measurement.PREDICTED_GAME_EXPERIENCE_ALGORITHMS).call(_context, function (result, algorithm) {
+      return (0, _reduce["default"])(_context = Measurement.PREDICTED_GAME_EXPERIENCE_ALGORITHMS).call(_context, function (result, algorithm) {
         result[algorithm] = Measurement.predictGameExperience[region][algorithm].predict(rtt, packetLostPercent);
         return result;
       }, {});
@@ -627,7 +633,7 @@ var Measurement = /*#__PURE__*/function () {
   return Measurement;
 }();
 
-exports.default = Measurement;
+exports["default"] = Measurement;
 
 Measurement.calculateStandardDeviation = function (currentStats, previousStats) {
   var deltaCount = currentStats.framesDecoded - previousStats.framesDecoded;
