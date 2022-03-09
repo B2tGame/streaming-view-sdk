@@ -68,9 +68,9 @@ function getNetworkDeviceInfo(apiEndpoint, options) {
 function getIceServers(apiEndpoint, region) {
   return Object.keys(iceServers).length === 0
     ? requestIceServers(apiEndpoint, region).then((iceServerCandidates) => {
-        iceServers = { ...iceServerCandidates };
-        return iceServers;
-      })
+      iceServers = { ...iceServerCandidates };
+      return iceServers;
+    })
     : Promise.resolve(iceServers);
 }
 
