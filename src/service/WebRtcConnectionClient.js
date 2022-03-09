@@ -35,7 +35,7 @@ export default class WebRtcConnectionClient {
 
   static createConnection = (options = {}) => {
     const createOptions = {
-      beforeAnswer() {},
+      beforeAnswer() { },
       stereo: false,
       ...options
     };
@@ -62,7 +62,7 @@ export default class WebRtcConnectionClient {
         const timeout = setTimeout(() => {
           peerConnection.removeEventListener('icecandidate', onIceCandidate);
           reject(new Error('Timed out waiting for host candidates'));
-        }, 3000);
+        }, 10000);
         peerConnection.addEventListener('icecandidate', onIceCandidate);
       });
 
