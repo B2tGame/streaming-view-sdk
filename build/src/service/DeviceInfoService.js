@@ -85,7 +85,7 @@ var DeviceInfoService = /*#__PURE__*/function () {
       }
 
       return _axios["default"].post("".concat(apiEndpoint, "/api/streaming-games/edge-node/device-info"), body, {
-        timeout: 2500
+        timeout: 3000
       }).then(function (result) {
         // deviceInfoId is stored in localStorage. Later it will be used to update the device-info with new data.
         localStorage.setItem(DeviceInfoService.DEVICE_INFO_ID_KEY, result.data.deviceInfoId);
@@ -105,7 +105,7 @@ var DeviceInfoService = /*#__PURE__*/function () {
       var _context;
 
       return _axios["default"].post((0, _concat["default"])(_context = "".concat(apiEndpoint, "/api/streaming-games/edge-node/device-info/")).call(_context, DeviceInfoService.getStoredDeviceInfoId()), body, {
-        timeout: 2500
+        timeout: 3000
       });
     }
   }]);
