@@ -50,11 +50,11 @@ export default class Measurement {
   /**
    * @param {string} webRtcHost
    * @param {number} pingInterval
+   * @param {{ name: string, candidates: [{*}] }} iceServers
    */
-  initWebRtc(webRtcHost, pingInterval) {
+  initWebRtc(webRtcHost, pingInterval, iceServers = { name: 'default', candidates: [] }) {
     this.webRtcHost = webRtcHost;
-    //TODO-turn: use default ice candidates for now
-    this.streamWebRtc = new StreamWebRtc(this.webRtcHost, { name: 'default', candidates: [] }, pingInterval);
+    this.streamWebRtc = new StreamWebRtc(this.webRtcHost, iceServers, pingInterval);
     this.streamWebRtc.on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
     StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
     this.webRtcIntervalHandler = setInterval(() => {
@@ -496,7 +496,7 @@ export default class Measurement {
       this.measurement.totalDecodeTimePerFramesDecodedInMs = Measurement.roundToDecimals(
         ((report.totalDecodeTime - this.previousMeasurement.totalDecodeTime) /
           (report.framesDecoded - this.previousMeasurement.framesDecoded)) *
-          1000
+        1000
       );
       this.measurement.interFrameDelayStandardDeviationInMs = Measurement.roundToDecimals(
         Measurement.calculateStandardDeviation(report, this.previousMeasurement)

@@ -138,7 +138,6 @@ const getAdvancedMeasurement = (apiEndpoint) => {
 
     const webRtcHost = `${edge.baseUrls.shift()}/webrtc`;
     const turnName = edge.iceServers.name;
-    console.log('DEBUG - webRtcHost:', webRtcHost);
     console.log(`WebRtc connect attempt: ${webRtcHost} region:${edge.region}, TURN:${edge.iceServers.name}`);
 
     return new Promise((resolve, reject) => {

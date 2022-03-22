@@ -107,7 +107,7 @@ class Emulator extends Component {
     /** Playout Delay Hint */
     playoutDelayHint: PropTypes.number,
     /** Ice Server Candidates */
-    iceServers: PropTypes.array
+    iceServers: PropTypes.object
   };
 
   static defaultProps = {

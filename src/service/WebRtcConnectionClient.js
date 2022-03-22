@@ -61,7 +61,7 @@ export default class WebRtcConnectionClient {
 
         const timeout = setTimeout(() => {
           peerConnection.removeEventListener('icecandidate', onIceCandidate);
-          reject(new Error('Timed out waiting for host candidates'));
+          reject('Timed out waiting for host candidates');
         }, 10000);
         peerConnection.addEventListener('icecandidate', onIceCandidate);
       });
