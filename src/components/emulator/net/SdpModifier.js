@@ -48,13 +48,13 @@ export default class SdpModifier {
 
   /**
    * Set the max quantization for VP8.
-   * @param {number} max_quantization Max quantization for VP8, max value is 63
+   * @param {number} maxQuantization Max quantization for VP8, max value is 63
    */
-  setVP8MaxQuantization(max_quantization) {
+  setVP8MaxQuantization(maxQuantization) {
     const video = this.sdp.media.find((media) => media.type === 'video');
     const vp8rtp = video.rtp.filter((rtp) => rtp.codec === 'VP8');
     const ids = vp8rtp.map((rtp) => rtp.payload);
-    video.fmtp = [...ids.map((id) => ({ payload: id, config: `x-google-max-quantization=${max_quantization}` })), ...video.fmtp];
+    video.fmtp = [...ids.map((id) => ({ payload: id, config: `x-google-max-quantization=${maxQuantization}` })), ...video.fmtp];
   }
 
   /**
