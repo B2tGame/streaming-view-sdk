@@ -435,7 +435,8 @@ var StreamingView = /*#__PURE__*/function (_Component) {
           propsHeight = _this$props2.height,
           propsWidth = _this$props2.width,
           playoutDelayHint = _this$props2.playoutDelayHint,
-          iceServers = _this$props2.iceServers;
+          iceServers = _this$props2.iceServers,
+          vp8MaxQuantization = _this$props2.vp8MaxQuantization;
       var _this$state = this.state,
           stateHeight = _this$state.height,
           stateWidth = _this$state.width;
@@ -465,7 +466,8 @@ var StreamingView = /*#__PURE__*/function (_Component) {
             maxConnectionRetries: this.props.maxConnectionRetries,
             measureTouchRtt: (_this$props$measureTo = this.props.measureTouchRtt) !== null && _this$props$measureTo !== void 0 ? _this$props$measureTo : this.state.shouldRandomlyMeasureRtt,
             playoutDelayHint: playoutDelayHint,
-            iceServers: iceServers
+            iceServers: iceServers,
+            vp8MaxQuantization: vp8MaxQuantization
           }));
 
         case false:
@@ -530,7 +532,8 @@ var StreamingView = /*#__PURE__*/function (_Component) {
         measureTouchRtt: _propTypes["default"].bool,
         playoutDelayHint: _propTypes["default"].number,
         iceServers: _propTypes["default"].array,
-        measureWebrtcRtt: _propTypes["default"].bool
+        measureWebrtcRtt: _propTypes["default"].bool,
+        vp8MaxQuantization: _propTypes["default"].number
       };
     }
   }, {

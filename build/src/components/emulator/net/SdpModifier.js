@@ -26,6 +26,10 @@ var _includes = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-s
 
 var _map = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/map"));
 
+var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
+
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/toConsumableArray"));
+
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
@@ -112,6 +116,32 @@ var SdpModifier = /*#__PURE__*/function () {
         return (0, _includes["default"])(ids).call(ids, fmtp.payload);
       });
       video.payloads = ids.join(' ');
+    }
+    /**
+     * Set the max quantization for VP8.
+     * @param {number} maxQuantization Max quantization for VP8, max value is 63
+     */
+
+  }, {
+    key: "setVP8MaxQuantization",
+    value: function setVP8MaxQuantization(maxQuantization) {
+      var _context7, _context8, _context9;
+
+      var video = (0, _find["default"])(_context7 = this.sdp.media).call(_context7, function (media) {
+        return media.type === 'video';
+      });
+      var vp8rtp = (0, _filter["default"])(_context8 = video.rtp).call(_context8, function (rtp) {
+        return rtp.codec === 'VP8';
+      });
+      var ids = (0, _map["default"])(vp8rtp).call(vp8rtp, function (rtp) {
+        return rtp.payload;
+      });
+      video.fmtp = (0, _concat["default"])(_context9 = []).call(_context9, (0, _toConsumableArray2["default"])((0, _map["default"])(ids).call(ids, function (id) {
+        return {
+          payload: id,
+          config: "x-google-max-quantization=".concat(maxQuantization)
+        };
+      })), (0, _toConsumableArray2["default"])(video.fmtp));
     }
     /**
      * Get a SDP in plain text format.

@@ -114,7 +114,7 @@ WebRtcConnectionClient.createConnection = function () {
       var timeout = (0, _setTimeout2["default"])(function () {
         peerConnection.removeEventListener('icecandidate', onIceCandidate);
         reject(new Error('Timed out waiting for host candidates'));
-      }, 3000);
+      }, 10000);
       peerConnection.addEventListener('icecandidate', onIceCandidate);
     });
   };

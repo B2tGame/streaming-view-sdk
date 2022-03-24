@@ -48,6 +48,7 @@ var JsepProtocol = /*#__PURE__*/function () {
    * @param {Logger} logger for console logs
    * @param {string|undefined} turnEndpoint Override the default uri for turn servers
    * @param {number|0} playoutDelayHint Custom playoutDelayHint value
+   * @param {number|undefined} vp8MaxQuantization Max quantization for VP8, max value is 63
    */
   function JsepProtocol(emulator, rtc, poll, edgeNodeId, logger) {
     var _this = this;
@@ -55,6 +56,7 @@ var JsepProtocol = /*#__PURE__*/function () {
     var turnEndpoint = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : undefined;
     var playoutDelayHint = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 0;
     var iceServers = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : [];
+    var vp8MaxQuantization = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : undefined;
     (0, _classCallCheck2["default"])(this, JsepProtocol);
 
     this.disconnect = function () {
@@ -292,6 +294,12 @@ var JsepProtocol = /*#__PURE__*/function () {
                 // sdp.setTargetBandwidth(1 * SDP.MEGABIT, 1 * SDP.MEGABIT);
                 // This will force the system to only using one of the listed codecs for the video stream.
                 // sdp.restrictVideoCodec(['VP9']);
+                // This allows a larger degradation in image quality than the default when we have a low bitrate,
+                // which we prefer instead of decreasing FPS.
+
+                if (_this.vp8MaxQuantization !== undefined) {
+                  sdp.setVP8MaxQuantization(_this.vp8MaxQuantization);
+                }
 
                 answer.sdp = sdp.toString();
                 console.log('JsepProtocol._handleSDP:', answer);
@@ -306,7 +314,7 @@ var JsepProtocol = /*#__PURE__*/function () {
                   _this.disconnect();
                 }
 
-              case 9:
+              case 10:
               case "end":
                 return _context.stop();
             }
@@ -417,6 +425,7 @@ var JsepProtocol = /*#__PURE__*/function () {
     this.poll = poll || typeof this.rtc.receiveJsepMessages !== 'function';
     this.playoutDelayHint = playoutDelayHint;
     this.iceServers = iceServers;
+    this.vp8MaxQuantization = vp8MaxQuantization;
     this.logger = logger;
   }
   /**

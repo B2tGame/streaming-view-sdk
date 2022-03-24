@@ -154,7 +154,7 @@ var Emulator = /*#__PURE__*/function (_Component) {
         poll = _this$props.poll;
     _this.emulator = new _emulator_web_client.EmulatorControllerService(uri, auth, _this.onError);
     _this.rtc = new _emulator_web_client.RtcService(uri, auth, _this.onError);
-    _this.jsep = new _JsepProtocol["default"](_this.emulator, _this.rtc, poll, _this.props.edgeNodeId, _this.props.logger, _this.props.turnEndpoint, _this.props.playoutDelayHint, _this.props.iceServers);
+    _this.jsep = new _JsepProtocol["default"](_this.emulator, _this.rtc, poll, _this.props.edgeNodeId, _this.props.logger, _this.props.turnEndpoint, _this.props.playoutDelayHint, _this.props.iceServers, _this.props.vp8MaxQuantization);
 
     _StreamingEvent["default"].edgeNode(_this.props.edgeNodeId).on(_StreamingEvent["default"].STREAM_DISCONNECTED, _this.onDisconnect).on(_StreamingEvent["default"].STREAM_VIDEO_UNAVAILABLE, _this.onVideoUnavailable).on(_StreamingEvent["default"].STREAM_VIDEO_MISSING, _this.onVideoMissing).on(_StreamingEvent["default"].STREAM_CONNECTED, _this.onConnect);
 
@@ -330,7 +330,10 @@ Emulator.propTypes = {
   playoutDelayHint: _propTypes["default"].number,
 
   /** Ice Server Candidates */
-  iceServers: _propTypes["default"].array
+  iceServers: _propTypes["default"].array,
+
+  /** Max quantization for VP8, max value is 63 */
+  vp8MaxQuantization: _propTypes["default"].number
 };
 Emulator.defaultProps = {
   auth: null,
