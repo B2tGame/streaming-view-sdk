@@ -57,6 +57,46 @@ export default class Metric {
 
   constructor() {
     this.refTimestamp = undefined;
+    this._eventHandler = new EventTarget();
+  }
+
+  /**
+   * Trigger event on specific metric starting / ending
+   * @param { 'startEnd' | 'beginningEnd' | 'overallEnd' |'currentEnd' } eventName Event name refers to the names of metric + start or end
+   * @param {() => {}} callback To be called when event is emitted
+   */
+  on(eventName, callback) {
+    this._eventHandler.addEventListener(eventName, callback);
+  }
+
+  onMetricPeriodEnd(callback) {
+    Metric.ALL_METRICS.forEach((metric) => {
+      this.on(`${metric.id}End`, callback);
+    });
+  }
+
+  offMetricPeriodEnd(callback) {
+    Metric.ALL_METRICS.forEach((metric) => {
+      this.off(`${metric.id}End`, callback);
+    });
+  }
+
+  /**
+   * Trigger event on specific metric starting / ending
+   * @param { 'startEnd' | 'beginningEnd' | 'overallEnd' |'currentEnd' } eventName Event name refers to the names of metric + start or end
+   * @param {() => {}} callback Must be the SAME function (by reference) as the registered function, to be unregistered
+   */
+  off(eventName, callback) {
+    this._eventHandler.addEventListener(eventName, callback);
+  }
+
+  /**
+   * Trigger event on specific metric starting / ending
+   * @param { 'startEnd' | 'beginningEnd' | 'overallEnd' |'currentEnd' } eventName Event name refers to the names of metric + start or end
+     @param {() => {}} data is some payload that we want to add to the event
+  */
+  dispatch(eventName, data = undefined) {
+    this._eventHandler.dispatchEvent(new CustomEvent(eventName, data));
   }
 
   /**
@@ -71,6 +111,7 @@ export default class Metric {
         sum: 0,
         count: 0,
         raw: [],
+        ended: false,
         firstValueTime: undefined,
         lastValueTime: undefined
       };
@@ -113,6 +154,9 @@ export default class Metric {
             metric.lastValueTime = currentTimestamp;
             metric.sum += value;
             metric.count += 1;
+          } else if (item.start <= currentTimestamp && !item.ended) {
+            item.ended = true;
+            this.dispatch(`${item.id}End`);
           }
         } else if (item.mode === 'end') {
           const metric = this.metrics[item.id];
