@@ -62,7 +62,7 @@ export default class Metric {
 
   /**
    * Trigger event on specific metric starting / ending
-   * @param { 'startEnd' | 'beginningEnd' | 'overallEnd' |'currentEnd' } eventName Event name refers to the names of metric + start or end
+   * @param { 'start-end' | 'beginning-end' | 'overall-end' |'current-end' } eventName Event name refers to the names of metric + start or end
    * @param {() => {}} callback To be called when event is emitted
    */
   on(eventName, callback) {
@@ -71,19 +71,19 @@ export default class Metric {
 
   onMetricPeriodEnd(callback) {
     Metric.ALL_METRICS.forEach((metric) => {
-      this.on(`${metric.id}End`, callback);
+      this.on(`${metric.id}-end`, callback);
     });
   }
 
   offMetricPeriodEnd(callback) {
     Metric.ALL_METRICS.forEach((metric) => {
-      this.off(`${metric.id}End`, callback);
+      this.off(`${metric.id}-end`, callback);
     });
   }
 
   /**
    * Trigger event on specific metric starting / ending
-   * @param { 'startEnd' | 'beginningEnd' | 'overallEnd' |'currentEnd' } eventName Event name refers to the names of metric + start or end
+   * @param { 'start-end' | 'beginning-end' | 'overall-end' |'current-end' } eventName Event name refers to the names of metric + start or end
    * @param {() => {}} callback Must be the SAME function (by reference) as the registered function, to be unregistered
    */
   off(eventName, callback) {
@@ -92,7 +92,7 @@ export default class Metric {
 
   /**
    * Trigger event on specific metric starting / ending
-   * @param { 'startEnd' | 'beginningEnd' | 'overallEnd' |'currentEnd' } eventName Event name refers to the names of metric + start or end
+   * @param { 'start-end' | 'beginning-end' | 'overall-end' |'current-end' } eventName Event name refers to the names of metric + start or end
      @param {() => {}} data is some payload that we want to add to the event
   */
   dispatch(eventName, data = undefined) {
@@ -156,7 +156,7 @@ export default class Metric {
             metric.count += 1;
           } else if (item.start <= currentTimestamp && !item.ended) {
             item.ended = true;
-            this.dispatch(`${item.id}End`);
+            this.dispatch(`${item.id}-end`);
           }
         } else if (item.mode === 'end') {
           const metric = this.metrics[item.id];

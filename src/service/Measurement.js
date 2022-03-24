@@ -160,7 +160,7 @@ export default class Measurement {
       .off(StreamingEvent.EMULATOR_CONFIGURATION, this.onEmulatorConfiguration)
       .off(StreamingEvent.STREAM_TERMINATED, this.onStreamTerminated);
 
-    this.createClassificationReport('destructorCalled');
+    this.createClassificationReport('destructor-called');
 
     if (this.webRtcIntervalHandler) {
       clearInterval(this.webRtcIntervalHandler);
@@ -198,7 +198,7 @@ export default class Measurement {
   };
 
   onStreamTerminated = () => {
-    this.createClassificationReport('streamTerminated');
+    this.createClassificationReport('stream-terminated');
   };
 
   createClassificationReport(reportTrigger) {
@@ -216,7 +216,7 @@ export default class Measurement {
   onStreamPaused = () => {
     // Here we could probably stop recording measurements?
     if (this.didStreamResume) {
-      this.createClassificationReport('streamPaused');
+      this.createClassificationReport('stream-paused');
     }
   };
 
