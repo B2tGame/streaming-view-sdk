@@ -21,8 +21,19 @@ export default class JsepProtocol {
    * @param {Logger} logger for console logs
    * @param {string|undefined} turnEndpoint Override the default uri for turn servers
    * @param {number|0} playoutDelayHint Custom playoutDelayHint value
+   * @param {number|undefined} vp8MaxQuantization Max quantization for VP8, max value is 63
    */
-  constructor(emulator, rtc, poll, edgeNodeId, logger, turnEndpoint = undefined, playoutDelayHint = 0, iceServers = []) {
+  constructor(
+    emulator,
+    rtc,
+    poll,
+    edgeNodeId,
+    logger,
+    turnEndpoint = undefined,
+    playoutDelayHint = 0,
+    iceServers = [],
+    vp8MaxQuantization = undefined
+  ) {
     this.emulator = emulator;
     this.rtc = rtc;
     this.guid = null;
@@ -33,6 +44,7 @@ export default class JsepProtocol {
     this.poll = poll || typeof this.rtc.receiveJsepMessages !== 'function';
     this.playoutDelayHint = playoutDelayHint;
     this.iceServers = iceServers;
+    this.vp8MaxQuantization = vp8MaxQuantization;
     this.logger = logger;
   }
 
@@ -250,6 +262,12 @@ export default class JsepProtocol {
 
     // This will force the system to only using one of the listed codecs for the video stream.
     // sdp.restrictVideoCodec(['VP9']);
+
+    // This allows a larger degradation in image quality than the default when we have a low bitrate,
+    // which we prefer instead of decreasing FPS.
+    if (this.vp8MaxQuantization !== undefined) {
+      sdp.setVP8MaxQuantization(this.vp8MaxQuantization);
+    }
 
     answer.sdp = sdp.toString();
 

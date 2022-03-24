@@ -107,7 +107,9 @@ class Emulator extends Component {
     /** Playout Delay Hint */
     playoutDelayHint: PropTypes.number,
     /** Ice Server Candidates */
-    iceServers: PropTypes.object
+    iceServers: PropTypes.object,
+    /** Max quantization for VP8, max value is 63 */
+    vp8MaxQuantization: PropTypes.number
   };
 
   static defaultProps = {
@@ -147,7 +149,8 @@ class Emulator extends Component {
       this.props.logger,
       this.props.turnEndpoint,
       this.props.playoutDelayHint,
-      this.props.iceServers
+      this.props.iceServers,
+      this.props.vp8MaxQuantization
     );
 
     StreamingEvent.edgeNode(this.props.edgeNodeId)
