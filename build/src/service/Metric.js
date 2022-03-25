@@ -8,8 +8,6 @@ var _Symbol = require("@babel/runtime-corejs3/core-js-stable/symbol");
 
 var _getIteratorMethod = require("@babel/runtime-corejs3/core-js/get-iterator-method");
 
-var _Array$isArray = require("@babel/runtime-corejs3/core-js-stable/array/is-array");
-
 var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -18,11 +16,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports["default"] = void 0;
-
-var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/date/now"));
-
-var _isFinite = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/number/is-finite"));
+exports.default = void 0;
 
 var _filter = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/filter"));
 
@@ -34,7 +28,7 @@ var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/he
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof _Symbol !== "undefined" && _getIteratorMethod(o) || o["@@iterator"]; if (!it) { if (_Array$isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof _Symbol !== "undefined" && _getIteratorMethod(o) || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { var _context5; if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = _sliceInstanceProperty(_context5 = Object.prototype.toString.call(o)).call(_context5, 8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return _Array$from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -42,20 +36,74 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 var Metric = /*#__PURE__*/function () {
   function Metric() {
-    (0, _classCallCheck2["default"])(this, Metric);
+    (0, _classCallCheck2.default)(this, Metric);
     this.refTimestamp = undefined;
+    this._eventHandler = new EventTarget();
   }
   /**
-   * Set the zero reference timestamp
-   * @param {number|undefined} timestamp Timestamp to acts as the zero reference timestamp, default to current time.
+   * Trigger event on specific metric starting / ending
+   * @param { 'start-end' | 'beginning-end' | 'overall-end' |'current-end' } eventName Event name refers to the names of metric + start or end
+   * @param {() => {}} callback To be called when event is emitted
    */
 
 
-  (0, _createClass2["default"])(Metric, [{
+  (0, _createClass2.default)(Metric, [{
+    key: "on",
+    value: function on(eventName, callback) {
+      this._eventHandler.addEventListener(eventName, callback);
+    }
+  }, {
+    key: "onMetricPeriodEnd",
+    value: function onMetricPeriodEnd(callback) {
+      var _this = this;
+
+      Metric.ALL_METRICS.forEach(function (metric) {
+        _this.on("".concat(metric.id, "-end"), callback);
+      });
+    }
+  }, {
+    key: "offMetricPeriodEnd",
+    value: function offMetricPeriodEnd(callback) {
+      var _this2 = this;
+
+      Metric.ALL_METRICS.forEach(function (metric) {
+        _this2.off("".concat(metric.id, "-end"), callback);
+      });
+    }
+    /**
+     * Trigger event on specific metric starting / ending
+     * @param { 'start-end' | 'beginning-end' | 'overall-end' |'current-end' } eventName Event name refers to the names of metric + start or end
+     * @param {() => {}} callback Must be the SAME function (by reference) as the registered function, to be unregistered
+     */
+
+  }, {
+    key: "off",
+    value: function off(eventName, callback) {
+      this._eventHandler.addEventListener(eventName, callback);
+    }
+    /**
+     * Trigger event on specific metric starting / ending
+     * @param { 'start-end' | 'beginning-end' | 'overall-end' |'current-end' } eventName Event name refers to the names of metric + start or end
+       @param {() => {}} data is some payload that we want to add to the event
+    */
+
+  }, {
+    key: "dispatch",
+    value: function dispatch(eventName) {
+      var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+
+      this._eventHandler.dispatchEvent(new CustomEvent(eventName, data));
+    }
+    /**
+     * Set the zero reference timestamp
+     * @param {number|undefined} timestamp Timestamp to acts as the zero reference timestamp, default to current time.
+     */
+
+  }, {
     key: "setReferenceTime",
     value: function setReferenceTime() {
       var timestamp = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
-      this.refTimestamp = timestamp || (0, _now["default"])();
+      this.refTimestamp = timestamp || Date.now();
       this.metrics = {};
 
       var _iterator = _createForOfIteratorHelper(Metric.ALL_METRICS),
@@ -68,6 +116,7 @@ var Metric = /*#__PURE__*/function () {
             sum: 0,
             count: 0,
             raw: [],
+            ended: false,
             firstValueTime: undefined,
             lastValueTime: undefined
           };
@@ -98,7 +147,7 @@ var Metric = /*#__PURE__*/function () {
     key: "getReferenceTime",
     value: function getReferenceTime() {
       var timestamp = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
-      return (timestamp || (0, _now["default"])()) - this.refTimestamp;
+      return (timestamp || Date.now()) - this.refTimestamp;
     }
     /**
      * Inject a new value to the metric.
@@ -109,13 +158,13 @@ var Metric = /*#__PURE__*/function () {
   }, {
     key: "inject",
     value: function inject(value) {
-      var _this = this;
+      var _this3 = this;
 
       var timestamp = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
 
-      if ((0, _isFinite["default"])(value) && this.refTimestamp !== undefined) {
+      if (Number.isFinite(value) && this.refTimestamp !== undefined) {
         (function () {
-          var currentTimestamp = _this.getReferenceTime(timestamp);
+          var currentTimestamp = _this3.getReferenceTime(timestamp);
 
           var _iterator2 = _createForOfIteratorHelper(Metric.ALL_METRICS),
               _step2;
@@ -126,7 +175,7 @@ var Metric = /*#__PURE__*/function () {
 
               if (item.mode === 'start') {
                 if (item.start <= currentTimestamp && item.end >= currentTimestamp) {
-                  var metric = _this.metrics[item.id];
+                  var metric = _this3.metrics[item.id];
                   metric.raw.push({
                     timestamp: currentTimestamp,
                     value: value
@@ -135,18 +184,22 @@ var Metric = /*#__PURE__*/function () {
                   metric.lastValueTime = currentTimestamp;
                   metric.sum += value;
                   metric.count += 1;
+                } else if (item.start <= currentTimestamp && !item.ended) {
+                  item.ended = true;
+
+                  _this3.dispatch("".concat(item.id, "-end"));
                 }
               } else if (item.mode === 'end') {
                 var _context;
 
-                var _metric = _this.metrics[item.id];
+                var _metric = _this3.metrics[item.id];
 
                 _metric.raw.push({
                   timestamp: currentTimestamp,
                   value: value
                 });
 
-                _metric.raw = (0, _filter["default"])(_context = _metric.raw).call(_context, function (rec) {
+                _metric.raw = (0, _filter.default)(_context = _metric.raw).call(_context, function (rec) {
                   return currentTimestamp - rec.timestamp < -item.start;
                 });
                 _metric.firstValueTime = _metric.firstValueTime === undefined ? currentTimestamp : _metric.firstValueTime;
@@ -188,14 +241,14 @@ var Metric = /*#__PURE__*/function () {
             var _context2, _context3, _context4;
 
             var currentTimestamp = this.getReferenceTime(timestamp);
-            var metrics = (0, _map["default"])(_context2 = (0, _filter["default"])(_context3 = (0, _filter["default"])(_context4 = metric.raw).call(_context4, function (rec) {
+            var metrics = (0, _map.default)(_context2 = (0, _filter.default)(_context3 = (0, _filter.default)(_context4 = metric.raw).call(_context4, function (rec) {
               return currentTimestamp - rec.timestamp <= -key.start;
             })).call(_context3, function (rec) {
               return currentTimestamp - rec.timestamp >= -key.end;
             })).call(_context2, function (rec) {
               return rec.value;
             });
-            return (0, _reduce["default"])(metrics).call(metrics, function (a, b) {
+            return (0, _reduce.default)(metrics).call(metrics, function (a, b) {
               return a + b;
             }, 0) / metrics.length;
           }
@@ -273,4 +326,4 @@ var Metric = /*#__PURE__*/function () {
   return Metric;
 }();
 
-exports["default"] = Metric;
+exports.default = Metric;

@@ -8,8 +8,6 @@ var _filterInstanceProperty = require("@babel/runtime-corejs3/core-js-stable/ins
 
 var _Object$getOwnPropertyDescriptor = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor");
 
-var _forEachInstanceProperty = require("@babel/runtime-corejs3/core-js-stable/instance/for-each");
-
 var _Object$getOwnPropertyDescriptors = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptors");
 
 var _Object$defineProperties = require("@babel/runtime-corejs3/core-js-stable/object/define-properties");
@@ -47,7 +45,7 @@ var _DeviceInfoService = _interopRequireDefault(require("../service/DeviceInfoSe
 
 function ownKeys(object, enumerableOnly) { var keys = _Object$keys2(object); if (_Object$getOwnPropertySymbols) { var symbols = _Object$getOwnPropertySymbols(object); enumerableOnly && (symbols = _filterInstanceProperty(symbols).call(symbols, function (sym) { return _Object$getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var _context2, _context3; var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? _forEachInstanceProperty(_context2 = ownKeys(Object(source), !0)).call(_context2, function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }) : _Object$getOwnPropertyDescriptors ? _Object$defineProperties(target, _Object$getOwnPropertyDescriptors(source)) : _forEachInstanceProperty(_context3 = ownKeys(Object(source))).call(_context3, function (key) { _Object$defineProperty(target, key, _Object$getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { (0, _defineProperty2.default)(target, key, source[key]); }) : _Object$getOwnPropertyDescriptors ? _Object$defineProperties(target, _Object$getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { _Object$defineProperty(target, key, _Object$getOwnPropertyDescriptor(source, key)); }); } return target; }
 
 var deviceInfo = {};
 var iceServers = {};
@@ -62,7 +60,7 @@ var cachedApiEndpoint;
 function requestIceServers(apiEndpoint, region) {
   var _context;
 
-  return _axios["default"].get((0, _concat["default"])(_context = "".concat(apiEndpoint, "/api/streaming-games/edge-node/ice-server/")).call(_context, region), {
+  return _axios.default.get((0, _concat.default)(_context = "".concat(apiEndpoint, "/api/streaming-games/edge-node/ice-server/")).call(_context, region), {
     timeout: 2500
   }).then(function (result) {
     return result.data || {};
@@ -79,7 +77,7 @@ function getBrowserDeviceInfo() {
   var browserConnection = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
   var connection = browserConnection ? browserConnection : navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
   var DPI = window.devicePixelRatio || 1;
-  return _promise["default"].resolve({
+  return _promise.default.resolve({
     screenScale: DPI,
     screenWidth: Math.round(DPI * window.screen.width),
     screenHeight: Math.round(DPI * window.screen.height),
@@ -97,12 +95,12 @@ function getBrowserDeviceInfo() {
 
 
 function getNetworkDeviceInfo(apiEndpoint, options) {
-  if ((0, _keys["default"])(deviceInfo).length > 0) {
-    return _promise["default"].resolve(deviceInfo);
+  if ((0, _keys.default)(deviceInfo).length > 0) {
+    return _promise.default.resolve(deviceInfo);
   }
 
   cachedApiEndpoint = apiEndpoint;
-  return _DeviceInfoService["default"].createDeviceInfo(apiEndpoint, options).then(function (networkDeviceInfo) {
+  return _DeviceInfoService.default.createDeviceInfo(apiEndpoint, options).then(function (networkDeviceInfo) {
     deviceInfo = networkDeviceInfo;
     return networkDeviceInfo;
   });
@@ -116,10 +114,10 @@ function getNetworkDeviceInfo(apiEndpoint, options) {
 
 
 function getIceServers(apiEndpoint, region) {
-  return (0, _keys["default"])(iceServers).length === 0 ? requestIceServers(apiEndpoint, region).then(function (iceServerCandidates) {
+  return (0, _keys.default)(iceServers).length === 0 ? requestIceServers(apiEndpoint, region).then(function (iceServerCandidates) {
     iceServers = _objectSpread({}, iceServerCandidates);
     return iceServers;
-  }) : _promise["default"].resolve(iceServers);
+  }) : _promise.default.resolve(iceServers);
 }
 /**
  * Get device info, network device info is cached and browser/network connectivity information are fetched every time
@@ -134,10 +132,10 @@ function getDeviceInfo(apiEndpoint) {
   var browserConnection = options.browserConnection,
       userId = options.userId,
       region = options.region;
-  return _promise["default"].all([getNetworkDeviceInfo(apiEndpoint, {
+  return _promise.default.all([getNetworkDeviceInfo(apiEndpoint, {
     userId: userId
   }), getBrowserDeviceInfo(browserConnection), (0, _networkConnectivity.getNetworkConnectivity)(browserConnection), getIceServers(apiEndpoint, region)]).then(function (_ref) {
-    var _ref2 = (0, _slicedToArray2["default"])(_ref, 4),
+    var _ref2 = (0, _slicedToArray2.default)(_ref, 4),
         networkDeviceInfo = _ref2[0],
         browserDeviceInfo = _ref2[1],
         networkConnectivity = _ref2[2],
@@ -147,7 +145,7 @@ function getDeviceInfo(apiEndpoint) {
       iceServers: _objectSpread({}, iceServers)
     });
 
-    new _Logger["default"]().info('deviceInfo is ready', deviceInfo);
+    new _Logger.default().info('deviceInfo is ready', deviceInfo);
     return deviceInfo;
   });
 }
@@ -160,7 +158,7 @@ function getDeviceInfo(apiEndpoint) {
 
 
 function updateDeviceInfo(apiEndpoint, body) {
-  return _DeviceInfoService["default"].updateDeviceInfo(apiEndpoint ? apiEndpoint : cachedApiEndpoint, body);
+  return _DeviceInfoService.default.updateDeviceInfo(apiEndpoint ? apiEndpoint : cachedApiEndpoint, body);
 }
 /**
  * Reset all device information

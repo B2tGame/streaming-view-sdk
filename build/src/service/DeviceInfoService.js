@@ -8,7 +8,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports["default"] = void 0;
+exports.default = void 0;
 
 var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
 
@@ -25,10 +25,10 @@ var _uuid = require("uuid");
  */
 var DeviceInfoService = /*#__PURE__*/function () {
   function DeviceInfoService() {
-    (0, _classCallCheck2["default"])(this, DeviceInfoService);
+    (0, _classCallCheck2.default)(this, DeviceInfoService);
   }
 
-  (0, _createClass2["default"])(DeviceInfoService, null, [{
+  (0, _createClass2.default)(DeviceInfoService, null, [{
     key: "USER_ID_KEY",
     get: function get() {
       return 'streaming-appland-user-id';
@@ -84,8 +84,8 @@ var DeviceInfoService = /*#__PURE__*/function () {
         }
       }
 
-      return _axios["default"].post("".concat(apiEndpoint, "/api/streaming-games/edge-node/device-info"), body, {
-        timeout: 2500
+      return _axios.default.post("".concat(apiEndpoint, "/api/streaming-games/edge-node/device-info"), body, {
+        timeout: 3000
       }).then(function (result) {
         // deviceInfoId is stored in localStorage. Later it will be used to update the device-info with new data.
         localStorage.setItem(DeviceInfoService.DEVICE_INFO_ID_KEY, result.data.deviceInfoId);
@@ -104,12 +104,12 @@ var DeviceInfoService = /*#__PURE__*/function () {
     value: function updateDeviceInfo(apiEndpoint, body) {
       var _context;
 
-      return _axios["default"].post((0, _concat["default"])(_context = "".concat(apiEndpoint, "/api/streaming-games/edge-node/device-info/")).call(_context, DeviceInfoService.getStoredDeviceInfoId()), body, {
-        timeout: 2500
+      return _axios.default.post((0, _concat.default)(_context = "".concat(apiEndpoint, "/api/streaming-games/edge-node/device-info/")).call(_context, DeviceInfoService.getStoredDeviceInfoId()), body, {
+        timeout: 3000
       });
     }
   }]);
   return DeviceInfoService;
 }();
 
-exports["default"] = DeviceInfoService;
+exports.default = DeviceInfoService;

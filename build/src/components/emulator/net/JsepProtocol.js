@@ -8,13 +8,11 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports["default"] = void 0;
+exports.default = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime-corejs3/regenerator"));
 
 var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
-
-var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/date/now"));
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/asyncToGenerator"));
 
@@ -48,6 +46,7 @@ var JsepProtocol = /*#__PURE__*/function () {
    * @param {Logger} logger for console logs
    * @param {string|undefined} turnEndpoint Override the default uri for turn servers
    * @param {number|0} playoutDelayHint Custom playoutDelayHint value
+   * @param {number|undefined} vp8MaxQuantization Max quantization for VP8, max value is 63
    */
   function JsepProtocol(emulator, rtc, poll, edgeNodeId, logger) {
     var _this = this;
@@ -55,7 +54,8 @@ var JsepProtocol = /*#__PURE__*/function () {
     var turnEndpoint = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : undefined;
     var playoutDelayHint = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 0;
     var iceServers = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : [];
-    (0, _classCallCheck2["default"])(this, JsepProtocol);
+    var vp8MaxQuantization = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : undefined;
+    (0, _classCallCheck2.default)(this, JsepProtocol);
 
     this.disconnect = function () {
       _this.connected = false;
@@ -90,9 +90,9 @@ var JsepProtocol = /*#__PURE__*/function () {
         _this.rtcEventTrigger = null;
       }
 
-      _StreamingEvent["default"].edgeNode(_this.edgeNodeId).off(_StreamingEvent["default"].REQUEST_WEB_RTC_MEASUREMENT, _this.onRequestWebRtcMeasurement);
+      _StreamingEvent.default.edgeNode(_this.edgeNodeId).off(_StreamingEvent.default.REQUEST_WEB_RTC_MEASUREMENT, _this.onRequestWebRtcMeasurement);
 
-      _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].STREAM_DISCONNECTED);
+      _StreamingEvent.default.edgeNode(_this.edgeNodeId).emit(_StreamingEvent.default.STREAM_DISCONNECTED);
     };
 
     this.startStream = function () {
@@ -103,9 +103,9 @@ var JsepProtocol = /*#__PURE__*/function () {
 
       _this.rtc.requestRtcStream(request, {}, function (err, response) {
         if (err) {
-          _this.logger.error('Failed to configure rtc stream: ' + (0, _stringify["default"])(err));
+          _this.logger.error('Failed to configure rtc stream: ' + (0, _stringify.default)(err));
 
-          console.log('JsepProtocol.startStream: Failed to configure rtc stream:', (0, _stringify["default"])(err));
+          console.log('JsepProtocol.startStream: Failed to configure rtc stream:', (0, _stringify.default)(err));
           console.log('JsepProtocol.startStream: Disconnecting');
 
           _this.disconnect();
@@ -133,7 +133,7 @@ var JsepProtocol = /*#__PURE__*/function () {
 
     this._handlePeerConnectionTrack = function (event) {
       if (_this.streamConnectedTimestamp === undefined) {
-        _this.streamConnectedTimestamp = (0, _now["default"])();
+        _this.streamConnectedTimestamp = Date.now();
       }
 
       if (event.receiver) {
@@ -144,7 +144,7 @@ var JsepProtocol = /*#__PURE__*/function () {
         console.log("playoutDelayHint set to: ".concat(event.receiver.playoutDelayHint, "sec"));
       }
 
-      _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].STREAM_CONNECTED, event.track);
+      _StreamingEvent.default.edgeNode(_this.edgeNodeId).emit(_StreamingEvent.default.STREAM_CONNECTED, event.track);
     };
 
     this._handlePeerConnectionStateChange = function () {
@@ -199,7 +199,7 @@ var JsepProtocol = /*#__PURE__*/function () {
                 }
             }
 
-            _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].PEER_CONNECTION_SELECTED, {
+            _StreamingEvent.default.edgeNode(_this.edgeNodeId).emit(_StreamingEvent.default.PEER_CONNECTION_SELECTED, {
               connection: connection,
               protocol: protocol
             });
@@ -248,7 +248,7 @@ var JsepProtocol = /*#__PURE__*/function () {
       console.log('JsepProtocol._handleStart:', signal);
       _this.peerConnection = new RTCPeerConnection(signal.start);
 
-      _StreamingEvent["default"].edgeNode(_this.edgeNodeId).on(_StreamingEvent["default"].REQUEST_WEB_RTC_MEASUREMENT, _this.onRequestWebRtcMeasurement);
+      _StreamingEvent.default.edgeNode(_this.edgeNodeId).on(_StreamingEvent.default.REQUEST_WEB_RTC_MEASUREMENT, _this.onRequestWebRtcMeasurement);
 
       _this.peerConnection.addEventListener('track', _this._handlePeerConnectionTrack, false);
 
@@ -265,16 +265,16 @@ var JsepProtocol = /*#__PURE__*/function () {
 
     this.onRequestWebRtcMeasurement = function () {
       _this.peerConnection.getStats().then(function (stats) {
-        return _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].WEB_RTC_MEASUREMENT, stats);
-      })["catch"](function (err) {
-        return _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].ERROR, err);
+        return _StreamingEvent.default.edgeNode(_this.edgeNodeId).emit(_StreamingEvent.default.WEB_RTC_MEASUREMENT, stats);
+      }).catch(function (err) {
+        return _StreamingEvent.default.edgeNode(_this.edgeNodeId).emit(_StreamingEvent.default.ERROR, err);
       });
     };
 
     this._handleSDP = /*#__PURE__*/function () {
-      var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(signal) {
+      var _ref = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee(signal) {
         var answer, sdp;
-        return _regenerator["default"].wrap(function _callee$(_context) {
+        return _regenerator.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
@@ -287,11 +287,17 @@ var JsepProtocol = /*#__PURE__*/function () {
 
               case 4:
                 answer = _context.sent;
-                sdp = new _SdpModifier["default"](answer.sdp); // This will set the target bandwidth usage to 1 mbits/sec for both video and audio stream.
+                sdp = new _SdpModifier.default(answer.sdp); // This will set the target bandwidth usage to 1 mbits/sec for both video and audio stream.
                 // The code is disable for now due to increased latency for everything above the default bandwidth.
                 // sdp.setTargetBandwidth(1 * SDP.MEGABIT, 1 * SDP.MEGABIT);
                 // This will force the system to only using one of the listed codecs for the video stream.
                 // sdp.restrictVideoCodec(['VP9']);
+                // This allows a larger degradation in image quality than the default when we have a low bitrate,
+                // which we prefer instead of decreasing FPS.
+
+                if (_this.vp8MaxQuantization !== undefined) {
+                  sdp.setVP8MaxQuantization(_this.vp8MaxQuantization);
+                }
 
                 answer.sdp = sdp.toString();
                 console.log('JsepProtocol._handleSDP:', answer);
@@ -306,7 +312,7 @@ var JsepProtocol = /*#__PURE__*/function () {
                   _this.disconnect();
                 }
 
-              case 9:
+              case 10:
               case "end":
                 return _context.stop();
             }
@@ -333,7 +339,7 @@ var JsepProtocol = /*#__PURE__*/function () {
         if (signal.bye) _this._handleBye();
         if (signal.candidate) _this._handleCandidate(signal);
       } catch (e) {
-        _this.logger.error('Streaming View SDK: Failed to handle message: [' + message + '], due to: ' + (0, _stringify["default"])(e));
+        _this.logger.error('Streaming View SDK: Failed to handle message: [' + message + '], due to: ' + (0, _stringify.default)(e));
       }
     };
 
@@ -349,7 +355,7 @@ var JsepProtocol = /*#__PURE__*/function () {
       /* eslint-disable */
       var request = new proto.android.emulation.control.JsepMsg();
       request.setId(_this.guid);
-      request.setMessage((0, _stringify["default"])(jsonObject));
+      request.setMessage((0, _stringify.default)(jsonObject));
       console.log('JsepProtocol._sendJsep:', request);
 
       _this.rtc.sendJsepMessage(request);
@@ -382,7 +388,7 @@ var JsepProtocol = /*#__PURE__*/function () {
 
       _this.rtc.receiveJsepMessage(_this.guid, {}, function (err, response) {
         if (err) {
-          _this.logger.error('Failed to receive jsep message, disconnecting: ' + (0, _stringify["default"])(err));
+          _this.logger.error('Failed to receive jsep message, disconnecting: ' + (0, _stringify.default)(err));
 
           _this.disconnect();
         }
@@ -396,7 +402,7 @@ var JsepProtocol = /*#__PURE__*/function () {
             self._handleJsepMessage(response.getMessage());
           }
         } catch (err) {
-          _this.logger.error('Failed to get jsep message, disconnecting: ' + (0, _stringify["default"])(err));
+          _this.logger.error('Failed to get jsep message, disconnecting: ' + (0, _stringify.default)(err));
         } // And pump messages. Note we must continue the message pump as we
         // can receive new ICE candidates at any point in time.
 
@@ -417,6 +423,7 @@ var JsepProtocol = /*#__PURE__*/function () {
     this.poll = poll || typeof this.rtc.receiveJsepMessages !== 'function';
     this.playoutDelayHint = playoutDelayHint;
     this.iceServers = iceServers;
+    this.vp8MaxQuantization = vp8MaxQuantization;
     this.logger = logger;
   }
   /**
@@ -424,7 +431,7 @@ var JsepProtocol = /*#__PURE__*/function () {
    */
 
 
-  (0, _createClass2["default"])(JsepProtocol, [{
+  (0, _createClass2.default)(JsepProtocol, [{
     key: "send",
     value: function send(label, msg) {
       var bytes = msg.serializeBinary();
@@ -442,7 +449,7 @@ var JsepProtocol = /*#__PURE__*/function () {
      * @returns {any|{urls: string[], credential: string, username: string}}
      */
     function getIceConfiguration() {
-      var hostname = (0, _urlParse["default"])(this.emulator.hostname_).hostname;
+      var hostname = (0, _urlParse.default)(this.emulator.hostname_).hostname;
       var endpoint = this.turnEndpoint ? this.turnEndpoint : "turn:".concat(hostname, ":3478");
       return {
         urls: ["".concat(endpoint, "?transport=udp"), "".concat(endpoint, "?transport=tcp")],
@@ -454,4 +461,4 @@ var JsepProtocol = /*#__PURE__*/function () {
   return JsepProtocol;
 }();
 
-exports["default"] = JsepProtocol;
+exports.default = JsepProtocol;
