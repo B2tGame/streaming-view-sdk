@@ -23,8 +23,9 @@ phases:
     commands:
        - npm run build
        - git add src/build-info.json
+       - git add -A
        - git status
-       - "git commit -am \"Build System: Building new release candidate $TAG\""
+       - "git commit -a \"Build System: Building new release candidate $TAG\""
        - git tag $TAG
        - git push --set-upstream origin $CODEBUILD_SOURCE_VERSION
        - git push origin --tags
