@@ -16,7 +16,9 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
+
+var _setTimeout2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-timeout"));
 
 var _reduce = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/reduce"));
 
@@ -27,6 +29,8 @@ var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-sta
 var _filter = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/filter"));
 
 var _indexOf = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/index-of"));
+
+var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/date/now"));
 
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/slicedToArray"));
 
@@ -68,11 +72,13 @@ var _StreamWebRtc = _interopRequireDefault(require("./service/StreamWebRtc"));
 
 var _urlParse = _interopRequireDefault(require("url-parse"));
 
+var _IceServer = require("./service/IceServer");
+
 function _getRequireWildcardCache(nodeInterop) { if (typeof _WeakMap !== "function") return null; var cacheBabelInterop = new _WeakMap(); var cacheNodeInterop = new _WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = _Object$defineProperty && _Object$getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? _Object$getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { _Object$defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = _Object$defineProperty && _Object$getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? _Object$getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { _Object$defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2.default)(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2.default)(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2.default)(this, result); }; }
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_Reflect$construct) return false; if (_Reflect$construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(_Reflect$construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
@@ -83,14 +89,14 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_R
  * @extends {Component}
  */
 var StreamingView = /*#__PURE__*/function (_Component) {
-  (0, _inherits2.default)(StreamingView, _Component);
+  (0, _inherits2["default"])(StreamingView, _Component);
 
   var _super = _createSuper(StreamingView);
 
   function StreamingView(props) {
     var _this;
 
-    (0, _classCallCheck2.default)(this, StreamingView);
+    (0, _classCallCheck2["default"])(this, StreamingView);
     _this = _super.call(this, props);
     _this.state = {
       isReadyStream: undefined,
@@ -101,7 +107,8 @@ var StreamingView = /*#__PURE__*/function (_Component) {
       emulatorVersion: undefined,
       shouldRandomlyMeasureRtt: undefined,
       height: window.innerHeight + 'px',
-      width: window.innerWidth + 'px'
+      width: window.innerWidth + 'px',
+      iceServers: {}
     };
 
     _this.onResize = function () {
@@ -109,7 +116,7 @@ var StreamingView = /*#__PURE__*/function (_Component) {
         clearTimeout(_this.onResizeTieout);
       }
 
-      _this.onResizeTieout = setTimeout(function () {
+      _this.onResizeTieout = (0, _setTimeout2["default"])(function () {
         if (_this.isMountedInView) {
           _this.setState({
             height: window.innerHeight + 'px',
@@ -120,7 +127,7 @@ var StreamingView = /*#__PURE__*/function (_Component) {
     };
 
     _this.onError = function (error) {
-      _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.ERROR_BROWSER, {
+      _StreamingEvent["default"].edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent["default"].ERROR_BROWSER, {
         message: error.message,
         filename: error.filename,
         stack: error.stack
@@ -140,7 +147,7 @@ var StreamingView = /*#__PURE__*/function (_Component) {
     return _this;
   }
 
-  (0, _createClass2.default)(StreamingView, [{
+  (0, _createClass2["default"])(StreamingView, [{
     key: "componentDidMount",
     value: function componentDidMount() {
       var _context,
@@ -159,18 +166,18 @@ var StreamingView = /*#__PURE__*/function (_Component) {
           measureWebrtcRtt = _this$props.measureWebrtcRtt;
 
       if (!internalSession) {
-        this.LogQueueService = new _LogQueueService.default(edgeNodeId, apiEndpoint, userId, this.streamingViewId);
+        this.LogQueueService = new _LogQueueService["default"](edgeNodeId, apiEndpoint, userId, this.streamingViewId);
       }
 
-      this.blackScreenDetector = new _BlackScreenDetector.default(edgeNodeId, this.streamingViewId);
-      this.logger = new _Logger.default();
+      this.blackScreenDetector = new _BlackScreenDetector["default"](edgeNodeId, this.streamingViewId);
+      this.logger = new _Logger["default"]();
 
       if (measureWebrtcRtt) {
-        this.measurement = new _Measurement.default(edgeNodeId, this.streamingViewId, this.logger);
+        this.measurement = new _Measurement["default"](edgeNodeId, this.streamingViewId, this.logger);
       }
 
       if (onEvent) {
-        _StreamingEvent.default.edgeNode(edgeNodeId).on('event', onEvent);
+        _StreamingEvent["default"].edgeNode(edgeNodeId).on('event', onEvent);
       }
 
       if (this.props.measureTouchRtt === undefined) {
@@ -180,7 +187,7 @@ var StreamingView = /*#__PURE__*/function (_Component) {
         });
       }
 
-      this.logger.info('StreamingView was mounted', (0, _reduce.default)(_context = (0, _keys.default)(this.props)).call(_context, function (propObj, propName) {
+      this.logger.info('StreamingView was mounted', (0, _reduce["default"])(_context = (0, _keys["default"])(this.props)).call(_context, function (propObj, propName) {
         var propValue = _this2.props[propName]; // All this extra logic to filter functions from rest of props
 
         if (typeof propValue !== 'function') {
@@ -189,15 +196,15 @@ var StreamingView = /*#__PURE__*/function (_Component) {
 
         return propObj;
       }, {}));
-      this.logger.log("SDK Version: ".concat(_buildInfo.default.tag));
+      this.logger.log("SDK Version: ".concat(_buildInfo["default"].tag));
       window.addEventListener('resize', this.onResize);
       window.addEventListener('error', this.onError);
 
-      _StreamingEvent.default.edgeNode(edgeNodeId).once(_StreamingEvent.default.STREAM_UNREACHABLE, function () {
+      _StreamingEvent["default"].edgeNode(edgeNodeId).once(_StreamingEvent["default"].STREAM_UNREACHABLE, function () {
         return _this2.setState({
           isReadyStream: false
         });
-      }).once(_StreamingEvent.default.STREAM_TERMINATED, function () {
+      }).once(_StreamingEvent["default"].STREAM_TERMINATED, function () {
         if (_this2.measurement) {
           _this2.measurement.destroy();
         }
@@ -209,25 +216,25 @@ var StreamingView = /*#__PURE__*/function (_Component) {
         _this2.setState({
           isReadyStream: false
         });
-      }).on(_StreamingEvent.default.EMULATOR_CONFIGURATION, function (configuration) {
+      }).on(_StreamingEvent["default"].EMULATOR_CONFIGURATION, function (configuration) {
         _this2.setState({
           emulatorWidth: configuration.emulatorWidth,
           emulatorHeight: configuration.emulatorHeight,
           emulatorVersion: configuration.emulatorVersion
         });
-      }).on([_StreamingEvent.default.STREAM_WEBRTC_READY, _StreamingEvent.default.STREAM_EMULATOR_READY], function (_ref) {
-        var _ref2 = (0, _slicedToArray2.default)(_ref, 1),
+      }).on([_StreamingEvent["default"].STREAM_WEBRTC_READY, _StreamingEvent["default"].STREAM_EMULATOR_READY], function (_ref) {
+        var _ref2 = (0, _slicedToArray2["default"])(_ref, 1),
             onUserInteractionCallback = _ref2[0];
 
-        _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.STREAM_READY, onUserInteractionCallback);
+        _StreamingEvent["default"].edgeNode(edgeNodeId).emit(_StreamingEvent["default"].STREAM_READY, onUserInteractionCallback);
       });
 
-      (0, _StreamingController.default)({
+      (0, _StreamingController["default"])({
         apiEndpoint: apiEndpoint,
         edgeNodeId: edgeNodeId,
         internalSession: internalSession
       }).then(function (controller) {
-        return controller.waitFor(_StreamingController.default.WAIT_FOR_ENDPOINT);
+        return controller.waitFor(_StreamingController["default"].WAIT_FOR_ENDPOINT);
       }).then(function (state) {
         return state.endpoint;
       }).then(function (streamEndpoint) {
@@ -235,8 +242,16 @@ var StreamingView = /*#__PURE__*/function (_Component) {
         // public endpoint received from Service Coordinator.
         return internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
       }).then(function (streamEndpoint) {
+        return (0, _IceServer.requestIceServers)(apiEndpoint, edgeNodeId).then(function (iceServers) {
+          return [streamEndpoint, iceServers];
+        });
+      }).then(function (_ref3) {
+        var _ref4 = (0, _slicedToArray2["default"])(_ref3, 2),
+            streamEndpoint = _ref4[0],
+            iceServers = _ref4[1];
+
         if (_this2.measurement) {
-          _this2.measurement.initWebRtc("".concat((0, _urlParse.default)(streamEndpoint).origin, "/measurement/webrtc"), pingInterval);
+          _this2.measurement.initWebRtc("".concat((0, _urlParse["default"])(streamEndpoint).origin, "/measurement/webrtc"), pingInterval, iceServers);
         }
 
         if (!_this2.isMountedInView) {
@@ -245,18 +260,19 @@ var StreamingView = /*#__PURE__*/function (_Component) {
           return; // Cancel any action if we not longer are mounted.
         }
 
-        _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.EDGE_NODE_READY_TO_ACCEPT_CONNECTION);
+        _StreamingEvent["default"].edgeNode(edgeNodeId).emit(_StreamingEvent["default"].EDGE_NODE_READY_TO_ACCEPT_CONNECTION);
 
-        _this2.streamSocket = new _StreamSocket.default(edgeNodeId, streamEndpoint, userId, internalSession);
+        _this2.streamSocket = new _StreamSocket["default"](edgeNodeId, streamEndpoint, userId, internalSession);
 
         _this2.setState({
           isReadyStream: true,
           streamEndpoint: streamEndpoint,
-          turnEndpoint: internalSession && turnEndpoint ? turnEndpoint : undefined
+          turnEndpoint: internalSession && turnEndpoint ? turnEndpoint : undefined,
+          iceServers: iceServers
         });
 
         _this2.registerUserEventsHandler();
-      }).catch(function (err) {
+      })["catch"](function (err) {
         var _context2;
 
         if (!_this2.isMountedInView) {
@@ -265,7 +281,7 @@ var StreamingView = /*#__PURE__*/function (_Component) {
           return; // Cancel any action if we not longer are mounted.
         }
 
-        _StreamingEvent.default.edgeNode(_this2.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_UNREACHABLE, (0, _concat.default)(_context2 = "Due to ".concat(err.message, ": ")).call(_context2, err));
+        _StreamingEvent["default"].edgeNode(_this2.props.edgeNodeId).emit(_StreamingEvent["default"].STREAM_UNREACHABLE, (0, _concat["default"])(_context2 = "Due to ".concat(err.message, ": ")).call(_context2, err));
       });
     }
   }, {
@@ -310,8 +326,8 @@ var StreamingView = /*#__PURE__*/function (_Component) {
 
       window.removeEventListener('resize', this.onResize);
       window.removeEventListener('error', this.onError);
-      setTimeout(function () {
-        _StreamingEvent.default.destroyEdgeNode(_this3.props.edgeNodeId);
+      (0, _setTimeout2["default"])(function () {
+        _StreamingEvent["default"].destroyEdgeNode(_this3.props.edgeNodeId);
       }, 500);
     }
     /**
@@ -328,29 +344,29 @@ var StreamingView = /*#__PURE__*/function (_Component) {
       var whiteListedFields = ['streamQualityRating', 'onEvent'];
 
       if (nextProps.streamQualityRating !== this.props.streamQualityRating) {
-        _StreamingEvent.default.edgeNode(this.props.edgeNodeId).emit(_StreamingEvent.default.STREAM_QUALITY_RATING, {
+        _StreamingEvent["default"].edgeNode(this.props.edgeNodeId).emit(_StreamingEvent["default"].STREAM_QUALITY_RATING, {
           streamQualityRating: nextProps.streamQualityRating
         });
       }
 
       if (nextProps.onEvent !== this.props.onEvent) {
         if (this.props.onEvent) {
-          _StreamingEvent.default.edgeNode(this.props.edgeNodeId).off('event', this.props.onEvent);
+          _StreamingEvent["default"].edgeNode(this.props.edgeNodeId).off('event', this.props.onEvent);
         }
 
         if (nextProps.onEvent) {
-          _StreamingEvent.default.edgeNode(this.props.edgeNodeId).on('event', nextProps.onEvent);
+          _StreamingEvent["default"].edgeNode(this.props.edgeNodeId).on('event', nextProps.onEvent);
         }
       } // Do not render if there are only changes in the whitelisted props attributes.
 
 
-      var hasChanges = (0, _filter.default)(_context3 = (0, _keys.default)(StreamingView.PROP_TYPES)).call(_context3, function (key) {
+      var hasChanges = (0, _filter["default"])(_context3 = (0, _keys["default"])(StreamingView.PROP_TYPES)).call(_context3, function (key) {
         return nextProps[key] !== _this4.props[key];
       });
 
       if (hasChanges.length > 0) {
-        return (0, _filter.default)(hasChanges).call(hasChanges, function (key) {
-          return (0, _indexOf.default)(whiteListedFields).call(whiteListedFields, key) === -1;
+        return (0, _filter["default"])(hasChanges).call(hasChanges, function (key) {
+          return (0, _indexOf["default"])(whiteListedFields).call(whiteListedFields, key) === -1;
         }).length !== 0;
       } else {
         return this.state !== nextState;
@@ -366,52 +382,52 @@ var StreamingView = /*#__PURE__*/function (_Component) {
       var _this5 = this;
 
       // Report user event - stream-loading-time
-      _StreamingEvent.default.edgeNode(this.props.edgeNodeId).once(_StreamingEvent.default.STREAM_READY, function () {
+      _StreamingEvent["default"].edgeNode(this.props.edgeNodeId).once(_StreamingEvent["default"].STREAM_READY, function () {
         var role = _this5.props.enableControl ? StreamingView.ROLE_PLAYER : StreamingView.ROLE_WATCHER;
 
         if (_this5.props.userClickedPlayAt > 0) {
           var _context4;
 
           // Send the stream loading time if we have a user clicked play at props.
-          var streamLoadingTime = Date.now() - _this5.props.userClickedPlayAt;
+          var streamLoadingTime = (0, _now["default"])() - _this5.props.userClickedPlayAt;
 
           var userEventPayload = {
             role: role,
-            eventType: _StreamingEvent.default.STREAM_LOADING_TIME,
+            eventType: _StreamingEvent["default"].STREAM_LOADING_TIME,
             value: streamLoadingTime,
-            message: (0, _concat.default)(_context4 = "User event - ".concat(_StreamingEvent.default.STREAM_LOADING_TIME, ": ")).call(_context4, streamLoadingTime, " ms.")
+            message: (0, _concat["default"])(_context4 = "User event - ".concat(_StreamingEvent["default"].STREAM_LOADING_TIME, ": ")).call(_context4, streamLoadingTime, " ms.")
           };
 
-          _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, userEventPayload);
+          _StreamingEvent["default"].edgeNode(_this5.props.edgeNodeId).emit(_StreamingEvent["default"].USER_EVENT_REPORT, userEventPayload);
         } // Send the video playing event when user can see the stream.
 
 
-        _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, {
+        _StreamingEvent["default"].edgeNode(_this5.props.edgeNodeId).emit(_StreamingEvent["default"].USER_EVENT_REPORT, {
           role: role,
-          eventType: _StreamingEvent.default.USER_STARTS_PLAYING,
+          eventType: _StreamingEvent["default"].USER_STARTS_PLAYING,
           value: 1,
-          message: "User event - ".concat(_StreamingEvent.default.USER_STARTS_PLAYING, ": Video is playing.")
+          message: "User event - ".concat(_StreamingEvent["default"].USER_STARTS_PLAYING, ": Video is playing.")
         });
 
-        _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).on(_StreamingEvent.default.STREAM_AUDIO_CODEC, function (codec) {
+        _StreamingEvent["default"].edgeNode(_this5.props.edgeNodeId).on(_StreamingEvent["default"].STREAM_AUDIO_CODEC, function (codec) {
           var _context5;
 
-          _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, {
+          _StreamingEvent["default"].edgeNode(_this5.props.edgeNodeId).emit(_StreamingEvent["default"].USER_EVENT_REPORT, {
             role: role,
-            eventType: _StreamingEvent.default.STREAM_AUDIO_CODEC,
+            eventType: _StreamingEvent["default"].STREAM_AUDIO_CODEC,
             value: codec,
-            message: (0, _concat.default)(_context5 = "User event - ".concat(_StreamingEvent.default.STREAM_AUDIO_CODEC, ": ")).call(_context5, codec)
+            message: (0, _concat["default"])(_context5 = "User event - ".concat(_StreamingEvent["default"].STREAM_AUDIO_CODEC, ": ")).call(_context5, codec)
           });
         });
 
-        _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).on(_StreamingEvent.default.STREAM_VIDEO_CODEC, function (codec) {
+        _StreamingEvent["default"].edgeNode(_this5.props.edgeNodeId).on(_StreamingEvent["default"].STREAM_VIDEO_CODEC, function (codec) {
           var _context6;
 
-          _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, {
+          _StreamingEvent["default"].edgeNode(_this5.props.edgeNodeId).emit(_StreamingEvent["default"].USER_EVENT_REPORT, {
             role: role,
-            eventType: _StreamingEvent.default.STREAM_VIDEO_CODEC,
+            eventType: _StreamingEvent["default"].STREAM_VIDEO_CODEC,
             value: codec,
-            message: (0, _concat.default)(_context6 = "User event - ".concat(_StreamingEvent.default.STREAM_VIDEO_CODEC, ": ")).call(_context6, codec, ".")
+            message: (0, _concat["default"])(_context6 = "User event - ".concat(_StreamingEvent["default"].STREAM_VIDEO_CODEC, ": ")).call(_context6, codec, ".")
           });
         });
       });
@@ -431,21 +447,21 @@ var StreamingView = /*#__PURE__*/function (_Component) {
           propsHeight = _this$props2.height,
           propsWidth = _this$props2.width,
           playoutDelayHint = _this$props2.playoutDelayHint,
-          iceServers = _this$props2.iceServers,
           vp8MaxQuantization = _this$props2.vp8MaxQuantization;
       var _this$state = this.state,
           stateHeight = _this$state.height,
-          stateWidth = _this$state.width;
+          stateWidth = _this$state.width,
+          iceServers = _this$state.iceServers;
 
       switch (this.state.isReadyStream) {
         case true:
-          return /*#__PURE__*/_react.default.createElement("div", {
+          return /*#__PURE__*/_react["default"].createElement("div", {
             style: {
               height: propsHeight || stateHeight,
               width: propsWidth || stateWidth
             },
             id: this.streamingViewId
-          }, /*#__PURE__*/_react.default.createElement(_Emulator.default, {
+          }, /*#__PURE__*/_react["default"].createElement(_Emulator["default"], {
             uri: this.state.streamEndpoint,
             turnEndpoint: this.state.turnEndpoint,
             enableControl: enableControl,
@@ -467,7 +483,7 @@ var StreamingView = /*#__PURE__*/function (_Component) {
           }));
 
         case false:
-          return /*#__PURE__*/_react.default.createElement("p", {
+          return /*#__PURE__*/_react["default"].createElement("p", {
             id: this.streamingViewId,
             style: {
               color: 'white'
@@ -475,7 +491,7 @@ var StreamingView = /*#__PURE__*/function (_Component) {
           }, "EdgeNode Stream is unreachable");
 
         default:
-          return /*#__PURE__*/_react.default.createElement("p", {
+          return /*#__PURE__*/_react["default"].createElement("p", {
             style: {
               color: 'white'
             },
@@ -492,44 +508,43 @@ var StreamingView = /*#__PURE__*/function (_Component) {
      */
     function get() {
       return {
-        apiEndpoint: _propTypes.default.string.isRequired,
+        apiEndpoint: _propTypes["default"].string.isRequired,
         // Can't be changed after creation
-        edgeNodeId: _propTypes.default.string.isRequired,
+        edgeNodeId: _propTypes["default"].string.isRequired,
         // Can't be changed after creation
-        edgeNodeEndpoint: _propTypes.default.string,
+        edgeNodeEndpoint: _propTypes["default"].string,
         // Can't be changed after creation
-        turnEndpoint: _propTypes.default.string,
+        turnEndpoint: _propTypes["default"].string,
         // Can't be changed after creation
-        userId: _propTypes.default.string,
+        userId: _propTypes["default"].string,
         // Can't be changed after creation
-        enableControl: _propTypes.default.bool,
+        enableControl: _propTypes["default"].bool,
         // Can be changed dynamically
-        enableFullScreen: _propTypes.default.bool,
+        enableFullScreen: _propTypes["default"].bool,
         // Can be changed dynamically
-        view: _propTypes.default.oneOf(['webrtc', 'png']),
+        view: _propTypes["default"].oneOf(['webrtc', 'png']),
         // Can't be changed after creation
-        volume: _propTypes.default.number,
+        volume: _propTypes["default"].number,
         // Can be changed dynamically, Volume between [0, 1] when audio is enabled. 0 is muted, 1.0 is 100%
-        muted: _propTypes.default.bool,
+        muted: _propTypes["default"].bool,
         // Can be changed dynamically
-        onEvent: _propTypes.default.func,
+        onEvent: _propTypes["default"].func,
         // Can't be changed after creation
-        streamQualityRating: _propTypes.default.number,
+        streamQualityRating: _propTypes["default"].number,
         // Can be changed dynamically
-        internalSession: _propTypes.default.bool,
+        internalSession: _propTypes["default"].bool,
         // Can't be changed after creation
-        userClickedPlayAt: _propTypes.default.number,
+        userClickedPlayAt: _propTypes["default"].number,
         // Can't be changed after creation
-        maxConnectionRetries: _propTypes.default.number,
+        maxConnectionRetries: _propTypes["default"].number,
         // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
-        height: _propTypes.default.string,
-        width: _propTypes.default.string,
-        pingInterval: _propTypes.default.number,
-        measureTouchRtt: _propTypes.default.bool,
-        playoutDelayHint: _propTypes.default.number,
-        iceServers: _propTypes.default.array,
-        measureWebrtcRtt: _propTypes.default.bool,
-        vp8MaxQuantization: _propTypes.default.number
+        height: _propTypes["default"].string,
+        width: _propTypes["default"].string,
+        pingInterval: _propTypes["default"].number,
+        measureTouchRtt: _propTypes["default"].bool,
+        playoutDelayHint: _propTypes["default"].number,
+        measureWebrtcRtt: _propTypes["default"].bool,
+        vp8MaxQuantization: _propTypes["default"].number
       };
     }
   }, {
@@ -556,7 +571,7 @@ var StreamingView = /*#__PURE__*/function (_Component) {
   return StreamingView;
 }(_react.Component);
 
-exports.default = StreamingView;
+exports["default"] = StreamingView;
 StreamingView.propTypes = StreamingView.PROP_TYPES;
 StreamingView.defaultProps = {
   view: 'webrtc',
@@ -564,9 +579,9 @@ StreamingView.defaultProps = {
   enableControl: true,
   volume: 1.0,
   muted: false,
-  pingInterval: _StreamWebRtc.default.WEBRTC_PING_INTERVAL,
+  pingInterval: _StreamWebRtc["default"].WEBRTC_PING_INTERVAL,
   measureTouchRtt: true,
   playoutDelayHint: 0,
-  iceServers: [],
-  measureWebrtcRtt: true
+  measureWebrtcRtt: true,
+  vp8MaxQuantization: 63
 };
