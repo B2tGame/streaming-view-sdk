@@ -17,13 +17,12 @@ export default class WebRtcConnectionClient {
       iceServers: iceServers,
       iceTransportPolicy: 'relay'
     };
-    console.log('RTCPeerConnection options:', options);
     const peerConnection = new RTCPeerConnection(options);
 
     const onConnectionStateChange = () => {
       if (peerConnection.connectionState === 'disconnected') {
         axios.delete(`${host}/connections/${id}`).catch((error) => {
-          console.log(error);
+          console.error(error);
         });
         peerConnection.removeEventListener('connectionstatechange', onConnectionStateChange);
       }
@@ -40,8 +39,6 @@ export default class WebRtcConnectionClient {
       ...options
     };
     const { host, iceServersCandidates, beforeAnswer } = createOptions;
-    console.log('WebRtcConnectionClient.createConnection', { host, iceServersCandidates });
-
     let remotePeerConnectionId = undefined;
     let peerConnection = undefined;
 
@@ -66,28 +63,19 @@ export default class WebRtcConnectionClient {
         peerConnection.addEventListener('icecandidate', onIceCandidate);
       });
 
-    console.log(`axios POST to: ${host}/connections`);
     return axios
       .post(`${host}/connections`)
       .then((response) => {
         const remotePeerConnection = response.data || {};
-        console.log(`remotePeerConnection received form ${host}/connections`, remotePeerConnection);
         remotePeerConnectionId = remotePeerConnection.id;
         peerConnection = WebRtcConnectionClient.createPeerConnection(host, iceServersCandidates, remotePeerConnectionId);
-
-        console.log(`set remotePeerConnection.localDescription as remote description`, remotePeerConnection.localDescription);
         return peerConnection.setRemoteDescription(remotePeerConnection.localDescription);
       })
       .then(() => {
-        console.log(`setting peerConnection.setRemoteDescription DONE`);
-        console.log('peerConnection.connectionState:', peerConnection.connectionState);
-        console.log('beforeAnswer; adding ping-pong event handlers');
         return beforeAnswer(peerConnection);
       })
       .then(() => peerConnection.createAnswer())
       .then((originalAnswer) => {
-        console.log('peerConnection.createAnswer:', originalAnswer);
-        console.log('peerConnection.setLocalDescription');
         return peerConnection.setLocalDescription(
           new RTCSessionDescription({
             type: 'answer',
@@ -97,10 +85,6 @@ export default class WebRtcConnectionClient {
       })
       .then(() => waitUntilIceGatheringStateComplete())
       .then(() => {
-        console.log(
-          `sending answer to: ${host}/connections/${remotePeerConnectionId}/remote-description with peerConnection.localDescription:`,
-          peerConnection.localDescription
-        );
         return axios(`${host}/connections/${remotePeerConnectionId}/remote-description`, {
           method: 'POST',
           data: JSON.stringify(peerConnection.localDescription),
@@ -109,8 +93,7 @@ export default class WebRtcConnectionClient {
           }
         });
       })
-      .then((response) => {
-        console.log('response from server:', response);
+      .then(() => {
         return peerConnection;
       })
       .catch((error) => {

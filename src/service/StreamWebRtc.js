@@ -46,7 +46,6 @@ export default class StreamWebRtc extends EventEmitter {
       iceServersCandidates: this.iceServersCandidates
     }).then((peerConnection) => {
       this.peerConnection = peerConnection;
-      console.log('peerConnection CREATED', this.peerConnection);
     });
   }
 
@@ -85,7 +84,6 @@ export default class StreamWebRtc extends EventEmitter {
     };
 
     const onConnectionStateChange = () => {
-      console.log('peerConnection.connectionState:', peerConnection.connectionState);
       switch (peerConnection.connectionState) {
         case 'disconnected':
           if (dataChannel) {

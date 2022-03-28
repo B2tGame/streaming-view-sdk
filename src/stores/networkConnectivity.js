@@ -131,7 +131,6 @@ const getAdvancedMeasurement = (apiEndpoint) => {
    * @return {Promise<boolean>}
    */
   const getWebRtcMeasurement = (edge) => {
-    console.log('getWebRtcMeasurement EDGE:', edge);
     if (edge.baseUrls.length === 0) {
       return Promise.resolve(false);
     }
@@ -234,7 +233,6 @@ const getAdvancedMeasurement = (apiEndpoint) => {
 
   return getDeviceInfo()
     .then((deviceInfo) => {
-      console.log('DeviceInfo:', deviceInfo);
       const recommendation = (deviceInfo || {}).recommendation || [];
       const iceServers = (deviceInfo || {}).iceServers || {};
       return connectionManagerMultiRegion(recommendation, iceServers);

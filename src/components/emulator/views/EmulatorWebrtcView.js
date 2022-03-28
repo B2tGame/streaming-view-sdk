@@ -186,7 +186,7 @@ export default class EmulatorWebrtcView extends Component {
         const rtt = timestamp - startTime;
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT, { rtt: rtt });
       } else if (timestamp > startTime + rttMeasurementTimeout) {
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT_TIMOUT, {
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT_TIMEOUT, {
           timeout: true,
           time: rttMeasurementTimeout
         });

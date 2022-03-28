@@ -133,7 +133,7 @@ export default class StreamingEvent {
    * Event fired when a touch rtt times out
    * @return {string}
    */
-   static get TOUCH_RTT_TIMOUT() {
+   static get TOUCH_RTT_TIMEOUT() {
     return 'touch-rtt-timeout';
   }
   

@@ -93,9 +93,6 @@ export default class JsepProtocol {
     this.rtc.requestRtcStream(request, {}, (err, response) => {
       if (err) {
         this.logger.error('Failed to configure rtc stream: ' + JSON.stringify(err));
-        console.log('JsepProtocol.startStream: Failed to configure rtc stream:', JSON.stringify(err));
-        console.log('JsepProtocol.startStream: Disconnecting');
-
         this.disconnect();
         return;
       }
@@ -124,14 +121,11 @@ export default class JsepProtocol {
       // A low value will come with cost of higher frames dropped, a higher number wil decrease the number
       // of dropped frames, but will also add more delay.
       event.receiver.playoutDelayHint = this.playoutDelayHint / 1000;
-      console.log(`playoutDelayHint set to: ${event.receiver.playoutDelayHint}sec`);
     }
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_CONNECTED, event.track);
   };
 
   _handlePeerConnectionStateChange = () => {
-    console.log('JsepProtocol._handlePeerConnectionStateChange:', { connectionState: this.peerConnection.connectionState });
-
     switch (this.peerConnection.connectionState) {
       case 'disconnected':
         // At least one of the ICE transports for the connection is in the "disconnected" state
@@ -178,14 +172,8 @@ export default class JsepProtocol {
     }
   };
 
-  _handlePeerOnIceCandidateError = (e) => {
-    console.log('JsepProtocol._handlePeerOnIceCandidateError:', e);
-  };
-
   _handleDataChannelStatusChange = (e) => {
-    console.log('JsepProtocol._handleDataChannelStatusChange:', e);
-
-    this.logger.log('Data status change ' + e);
+    this.logger.log('Data channel status change ' + e);
   };
 
   send(label, msg) {
@@ -199,8 +187,6 @@ export default class JsepProtocol {
   }
 
   _handlePeerIceCandidate = (e) => {
-    console.log('JsepProtocol._handlePeerIceCandidate:', { candidate: e.candidate });
-
     if (e.candidate === null) return;
     this._sendJsep({ candidate: e.candidate });
   };
@@ -241,7 +227,6 @@ export default class JsepProtocol {
     this.peerConnection.addEventListener('track', this._handlePeerConnectionTrack, false);
     this.peerConnection.addEventListener('icecandidate', this._handlePeerIceCandidate, false);
     this.peerConnection.addEventListener('connectionstatechange', this._handlePeerConnectionStateChange, false);
-    this.peerConnection.addEventListener('onicecandidateerror', this._handlePeerOnIceCandidateError, false);
     this.peerConnection.ondatachannel = (e) => this._handleDataChannel(e);
   };
 
@@ -271,8 +256,6 @@ export default class JsepProtocol {
 
     answer.sdp = sdp.toString();
 
-    console.log('JsepProtocol._handleSDP:', answer);
-
     if (answer) {
       this.peerConnection.setLocalDescription(answer);
       this._sendJsep({ sdp: answer });
@@ -286,7 +269,6 @@ export default class JsepProtocol {
   };
 
   _handleJsepMessage = (message) => {
-    console.log('JsepProtocol._handleJsepMessage:', message);
     try {
       const signal = JSON.parse(message);
       if (signal.start) this._handleStart(signal);
@@ -300,7 +282,6 @@ export default class JsepProtocol {
 
   _handleBye = () => {
     if (this.connected) {
-      console.log('JsepProtocol._handleBye: Disconnecting');
       this.disconnect();
     }
   };
@@ -310,7 +291,6 @@ export default class JsepProtocol {
     const request = new proto.android.emulation.control.JsepMsg();
     request.setId(this.guid);
     request.setMessage(JSON.stringify(jsonObject));
-    console.log('JsepProtocol._sendJsep:', request);
     this.rtc.sendJsepMessage(request);
   };
 
