@@ -12,6 +12,7 @@ import LogQueueService from './service/LogQueueService';
 import BlackScreenDetector from './service/BlackScreenDetector';
 import StreamWebRtc from './service/StreamWebRtc';
 import urlParse from 'url-parse';
+import { requestIceServers } from './service/IceServer';
 
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
@@ -29,7 +30,8 @@ export default class StreamingView extends Component {
     emulatorVersion: undefined,
     shouldRandomlyMeasureRtt: undefined,
     height: window.innerHeight + 'px',
-    width: window.innerWidth + 'px'
+    width: window.innerWidth + 'px',
+    iceServers: {},
   };
 
   /**
@@ -58,7 +60,6 @@ export default class StreamingView extends Component {
       pingInterval: PropTypes.number,
       measureTouchRtt: PropTypes.bool,
       playoutDelayHint: PropTypes.number,
-      iceServers: PropTypes.array,
       measureWebrtcRtt: PropTypes.bool,
       vp8MaxQuantization: PropTypes.number
     };
@@ -75,7 +76,6 @@ export default class StreamingView extends Component {
     pingInterval: StreamWebRtc.WEBRTC_PING_INTERVAL,
     measureTouchRtt: true,
     playoutDelayHint: 0,
-    iceServers: [],
     measureWebrtcRtt: true
   };
 
@@ -182,9 +182,10 @@ export default class StreamingView extends Component {
         // public endpoint received from Service Coordinator.
         return internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
       })
-      .then((streamEndpoint) => {
+      .then((streamEndpoint) => requestIceServers(apiEndpoint, edgeNodeId).then((iceServers) => ([streamEndpoint, iceServers])))
+      .then(([streamEndpoint, iceServers]) => {
         if (this.measurement) {
-          this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, pingInterval);
+          this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, pingInterval, iceServers);
         }
         if (!this.isMountedInView) {
           this.logger.log('Cancel action due to view is not mounted.');
@@ -196,7 +197,8 @@ export default class StreamingView extends Component {
         this.setState({
           isReadyStream: true,
           streamEndpoint: streamEndpoint,
-          turnEndpoint: internalSession && turnEndpoint ? turnEndpoint : undefined
+          turnEndpoint: internalSession && turnEndpoint ? turnEndpoint : undefined,
+          iceServers: iceServers
         });
         this.registerUserEventsHandler();
       })
@@ -361,10 +363,13 @@ export default class StreamingView extends Component {
       height: propsHeight,
       width: propsWidth,
       playoutDelayHint,
-      iceServers,
       vp8MaxQuantization
     } = this.props;
-    const { height: stateHeight, width: stateWidth } = this.state;
+    const {
+      height: stateHeight,
+      width: stateWidth,
+      iceServers
+    } = this.state;
 
     switch (this.state.isReadyStream) {
       case true:

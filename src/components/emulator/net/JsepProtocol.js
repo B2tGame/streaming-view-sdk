@@ -228,10 +228,12 @@ export default class JsepProtocol {
   _handleStart = (signal) => {
     signal.start = {
       sdpSemantics: 'unified-plan',
-      iceServers: !this.iceServers.length ? [this.getIceConfiguration()] : this.iceServers,
+      //TODO-turn: use this.iceServers.candidates directly when the turn server related issues are fixed!
+      //Replace iceServers in default turn case
+      iceServers: this.iceServers.name === 'default' ? [this.getIceConfiguration()] : this.iceServers.candidates,
       iceTransportPolicy: 'relay'
     };
-    console.log('JsepProtocol._handleStart:', signal);
+    this.logger.log(`JsepProtocol._handleStart; iceServers.name: ${this.iceServers.name}`, signal);
 
     this.peerConnection = new RTCPeerConnection(signal.start);
     StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);

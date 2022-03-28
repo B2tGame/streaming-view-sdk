@@ -107,7 +107,7 @@ class Emulator extends Component {
     /** Playout Delay Hint */
     playoutDelayHint: PropTypes.number,
     /** Ice Server Candidates */
-    iceServers: PropTypes.array,
+    iceServers: PropTypes.object,
     /** Max quantization for VP8, max value is 63 */
     vp8MaxQuantization: PropTypes.number
   };
