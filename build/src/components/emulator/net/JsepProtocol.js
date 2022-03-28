@@ -107,9 +107,6 @@ var JsepProtocol = /*#__PURE__*/function () {
         if (err) {
           _this.logger.error('Failed to configure rtc stream: ' + (0, _stringify["default"])(err));
 
-          console.log('JsepProtocol.startStream: Failed to configure rtc stream:', (0, _stringify["default"])(err));
-          console.log('JsepProtocol.startStream: Disconnecting');
-
           _this.disconnect();
 
           return;
@@ -143,17 +140,12 @@ var JsepProtocol = /*#__PURE__*/function () {
         // A low value will come with cost of higher frames dropped, a higher number wil decrease the number
         // of dropped frames, but will also add more delay.
         event.receiver.playoutDelayHint = _this.playoutDelayHint / 1000;
-        console.log("playoutDelayHint set to: ".concat(event.receiver.playoutDelayHint, "sec"));
       }
 
       _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].STREAM_CONNECTED, event.track);
     };
 
     this._handlePeerConnectionStateChange = function () {
-      console.log('JsepProtocol._handlePeerConnectionStateChange:', {
-        connectionState: _this.peerConnection.connectionState
-      });
-
       switch (_this.peerConnection.connectionState) {
         case 'disconnected':
           // At least one of the ICE transports for the connection is in the "disconnected" state
@@ -215,20 +207,11 @@ var JsepProtocol = /*#__PURE__*/function () {
       }
     };
 
-    this._handlePeerOnIceCandidateError = function (e) {
-      console.log('JsepProtocol._handlePeerOnIceCandidateError:', e);
-    };
-
     this._handleDataChannelStatusChange = function (e) {
-      console.log('JsepProtocol._handleDataChannelStatusChange:', e);
-
-      _this.logger.log('Data status change ' + e);
+      _this.logger.log('Data channel status change ' + e);
     };
 
     this._handlePeerIceCandidate = function (e) {
-      console.log('JsepProtocol._handlePeerIceCandidate:', {
-        candidate: e.candidate
-      });
       if (e.candidate === null) return;
 
       _this._sendJsep({
@@ -261,8 +244,6 @@ var JsepProtocol = /*#__PURE__*/function () {
       _this.peerConnection.addEventListener('icecandidate', _this._handlePeerIceCandidate, false);
 
       _this.peerConnection.addEventListener('connectionstatechange', _this._handlePeerConnectionStateChange, false);
-
-      _this.peerConnection.addEventListener('onicecandidateerror', _this._handlePeerOnIceCandidateError, false);
 
       _this.peerConnection.ondatachannel = function (e) {
         return _this._handleDataChannel(e);
@@ -306,7 +287,6 @@ var JsepProtocol = /*#__PURE__*/function () {
                 }
 
                 answer.sdp = sdp.toString();
-                console.log('JsepProtocol._handleSDP:', answer);
 
                 if (answer) {
                   _this.peerConnection.setLocalDescription(answer);
@@ -318,7 +298,7 @@ var JsepProtocol = /*#__PURE__*/function () {
                   _this.disconnect();
                 }
 
-              case 10:
+              case 9:
               case "end":
                 return _context.stop();
             }
@@ -336,8 +316,6 @@ var JsepProtocol = /*#__PURE__*/function () {
     };
 
     this._handleJsepMessage = function (message) {
-      console.log('JsepProtocol._handleJsepMessage:', message);
-
       try {
         var signal = JSON.parse(message);
         if (signal.start) _this._handleStart(signal);
@@ -351,8 +329,6 @@ var JsepProtocol = /*#__PURE__*/function () {
 
     this._handleBye = function () {
       if (_this.connected) {
-        console.log('JsepProtocol._handleBye: Disconnecting');
-
         _this.disconnect();
       }
     };
@@ -362,7 +338,6 @@ var JsepProtocol = /*#__PURE__*/function () {
       var request = new proto.android.emulation.control.JsepMsg();
       request.setId(_this.guid);
       request.setMessage((0, _stringify["default"])(jsonObject));
-      console.log('JsepProtocol._sendJsep:', request);
 
       _this.rtc.sendJsepMessage(request);
     };

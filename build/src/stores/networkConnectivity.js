@@ -209,8 +209,6 @@ var getAdvancedMeasurement = function getAdvancedMeasurement(apiEndpoint) {
   var getWebRtcMeasurement = function getWebRtcMeasurement(edge) {
     var _context4, _context5;
 
-    console.log('getWebRtcMeasurement EDGE:', edge);
-
     if (edge.baseUrls.length === 0) {
       return _promise["default"].resolve(false);
     }
@@ -325,7 +323,6 @@ var getAdvancedMeasurement = function getAdvancedMeasurement(apiEndpoint) {
   };
 
   return (0, _deviceInfo.getDeviceInfo)().then(function (deviceInfo) {
-    console.log('DeviceInfo:', deviceInfo);
     var recommendation = (deviceInfo || {}).recommendation || [];
     var iceServers = (deviceInfo || {}).iceServers || {};
     return connectionManagerMultiRegion(recommendation, iceServers);

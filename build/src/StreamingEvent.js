@@ -210,7 +210,7 @@ var StreamingEvent = /*#__PURE__*/function () {
      */
 
   }, {
-    key: "TOUCH_RTT_TIMOUT",
+    key: "TOUCH_RTT_TIMEOUT",
     get: function get() {
       return 'touch-rtt-timeout';
     }

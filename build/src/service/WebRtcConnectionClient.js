@@ -44,7 +44,7 @@ var _wrtc = require("wrtc");
 
 function ownKeys(object, enumerableOnly) { var keys = _Object$keys(object); if (_Object$getOwnPropertySymbols) { var symbols = _Object$getOwnPropertySymbols(object); enumerableOnly && (symbols = _filterInstanceProperty(symbols).call(symbols, function (sym) { return _Object$getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var _context4, _context5; var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? _forEachInstanceProperty(_context4 = ownKeys(Object(source), !0)).call(_context4, function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }) : _Object$getOwnPropertyDescriptors ? _Object$defineProperties(target, _Object$getOwnPropertyDescriptors(source)) : _forEachInstanceProperty(_context5 = ownKeys(Object(source))).call(_context5, function (key) { _Object$defineProperty(target, key, _Object$getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var _context3, _context4; var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? _forEachInstanceProperty(_context3 = ownKeys(Object(source), !0)).call(_context3, function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }) : _Object$getOwnPropertyDescriptors ? _Object$defineProperties(target, _Object$getOwnPropertyDescriptors(source)) : _forEachInstanceProperty(_context4 = ownKeys(Object(source))).call(_context4, function (key) { _Object$defineProperty(target, key, _Object$getOwnPropertyDescriptor(source, key)); }); } return target; }
 
 /**
  * WebRtcConnectionClient class to handle Web RTC client connections
@@ -60,7 +60,6 @@ WebRtcConnectionClient.createPeerConnection = function (host, iceServers, id) {
     iceServers: iceServers,
     iceTransportPolicy: 'relay'
   };
-  console.log('RTCPeerConnection options:', options);
   var peerConnection = new _wrtc.RTCPeerConnection(options);
 
   var onConnectionStateChange = function onConnectionStateChange() {
@@ -68,7 +67,7 @@ WebRtcConnectionClient.createPeerConnection = function (host, iceServers, id) {
       var _context;
 
       _axios["default"]["delete"]((0, _concat["default"])(_context = "".concat(host, "/connections/")).call(_context, id))["catch"](function (error) {
-        console.log(error);
+        console.error(error);
       });
 
       peerConnection.removeEventListener('connectionstatechange', onConnectionStateChange);
@@ -90,10 +89,6 @@ WebRtcConnectionClient.createConnection = function () {
   var host = createOptions.host,
       iceServersCandidates = createOptions.iceServersCandidates,
       beforeAnswer = createOptions.beforeAnswer;
-  console.log('WebRtcConnectionClient.createConnection', {
-    host: host,
-    iceServersCandidates: iceServersCandidates
-  });
   var remotePeerConnectionId = undefined;
   var peerConnection = undefined;
 
@@ -119,24 +114,16 @@ WebRtcConnectionClient.createConnection = function () {
     });
   };
 
-  console.log("axios POST to: ".concat(host, "/connections"));
   return _axios["default"].post("".concat(host, "/connections")).then(function (response) {
     var remotePeerConnection = response.data || {};
-    console.log("remotePeerConnection received form ".concat(host, "/connections"), remotePeerConnection);
     remotePeerConnectionId = remotePeerConnection.id;
     peerConnection = WebRtcConnectionClient.createPeerConnection(host, iceServersCandidates, remotePeerConnectionId);
-    console.log("set remotePeerConnection.localDescription as remote description", remotePeerConnection.localDescription);
     return peerConnection.setRemoteDescription(remotePeerConnection.localDescription);
   }).then(function () {
-    console.log("setting peerConnection.setRemoteDescription DONE");
-    console.log('peerConnection.connectionState:', peerConnection.connectionState);
-    console.log('beforeAnswer; adding ping-pong event handlers');
     return beforeAnswer(peerConnection);
   }).then(function () {
     return peerConnection.createAnswer();
   }).then(function (originalAnswer) {
-    console.log('peerConnection.createAnswer:', originalAnswer);
-    console.log('peerConnection.setLocalDescription');
     return peerConnection.setLocalDescription(new _wrtc.RTCSessionDescription({
       type: 'answer',
       sdp: createOptions.stereo ? originalAnswer.sdp.replace(/a=fmtp:111/, 'a=fmtp:111 stereo=1\r\na=fmtp:111') : originalAnswer.sdp
@@ -144,18 +131,16 @@ WebRtcConnectionClient.createConnection = function () {
   }).then(function () {
     return waitUntilIceGatheringStateComplete();
   }).then(function () {
-    var _context2, _context3;
+    var _context2;
 
-    console.log((0, _concat["default"])(_context2 = "sending answer to: ".concat(host, "/connections/")).call(_context2, remotePeerConnectionId, "/remote-description with peerConnection.localDescription:"), peerConnection.localDescription);
-    return (0, _axios["default"])((0, _concat["default"])(_context3 = "".concat(host, "/connections/")).call(_context3, remotePeerConnectionId, "/remote-description"), {
+    return (0, _axios["default"])((0, _concat["default"])(_context2 = "".concat(host, "/connections/")).call(_context2, remotePeerConnectionId, "/remote-description"), {
       method: 'POST',
       data: (0, _stringify["default"])(peerConnection.localDescription),
       headers: {
         'Content-Type': 'application/json'
       }
     });
-  }).then(function (response) {
-    console.log('response from server:', response);
+  }).then(function () {
     return peerConnection;
   })["catch"](function (error) {
     if (peerConnection) {

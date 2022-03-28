@@ -132,7 +132,7 @@ var EmulatorWebrtcView = /*#__PURE__*/function (_Component) {
             rtt: rtt
           });
         } else if (timestamp > startTime + rttMeasurementTimeout) {
-          _StreamingEvent["default"].edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent["default"].TOUCH_RTT_TIMOUT, {
+          _StreamingEvent["default"].edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent["default"].TOUCH_RTT_TIMEOUT, {
             timeout: true,
             time: rttMeasurementTimeout
           });

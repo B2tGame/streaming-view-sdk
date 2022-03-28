@@ -117,8 +117,6 @@ var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
       };
 
       var onConnectionStateChange = function onConnectionStateChange() {
-        console.log('peerConnection.connectionState:', peerConnection.connectionState);
-
         switch (peerConnection.connectionState) {
           case 'disconnected':
             if (dataChannel) {
@@ -167,7 +165,6 @@ var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
       iceServersCandidates: _this.iceServersCandidates
     }).then(function (peerConnection) {
       _this.peerConnection = peerConnection;
-      console.log('peerConnection CREATED', _this.peerConnection);
     });
 
     return _this;
