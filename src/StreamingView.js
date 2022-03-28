@@ -31,7 +31,7 @@ export default class StreamingView extends Component {
     shouldRandomlyMeasureRtt: undefined,
     height: window.innerHeight + 'px',
     width: window.innerWidth + 'px',
-    iceServers: {},
+    iceServers: {}
   };
 
   /**
@@ -76,7 +76,8 @@ export default class StreamingView extends Component {
     pingInterval: StreamWebRtc.WEBRTC_PING_INTERVAL,
     measureTouchRtt: true,
     playoutDelayHint: 0,
-    measureWebrtcRtt: true
+    measureWebrtcRtt: true,
+    vp8MaxQuantization: 63
   };
 
   /**
@@ -182,7 +183,7 @@ export default class StreamingView extends Component {
         // public endpoint received from Service Coordinator.
         return internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
       })
-      .then((streamEndpoint) => requestIceServers(apiEndpoint, edgeNodeId).then((iceServers) => ([streamEndpoint, iceServers])))
+      .then((streamEndpoint) => requestIceServers(apiEndpoint, edgeNodeId).then((iceServers) => [streamEndpoint, iceServers]))
       .then(([streamEndpoint, iceServers]) => {
         if (this.measurement) {
           this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, pingInterval, iceServers);
@@ -365,11 +366,7 @@ export default class StreamingView extends Component {
       playoutDelayHint,
       vp8MaxQuantization
     } = this.props;
-    const {
-      height: stateHeight,
-      width: stateWidth,
-      iceServers
-    } = this.state;
+    const { height: stateHeight, width: stateWidth, iceServers } = this.state;
 
     switch (this.state.isReadyStream) {
       case true:
