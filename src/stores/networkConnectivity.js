@@ -269,10 +269,9 @@ const getAdvancedMeasurement = (apiEndpoint) => {
  *
  * @param {string} apiEndpoint
  * @param browserConnection NetworkInformation from the browser
- * @param measureWebrtcRtt
  * @return {Promise<{measurementLevel: undefined, downloadSpeed: undefined, recommendedRegion: undefined, rttRegionMeasurements: undefined, roundTripTime: undefined}>}
  */
-const measureNetworkConnectivity = (apiEndpoint, browserConnection = undefined, measureWebrtcRtt = true) => {
+const measureNetworkConnectivity = (apiEndpoint, browserConnection) => {
   return getBrowserMeasurement(browserConnection)
     .then((browserMeasurement) => {
       networkConnectivity = { ...networkConnectivity, ...browserMeasurement };
@@ -281,13 +280,7 @@ const measureNetworkConnectivity = (apiEndpoint, browserConnection = undefined, 
     .then((basicMeasurement) => {
       networkConnectivity = { ...networkConnectivity, ...basicMeasurement };
     })
-    .then(() =>
-      measureWebrtcRtt
-        ? new Promise(
-          (resolve) => setTimeout(() => resolve(getAdvancedMeasurement(apiEndpoint)), DELAY_DEVICE_INFO_MS) // delay the execution
-        )
-        : Promise.resolve({})
-    )
+    .then(() => getAdvancedMeasurement(apiEndpoint))
     .then((advancedMeasurement) => {
       networkConnectivity = { ...networkConnectivity, ...advancedMeasurement };
       console.log('networkConnectivity:', networkConnectivity);

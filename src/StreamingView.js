@@ -60,7 +60,6 @@ export default class StreamingView extends Component {
       pingInterval: PropTypes.number,
       measureTouchRtt: PropTypes.bool,
       playoutDelayHint: PropTypes.number,
-      measureWebrtcRtt: PropTypes.bool,
       vp8MaxQuantization: PropTypes.number
     };
   }
@@ -76,7 +75,6 @@ export default class StreamingView extends Component {
     pingInterval: StreamWebRtc.WEBRTC_PING_INTERVAL,
     measureTouchRtt: true,
     playoutDelayHint: 0,
-    measureWebrtcRtt: true,
     vp8MaxQuantization: 63
   };
 
@@ -109,7 +107,7 @@ export default class StreamingView extends Component {
 
   componentDidMount() {
     this.isMountedInView = true;
-    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, onEvent, pingInterval, measureWebrtcRtt } =
+    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, onEvent, pingInterval } =
       this.props;
     if (!internalSession) {
       this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId, this.streamingViewId);
@@ -118,9 +116,7 @@ export default class StreamingView extends Component {
     this.blackScreenDetector = new BlackScreenDetector(edgeNodeId, this.streamingViewId);
 
     this.logger = new Logger();
-    if (measureWebrtcRtt) {
-      this.measurement = new Measurement(edgeNodeId, this.streamingViewId, this.logger);
-    }
+    this.measurement = new Measurement(edgeNodeId, this.streamingViewId, this.logger);
 
     if (onEvent) {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);

@@ -22,13 +22,11 @@ export default class StreamWebRtc extends EventEmitter {
    * @param {string} host
    * @param {{name: string, candidates: []}} iceServers
    * @param {number} pingInterval
-   * @param {boolean} measureWebrtcRtt
    */
   constructor(
     host,
     iceServers = { name: 'default', candidates: [] },
     pingInterval = StreamWebRtc.WEBRTC_PING_INTERVAL,
-    measureWebrtcRtt = true
   ) {
     super();
 
@@ -36,7 +34,6 @@ export default class StreamWebRtc extends EventEmitter {
     this.iceServersCandidates = iceServers.candidates;
     this.host = `${host}/${this.iceServersName}`;
     this.pingInterval = pingInterval;
-    this.measureWebrtcRtt = measureWebrtcRtt;
     this.peerConnection = undefined;
 
     WebRtcConnectionClient.createConnection({
