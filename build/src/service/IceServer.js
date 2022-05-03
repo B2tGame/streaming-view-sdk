@@ -23,7 +23,7 @@ var _axios = _interopRequireDefault(require("axios"));
 function requestIceServers(apiEndpoint, edgeNodeId) {
   var _context;
 
-  return _axios["default"].get((0, _concat["default"])(_context = "".concat(apiEndpoint, "/api/streaming-games/edge-node/ice-server/edge-node/")).call(_context, edgeNodeId), {
+  return _axios.default.get((0, _concat.default)(_context = "".concat(apiEndpoint, "/api/streaming-games/edge-node/ice-server/edge-node/")).call(_context, edgeNodeId), {
     timeout: 10000
   }).then(function (result) {
     return result.data || {};

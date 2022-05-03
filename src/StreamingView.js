@@ -14,6 +14,7 @@ import StreamWebRtc from './service/StreamWebRtc';
 import urlParse from 'url-parse';
 import { requestIceServers } from './service/IceServer';
 
+let instanceID = 0;
 /**
  * StreamingView class is responsible to control all the edge node stream behaviors.
  *
@@ -96,6 +97,7 @@ export default class StreamingView extends Component {
 
   constructor(props) {
     super(props);
+    this.instanceID = ++instanceID;
     this.isMountedInView = false;
     this.streamingViewId = uuid();
     this.emulatorIsReady = false;
@@ -145,6 +147,19 @@ export default class StreamingView extends Component {
     window.addEventListener('resize', this.onResize);
     window.addEventListener('error', this.onError);
 
+    let readyWasTriggered = false
+    
+    const handleEmulatorReady = (onUserInteractionCallback) => {
+      
+      console.info(`Ready was triggered for instance ${this.instanceID}. ${readyWasTriggered ? "Second trigger" : "First trigger" }` )
+
+      if(readyWasTriggered) {
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
+      } else {
+        readyWasTriggered = true
+      }
+    }
+
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
       .once(StreamingEvent.STREAM_TERMINATED, () => {
@@ -163,9 +178,14 @@ export default class StreamingView extends Component {
           emulatorVersion: configuration.emulatorVersion
         });
       })
-      .on([StreamingEvent.STREAM_WEBRTC_READY, StreamingEvent.STREAM_EMULATOR_READY], ([onUserInteractionCallback]) => {
-        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
-      });
+      .on(StreamingEvent.STREAM_WEBRTC_READY, (onUserInteractionCallback) => {
+        console.info(StreamingEvent.STREAM_WEBRTC_READY); 
+        handleEmulatorReady(onUserInteractionCallback);
+      })
+      .on(StreamingEvent.STREAM_EMULATOR_READY, (onUserInteractionCallback) => {
+        console.info(StreamingEvent.STREAM_EMULATOR_READY); 
+        handleEmulatorReady(onUserInteractionCallback);}
+      );
 
     StreamingController({
       apiEndpoint: apiEndpoint,
