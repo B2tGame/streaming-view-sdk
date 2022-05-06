@@ -105,16 +105,16 @@ export default class StreamWebRtc extends EventEmitter {
   /**
    * Calculates mean rtt and standard deviation values for the given input
    * @param {number[]} values
-   * @return {{rtt: number, standardDeviation: number}}
+   * @return {{rtt: number, stdDev: number}}
    */
   static calculateRoundTripTimeStats = (values) => {
-    const stats = { rtt: 0, standardDeviation: 0 };
+    const stats = { rtt: 0, stdDev: 0 };
     const n = values.length;
     if (n < 1) {
       return stats;
     }
     stats.rtt = values.reduce((a, b) => a + b, 0) / n;
-    stats.standardDeviation = Math.sqrt(values.reduce((cum, item) => cum + Math.pow(item - stats.rtt, 2), 0) / n);
+    stats.stdDev = Math.sqrt(values.reduce((cum, item) => cum + Math.pow(item - stats.rtt, 2), 0) / n);
 
     return stats;
   };

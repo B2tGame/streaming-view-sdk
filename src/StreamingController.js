@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { getNetworkConnectivity } from './stores/networkConnectivity';
 import { getDeviceInfo } from './stores/deviceInfo';
+import StreamingAgent from './StreamingAgent';
 import StreamingEvent from './StreamingEvent';
 import buildInfo from './build-info.json';
 
@@ -287,7 +287,9 @@ class StreamingController {
    * @returns {Promise<object>}
    */
   getDeviceInfo(options = {}) {
-    return getDeviceInfo(this.getApiEndpoint(), options);
+    return getDeviceInfo(this.getApiEndpoint(), options).then((deviceInfo) => {
+      return { ...deviceInfo, ...StreamingAgent.networkConnectivityMeasurements };
+    });
   }
 
   /**
@@ -295,7 +297,9 @@ class StreamingController {
    * @returns {Promise<{}>}
    */
   getConnectivityInfo() {
-    return getNetworkConnectivity();
+    // Per API specification https://docs.google.com/document/d/1VhVZxo2FkoHCF3c90sP-IJJl7WsDP4wQA7OT7IWXauY/edit#heading=h.rbmzojf3dehw
+    // this method needs to return a Promise
+    return Promise.resolve(StreamingAgent.networkConnectivityMeasurements || {});
   }
 }
 

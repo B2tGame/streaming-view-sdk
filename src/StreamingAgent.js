@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
-import { measureNetworkConnectivity, resetNetworkConnectivity } from './stores/networkConnectivity';
-import { getDeviceInfo, resetDeviceInfo } from './stores/deviceInfo';
+import networkConnectivity from './stores/networkConnectivity';
+import { getDeviceInfo, updateDeviceInfo } from './stores/deviceInfo';
 import Logger from './Logger';
 
 /**
@@ -13,32 +13,27 @@ import Logger from './Logger';
 export default class StreamingAgent extends Component {
   static propTypes = {
     apiEndpoint: PropTypes.string.isRequired,
-    region: PropTypes.string.isRequired,
     pingInterval: PropTypes.number,
-    internalSession: PropTypes.bool,
+    internalSession: PropTypes.bool
   };
+
+  // TODO right now we need to use a static property to act as a global so that StreamingController
+  // can access it. This is not ideal and we might want to rework this.
+  static networkConnectivityMeasurements = null;
 
   constructor(props) {
     super(props);
     this.logger = new Logger();
-    this.connection = {};
-  }
-
-  logError(error) {
-    this.logger.error('Streaming Agent', error);
   }
 
   componentDidMount() {
-    this.clearStoresCache();
     this.connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
     this.connection.onchange = () => this.onConnectivityUpdate();
-    //TODO-Jonathan: pls check if we really need this
     this.onConnectivityUpdate();
   }
 
   componentWillUnmount() {
-    this.connection.onchange = () => { };
-    this.clearStoresCache();
+    this.connection.onchange = () => {};
   }
 
   componentDidUpdate(prevProps) {
@@ -47,9 +42,8 @@ export default class StreamingAgent extends Component {
     }
   }
 
-  clearStoresCache() {
-    resetNetworkConnectivity();
-    resetDeviceInfo();
+  logError(error) {
+    this.logger.error('Streaming Agent', error);
   }
 
   /**
@@ -57,13 +51,23 @@ export default class StreamingAgent extends Component {
    * This will also clear any existing data.
    */
   onConnectivityUpdate() {
-    const { internalSession, apiEndpoint, region } = this.props;
-    this.clearStoresCache();
-    if (!internalSession && apiEndpoint) {
-      getDeviceInfo(apiEndpoint, { browserConnection: this.connection, region: region })
-        .then(() => measureNetworkConnectivity(apiEndpoint, this.connection))
-        .catch((err) => this.logError(err));
+    const { internalSession, apiEndpoint } = this.props;
+
+    if (internalSession || !apiEndpoint) {
+      return;
     }
+
+    getDeviceInfo(apiEndpoint, { browserConnection: this.connection })
+      .then((deviceInfo) => networkConnectivity.runMeasurements(apiEndpoint, deviceInfo.recommendation))
+      .then((measurements) => {
+        console.log('networkConnectivityMeasurements', measurements);
+        this.constructor.networkConnectivityMeasurements = measurements;
+        updateDeviceInfo(apiEndpoint, { rttRegionMeasurements: measurements.rttRegionMeasurements });
+      })
+      .catch((err) => {
+        console.warn(err);
+        this.logError(err);
+      });
   }
 
   render() {
