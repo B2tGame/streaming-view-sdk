@@ -307,8 +307,6 @@ var StreamingView = /*#__PURE__*/function (_Component) {
   }, {
     key: "componentWillUnmount",
     value: function componentWillUnmount() {
-      var _this3 = this;
-
       this.logger.info('StreamingView component will unmount', {
         measurement: this.measurement ? 'should-be-destroy' : 'skip',
         websocket: this.streamSocket ? 'should-be-destroy' : 'skip',
@@ -335,9 +333,8 @@ var StreamingView = /*#__PURE__*/function (_Component) {
 
       window.removeEventListener('resize', this.onResize);
       window.removeEventListener('error', this.onError);
-      setTimeout(function () {
-        _StreamingEvent.default.destroyEdgeNode(_this3.props.edgeNodeId);
-      }, 500);
+
+      _StreamingEvent.default.destroyEdgeNode(this.props.edgeNodeId);
     }
     /**
      * Update the state parameter heigth and width when screen size is changeing.
@@ -347,7 +344,7 @@ var StreamingView = /*#__PURE__*/function (_Component) {
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate(nextProps, nextState) {
       var _context4,
-          _this4 = this;
+          _this3 = this;
 
       // List of fields that should not generate into a render operation.
       var whiteListedFields = ['streamQualityRating', 'onEvent'];
@@ -370,7 +367,7 @@ var StreamingView = /*#__PURE__*/function (_Component) {
 
 
       var hasChanges = (0, _filter.default)(_context4 = (0, _keys.default)(StreamingView.PROP_TYPES)).call(_context4, function (key) {
-        return nextProps[key] !== _this4.props[key];
+        return nextProps[key] !== _this3.props[key];
       });
 
       if (hasChanges.length > 0) {
@@ -388,17 +385,17 @@ var StreamingView = /*#__PURE__*/function (_Component) {
   }, {
     key: "registerUserEventsHandler",
     value: function registerUserEventsHandler() {
-      var _this5 = this;
+      var _this4 = this;
 
       // Report user event - stream-loading-time
       _StreamingEvent.default.edgeNode(this.props.edgeNodeId).once(_StreamingEvent.default.STREAM_READY, function () {
-        var role = _this5.props.enableControl ? StreamingView.ROLE_PLAYER : StreamingView.ROLE_WATCHER;
+        var role = _this4.props.enableControl ? StreamingView.ROLE_PLAYER : StreamingView.ROLE_WATCHER;
 
-        if (_this5.props.userClickedPlayAt > 0) {
+        if (_this4.props.userClickedPlayAt > 0) {
           var _context5;
 
           // Send the stream loading time if we have a user clicked play at props.
-          var streamLoadingTime = Date.now() - _this5.props.userClickedPlayAt;
+          var streamLoadingTime = Date.now() - _this4.props.userClickedPlayAt;
 
           var userEventPayload = {
             role: role,
@@ -407,21 +404,21 @@ var StreamingView = /*#__PURE__*/function (_Component) {
             message: (0, _concat.default)(_context5 = "User event - ".concat(_StreamingEvent.default.STREAM_LOADING_TIME, ": ")).call(_context5, streamLoadingTime, " ms.")
           };
 
-          _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, userEventPayload);
+          _StreamingEvent.default.edgeNode(_this4.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, userEventPayload);
         } // Send the video playing event when user can see the stream.
 
 
-        _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, {
+        _StreamingEvent.default.edgeNode(_this4.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, {
           role: role,
           eventType: _StreamingEvent.default.USER_STARTS_PLAYING,
           value: 1,
           message: "User event - ".concat(_StreamingEvent.default.USER_STARTS_PLAYING, ": Video is playing.")
         });
 
-        _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).on(_StreamingEvent.default.STREAM_AUDIO_CODEC, function (codec) {
+        _StreamingEvent.default.edgeNode(_this4.props.edgeNodeId).on(_StreamingEvent.default.STREAM_AUDIO_CODEC, function (codec) {
           var _context6;
 
-          _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, {
+          _StreamingEvent.default.edgeNode(_this4.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, {
             role: role,
             eventType: _StreamingEvent.default.STREAM_AUDIO_CODEC,
             value: codec,
@@ -429,10 +426,10 @@ var StreamingView = /*#__PURE__*/function (_Component) {
           });
         });
 
-        _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).on(_StreamingEvent.default.STREAM_VIDEO_CODEC, function (codec) {
+        _StreamingEvent.default.edgeNode(_this4.props.edgeNodeId).on(_StreamingEvent.default.STREAM_VIDEO_CODEC, function (codec) {
           var _context7;
 
-          _StreamingEvent.default.edgeNode(_this5.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, {
+          _StreamingEvent.default.edgeNode(_this4.props.edgeNodeId).emit(_StreamingEvent.default.USER_EVENT_REPORT, {
             role: role,
             eventType: _StreamingEvent.default.STREAM_VIDEO_CODEC,
             value: codec,

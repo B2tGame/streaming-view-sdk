@@ -1,5 +1,17 @@
 "use strict";
 
+var _Object$keys = require("@babel/runtime-corejs3/core-js-stable/object/keys");
+
+var _Object$getOwnPropertySymbols = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-symbols");
+
+var _filterInstanceProperty = require("@babel/runtime-corejs3/core-js-stable/instance/filter");
+
+var _Object$getOwnPropertyDescriptor = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor");
+
+var _Object$getOwnPropertyDescriptors = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptors");
+
+var _Object$defineProperties = require("@babel/runtime-corejs3/core-js-stable/object/define-properties");
+
 var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -20,6 +32,8 @@ var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-
 
 var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
 
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/defineProperty"));
+
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/slicedToArray"));
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
@@ -28,13 +42,17 @@ var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpe
 
 var _axios = _interopRequireDefault(require("axios"));
 
-var _networkConnectivity = require("./stores/networkConnectivity");
-
 var _deviceInfo = require("./stores/deviceInfo");
+
+var _StreamingAgent = _interopRequireDefault(require("./StreamingAgent"));
 
 var _StreamingEvent = _interopRequireDefault(require("./StreamingEvent"));
 
 var _buildInfo = _interopRequireDefault(require("./build-info.json"));
+
+function ownKeys(object, enumerableOnly) { var keys = _Object$keys(object); if (_Object$getOwnPropertySymbols) { var symbols = _Object$getOwnPropertySymbols(object); enumerableOnly && (symbols = _filterInstanceProperty(symbols).call(symbols, function (sym) { return _Object$getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { (0, _defineProperty2.default)(target, key, source[key]); }) : _Object$getOwnPropertyDescriptors ? _Object$defineProperties(target, _Object$getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { _Object$defineProperty(target, key, _Object$getOwnPropertyDescriptor(source, key)); }); } return target; }
 
 /**
  * StreamingController is responsible to poll and terminate the edge node.
@@ -366,7 +384,9 @@ var StreamingController = /*#__PURE__*/function () {
     key: "getDeviceInfo",
     value: function getDeviceInfo() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return (0, _deviceInfo.getDeviceInfo)(this.getApiEndpoint(), options);
+      return (0, _deviceInfo.getDeviceInfo)(this.getApiEndpoint(), options).then(function (deviceInfo) {
+        return _objectSpread(_objectSpread({}, deviceInfo), _StreamingAgent.default.networkConnectivityMeasurements);
+      });
     }
     /**
      * Get connectivity info
@@ -376,7 +396,9 @@ var StreamingController = /*#__PURE__*/function () {
   }, {
     key: "getConnectivityInfo",
     value: function getConnectivityInfo() {
-      return (0, _networkConnectivity.getNetworkConnectivity)();
+      // Per API specification https://docs.google.com/document/d/1VhVZxo2FkoHCF3c90sP-IJJl7WsDP4wQA7OT7IWXauY/edit#heading=h.rbmzojf3dehw
+      // this method needs to return a Promise
+      return _promise.default.resolve(_StreamingAgent.default.networkConnectivityMeasurements || {});
     }
   }], [{
     key: "DEFAULT_TIMEOUT",

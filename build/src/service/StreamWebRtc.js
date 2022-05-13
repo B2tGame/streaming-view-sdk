@@ -187,7 +187,7 @@ exports.default = StreamWebRtc;
 StreamWebRtc.calculateRoundTripTimeStats = function (values) {
   var stats = {
     rtt: 0,
-    standardDeviation: 0
+    stdDev: 0
   };
   var n = values.length;
 
@@ -198,7 +198,7 @@ StreamWebRtc.calculateRoundTripTimeStats = function (values) {
   stats.rtt = (0, _reduce.default)(values).call(values, function (a, b) {
     return a + b;
   }, 0) / n;
-  stats.standardDeviation = Math.sqrt((0, _reduce.default)(values).call(values, function (cum, item) {
+  stats.stdDev = Math.sqrt((0, _reduce.default)(values).call(values, function (cum, item) {
     return cum + Math.pow(item - stats.rtt, 2);
   }, 0) / n);
   return stats;

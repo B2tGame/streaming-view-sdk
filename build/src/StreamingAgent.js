@@ -26,7 +26,7 @@ var _react = require("react");
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
-var _networkConnectivity = require("./stores/networkConnectivity");
+var _networkConnectivity = _interopRequireDefault(require("./stores/networkConnectivity"));
 
 var _deviceInfo = require("./stores/deviceInfo");
 
@@ -47,33 +47,27 @@ var StreamingAgent = /*#__PURE__*/function (_Component) {
 
   var _super = _createSuper(StreamingAgent);
 
+  // TODO right now we need to use a static property to act as a global so that StreamingController
+  // can access it. This is not ideal and we might want to rework this.
   function StreamingAgent(props) {
     var _this;
 
     (0, _classCallCheck2.default)(this, StreamingAgent);
     _this = _super.call(this, props);
     _this.logger = new _Logger.default();
-    _this.connection = {};
     return _this;
   }
 
   (0, _createClass2.default)(StreamingAgent, [{
-    key: "logError",
-    value: function logError(error) {
-      this.logger.error('Streaming Agent', error);
-    }
-  }, {
     key: "componentDidMount",
     value: function componentDidMount() {
       var _this2 = this;
 
-      this.clearStoresCache();
       this.connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
 
       this.connection.onchange = function () {
         return _this2.onConnectivityUpdate();
-      }; //TODO-Jonathan: pls check if we really need this
-
+      };
 
       this.onConnectivityUpdate();
     }
@@ -81,8 +75,6 @@ var StreamingAgent = /*#__PURE__*/function (_Component) {
     key: "componentWillUnmount",
     value: function componentWillUnmount() {
       this.connection.onchange = function () {};
-
-      this.clearStoresCache();
     }
   }, {
     key: "componentDidUpdate",
@@ -92,10 +84,9 @@ var StreamingAgent = /*#__PURE__*/function (_Component) {
       }
     }
   }, {
-    key: "clearStoresCache",
-    value: function clearStoresCache() {
-      (0, _networkConnectivity.resetNetworkConnectivity)();
-      (0, _deviceInfo.resetDeviceInfo)();
+    key: "logError",
+    value: function logError(error) {
+      this.logger.error('Streaming Agent', error);
     }
     /**
      * Trigger all background activity needed for update the connectivity if the agent is not set to internalSession mode.
@@ -109,20 +100,27 @@ var StreamingAgent = /*#__PURE__*/function (_Component) {
 
       var _this$props = this.props,
           internalSession = _this$props.internalSession,
-          apiEndpoint = _this$props.apiEndpoint,
-          region = _this$props.region;
-      this.clearStoresCache();
+          apiEndpoint = _this$props.apiEndpoint;
 
-      if (!internalSession && apiEndpoint) {
-        (0, _deviceInfo.getDeviceInfo)(apiEndpoint, {
-          browserConnection: this.connection,
-          region: region
-        }).then(function () {
-          return (0, _networkConnectivity.measureNetworkConnectivity)(apiEndpoint, _this3.connection);
-        }).catch(function (err) {
-          return _this3.logError(err);
-        });
+      if (internalSession || !apiEndpoint) {
+        return;
       }
+
+      (0, _deviceInfo.getDeviceInfo)(apiEndpoint, {
+        browserConnection: this.connection
+      }).then(function (deviceInfo) {
+        return _networkConnectivity.default.runMeasurements(apiEndpoint, deviceInfo.recommendation);
+      }).then(function (measurements) {
+        console.log('networkConnectivityMeasurements', measurements);
+        _this3.constructor.networkConnectivityMeasurements = measurements;
+        (0, _deviceInfo.updateDeviceInfo)(apiEndpoint, {
+          rttRegionMeasurements: measurements.rttRegionMeasurements
+        });
+      }).catch(function (err) {
+        console.warn(err);
+
+        _this3.logError(err);
+      });
     }
   }, {
     key: "render",
@@ -136,7 +134,7 @@ var StreamingAgent = /*#__PURE__*/function (_Component) {
 exports.default = StreamingAgent;
 StreamingAgent.propTypes = {
   apiEndpoint: _propTypes.default.string.isRequired,
-  region: _propTypes.default.string.isRequired,
   pingInterval: _propTypes.default.number,
   internalSession: _propTypes.default.bool
 };
+StreamingAgent.networkConnectivityMeasurements = null;
