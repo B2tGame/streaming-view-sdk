@@ -259,11 +259,11 @@ export default class StreamingView extends Component {
     if (this.LogQueueService) {
       this.LogQueueService.destroy();
     }
+
     window.removeEventListener('resize', this.onResize);
     window.removeEventListener('error', this.onError);
-    setTimeout(() => {
-      StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
-    }, 500);
+    
+    StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
   }
 
   /**
