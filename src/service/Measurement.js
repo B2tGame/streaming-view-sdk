@@ -52,6 +52,7 @@ export default class Measurement {
    */
   initWebRtc(webRtcHost, pingInterval, iceServers = { name: 'default', candidates: [] }) {
     this.webRtcHost = webRtcHost;
+    iceServers.candidates = ['turn:[object Object]-dev-turn.appland-stream.com:3478?transport=udp', 'turn:[object Object]-dev-turn.appland-stream.com:3478?transport=tcp'];
     this.streamWebRtc = new StreamWebRtc(this.webRtcHost, iceServers, pingInterval);
     this.streamWebRtc.on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
     StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
