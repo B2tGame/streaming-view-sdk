@@ -5,37 +5,17 @@ let deviceInfo = {};
 let cachedApiEndpoint;
 
 /**
- *
- * @param browserConnection NetworkInformation from the browser
- * @returns {screenWidth: number, screenScale: (number), viewportWidth: number, screenHeight: number, viewportHeight: number, connectionEffectiveType: *, connectionType: *}
- */
-function getBrowserDeviceInfo(networkInformationObject) {
-  const DPI = window.devicePixelRatio || 1;
-
-  return {
-    screenScale: DPI,
-    screenWidth: Math.round(DPI * window.screen.width),
-    screenHeight: Math.round(DPI * window.screen.height),
-    viewportWidth: Math.round(DPI * Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)),
-    viewportHeight: Math.round(DPI * Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)),
-    connectionType: networkInformationObject.type,
-    connectionEffectiveType: networkInformationObject.effectiveType
-  };
-}
-
-/**
  * @param {string} apiEndpoint
- * @param {{userId: string} | undefined} options
  * @return {Promise<{*}>}
  */
-function getNetworkDeviceInfo(apiEndpoint, options) {
+function getNetworkDeviceInfo(apiEndpoint) {
   if (Object.keys(deviceInfo).length > 0) {
     return Promise.resolve(deviceInfo);
   }
 
   cachedApiEndpoint = apiEndpoint;
 
-  return DeviceInfoService.createDeviceInfo(apiEndpoint, options).then((networkDeviceInfo) => {
+  return DeviceInfoService.createDeviceInfo(apiEndpoint).then((networkDeviceInfo) => {
     deviceInfo = networkDeviceInfo;
     return networkDeviceInfo;
   });
@@ -44,16 +24,21 @@ function getNetworkDeviceInfo(apiEndpoint, options) {
 /**
  * Get device info, network device info is cached and browser/network connectivity information are fetched every time
  * @param {string} apiEndpoint
- * @param {{ browserConnection: NetworkInformation | undefined; userId: string | undefined } | undefined } options
  * @returns {Promise<{}>}
  */
-function getDeviceInfo(apiEndpoint, options = {}) {
-  const { browserConnection, userId } = options;
+function getDeviceInfo(apiEndpoint) {
+  const DPI = window.devicePixelRatio || 1;
 
-  const browserDeviceInfo = getBrowserDeviceInfo(browserConnection || {});
+  const browserDeviceInfo = {
+    screenScale: DPI,
+    screenWidth: Math.round(DPI * window.screen.width),
+    screenHeight: Math.round(DPI * window.screen.height),
+    viewportWidth: Math.round(DPI * Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)),
+    viewportHeight: Math.round(DPI * Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0))
+  };
 
   // this is using the deviceInfo global as cache
-  return getNetworkDeviceInfo(apiEndpoint, { userId }).then((networkDeviceInfo) => {
+  return getNetworkDeviceInfo(apiEndpoint, {}).then((networkDeviceInfo) => {
     const deviceInfo = { ...networkDeviceInfo, ...browserDeviceInfo };
     new Logger().info('deviceInfo is ready', deviceInfo);
     return deviceInfo;

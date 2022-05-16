@@ -1,8 +1,11 @@
 import axios from 'axios';
 import { getDeviceInfo } from './stores/deviceInfo';
-import StreamingAgent from './StreamingAgent';
+import newMeasurementScheduler from './measurementScheduler';
 import StreamingEvent from './StreamingEvent';
 import buildInfo from './build-info.json';
+
+let measurementScheduler = null;
+let latestMeasurement = null;
 
 /**
  * StreamingController is responsible to poll and terminate the edge node.
@@ -36,6 +39,30 @@ class StreamingController {
     return 'endpoint';
   }
 
+  /*
+   * Streaming agent global
+   */
+  static startMeasurementScheduler({ apiEndpoint, interval }) {
+    measurementScheduler && measurementScheduler.stopMeasuring();
+
+    measurementScheduler = newMeasurementScheduler({
+      apiEndpoint,
+      interval: Math.max(5000, +interval || 0),
+      navigatorConnection: navigator.connection || navigator.mozConnection || navigator.webkitConnection || {},
+      onMeasures: (streamingAgentPayload) => (latestMeasurement = streamingAgentPayload)
+    });
+
+    measurementScheduler.startMeasuring();
+  }
+
+  static onGameReady() {
+    measurementScheduler && measurementScheduler.stopMeasuring();
+  }
+
+  static onGameTerminated() {
+    measurementScheduler && measurementScheduler.startMeasuring();
+  }
+
   /**
    *
    * @param {object} props
@@ -57,6 +84,12 @@ class StreamingController {
     this.apiEndpoint = props.apiEndpoint;
     this.edgeNodeId = props.edgeNodeId || undefined;
     this.internalSession = props.internalSession || false;
+
+    if (measurementScheduler) {
+      measurementScheduler.changeApiEndpoint(props.apiEndpoint);
+    } else {
+      this.constructor.startMeasurementScheduler({ apiEndpoint: props.apiEndpoint, interval: 30 * 1000 });
+    }
   }
 
   /**
@@ -283,13 +316,12 @@ class StreamingController {
 
   /**
    * Get device info from the device including geolocation, screen configuration etc.
-   * @param {{userId: string} | undefined} options
    * @returns {Promise<object>}
    */
-  getDeviceInfo(options = {}) {
-    return getDeviceInfo(this.getApiEndpoint(), options).then((deviceInfo) => {
-      return { ...deviceInfo, ...StreamingAgent.networkConnectivityMeasurements };
-    });
+  getDeviceInfo() {
+    return (latestMeasurement ? Promise.resolve(latestMeasurement.deviceInfo) : getDeviceInfo(this.apiEndpoint)).then(
+      (deviceInfo) => ({ deviceInfoId: deviceInfo.deviceInfoId, userId: deviceInfo.userId })
+    );
   }
 
   /**
@@ -299,7 +331,7 @@ class StreamingController {
   getConnectivityInfo() {
     // Per API specification https://docs.google.com/document/d/1VhVZxo2FkoHCF3c90sP-IJJl7WsDP4wQA7OT7IWXauY/edit#heading=h.rbmzojf3dehw
     // this method needs to return a Promise
-    return Promise.resolve(StreamingAgent.networkConnectivityMeasurements || {});
+    return Promise.resolve(latestMeasurement ? latestMeasurement.networkConnectivityInfo : {});
   }
 }
 
@@ -308,6 +340,7 @@ class StreamingController {
  * @returns {Promise<StreamingController>}
  */
 
+// The only reason we are using a factory that returns a promise rather than exposing directly the class is backwards-compatibility.
 const factory = (props) => {
   return Promise.resolve(props).then((props) => new StreamingController(props));
 };
@@ -327,5 +360,7 @@ factory.EVENT_PREDICTED_GAME_EXPERIENCE = StreamingEvent.PREDICTED_GAME_EXPERIEN
 factory.EVENT_STREAM_TERMINATED = StreamingEvent.STREAM_TERMINATED;
 factory.WAIT_FOR_READY = StreamingController.WAIT_FOR_READY;
 factory.WAIT_FOR_ENDPOINT = StreamingController.WAIT_FOR_ENDPOINT;
+factory.onGameReady = StreamingController.onGameReady;
+factory.onGameTerminated = StreamingController.onGameTerminated;
 
 export default factory;

@@ -116,7 +116,7 @@ function estimateSpeed(rtt, stdDev) {
  * @params {Array<*>}
  * @return {{predictedGameExperience: number, recommendedRegion: string, rttRegionMeasurements: *}}
  */
-function runMeasurements(apiEndpoint, recommendedEdges) {
+function measure(apiEndpoint, recommendedEdges) {
   const selectedEdges = recommendedEdges.filter((edge) => edge.measurementEndpoints.length).slice(0, MAX_RECOMMENDATION_COUNT);
 
   // This is used so that at each iteration we can select, for each selectedEdge, a different measurementEndpoint
@@ -160,9 +160,9 @@ function runMeasurements(apiEndpoint, recommendedEdges) {
     return {
       predictedGameExperience,
       recommendedRegion: minRegion,
-      rttRegionMeasurements: statsByRegionByTurn
+      rttStatsByRegionByTurn: statsByRegionByTurn
     };
   });
 }
 
-export default { runMeasurements };
+export default { measure };
