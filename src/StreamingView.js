@@ -217,6 +217,10 @@ export default class StreamingView extends Component {
           turnEndpoint: internalSession && turnEndpoint ? turnEndpoint : undefined,
           iceServers: iceServers
         });
+
+        StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_EMULATOR_READY, StreamingController.onGameReady);
+        StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_TERMINATED, StreamingController.onGameTerminated);
+
         this.registerUserEventsHandler();
       })
       .catch((err) => {
@@ -261,9 +265,10 @@ export default class StreamingView extends Component {
     }
 
     window.removeEventListener('resize', this.onResize);
-    window.removeEventListener('error', this.onError);
-    
+    window.removeEventListener('error', this.onError);   
     StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
+    StreamingEvent.edgeNode(this.props.edgeNodeId).removeListener(StreamingEvent.STREAM_EMULATOR_READY, StreamingController.onGameReady);
+    StreamingEvent.edgeNode(this.props.edgeNodeId).removeListener(StreamingEvent.STREAM_TERMINATED, StreamingController.onGameTerminated);
   }
 
   /**
