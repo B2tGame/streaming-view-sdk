@@ -10,7 +10,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
 
@@ -32,7 +32,7 @@ var _deviceInfo = require("./stores/deviceInfo");
 
 var _Logger = _interopRequireDefault(require("./Logger"));
 
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2.default)(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2.default)(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2.default)(this, result); }; }
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_Reflect$construct) return false; if (_Reflect$construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(_Reflect$construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
@@ -43,7 +43,7 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_R
  * @extends {Component}
  */
 var StreamingAgent = /*#__PURE__*/function (_Component) {
-  (0, _inherits2.default)(StreamingAgent, _Component);
+  (0, _inherits2["default"])(StreamingAgent, _Component);
 
   var _super = _createSuper(StreamingAgent);
 
@@ -52,13 +52,13 @@ var StreamingAgent = /*#__PURE__*/function (_Component) {
   function StreamingAgent(props) {
     var _this;
 
-    (0, _classCallCheck2.default)(this, StreamingAgent);
+    (0, _classCallCheck2["default"])(this, StreamingAgent);
     _this = _super.call(this, props);
-    _this.logger = new _Logger.default();
+    _this.logger = new _Logger["default"]();
     return _this;
   }
 
-  (0, _createClass2.default)(StreamingAgent, [{
+  (0, _createClass2["default"])(StreamingAgent, [{
     key: "componentDidMount",
     value: function componentDidMount() {
       var _this2 = this;
@@ -109,14 +109,14 @@ var StreamingAgent = /*#__PURE__*/function (_Component) {
       (0, _deviceInfo.getDeviceInfo)(apiEndpoint, {
         browserConnection: this.connection
       }).then(function (deviceInfo) {
-        return _networkConnectivity.default.runMeasurements(apiEndpoint, deviceInfo.recommendation);
+        return _networkConnectivity["default"].runMeasurements(apiEndpoint, deviceInfo.recommendation);
       }).then(function (measurements) {
         console.log('networkConnectivityMeasurements', measurements);
         _this3.constructor.networkConnectivityMeasurements = measurements;
         (0, _deviceInfo.updateDeviceInfo)(apiEndpoint, {
           rttRegionMeasurements: measurements.rttRegionMeasurements
         });
-      }).catch(function (err) {
+      })["catch"](function (err) {
         console.warn(err);
 
         _this3.logError(err);
@@ -131,10 +131,10 @@ var StreamingAgent = /*#__PURE__*/function (_Component) {
   return StreamingAgent;
 }(_react.Component);
 
-exports.default = StreamingAgent;
+exports["default"] = StreamingAgent;
 StreamingAgent.propTypes = {
-  apiEndpoint: _propTypes.default.string.isRequired,
-  pingInterval: _propTypes.default.number,
-  internalSession: _propTypes.default.bool
+  apiEndpoint: _propTypes["default"].string.isRequired,
+  pingInterval: _propTypes["default"].number,
+  internalSession: _propTypes["default"].bool
 };
 StreamingAgent.networkConnectivityMeasurements = null;
