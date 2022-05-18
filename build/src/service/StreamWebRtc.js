@@ -10,9 +10,13 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _trunc = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/math/trunc"));
+
+var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/date/now"));
+
+var _setInterval2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-interval"));
 
 var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
 
@@ -36,7 +40,7 @@ var _StreamingEvent = _interopRequireDefault(require("../StreamingEvent"));
 
 var _WebRtcConnectionClient = _interopRequireDefault(require("./WebRtcConnectionClient"));
 
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2.default)(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2.default)(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2.default)(this, result); }; }
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_Reflect$construct) return false; if (_Reflect$construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(_Reflect$construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
@@ -44,7 +48,7 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_R
  * StreamWebRtc is a WebRtc connection class to communicate with the backend
  */
 var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
-  (0, _inherits2.default)(StreamWebRtc, _EventEmitter);
+  (0, _inherits2["default"])(StreamWebRtc, _EventEmitter);
 
   var _super = _createSuper(StreamWebRtc);
 
@@ -65,7 +69,7 @@ var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
 
     var _pingInterval = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : StreamWebRtc.WEBRTC_PING_INTERVAL;
 
-    (0, _classCallCheck2.default)(this, StreamWebRtc);
+    (0, _classCallCheck2["default"])(this, StreamWebRtc);
     _this = _super.call(this);
 
     _this.beforeAnswer = function (peerConnection) {
@@ -82,10 +86,10 @@ var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
             timestamp = _JSON$parse.timestamp;
 
         if (type === 'pong') {
-          var sendTime = (0, _trunc.default)(timestamp);
-          var rtt = Date.now() - sendTime;
+          var sendTime = (0, _trunc["default"])(timestamp);
+          var rtt = (0, _now["default"])() - sendTime;
 
-          _this.emit(_StreamingEvent.default.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
+          _this.emit(_StreamingEvent["default"].WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
         }
       };
 
@@ -98,11 +102,11 @@ var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
 
         dataChannel = channel;
         dataChannel.addEventListener('message', onMessage);
-        interval = setInterval(function () {
+        interval = (0, _setInterval2["default"])(function () {
           if (dataChannel.readyState === 'open') {
-            dataChannel.send((0, _stringify.default)({
+            dataChannel.send((0, _stringify["default"])({
               type: 'ping',
-              timestamp: Date.now(),
+              timestamp: (0, _now["default"])(),
               sequenceId: sequenceId++ // incremental counter to be able to detect out of order or lost packages
 
             }));
@@ -125,7 +129,7 @@ var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
             break;
 
           case 'connected':
-            _this.emit(_StreamingEvent.default.WEBRTC_CLIENT_CONNECTED);
+            _this.emit(_StreamingEvent["default"].WEBRTC_CLIENT_CONNECTED);
 
             break;
 
@@ -147,11 +151,11 @@ var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
 
     _this.iceServersName = iceServers.name;
     _this.iceServersCandidates = iceServers.candidates;
-    _this.host = (0, _concat.default)(_context = "".concat(host, "/")).call(_context, _this.iceServersName);
+    _this.host = (0, _concat["default"])(_context = "".concat(host, "/")).call(_context, _this.iceServersName);
     _this.pingInterval = _pingInterval;
     _this.peerConnection = undefined;
 
-    _WebRtcConnectionClient.default.createConnection({
+    _WebRtcConnectionClient["default"].createConnection({
       beforeAnswer: _this.beforeAnswer,
       host: _this.host,
       iceServersName: _this.iceServersName,
@@ -163,7 +167,7 @@ var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
     return _this;
   }
 
-  (0, _createClass2.default)(StreamWebRtc, null, [{
+  (0, _createClass2["default"])(StreamWebRtc, null, [{
     key: "DATA_CHANNEL_NAME",
     get: function get() {
       return 'streaming-webrtc-server';
@@ -180,14 +184,14 @@ var StreamWebRtc = /*#__PURE__*/function (_EventEmitter) {
     }
   }]);
   return StreamWebRtc;
-}(_eventemitter.default);
+}(_eventemitter["default"]);
 
-exports.default = StreamWebRtc;
+exports["default"] = StreamWebRtc;
 
 StreamWebRtc.calculateRoundTripTimeStats = function (values) {
   var stats = {
     rtt: 0,
-    standardDeviation: 0
+    stdDev: 0
   };
   var n = values.length;
 
@@ -195,10 +199,10 @@ StreamWebRtc.calculateRoundTripTimeStats = function (values) {
     return stats;
   }
 
-  stats.rtt = (0, _reduce.default)(values).call(values, function (a, b) {
+  stats.rtt = (0, _reduce["default"])(values).call(values, function (a, b) {
     return a + b;
   }, 0) / n;
-  stats.standardDeviation = Math.sqrt((0, _reduce.default)(values).call(values, function (cum, item) {
+  stats.stdDev = Math.sqrt((0, _reduce["default"])(values).call(values, function (cum, item) {
     return cum + Math.pow(item - stats.rtt, 2);
   }, 0) / n);
   return stats;

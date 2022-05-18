@@ -16,7 +16,11 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
+
+var _setTimeout2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-timeout"));
+
+var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/date/now"));
 
 var _values = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/object/values"));
 
@@ -62,9 +66,9 @@ var _StreamingEvent = _interopRequireDefault(require("../../../StreamingEvent"))
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof _WeakMap !== "function") return null; var cacheBabelInterop = new _WeakMap(); var cacheNodeInterop = new _WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = _Object$defineProperty && _Object$getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? _Object$getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { _Object$defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = _Object$defineProperty && _Object$getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? _Object$getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { _Object$defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2.default)(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2.default)(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2.default)(this, result); }; }
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = _Reflect$construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !_Reflect$construct) return false; if (_Reflect$construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(_Reflect$construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
@@ -82,14 +86,14 @@ var ORIENTATION_LANDSCAPE = 'landscape';
  */
 
 var EventHandler = /*#__PURE__*/function (_Component) {
-  (0, _inherits2.default)(EventHandler, _Component);
+  (0, _inherits2["default"])(EventHandler, _Component);
 
   var _super = _createSuper(EventHandler);
 
   function EventHandler(props) {
     var _this;
 
-    (0, _classCallCheck2.default)(this, EventHandler);
+    (0, _classCallCheck2["default"])(this, EventHandler);
     _this = _super.call(this, props);
 
     _this.touchHandler = function (type, allEvents, events, firstChangedEvent) {
@@ -97,7 +101,7 @@ var EventHandler = /*#__PURE__*/function (_Component) {
     };
 
     _this.handleResize = function () {
-      setTimeout(function () {
+      (0, _setTimeout2["default"])(function () {
         _this.forceRender();
       }, 50);
     };
@@ -111,10 +115,10 @@ var EventHandler = /*#__PURE__*/function (_Component) {
     };
 
     _this.handleUserInteraction = function () {
-      if ((_this.userInteractionHoldOff || 0) < Date.now()) {
-        _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.USER_INTERACTION);
+      if ((_this.userInteractionHoldOff || 0) < (0, _now["default"])()) {
+        _StreamingEvent["default"].edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent["default"].USER_INTERACTION);
 
-        _this.userInteractionHoldOff = Date.now() + EventHandler.USER_INTERACTION_HOLD_OFF_TIMEOUT;
+        _this.userInteractionHoldOff = (0, _now["default"])() + EventHandler.USER_INTERACTION_HOLD_OFF_TIMEOUT;
       }
 
       _this.enterFullScreen();
@@ -146,37 +150,37 @@ var EventHandler = /*#__PURE__*/function (_Component) {
       var _context, _context2, _context3, _context5, _context6;
 
       var touches = [];
-      var allTouches = (0, _values.default)(allTouchesObject);
-      var changedTouches = (0, _values.default)(changedTouchesObject);
+      var allTouches = (0, _values["default"])(allTouchesObject);
+      var changedTouches = (0, _values["default"])(changedTouchesObject);
 
       if (type === 'touchstart' || type === 'touchmove') {
         // Add the current set of changed touches (new started/moved touches)
-        touches.push.apply(touches, (0, _toConsumableArray2.default)((0, _map.default)(changedTouches).call(changedTouches, function (touch) {
+        touches.push.apply(touches, (0, _toConsumableArray2["default"])((0, _map["default"])(changedTouches).call(changedTouches, function (touch) {
           touch.hasForce = 1;
           return touch;
         })));
       } // Collect all removed touches that are no longer in touchHistory set
 
 
-      var missingTouches = (0, _filter.default)(_context = _this.touchHistory).call(_context, function (touch) {
-        return (0, _findIndex.default)(allTouches).call(allTouches, function (t) {
+      var missingTouches = (0, _filter["default"])(_context = _this.touchHistory).call(_context, function (touch) {
+        return (0, _findIndex["default"])(allTouches).call(allTouches, function (t) {
           return t.identifier === touch.identifier;
         }) === -1;
       });
-      touches.push.apply(touches, (0, _toConsumableArray2.default)((0, _map.default)(missingTouches).call(missingTouches, function (touch) {
+      touches.push.apply(touches, (0, _toConsumableArray2["default"])((0, _map["default"])(missingTouches).call(missingTouches, function (touch) {
         touch.hasForce = 0;
         return touch;
       }))); // Prepare all touch identifiers for existing touch identifiers and add new available touch identifiers (0..9)
 
-      var touchIdentifiers = (0, _reduce.default)(_context2 = (0, _concat.default)(_context3 = []).call(_context3, (0, _toConsumableArray2.default)(allTouches), (0, _toConsumableArray2.default)(missingTouches))).call(_context2, function (touchIdentifiers, touch) {
+      var touchIdentifiers = (0, _reduce["default"])(_context2 = (0, _concat["default"])(_context3 = []).call(_context3, (0, _toConsumableArray2["default"])(allTouches), (0, _toConsumableArray2["default"])(missingTouches))).call(_context2, function (touchIdentifiers, touch) {
         if (_this.touchIdentifiersHistory[touch.identifier] !== undefined) {
           touchIdentifiers[touch.identifier] = _this.touchIdentifiersHistory[touch.identifier];
         } else {
           var _context4;
 
-          var alreadyUsedIdentifiers = (0, _values.default)(touchIdentifiers);
-          var nextFreeIdentifier = (0, _find.default)(_context4 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).call(_context4, function (identifier) {
-            return !((0, _indexOf.default)(alreadyUsedIdentifiers).call(alreadyUsedIdentifiers, identifier) !== -1);
+          var alreadyUsedIdentifiers = (0, _values["default"])(touchIdentifiers);
+          var nextFreeIdentifier = (0, _find["default"])(_context4 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).call(_context4, function (identifier) {
+            return !((0, _indexOf["default"])(alreadyUsedIdentifiers).call(alreadyUsedIdentifiers, identifier) !== -1);
           });
 
           if (nextFreeIdentifier !== undefined) {
@@ -186,7 +190,7 @@ var EventHandler = /*#__PURE__*/function (_Component) {
 
         return touchIdentifiers;
       }, {});
-      var touchesToSend = (0, _map.default)(_context5 = (0, _concat.default)(_context6 = []).call(_context6, touches, (0, _toConsumableArray2.default)(missingTouches))).call(_context5, function (touch) {
+      var touchesToSend = (0, _map["default"])(_context5 = (0, _concat["default"])(_context6 = []).call(_context6, touches, (0, _toConsumableArray2["default"])(missingTouches))).call(_context5, function (touch) {
         var emulatorCords = _this.calculateTouchEmulatorCoordinates(touch);
 
         var identifier = touchIdentifiers[touch.identifier];
@@ -222,7 +226,7 @@ var EventHandler = /*#__PURE__*/function (_Component) {
 
       _this.touchHandler(event.nativeEvent.type, event.nativeEvent.touches, event.nativeEvent.changedTouches, event.nativeEvent.touches[0]);
 
-      _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.TOUCH_START, _this.calculateTouchEmulatorCoordinates(event.nativeEvent.touches[0]));
+      _StreamingEvent["default"].edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent["default"].TOUCH_START, _this.calculateTouchEmulatorCoordinates(event.nativeEvent.touches[0]));
     };
 
     _this.handleTouchEnd = function (event) {
@@ -232,7 +236,7 @@ var EventHandler = /*#__PURE__*/function (_Component) {
 
       _this.touchHandler(event.nativeEvent.type, event.nativeEvent.touches, event.nativeEvent.changedTouches, event.nativeEvent.changedTouches[0]);
 
-      _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.TOUCH_END, _this.calculateTouchEmulatorCoordinates(event.nativeEvent));
+      _StreamingEvent["default"].edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent["default"].TOUCH_END, _this.calculateTouchEmulatorCoordinates(event.nativeEvent));
     };
 
     _this.handleTouchMove = function (event) {
@@ -249,7 +253,7 @@ var EventHandler = /*#__PURE__*/function (_Component) {
 
         _this.sendMouse(_this.calculateMouseEmulatorCoordinates(event.nativeEvent), event.button);
 
-        _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.TOUCH_START, _this.calculateTouchEmulatorCoordinates(event.nativeEvent));
+        _StreamingEvent["default"].edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent["default"].TOUCH_START, _this.calculateTouchEmulatorCoordinates(event.nativeEvent));
       }
     };
 
@@ -260,7 +264,7 @@ var EventHandler = /*#__PURE__*/function (_Component) {
 
         _this.sendMouse(_this.calculateMouseEmulatorCoordinates(event.nativeEvent));
 
-        _StreamingEvent.default.edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent.default.TOUCH_END, _this.calculateTouchEmulatorCoordinates(event.nativeEvent));
+        _StreamingEvent["default"].edgeNode(_this.props.edgeNodeId).emit(_StreamingEvent["default"].TOUCH_END, _this.calculateTouchEmulatorCoordinates(event.nativeEvent));
       }
     };
 
@@ -292,21 +296,21 @@ var EventHandler = /*#__PURE__*/function (_Component) {
     };
 
     _this.enterFullScreen = function () {
-      if (_this.props.enableFullScreen && _screenfull.default.isEnabled && !_screenfull.default.isFullscreen) {
-        _screenfull.default.request().then(function () {
+      if (_this.props.enableFullScreen && _screenfull["default"].isEnabled && !_screenfull["default"].isFullscreen) {
+        _screenfull["default"].request().then(function () {
           var orientation = _this.props.emulatorWidth > _this.props.emulatorHeight ? ORIENTATION_LANDSCAPE : ORIENTATION_PORTRAIT;
-          window.screen.orientation.lock(orientation).catch(function (error) {
+          window.screen.orientation.lock(orientation)["catch"](function (error) {
             _this.props.logger.log('Failed to lock screen orientation to: ' + error);
           });
-        }).catch(function (error) {
+        })["catch"](function (error) {
           _this.props.logger.log('Failed to request fullscreen: ' + error);
         });
       }
     };
 
-    _this.handler = /*#__PURE__*/_react.default.createRef();
+    _this.handler = /*#__PURE__*/_react["default"].createRef();
     var emulator = props.emulator;
-    _this.status = new _EmulatorStatus.default(emulator);
+    _this.status = new _EmulatorStatus["default"](emulator);
     _this.mouseDown = false;
     _this.userInteractionHoldOff = 0;
     _this.touchIdentifiersHistory = {};
@@ -314,7 +318,7 @@ var EventHandler = /*#__PURE__*/function (_Component) {
     return _this;
   }
 
-  (0, _createClass2.default)(EventHandler, [{
+  (0, _createClass2["default"])(EventHandler, [{
     key: "updateTouchHandler",
     value: function updateTouchHandler() {
       this.touchHandler = function (type, allEvents, events) {
@@ -346,9 +350,9 @@ var EventHandler = /*#__PURE__*/function (_Component) {
       });
       window.removeEventListener('resize', this.handleResize);
 
-      if (this.props.enableFullScreen && _screenfull.default.isEnabled && _screenfull.default.isFullscreen) {
+      if (this.props.enableFullScreen && _screenfull["default"].isEnabled && _screenfull["default"].isFullscreen) {
         try {
-          window.screen.orientation.unlock().catch(function () {});
+          window.screen.orientation.unlock()["catch"](function () {});
         } catch (e) {// We ignore if the system fails to perform unlock(), typical due to we were not in a locked mode previously,
           // or we are on iOS Safari, where the feature is not supported.
         }
@@ -432,7 +436,7 @@ var EventHandler = /*#__PURE__*/function (_Component) {
     key: "render",
     value: function render() {
       var View = this.props.view;
-      return /*#__PURE__*/_react.default.createElement("div", {
+      return /*#__PURE__*/_react["default"].createElement("div", {
         onMouseDown: this.handleMouseDown,
         onMouseMove: this.handleMouseMove,
         onMouseUp: this.handleMouseUp,
@@ -455,7 +459,7 @@ var EventHandler = /*#__PURE__*/function (_Component) {
           width: '100%',
           height: '100%'
         }
-      }, /*#__PURE__*/_react.default.createElement(View, this.props));
+      }, /*#__PURE__*/_react["default"].createElement(View, this.props));
     }
   }], [{
     key: "USER_INTERACTION_HOLD_OFF_TIMEOUT",
@@ -471,22 +475,22 @@ var EventHandler = /*#__PURE__*/function (_Component) {
   return EventHandler;
 }(_react.Component);
 
-exports.default = EventHandler;
+exports["default"] = EventHandler;
 EventHandler.propTypes = {
-  emulator: _propTypes.default.object.isRequired,
-  jsep: _propTypes.default.object.isRequired,
-  enableControl: _propTypes.default.bool,
-  enableFullScreen: _propTypes.default.bool,
-  logger: _propTypes.default.object.isRequired,
-  emulatorWidth: _propTypes.default.number,
-  emulatorHeight: _propTypes.default.number,
-  emulatorVersion: _propTypes.default.string,
-  view: _propTypes.default.any.isRequired,
-  edgeNodeId: _propTypes.default.string.isRequired,
+  emulator: _propTypes["default"].object.isRequired,
+  jsep: _propTypes["default"].object.isRequired,
+  enableControl: _propTypes["default"].bool,
+  enableFullScreen: _propTypes["default"].bool,
+  logger: _propTypes["default"].object.isRequired,
+  emulatorWidth: _propTypes["default"].number,
+  emulatorHeight: _propTypes["default"].number,
+  emulatorVersion: _propTypes["default"].string,
+  view: _propTypes["default"].any.isRequired,
+  edgeNodeId: _propTypes["default"].string.isRequired,
   // report events during the streaming view.
-  volume: _propTypes.default.number,
-  muted: _propTypes.default.bool,
-  measureTouchRtt: _propTypes.default.bool
+  volume: _propTypes["default"].number,
+  muted: _propTypes["default"].bool,
+  measureTouchRtt: _propTypes["default"].bool
 };
 EventHandler.defaultProps = {
   emulatorHeight: 768,

@@ -263,15 +263,12 @@ export default class StreamingView extends Component {
     if (this.LogQueueService) {
       this.LogQueueService.destroy();
     }
-    window.removeEventListener('resize', this.onResize);
-    window.removeEventListener('error', this.onError);
 
+    window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('error', this.onError);   
+    StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
     StreamingEvent.edgeNode(this.props.edgeNodeId).removeListener(StreamingEvent.STREAM_EMULATOR_READY, StreamingController.onGameReady);
     StreamingEvent.edgeNode(this.props.edgeNodeId).removeListener(StreamingEvent.STREAM_TERMINATED, StreamingController.onGameTerminated);
-
-    setTimeout(() => {
-      StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
-    }, 500);
   }
 
   /**
