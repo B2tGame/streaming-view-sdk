@@ -284,6 +284,10 @@ var StreamingView = /*#__PURE__*/function (_Component) {
           iceServers: iceServers
         });
 
+        _StreamingEvent["default"].edgeNode(edgeNodeId).on(_StreamingEvent["default"].STREAM_EMULATOR_READY, _StreamingController["default"].onGameReady);
+
+        _StreamingEvent["default"].edgeNode(edgeNodeId).on(_StreamingEvent["default"].STREAM_TERMINATED, _StreamingController["default"].onGameTerminated);
+
         _this2.registerUserEventsHandler();
       })["catch"](function (err) {
         var _context3;
@@ -339,6 +343,10 @@ var StreamingView = /*#__PURE__*/function (_Component) {
       window.removeEventListener('error', this.onError);
 
       _StreamingEvent["default"].destroyEdgeNode(this.props.edgeNodeId);
+
+      _StreamingEvent["default"].edgeNode(this.props.edgeNodeId).removeListener(_StreamingEvent["default"].STREAM_EMULATOR_READY, _StreamingController["default"].onGameReady);
+
+      _StreamingEvent["default"].edgeNode(this.props.edgeNodeId).removeListener(_StreamingEvent["default"].STREAM_TERMINATED, _StreamingController["default"].onGameTerminated);
     }
     /**
      * Update the state parameter heigth and width when screen size is changeing.

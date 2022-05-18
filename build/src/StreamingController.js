@@ -1,19 +1,5 @@
 "use strict";
 
-var _Object$keys = require("@babel/runtime-corejs3/core-js-stable/object/keys");
-
-var _Object$getOwnPropertySymbols = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-symbols");
-
-var _filterInstanceProperty = require("@babel/runtime-corejs3/core-js-stable/instance/filter");
-
-var _Object$getOwnPropertyDescriptor = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor");
-
-var _forEachInstanceProperty = require("@babel/runtime-corejs3/core-js-stable/instance/for-each");
-
-var _Object$getOwnPropertyDescriptors = require("@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptors");
-
-var _Object$defineProperties = require("@babel/runtime-corejs3/core-js-stable/object/define-properties");
-
 var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -38,8 +24,6 @@ var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable
 
 var _setTimeout2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-timeout"));
 
-var _defineProperty2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/defineProperty"));
-
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/slicedToArray"));
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
@@ -50,21 +34,20 @@ var _axios = _interopRequireDefault(require("axios"));
 
 var _deviceInfo = require("./stores/deviceInfo");
 
-var _StreamingAgent = _interopRequireDefault(require("./StreamingAgent"));
+var _measurementScheduler = _interopRequireDefault(require("./measurementScheduler"));
 
 var _StreamingEvent = _interopRequireDefault(require("./StreamingEvent"));
 
 var _buildInfo = _interopRequireDefault(require("./build-info.json"));
 
-function ownKeys(object, enumerableOnly) { var keys = _Object$keys(object); if (_Object$getOwnPropertySymbols) { var symbols = _Object$getOwnPropertySymbols(object); enumerableOnly && (symbols = _filterInstanceProperty(symbols).call(symbols, function (sym) { return _Object$getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var _context6, _context7; var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? _forEachInstanceProperty(_context6 = ownKeys(Object(source), !0)).call(_context6, function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }) : _Object$getOwnPropertyDescriptors ? _Object$defineProperties(target, _Object$getOwnPropertyDescriptors(source)) : _forEachInstanceProperty(_context7 = ownKeys(Object(source))).call(_context7, function (key) { _Object$defineProperty(target, key, _Object$getOwnPropertyDescriptor(source, key)); }); } return target; }
-
+var measurementScheduler = null;
+var latestMeasurement = null;
 /**
  * StreamingController is responsible to poll and terminate the edge node.
  *
  * @class StreamingController
  */
+
 var StreamingController = /*#__PURE__*/function () {
   /**
    *
@@ -89,6 +72,15 @@ var StreamingController = /*#__PURE__*/function () {
     this.apiEndpoint = props.apiEndpoint;
     this.edgeNodeId = props.edgeNodeId || undefined;
     this.internalSession = props.internalSession || false;
+
+    if (measurementScheduler) {
+      measurementScheduler.changeApiEndpoint(props.apiEndpoint);
+    } else {
+      this.constructor.startMeasurementScheduler({
+        apiEndpoint: props.apiEndpoint,
+        interval: 30 * 1000
+      });
+    }
   }
   /**
    * Get the edge node id.
@@ -382,16 +374,17 @@ var StreamingController = /*#__PURE__*/function () {
     }
     /**
      * Get device info from the device including geolocation, screen configuration etc.
-     * @param {{userId: string} | undefined} options
      * @returns {Promise<object>}
      */
 
   }, {
     key: "getDeviceInfo",
     value: function getDeviceInfo() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return (0, _deviceInfo.getDeviceInfo)(this.getApiEndpoint(), options).then(function (deviceInfo) {
-        return _objectSpread(_objectSpread({}, deviceInfo), _StreamingAgent["default"].networkConnectivityMeasurements);
+      return (latestMeasurement ? _promise["default"].resolve(latestMeasurement.deviceInfo) : (0, _deviceInfo.getDeviceInfo)(this.apiEndpoint)).then(function (deviceInfo) {
+        return {
+          deviceInfoId: deviceInfo.deviceInfoId,
+          userId: deviceInfo.userId
+        };
       });
     }
     /**
@@ -404,7 +397,7 @@ var StreamingController = /*#__PURE__*/function () {
     value: function getConnectivityInfo() {
       // Per API specification https://docs.google.com/document/d/1VhVZxo2FkoHCF3c90sP-IJJl7WsDP4wQA7OT7IWXauY/edit#heading=h.rbmzojf3dehw
       // this method needs to return a Promise
-      return _promise["default"].resolve(_StreamingAgent["default"].networkConnectivityMeasurements || {});
+      return _promise["default"].resolve(latestMeasurement ? latestMeasurement.networkConnectivityInfo : {});
     }
   }], [{
     key: "DEFAULT_TIMEOUT",
@@ -439,6 +432,36 @@ var StreamingController = /*#__PURE__*/function () {
     get: function get() {
       return 'endpoint';
     }
+    /*
+     * Streaming agent global
+     */
+
+  }, {
+    key: "startMeasurementScheduler",
+    value: function startMeasurementScheduler(_ref11) {
+      var apiEndpoint = _ref11.apiEndpoint,
+          interval = _ref11.interval;
+      measurementScheduler && measurementScheduler.stopMeasuring();
+      measurementScheduler = (0, _measurementScheduler["default"])({
+        apiEndpoint: apiEndpoint,
+        interval: Math.max(5000, +interval || 0),
+        navigatorConnection: navigator.connection || navigator.mozConnection || navigator.webkitConnection || {},
+        onMeasures: function onMeasures(streamingAgentPayload) {
+          return latestMeasurement = streamingAgentPayload;
+        }
+      });
+      measurementScheduler.startMeasuring();
+    }
+  }, {
+    key: "onGameReady",
+    value: function onGameReady() {
+      measurementScheduler && measurementScheduler.stopMeasuring();
+    }
+  }, {
+    key: "onGameTerminated",
+    value: function onGameTerminated() {
+      measurementScheduler && measurementScheduler.startMeasuring();
+    }
   }]);
   return StreamingController;
 }();
@@ -446,6 +469,7 @@ var StreamingController = /*#__PURE__*/function () {
  * Instantiating the StreamingController
  * @returns {Promise<StreamingController>}
  */
+// The only reason we are using a factory that returns a promise rather than exposing directly the class is backwards-compatibility.
 
 
 var factory = function factory(props) {
@@ -469,5 +493,7 @@ factory.EVENT_PREDICTED_GAME_EXPERIENCE = _StreamingEvent["default"].PREDICTED_G
 factory.EVENT_STREAM_TERMINATED = _StreamingEvent["default"].STREAM_TERMINATED;
 factory.WAIT_FOR_READY = StreamingController.WAIT_FOR_READY;
 factory.WAIT_FOR_ENDPOINT = StreamingController.WAIT_FOR_ENDPOINT;
+factory.onGameReady = StreamingController.onGameReady;
+factory.onGameTerminated = StreamingController.onGameTerminated;
 var _default = factory;
 exports["default"] = _default;

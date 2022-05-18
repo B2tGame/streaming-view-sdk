@@ -180,7 +180,7 @@ function estimateSpeed(rtt, stdDev) {
  */
 
 
-function runMeasurements(apiEndpoint, recommendedEdges) {
+function measure(apiEndpoint, recommendedEdges) {
   var _context4;
 
   var selectedEdges = (0, _slice["default"])(_context4 = (0, _filter["default"])(recommendedEdges).call(recommendedEdges, function (edge) {
@@ -230,12 +230,12 @@ function runMeasurements(apiEndpoint, recommendedEdges) {
     return {
       predictedGameExperience: predictedGameExperience,
       recommendedRegion: minRegion,
-      rttRegionMeasurements: statsByRegionByTurn
+      rttStatsByRegionByTurn: statsByRegionByTurn
     };
   });
 }
 
 var _default = {
-  runMeasurements: runMeasurements
+  measure: measure
 };
 exports["default"] = _default;

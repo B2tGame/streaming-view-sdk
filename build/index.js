@@ -8,13 +8,6 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-_Object$defineProperty(exports, "StreamingAgent", {
-  enumerable: true,
-  get: function get() {
-    return _StreamingAgent["default"];
-  }
-});
-
 _Object$defineProperty(exports, "StreamingController", {
   enumerable: true,
   get: function get() {
@@ -39,8 +32,6 @@ _Object$defineProperty(exports, "StreamingView", {
 var _StreamingView = _interopRequireDefault(require("./src/StreamingView"));
 
 var _StreamingController = _interopRequireDefault(require("./src/StreamingController"));
-
-var _StreamingAgent = _interopRequireDefault(require("./src/StreamingAgent"));
 
 var _StreamingEvent = _interopRequireDefault(require("./src/StreamingEvent"));
 
