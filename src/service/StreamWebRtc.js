@@ -113,8 +113,8 @@ export default class StreamWebRtc extends EventEmitter {
     if (n < 1) {
       return stats;
     }
-    stats.rtt = values.reduce((a, b) => a + b, 0) / n;
-    stats.stdDev = Math.sqrt(values.reduce((cum, item) => cum + Math.pow(item - stats.rtt, 2), 0) / n);
+    stats.rtt = Math.round(values.reduce((a, b) => a + b, 0) / n);
+    stats.stdDev = Math.round(Math.sqrt(values.reduce((cum, item) => cum + Math.pow(item - stats.rtt, 2), 0) / n));
 
     return stats;
   };
