@@ -2,7 +2,7 @@ import networkConnectivity from './stores/networkConnectivity';
 import { getDeviceInfo, updateDeviceInfo } from './stores/deviceInfo';
 import Logger from './Logger';
 
-export default function newMeasurementScheduler({ navigatorConnection, apiEndpoint, interval, onMeasure }) {
+export default function newMeasurementScheduler({ navigatorConnection, apiEndpoint, interval, onMeasures }) {
   /*
 
    State modelling
@@ -40,7 +40,7 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
         if (!isStopped) {
           nextScheduledRun = setTimeout(run, interval);
         }
-        if (measures && onMeasure) {
+        if (measures && onMeasures) {
           // onMeasures might be heavy, so we schedule it in its own queue
           setTimeout(() => onMeasures(measures), 0);
         }
