@@ -22,7 +22,7 @@ function newMeasurementScheduler(_ref) {
   var navigatorConnection = _ref.navigatorConnection,
       apiEndpoint = _ref.apiEndpoint,
       interval = _ref.interval,
-      onMeasure = _ref.onMeasure;
+      onMeasures = _ref.onMeasures;
 
   /*
     State modelling
@@ -53,7 +53,7 @@ function newMeasurementScheduler(_ref) {
           nextScheduledRun = (0, _setTimeout2["default"])(run, interval);
         }
 
-        if (measures && onMeasure) {
+        if (measures && onMeasures) {
           // onMeasures might be heavy, so we schedule it in its own queue
           (0, _setTimeout2["default"])(function () {
             return onMeasures(measures);

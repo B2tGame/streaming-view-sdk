@@ -199,11 +199,11 @@ StreamWebRtc.calculateRoundTripTimeStats = function (values) {
     return stats;
   }
 
-  stats.rtt = (0, _reduce["default"])(values).call(values, function (a, b) {
+  stats.rtt = Math.round((0, _reduce["default"])(values).call(values, function (a, b) {
     return a + b;
-  }, 0) / n;
-  stats.stdDev = Math.sqrt((0, _reduce["default"])(values).call(values, function (cum, item) {
-    return cum + Math.pow(item - stats.rtt, 2);
   }, 0) / n);
+  stats.stdDev = Math.round(Math.sqrt((0, _reduce["default"])(values).call(values, function (cum, item) {
+    return cum + Math.pow(item - stats.rtt, 2);
+  }, 0) / n));
   return stats;
 };
