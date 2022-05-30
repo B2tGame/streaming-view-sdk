@@ -10,6 +10,9 @@
   "scripts": {
     "build": "rm -rf build && babel index.js -d build && babel src -d build/src --copy-files"
   },
+  "files": [
+    "build/*"
+  ],
   "author": "Appland",
   "license": "ISC",
   "homepage": "https://bitbucket.org/appland/streaming-view-sdk#readme",
