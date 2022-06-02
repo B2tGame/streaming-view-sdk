@@ -234,7 +234,10 @@ export default class JsepProtocol {
     this.peerConnection
       .getStats()
       .then((stats) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, stats))
-      .catch((err) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err));
+      .catch((err) => {
+          StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err)
+          console.warn(err);
+      });
   };
 
   _handleSDP = async (signal) => {

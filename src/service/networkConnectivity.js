@@ -36,7 +36,6 @@ function getRTTMeasurements({ turnName, region, webRtcHost, iceCandidates }) {
     const rttMeasurements = [];
 
     const onConnected = () => {
-      console.info(`WebRtc connected to: ${region}, TURN: ${turnName}`);
       setTimeout(() => stopMeasurement(), ADVANCED_MEASUREMENT_TIMEOUT);
     };
 
@@ -118,6 +117,11 @@ function estimateSpeed(rtt, stdDev) {
  */
 function measure(apiEndpoint, recommendedEdges) {
   const selectedEdges = recommendedEdges.filter((edge) => edge.measurementEndpoints.length).slice(0, MAX_RECOMMENDATION_COUNT);
+
+  // This should not happen but it's really nasty if it happens, so better guard against it.
+  if (selectedEdges.length === 0) {
+      return Promise.resolve({ rttStatsByRegionByTurn: {} });
+  }
 
   // This is used so that at each iteration we can select, for each selectedEdge, a different measurementEndpoint
   let iterationCounter = 0;

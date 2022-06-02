@@ -37,7 +37,7 @@ export default class Logger {
    * @param {*[]} args
    */
   logOutput(type, ...args) {
-    if (Logger.isVerboseEnabled()) {
+    if (type === 'error' || type === 'warn' || Logger.isVerboseEnabled()) {
       console[type]('Streaming SDK:', ...args);
     }
     StreamingEvent.emit(StreamingEvent.LOG, { type: type, data: args });

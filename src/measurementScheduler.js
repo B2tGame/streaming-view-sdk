@@ -1,5 +1,5 @@
-import networkConnectivity from './stores/networkConnectivity';
-import { getDeviceInfo, updateDeviceInfo } from './stores/deviceInfo';
+import networkConnectivity from './service/networkConnectivity';
+import { getDeviceInfo, updateDeviceInfo } from './service/deviceInfo';
 import Logger from './Logger';
 
 export default function newMeasurementScheduler({ navigatorConnection, apiEndpoint, interval, onMeasures }) {
