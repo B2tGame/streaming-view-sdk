@@ -9,7 +9,7 @@ phases:
        - "git config --global user.name 'AWS CodeBuild'"
        - "git checkout $CODEBUILD_SOURCE_VERSION"
        - npm install -g npm@8.5.2
-       - npm install
+       - npm install --legacy-peer-deps
        - npm --version
        - node --version
        - git status
