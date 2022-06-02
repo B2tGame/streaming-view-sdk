@@ -8,9 +8,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports["default"] = newMeasurementScheduler;
-
-var _setTimeout2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-timeout"));
+exports.default = newMeasurementScheduler;
 
 var _networkConnectivity = _interopRequireDefault(require("./stores/networkConnectivity"));
 
@@ -22,7 +20,7 @@ function newMeasurementScheduler(_ref) {
   var navigatorConnection = _ref.navigatorConnection,
       apiEndpoint = _ref.apiEndpoint,
       interval = _ref.interval,
-      onMeasure = _ref.onMeasure;
+      onMeasures = _ref.onMeasures;
 
   /*
     State modelling
@@ -50,12 +48,12 @@ function newMeasurementScheduler(_ref) {
       clearTimeout(nextScheduledRun);
       takeOneMeasurement(function (measures) {
         if (!isStopped) {
-          nextScheduledRun = (0, _setTimeout2["default"])(run, interval);
+          nextScheduledRun = setTimeout(run, interval);
         }
 
-        if (measures && onMeasure) {
+        if (measures && onMeasures) {
           // onMeasures might be heavy, so we schedule it in its own queue
-          (0, _setTimeout2["default"])(function () {
+          setTimeout(function () {
             return onMeasures(measures);
           }, 0);
         }
@@ -77,7 +75,7 @@ function newMeasurementScheduler(_ref) {
   }; // Logging
 
 
-  var logger = new _Logger["default"]();
+  var logger = new _Logger.default();
 
   var logError = function logError(error) {
     console.warn('Streaming Agent', error);
@@ -87,7 +85,7 @@ function newMeasurementScheduler(_ref) {
 
   var takeOneMeasurement = function takeOneMeasurement(callback) {
     return (0, _deviceInfo.getDeviceInfo)(apiEndpoint).then(function (deviceInfo) {
-      return _networkConnectivity["default"].measure(apiEndpoint, deviceInfo.recommendation).then(function (networkConnectivityInfo) {
+      return _networkConnectivity.default.measure(apiEndpoint, deviceInfo.recommendation).then(function (networkConnectivityInfo) {
         return {
           networkConnectivityInfo: networkConnectivityInfo,
           deviceInfo: deviceInfo
@@ -104,7 +102,7 @@ function newMeasurementScheduler(_ref) {
         networkConnectivityInfo: networkConnectivityInfo,
         deviceInfo: deviceInfo
       });
-    })["catch"](function (err) {
+    }).catch(function (err) {
       logError(err);
       callback(null);
     });

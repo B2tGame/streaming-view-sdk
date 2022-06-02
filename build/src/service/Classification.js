@@ -8,9 +8,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports["default"] = void 0;
-
-var _forEach = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/for-each"));
+exports.default = void 0;
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
 
@@ -26,24 +24,22 @@ var _FramePerSecondHistogram = _interopRequireDefault(require("./FramePerSecondH
 
 var Classification = /*#__PURE__*/function () {
   function Classification(streamingViewId, logger) {
-    (0, _classCallCheck2["default"])(this, Classification);
+    (0, _classCallCheck2.default)(this, Classification);
     this.logger = logger;
     this.streamingViewId = streamingViewId;
     this.numberReportsCreated = 0;
     this.metricPeriodEndHandlers = [];
     this.classificationRecordingStarted = false;
-    this.browser = new _UserAgentParser["default"]();
-    this.metricsFramesDecodedPerSecond = new _Metric["default"]();
-    this.metricsInterFrameDelayStandardDeviation = new _Metric["default"]();
-    this.framesDecodedPerSecondHistogram = new _FramePerSecondHistogram["default"]();
+    this.browser = new _UserAgentParser.default();
+    this.metricsFramesDecodedPerSecond = new _Metric.default();
+    this.metricsInterFrameDelayStandardDeviation = new _Metric.default();
+    this.framesDecodedPerSecondHistogram = new _FramePerSecondHistogram.default();
   }
 
-  (0, _createClass2["default"])(Classification, [{
+  (0, _createClass2.default)(Classification, [{
     key: "destroy",
     value: function destroy() {
-      var _context;
-
-      (0, _forEach["default"])(_context = this.metricPeriodEndHandlers).call(_context, this.metricsFramesDecodedPerSecond.offMetricPeriodEnd);
+      this.metricPeriodEndHandlers.forEach(this.metricsFramesDecodedPerSecond.offMetricPeriodEnd);
     }
   }, {
     key: "injectMeasurement",
@@ -91,14 +87,14 @@ var Classification = /*#__PURE__*/function () {
       var reportTrigger = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'unknown';
       this.logger.info('create classification report');
       this.isClassificationReportCreated = true;
-      var framesDecodedPerSecondStart = this.metricsFramesDecodedPerSecond.getMetric(_Metric["default"].START);
-      var framesDecodedPerSecondBeginning = this.metricsFramesDecodedPerSecond.getMetric(_Metric["default"].BEGINNING);
-      var framesDecodedPerSecondOverall = this.metricsFramesDecodedPerSecond.getMetric(_Metric["default"].OVERALL);
-      var framesDecodedPerSecondCurrent = this.metricsFramesDecodedPerSecond.getMetric(_Metric["default"].CURRENT);
-      var interFrameDelayStandardDeviationStart = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric["default"].START);
-      var interFrameDelayStandardDeviationBeginning = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric["default"].BEGINNING);
-      var interFrameDelayStandardDeviationOverall = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric["default"].OVERALL);
-      var interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric["default"].CURRENT);
+      var framesDecodedPerSecondStart = this.metricsFramesDecodedPerSecond.getMetric(_Metric.default.START);
+      var framesDecodedPerSecondBeginning = this.metricsFramesDecodedPerSecond.getMetric(_Metric.default.BEGINNING);
+      var framesDecodedPerSecondOverall = this.metricsFramesDecodedPerSecond.getMetric(_Metric.default.OVERALL);
+      var framesDecodedPerSecondCurrent = this.metricsFramesDecodedPerSecond.getMetric(_Metric.default.CURRENT);
+      var interFrameDelayStandardDeviationStart = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric.default.START);
+      var interFrameDelayStandardDeviationBeginning = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric.default.BEGINNING);
+      var interFrameDelayStandardDeviationOverall = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric.default.OVERALL);
+      var interFrameDelayStandardDeviationCurrent = this.metricsInterFrameDelayStandardDeviation.getMetric(_Metric.default.CURRENT);
       /**
        *  There are three "types" of classification,
        *  good, bad and error. They are put in an
@@ -218,17 +214,17 @@ var Classification = /*#__PURE__*/function () {
         duration: this.metricsFramesDecodedPerSecond.getReferenceTime(),
         streamingViewId: this.streamingViewId,
         framesDecodedPerSecond: {
-          start: _Measurement["default"].roundToDecimals(framesDecodedPerSecondStart),
-          beginning: _Measurement["default"].roundToDecimals(framesDecodedPerSecondBeginning),
-          overall: _Measurement["default"].roundToDecimals(framesDecodedPerSecondOverall),
-          current: _Measurement["default"].roundToDecimals(framesDecodedPerSecondCurrent),
+          start: _Measurement.default.roundToDecimals(framesDecodedPerSecondStart),
+          beginning: _Measurement.default.roundToDecimals(framesDecodedPerSecondBeginning),
+          overall: _Measurement.default.roundToDecimals(framesDecodedPerSecondOverall),
+          current: _Measurement.default.roundToDecimals(framesDecodedPerSecondCurrent),
           histogram: this.framesDecodedPerSecondHistogram.getMetric()
         },
         interFrameDelayStandardDeviation: {
-          start: _Measurement["default"].roundToDecimals(interFrameDelayStandardDeviationStart),
-          beginning: _Measurement["default"].roundToDecimals(interFrameDelayStandardDeviationBeginning),
-          overall: _Measurement["default"].roundToDecimals(interFrameDelayStandardDeviationOverall),
-          current: _Measurement["default"].roundToDecimals(interFrameDelayStandardDeviationCurrent)
+          start: _Measurement.default.roundToDecimals(interFrameDelayStandardDeviationStart),
+          beginning: _Measurement.default.roundToDecimals(interFrameDelayStandardDeviationBeginning),
+          overall: _Measurement.default.roundToDecimals(interFrameDelayStandardDeviationOverall),
+          current: _Measurement.default.roundToDecimals(interFrameDelayStandardDeviationCurrent)
         }
       };
     }
@@ -236,4 +232,4 @@ var Classification = /*#__PURE__*/function () {
   return Classification;
 }();
 
-exports["default"] = Classification;
+exports.default = Classification;
