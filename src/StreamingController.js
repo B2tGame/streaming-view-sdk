@@ -141,12 +141,14 @@ class StreamingController {
    * @returns {Promise<[{appId: number, score: number}]>}
    */
   getPredictedGameExperiences() {
-    return Promise.all([this.getApiEndpoint(), this.getConnectivityInfo()])
-      .then(([apiEndpoint, connectivityInfo]) => {
-        const encodedConnectivityInfo = encodeURIComponent(JSON.stringify(connectivityInfo));
+    return Promise.all([this.getApiEndpoint(), this.getConnectivityInfo(), this.getDeviceInfo()])
+      .then(([apiEndpoint, connectivityInfo, deviceInfo]) => {
         return Promise.all([
           connectivityInfo,
-          axios.get(`${apiEndpoint}/api/streaming-games/predicted-game-experience?connectivity-info=${encodedConnectivityInfo}`)
+          axios.get(`${apiEndpoint}/api/streaming-games/predicted-game-experience?connectivity-info=${encodeURIComponent(
+            JSON.stringify(connectivityInfo)
+          )}
+          &deviceInfoId=${encodeURIComponent(deviceInfo.deviceInfoId)}`)
         ]);
       })
       .then(([connectivityInfo, result]) => ({
@@ -319,9 +321,10 @@ class StreamingController {
    * @returns {Promise<object>}
    */
   getDeviceInfo() {
-    return (latestMeasurement ? Promise.resolve(latestMeasurement.deviceInfo) : getDeviceInfo(this.apiEndpoint)).then(
-      (deviceInfo) => ({ deviceInfoId: deviceInfo.deviceInfoId, userId: deviceInfo.userId })
-    );
+    return (latestMeasurement ? Promise.resolve(latestMeasurement.deviceInfo) : getDeviceInfo(this.apiEndpoint)).then((deviceInfo) => ({
+      deviceInfoId: deviceInfo.deviceInfoId,
+      userId: deviceInfo.userId
+    }));
   }
 
   /**
