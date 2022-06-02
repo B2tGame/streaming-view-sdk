@@ -10,7 +10,7 @@
   "scripts": {
     "build": "rm -rf build && babel index.js -d build && babel src -d build/src --copy-files",
     "prepack": "mv README.md README-temp.md && echo '@applandstream/streaming-view-sdk' > README.md",
-    "version": "$(cat package.json | jq -r '.version') > src/build-info.json && cp src/build-info.json build/src/build-info.json && git add src/build-info.json build/src/build-info.json",
+    "version": "cat package.json | jq -r '.version' > src/build-info.json && cp src/build-info.json build/src/build-info.json && git add src/build-info.json build/src/build-info.json",
     "postpack": "mv README-temp.md README.md"
   },
   "files": [
