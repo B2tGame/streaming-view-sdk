@@ -25,7 +25,7 @@ phases:
        - |-
             if [ "$IS_PREBUILD" = 'true' ]; then
               echo "Publishing release candidate"
-              npm version $NPM_VERSION --preid=rc
+              npm version pre$NPM_VERSION --preid=rc
               npm publish --access-public --tag=next
             else
               echo "Publishing release"
