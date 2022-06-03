@@ -20,9 +20,17 @@ phases:
        - git add -A
        - git status
        - "git commit -m \"Build System: Building new version\""
-       - "npm version $NPM_VERSION"
+       - |-
+            if [ "$IS_PREBUILD" = 'true' ]; then
+              echo "Publishing release candidate"
+              npm version $NPM_VERSION --preid=rc
+              npm publish --access-public --tag=next
+            else
+              echo "Publishing release"
+              npm version $NPM_VERSION
+              npm publish --access-public --tag=latest
+            fi
        - export TAG=$(cat package.json | jq -r '.version')
-       - npm publish --access-public $(test \"$IS_PREBUILD\" = 'true' && echo -n "--tag=next")
        - git push --set-upstream origin $CODEBUILD_SOURCE_VERSION
        - git push origin --tags
   post_build:
