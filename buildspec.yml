@@ -4,6 +4,7 @@ env:
 phases:
 
   install:
+    on-failure: ABORT
     commands:
        - "git config --global user.email 'dev@appland.se'"
        - "git config --global user.name 'AWS CodeBuild'"
@@ -15,6 +16,7 @@ phases:
        - git status
        - echo "$CODEBUILD_SOURCE_VERSION"
   build:
+    on-failure: ABORT
     commands:
        - npm run build
        - git add -A
