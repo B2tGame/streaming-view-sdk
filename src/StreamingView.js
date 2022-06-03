@@ -80,7 +80,7 @@ export default class StreamingView extends Component {
   };
 
   /**
-   * Player is a user with enabled control
+   * Player is a user with controls enabled
    * @return {string}
    */
   static get ROLE_PLAYER() {
@@ -88,7 +88,7 @@ export default class StreamingView extends Component {
   }
 
   /**
-   * Watcher is a user with disabled control
+   * Watcher is a user with control disabled
    * @return {string}
    */
   static get ROLE_WATCHER() {
