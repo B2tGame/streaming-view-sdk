@@ -568,14 +568,14 @@ var StreamingView = /*#__PURE__*/function (_Component) {
     key: "ROLE_PLAYER",
     get:
     /**
-     * Player is a user with enabled control
+     * Player is a user with controls enabled
      * @return {string}
      */
     function get() {
       return 'player';
     }
     /**
-     * Watcher is a user with disabled control
+     * Watcher is a user with control disabled
      * @return {string}
      */
 
