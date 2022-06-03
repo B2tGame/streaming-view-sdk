@@ -8,7 +8,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/toConsumableArray"));
 
@@ -18,6 +18,8 @@ var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-sta
 
 var _promise = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/promise"));
 
+var _setTimeout2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-timeout"));
+
 var _map = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/map"));
 
 var _entries = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/object/entries"));
@@ -25,6 +27,10 @@ var _entries = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-st
 var _slice = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/slice"));
 
 var _filter = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/filter"));
+
+var _every = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/every"));
+
+var _forEach = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/for-each"));
 
 var _reduce = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/reduce"));
 
@@ -56,7 +62,7 @@ function asyncDoWhile(functionToRetry, shouldRetry) {
 var requestIceServers = function requestIceServers(apiEndpoint, region) {
   var _context;
 
-  return _axios.default.get((0, _concat.default)(_context = "".concat(apiEndpoint, "/api/streaming-games/edge-node/ice-server/")).call(_context, region), {
+  return _axios["default"].get((0, _concat["default"])(_context = "".concat(apiEndpoint, "/api/streaming-games/edge-node/ice-server/")).call(_context, region), {
     timeout: 2500
   }).then(function (result) {
     return result.data || {};
@@ -75,8 +81,8 @@ function getRTTMeasurements(_ref) {
       region = _ref.region,
       webRtcHost = _ref.webRtcHost,
       iceCandidates = _ref.iceCandidates;
-  return new _promise.default(function (resolve) {
-    var streamWebRtc = new _StreamWebRtc.default(webRtcHost, {
+  return new _promise["default"](function (resolve) {
+    var streamWebRtc = new _StreamWebRtc["default"](webRtcHost, {
       name: turnName,
       candidates: iceCandidates
     });
@@ -85,8 +91,8 @@ function getRTTMeasurements(_ref) {
     var onConnected = function onConnected() {
       var _context2;
 
-      console.info((0, _concat.default)(_context2 = "WebRtc connected to: ".concat(region, ", TURN: ")).call(_context2, turnName));
-      setTimeout(function () {
+      console.info((0, _concat["default"])(_context2 = "WebRtc connected to: ".concat(region, ", TURN: ")).call(_context2, turnName));
+      (0, _setTimeout2["default"])(function () {
         return stopMeasurement();
       }, ADVANCED_MEASUREMENT_TIMEOUT);
     };
@@ -99,12 +105,12 @@ function getRTTMeasurements(_ref) {
       // This function will likely be called multiple times:
       //  * Closing the same streamWebRtc object multiple times should be fine
       //  * Calling resolve() multiple times should also be safe https://stackoverflow.com/questions/20328073/is-it-safe-to-resolve-a-promise-multiple-times
-      streamWebRtc.off(_StreamingEvent.default.WEBRTC_CLIENT_CONNECTED, onConnected).off(_StreamingEvent.default.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onMeasurement).close();
+      streamWebRtc.off(_StreamingEvent["default"].WEBRTC_CLIENT_CONNECTED, onConnected).off(_StreamingEvent["default"].WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onMeasurement).close();
       resolve(rttMeasurements);
     };
 
-    streamWebRtc.on(_StreamingEvent.default.WEBRTC_CLIENT_CONNECTED, onConnected).on(_StreamingEvent.default.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onMeasurement);
-    setTimeout(function () {
+    streamWebRtc.on(_StreamingEvent["default"].WEBRTC_CLIENT_CONNECTED, onConnected).on(_StreamingEvent["default"].WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onMeasurement);
+    (0, _setTimeout2["default"])(function () {
       return stopMeasurement();
     }, WEBRTC_TIME_TO_CONNECTED);
   });
@@ -119,14 +125,14 @@ function getRTTMeasurements(_ref) {
 
 
 function getRTTMeasurementsForEdgeRegions(apiEndpoint, selectedEdges, iterationCounter) {
-  return _promise.default.all((0, _map.default)(selectedEdges).call(selectedEdges, function (_ref2) {
+  return _promise["default"].all((0, _map["default"])(selectedEdges).call(selectedEdges, function (_ref2) {
     var edgeRegion = _ref2.edgeRegion,
         measurementEndpoints = _ref2.measurementEndpoints;
     return requestIceServers(apiEndpoint, edgeRegion).then(function (iceServers) {
       var _context3;
 
-      return _promise.default.all((0, _map.default)(_context3 = (0, _entries.default)(iceServers)).call(_context3, function (_ref3) {
-        var _ref4 = (0, _slicedToArray2.default)(_ref3, 2),
+      return _promise["default"].all((0, _map["default"])(_context3 = (0, _entries["default"])(iceServers)).call(_context3, function (_ref3) {
+        var _ref4 = (0, _slicedToArray2["default"])(_ref3, 2),
             turnName = _ref4[0],
             iceCandidates = _ref4[1];
 
@@ -147,7 +153,7 @@ function getRTTMeasurementsForEdgeRegions(apiEndpoint, selectedEdges, iterationC
   })).then(function (perEdge) {
     var _ref5;
 
-    return (0, _concat.default)(_ref5 = []).apply(_ref5, (0, _toConsumableArray2.default)(perEdge));
+    return (0, _concat["default"])(_ref5 = []).apply(_ref5, (0, _toConsumableArray2["default"])(perEdge));
   });
 }
 /*
@@ -177,7 +183,7 @@ function estimateSpeed(rtt, stdDev) {
 function measure(apiEndpoint, recommendedEdges) {
   var _context4;
 
-  var selectedEdges = (0, _slice.default)(_context4 = (0, _filter.default)(recommendedEdges).call(recommendedEdges, function (edge) {
+  var selectedEdges = (0, _slice["default"])(_context4 = (0, _filter["default"])(recommendedEdges).call(recommendedEdges, function (edge) {
     return edge.measurementEndpoints.length;
   })).call(_context4, 0, MAX_RECOMMENDATION_COUNT); // This is used so that at each iteration we can select, for each selectedEdge, a different measurementEndpoint
 
@@ -186,7 +192,7 @@ function measure(apiEndpoint, recommendedEdges) {
     return getRTTMeasurementsForEdgeRegions(apiEndpoint, selectedEdges, iterationCounter++);
   }, // keep trying until we have at least a turn with some measurements
   function (turnMeasurements) {
-    return turnMeasurements.every(function (measurement) {
+    return (0, _every["default"])(turnMeasurements).call(turnMeasurements, function (measurement) {
       return measurement.rttMeasurements.length === 0;
     });
   }).then(function (turnMeasurements) {
@@ -194,7 +200,7 @@ function measure(apiEndpoint, recommendedEdges) {
     var minRegion = null;
     var minRtts = null;
     var statsByRegionByTurn = {};
-    turnMeasurements.forEach(function (_ref6) {
+    (0, _forEach["default"])(turnMeasurements).call(turnMeasurements, function (_ref6) {
       var region = _ref6.region,
           turnName = _ref6.turnName,
           rttMeasurements = _ref6.rttMeasurements;
@@ -203,7 +209,7 @@ function measure(apiEndpoint, recommendedEdges) {
         return;
       }
 
-      var stats = _StreamWebRtc.default.calculateRoundTripTimeStats(rttMeasurements);
+      var stats = _StreamWebRtc["default"].calculateRoundTripTimeStats(rttMeasurements);
 
       statsByRegionByTurn[region] = statsByRegionByTurn[region] || {};
       statsByRegionByTurn[region][turnName] = stats;
@@ -217,9 +223,9 @@ function measure(apiEndpoint, recommendedEdges) {
     }); // calculatePredictedGameExperience needs to build up its internal state, so we need to call it several times.
     // The value we want is the last it returns, all previous return values are discarded.
 
-    var predictedGameExperience = (0, _reduce.default)(minRtts).call(minRtts, function (rtt) {
-      return _Measurement.default.calculatePredictedGameExperience(rtt, 0, minRegion);
-    })[_Measurement.default.PREDICTED_GAME_EXPERIENCE_DEFAULT];
+    var predictedGameExperience = (0, _reduce["default"])(minRtts).call(minRtts, function (rtt) {
+      return _Measurement["default"].calculatePredictedGameExperience(rtt, 0, minRegion);
+    })[_Measurement["default"].PREDICTED_GAME_EXPERIENCE_DEFAULT];
 
     return {
       predictedGameExperience: predictedGameExperience,
@@ -232,4 +238,4 @@ function measure(apiEndpoint, recommendedEdges) {
 var _default = {
   measure: measure
 };
-exports.default = _default;
+exports["default"] = _default;

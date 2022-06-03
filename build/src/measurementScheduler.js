@@ -8,7 +8,9 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = newMeasurementScheduler;
+exports["default"] = newMeasurementScheduler;
+
+var _setTimeout2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-timeout"));
 
 var _networkConnectivity = _interopRequireDefault(require("./stores/networkConnectivity"));
 
@@ -48,12 +50,12 @@ function newMeasurementScheduler(_ref) {
       clearTimeout(nextScheduledRun);
       takeOneMeasurement(function (measures) {
         if (!isStopped) {
-          nextScheduledRun = setTimeout(run, interval);
+          nextScheduledRun = (0, _setTimeout2["default"])(run, interval);
         }
 
         if (measures && onMeasures) {
           // onMeasures might be heavy, so we schedule it in its own queue
-          setTimeout(function () {
+          (0, _setTimeout2["default"])(function () {
             return onMeasures(measures);
           }, 0);
         }
@@ -75,7 +77,7 @@ function newMeasurementScheduler(_ref) {
   }; // Logging
 
 
-  var logger = new _Logger.default();
+  var logger = new _Logger["default"]();
 
   var logError = function logError(error) {
     console.warn('Streaming Agent', error);
@@ -85,7 +87,7 @@ function newMeasurementScheduler(_ref) {
 
   var takeOneMeasurement = function takeOneMeasurement(callback) {
     return (0, _deviceInfo.getDeviceInfo)(apiEndpoint).then(function (deviceInfo) {
-      return _networkConnectivity.default.measure(apiEndpoint, deviceInfo.recommendation).then(function (networkConnectivityInfo) {
+      return _networkConnectivity["default"].measure(apiEndpoint, deviceInfo.recommendation).then(function (networkConnectivityInfo) {
         return {
           networkConnectivityInfo: networkConnectivityInfo,
           deviceInfo: deviceInfo
@@ -102,7 +104,7 @@ function newMeasurementScheduler(_ref) {
         networkConnectivityInfo: networkConnectivityInfo,
         deviceInfo: deviceInfo
       });
-    }).catch(function (err) {
+    })["catch"](function (err) {
       logError(err);
       callback(null);
     });
