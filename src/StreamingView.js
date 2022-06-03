@@ -88,7 +88,7 @@ export default class StreamingView extends Component {
   }
 
   /**
-   * Watcher is a user with control disabled
+   * Watcher is a user with controls disabled
    * @return {string}
    */
   static get ROLE_WATCHER() {
