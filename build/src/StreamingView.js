@@ -575,7 +575,7 @@ var StreamingView = /*#__PURE__*/function (_Component) {
       return 'player';
     }
     /**
-     * Watcher is a user with control disabled
+     * Watcher is a user with controls disabled
      * @return {string}
      */
 
