@@ -22,7 +22,7 @@ phases:
        - "git commit -m \"Build System: Building new version\""
        - "npm version $NPM_VERSION"
        - export TAG=$(cat package.json | jq -r '.version')
-       - npm publish $(test \"$IS_PREBUILD\" = 'true' && echo -n "--tag=next")
+       - npm publish --access-public $(test \"$IS_PREBUILD\" = 'true' && echo -n "--tag=next")
        - git push --set-upstream origin $CODEBUILD_SOURCE_VERSION
        - git push origin --tags
   post_build:
