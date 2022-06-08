@@ -254,7 +254,9 @@ var JsepProtocol = /*#__PURE__*/function () {
       _this.peerConnection.getStats().then(function (stats) {
         return _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].WEB_RTC_MEASUREMENT, stats);
       })["catch"](function (err) {
-        return _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].ERROR, err);
+        _StreamingEvent["default"].edgeNode(_this.edgeNodeId).emit(_StreamingEvent["default"].ERROR, err);
+
+        console.warn(err);
       });
     };
 

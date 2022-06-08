@@ -39,7 +39,7 @@ var Logger = /*#__PURE__*/function () {
         args[_key - 1] = arguments[_key];
       }
 
-      if (Logger.isVerboseEnabled()) {
+      if (type === 'error' || type === 'warn' || Logger.isVerboseEnabled()) {
         var _console, _context;
 
         (_console = console)[type].apply(_console, (0, _concat["default"])(_context = ['Streaming SDK:']).call(_context, args));

@@ -12,9 +12,9 @@ exports["default"] = newMeasurementScheduler;
 
 var _setTimeout2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-timeout"));
 
-var _networkConnectivity = _interopRequireDefault(require("./stores/networkConnectivity"));
+var _networkConnectivity = _interopRequireDefault(require("./service/networkConnectivity"));
 
-var _deviceInfo = require("./stores/deviceInfo");
+var _deviceInfo = require("./service/deviceInfo");
 
 var _Logger = _interopRequireDefault(require("./Logger"));
 

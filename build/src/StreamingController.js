@@ -16,9 +16,9 @@ var _promise = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-st
 
 var _startsWith = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/starts-with"));
 
-var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
-
 var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
+
+var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
 
 var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/date/now"));
 
@@ -32,7 +32,7 @@ var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpe
 
 var _axios = _interopRequireDefault(require("axios"));
 
-var _deviceInfo = require("./stores/deviceInfo");
+var _deviceInfo = require("./service/deviceInfo");
 
 var _measurementScheduler = _interopRequireDefault(require("./measurementScheduler"));
 
@@ -143,15 +143,15 @@ var StreamingController = /*#__PURE__*/function () {
   }, {
     key: "getPredictedGameExperiences",
     value: function getPredictedGameExperiences() {
-      return _promise["default"].all([this.getApiEndpoint(), this.getConnectivityInfo()]).then(function (_ref) {
-        var _context2;
+      return _promise["default"].all([this.getApiEndpoint(), this.getConnectivityInfo(), this.getDeviceInfo()]).then(function (_ref) {
+        var _context2, _context3;
 
-        var _ref2 = (0, _slicedToArray2["default"])(_ref, 2),
+        var _ref2 = (0, _slicedToArray2["default"])(_ref, 3),
             apiEndpoint = _ref2[0],
-            connectivityInfo = _ref2[1];
+            connectivityInfo = _ref2[1],
+            deviceInfo = _ref2[2];
 
-        var encodedConnectivityInfo = encodeURIComponent((0, _stringify["default"])(connectivityInfo));
-        return _promise["default"].all([connectivityInfo, _axios["default"].get((0, _concat["default"])(_context2 = "".concat(apiEndpoint, "/api/streaming-games/predicted-game-experience?connectivity-info=")).call(_context2, encodedConnectivityInfo))]);
+        return _promise["default"].all([connectivityInfo, _axios["default"].get((0, _concat["default"])(_context2 = (0, _concat["default"])(_context3 = "".concat(apiEndpoint, "/api/streaming-games/predicted-game-experience?connectivity-info=")).call(_context3, encodeURIComponent((0, _stringify["default"])(connectivityInfo)), "\n          &deviceInfoId=")).call(_context2, encodeURIComponent(deviceInfo.deviceInfoId)))]);
       }).then(function (_ref3) {
         var _ref4 = (0, _slicedToArray2["default"])(_ref3, 2),
             connectivityInfo = _ref4[0],
@@ -178,9 +178,9 @@ var StreamingController = /*#__PURE__*/function () {
       return this.getStreamEndpoint().then(function (streamEndpoint) {
         return _axios["default"].get("".concat(streamEndpoint, "/emulator-commands/save"));
       }).then(function (resp) {
-        var _context3;
+        var _context4;
 
-        if ((0, _startsWith["default"])(_context3 = resp.data.toString()).call(_context3, 'FAIL')) {
+        if ((0, _startsWith["default"])(_context4 = resp.data.toString()).call(_context4, 'FAIL')) {
           throw new Error(resp.data.toString());
         } else {
           return resp.data;
@@ -366,9 +366,9 @@ var StreamingController = /*#__PURE__*/function () {
       return this.getEdgeNodeId().then(function (edgeNodeId) {
         var internalSession = _this.isInternalSession() ? '&internal=1' : '';
         return retry(function () {
-          var _context4, _context5;
+          var _context5, _context6;
 
-          return getStatus((0, _concat["default"])(_context4 = (0, _concat["default"])(_context5 = "".concat(_this.getApiEndpoint(), "/api/streaming-games/status/")).call(_context5, edgeNodeId, "?wait=1")).call(_context4, internalSession), 5000);
+          return getStatus((0, _concat["default"])(_context5 = (0, _concat["default"])(_context6 = "".concat(_this.getApiEndpoint(), "/api/streaming-games/status/")).call(_context6, edgeNodeId, "?wait=1")).call(_context5, internalSession), 5000);
         }, timeout);
       });
     }
