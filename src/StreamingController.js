@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getDeviceInfo } from './stores/deviceInfo';
+import { getDeviceInfo } from './service/deviceInfo';
 import newMeasurementScheduler from './measurementScheduler';
 import StreamingEvent from './StreamingEvent';
 import buildInfo from './build-info.json';

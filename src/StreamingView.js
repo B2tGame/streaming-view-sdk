@@ -229,6 +229,7 @@ export default class StreamingView extends Component {
           return; // Cancel any action if we not longer are mounted.
         }
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, `Due to ${err.message}: ${err}`);
+        console.warn(err);
       });
   }
 
