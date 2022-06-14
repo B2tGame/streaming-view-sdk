@@ -140,21 +140,25 @@ class StreamingController {
    * Get a list of predicted game experiences for all apps based on the current usage connectivity.
    * @returns {Promise<[{appId: number, score: number}]>}
    */
-  getPredictedGameExperiences() {
-    return Promise.all([this.getApiEndpoint(), this.getConnectivityInfo(), this.getDeviceInfo()])
-      .then(([apiEndpoint, connectivityInfo, deviceInfo]) => {
-        return Promise.all([
-          connectivityInfo,
-          axios.get(`${apiEndpoint}/api/streaming-games/predicted-game-experience?connectivity-info=${encodeURIComponent(
-            JSON.stringify(connectivityInfo)
-          )}
-          &deviceInfoId=${encodeURIComponent(deviceInfo.deviceInfoId)}`)
-        ]);
-      })
-      .then(([connectivityInfo, result]) => ({
-        apps: (result.data || {}).apps || [],
-        measurementLevel: connectivityInfo.measurementLevel
-      }));
+  getPredictedGameExperiences(pollingInterval = 500) {
+    const waitAndRetry = () => new Promise((resolve) => setTimeout(() => resolve(this.getPredictedGameExperiences(pollingInterval)), pollingInterval));
+
+    const goAhead = (connectivityInfo) => {
+      return Promise.all([this.getApiEndpoint(), this.getDeviceInfo()])
+        .then(([apiEndpoint, deviceInfo]) => {
+          const encodedConnectivityInfo = encodeURIComponent(JSON.stringify(connectivityInfo));
+          const encodedDeviceInfoId = encodeURIComponent(deviceInfo.deviceInfoId);
+          return axios.get(
+            `${apiEndpoint}/api/streaming-games/predicted-game-experience?connectivity-info=${encodedConnectivityInfo}&deviceInfoId=${encodedDeviceInfoId}`
+          );
+        })
+        .then((result) => ({
+          apps: (result.data || {}).apps || []
+        }));
+    }
+
+    // This is necessary because our endpoint does not deal well with `connectivityInfo === {}`
+    return latestMeasurement ? goAhead(latestMeasurement.connectivityInfo) : waitAndRetry();
   }
 
   /**
@@ -345,7 +349,7 @@ class StreamingController {
 
 // The only reason we are using a factory that returns a promise rather than exposing directly the class is backwards-compatibility.
 const factory = (props) => {
-  return Promise.resolve(props).then((props) => new StreamingController(props));
+  return Promise.resolve(new StreamingController(props));
 };
 
 factory.EVENT_STREAM_CONNECTED = StreamingEvent.STREAM_CONNECTED;

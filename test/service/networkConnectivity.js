@@ -57,7 +57,7 @@ describe('networkConnectivity', () => {
   describe('measure', () => {
     before(() => {});
 
-    it('measure', () => {
+    it('measure', async () => {
       const networkConnectivity = makeNetworkConnectivity({
         axios: { get: axiosGetMock((url) => ({ data: mockRecommendedEdges })) },
         '../service/StreamWebRtc': StreamWebRtcMock
@@ -90,9 +90,9 @@ describe('networkConnectivity', () => {
         }
       };
 
-      return networkConnectivity.measure(mockEndpoint, mockRecommendedEdges).then((actual) => {
-        assert.deepStrictEqual(actual, expected);
-      });
+      const actual = await networkConnectivity.measure(mockEndpoint, mockRecommendedEdges);
+
+      assert.deepStrictEqual(actual, expected);
     });
   });
 });
