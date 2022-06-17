@@ -61,7 +61,8 @@ export default class StreamingView extends Component {
       pingInterval: PropTypes.number,
       measureTouchRtt: PropTypes.bool,
       playoutDelayHint: PropTypes.number,
-      vp8MaxQuantization: PropTypes.number
+      vp8MaxQuantization: PropTypes.number,
+      h264: PropTypes.bool
     };
   }
 
@@ -76,7 +77,8 @@ export default class StreamingView extends Component {
     pingInterval: StreamWebRtc.WEBRTC_PING_INTERVAL,
     measureTouchRtt: true,
     playoutDelayHint: 0,
-    vp8MaxQuantization: 63
+    vp8MaxQuantization: 63,
+    h264: false
   };
 
   /**
@@ -385,7 +387,8 @@ export default class StreamingView extends Component {
       height: propsHeight,
       width: propsWidth,
       playoutDelayHint,
-      vp8MaxQuantization
+      vp8MaxQuantization,
+      h264
     } = this.props;
     const { height: stateHeight, width: stateWidth, iceServers } = this.state;
 
@@ -412,6 +415,7 @@ export default class StreamingView extends Component {
               playoutDelayHint={playoutDelayHint}
               iceServers={iceServers}
               vp8MaxQuantization={vp8MaxQuantization}
+              h264={h264}
             />
           </div>
         );

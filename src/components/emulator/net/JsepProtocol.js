@@ -32,7 +32,8 @@ export default class JsepProtocol {
     turnEndpoint = undefined,
     playoutDelayHint = 0,
     iceServers = [],
-    vp8MaxQuantization = undefined
+    vp8MaxQuantization = undefined,
+    h264 = false
   ) {
     this.emulator = emulator;
     this.rtc = rtc;
@@ -45,6 +46,7 @@ export default class JsepProtocol {
     this.playoutDelayHint = playoutDelayHint;
     this.iceServers = iceServers;
     this.vp8MaxQuantization = vp8MaxQuantization;
+    this.h264 = h264;
     this.logger = logger;
   }
 
@@ -246,7 +248,9 @@ export default class JsepProtocol {
     // sdp.setTargetBandwidth(1 * SDP.MEGABIT, 1 * SDP.MEGABIT);
 
     // This will force the system to only using one of the listed codecs for the video stream.
-    // sdp.restrictVideoCodec(['VP9']);
+    if (this.h264) {
+      sdp.restrictVideoCodec(['H264']);
+    }
 
     // This allows a larger degradation in image quality than the default when we have a low bitrate,
     // which we prefer instead of decreasing FPS.
