@@ -89,9 +89,6 @@ function getRTTMeasurements(_ref) {
     var rttMeasurements = [];
 
     var onConnected = function onConnected() {
-      var _context2;
-
-      console.info((0, _concat["default"])(_context2 = "WebRtc connected to: ".concat(region, ", TURN: ")).call(_context2, turnName));
       (0, _setTimeout2["default"])(function () {
         return stopMeasurement();
       }, ADVANCED_MEASUREMENT_TIMEOUT);
@@ -129,9 +126,9 @@ function getRTTMeasurementsForEdgeRegions(apiEndpoint, selectedEdges, iterationC
     var edgeRegion = _ref2.edgeRegion,
         measurementEndpoints = _ref2.measurementEndpoints;
     return requestIceServers(apiEndpoint, edgeRegion).then(function (iceServers) {
-      var _context3;
+      var _context2;
 
-      return _promise["default"].all((0, _map["default"])(_context3 = (0, _entries["default"])(iceServers)).call(_context3, function (_ref3) {
+      return _promise["default"].all((0, _map["default"])(_context2 = (0, _entries["default"])(iceServers)).call(_context2, function (_ref3) {
         var _ref4 = (0, _slicedToArray2["default"])(_ref3, 2),
             turnName = _ref4[0],
             iceCandidates = _ref4[1];
@@ -181,11 +178,18 @@ function estimateSpeed(rtt, stdDev) {
 
 
 function measure(apiEndpoint, recommendedEdges) {
-  var _context4;
+  var _context3;
 
-  var selectedEdges = (0, _slice["default"])(_context4 = (0, _filter["default"])(recommendedEdges).call(recommendedEdges, function (edge) {
+  var selectedEdges = (0, _slice["default"])(_context3 = (0, _filter["default"])(recommendedEdges).call(recommendedEdges, function (edge) {
     return edge.measurementEndpoints.length;
-  })).call(_context4, 0, MAX_RECOMMENDATION_COUNT); // This is used so that at each iteration we can select, for each selectedEdge, a different measurementEndpoint
+  })).call(_context3, 0, MAX_RECOMMENDATION_COUNT); // This should not happen but it's really nasty if it happens, so better guard against it.
+
+  if (selectedEdges.length === 0) {
+    return _promise["default"].resolve({
+      rttStatsByRegionByTurn: {}
+    });
+  } // This is used so that at each iteration we can select, for each selectedEdge, a different measurementEndpoint
+
 
   var iterationCounter = 0;
   return asyncDoWhile(function () {
