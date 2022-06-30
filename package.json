@@ -1,6 +1,6 @@
 {
-  "name": "streaming-view-sdk",
-  "version": "1.0.0",
+  "name": "@applandstream/streaming-view-sdk",
+  "version": "0.0.3-rc.0",
   "description": "React component for Streaming Project to interact with the Edge Node Stream",
   "main": "build/index.js",
   "repository": {
@@ -9,8 +9,14 @@
   },
   "scripts": {
     "test": "mocha --timeout 10000 --require @babel/register --exit --recursive 'src/**/*.tests.js'",
-    "build": "rm -rf build && babel index.js -d build && babel src -d build/src --copy-files"
+    "build": "rm -rf build && babel index.js -d build && babel src -d build/src --copy-files",
+    "prepack": "mv README.md README-temp.md && echo '@applandstream/streaming-view-sdk' > README.md",
+    "version": "echo \"{\\\"tag\\\": \\\"$(cat package.json | jq -r '.version')\\\"}\" > src/build-info.json && cp src/build-info.json build/src/build-info.json && git add src/build-info.json build/src/build-info.json",
+    "postpack": "mv README-temp.md README.md"
   },
+  "files": [
+    "build/*"
+  ],
   "author": "Appland",
   "license": "ISC",
   "homepage": "https://bitbucket.org/appland/streaming-view-sdk#readme",

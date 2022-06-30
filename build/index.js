@@ -11,33 +11,33 @@ _Object$defineProperty(exports, "__esModule", {
 _Object$defineProperty(exports, "StreamingController", {
   enumerable: true,
   get: function get() {
-    return _StreamingController["default"];
+    return _StreamingController.default;
   }
 });
 
 _Object$defineProperty(exports, "StreamingEvent", {
   enumerable: true,
   get: function get() {
-    return _StreamingEvent["default"];
+    return _StreamingEvent.default;
   }
 });
 
 _Object$defineProperty(exports, "StreamingView", {
   enumerable: true,
   get: function get() {
-    return _StreamingView["default"];
+    return _StreamingView.default;
   }
 });
 
-var _StreamingView = _interopRequireDefault(require("./src/StreamingView"));
+var _StreamingView = _interopRequireDefault(require("./src/controllers/StreamingView"));
 
-var _StreamingController = _interopRequireDefault(require("./src/StreamingController"));
+var _StreamingController = _interopRequireDefault(require("./src/controllers/StreamingController"));
 
-var _StreamingEvent = _interopRequireDefault(require("./src/StreamingEvent"));
+var _StreamingEvent = _interopRequireDefault(require("./src/controllers/StreamingEvent"));
 
-var _buildInfo = _interopRequireDefault(require("./src/build-info.json"));
+var _buildInfo = _interopRequireDefault(require("./src/controllers/build-info.json"));
 
-(window || {}).applandStreamingSdkVersion = _buildInfo["default"].tag;
+(window || {}).applandStreamingSdkVersion = _buildInfo.default.tag;
 /**
  * Streaming View SDK
  */

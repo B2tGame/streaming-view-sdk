@@ -4,40 +4,46 @@ env:
 phases:
 
   install:
+    on-failure: ABORT
     commands:
        - "git config --global user.email 'dev@appland.se'"
        - "git config --global user.name 'AWS CodeBuild'"
        - "git checkout $CODEBUILD_SOURCE_VERSION"
        - npm install -g npm@8.5.2
-       - npm install
+       - npm install --legacy-peer-deps
        - npm --version
        - node --version
        - git status
        - echo "$CODEBUILD_SOURCE_VERSION"
-  pre_build:
-    commands:
-       - "for i in $(seq 1 99); do if ! git tag | grep \"`date \"+%Y%m%d\"`-$i\" > /dev/null; then date \"+%Y%m%d-$i\" | tee /tmp/build-info; break; fi; done"
-       - export TAG=`cat /tmp/build-info`
-       - 'echo "{\"tag\":\"$TAG\"}" | tee src/build-info.json'
   build:
+    on-failure: ABORT
     commands:
        - npm run build
-       - git add src/build-info.json
        - git add -A
        - git status
-       - "git commit -m \"Build System: Building new release candidate $TAG\""
-       - git tag $TAG
+       - "git commit -m \"Build System: Building new version\""
+       - |-
+            if [ "$IS_PREBUILD" = 'true' ]; then
+              echo "Publishing release candidate"
+              npm version pre$NPM_VERSION --preid=rc
+              npm publish --access-public --tag=next
+            else
+              echo "Publishing release"
+              npm version $NPM_VERSION
+              npm publish --access-public --tag=latest
+            fi
+       - export TAG=$(cat package.json | jq -r '.version')
        - git push --set-upstream origin $CODEBUILD_SOURCE_VERSION
        - git push origin --tags
   post_build:
     commands:
        - cd $CODEBUILD_SRC_DIR_rob0ui
+       - export PACKAGE="https://registry.npmjs.org/@applandstream/streaming-view-sdk/-/streaming-view-sdk-$TAG.tgz";
        - "git checkout $CODEBUILD_SOURCE_VERSION_rob0ui"
-       - export PACKAGE="git+https://appland-node@bitbucket.org/appland/streaming-view-sdk.git";
-       - "jq --arg \"FULL_PACKAGE\" \"$PACKAGE#$TAG\" '.dependencies.\"streaming-view-sdk\" = $FULL_PACKAGE' package.json > package.json.tmp"
+       - "jq --arg \"NEXT_VERSION\" \"$TAG\" '.dependencies.\"@applandstream/streaming-view-sdk\" = $NEXT_VERSION' package.json > package.json.tmp"
        - mv package.json.tmp package.json
-       - "jq --arg \"FULL_PACKAGE\" \"$PACKAGE#$TAG\" '.packages.\"\".dependencies.\"streaming-view-sdk\" = $FULL_PACKAGE' package-lock.json | jq --arg \"FULL_PACKAGE\" \"$PACKAGE#$CODEBUILD_RESOLVED_SOURCE_VERSION\" '.packages.\"node_modules/streaming-view-sdk\".resolved = $FULL_PACKAGE' | jq --arg \"FULL_PACKAGE\" \"$PACKAGE#$CODEBUILD_RESOLVED_SOURCE_VERSION\" '.dependencies.\"streaming-view-sdk\".version = $FULL_PACKAGE' | jq --arg \"FULL_PACKAGE\" \"streaming-view-sdk@$PACKAGE#$TAG\" '.dependencies.\"streaming-view-sdk\".from = $FULL_PACKAGE' > package-lock.json.tmp"
+       - "jq --arg \"NEXT_VERSION\" \"$TAG\" '.packages.\"\".dependencies.\"@applandstream/streaming-view-sdk\" = $NEXT_VERSION' package-lock.json | jq --arg \"NEXT_VERSION\" \"$PACKAGE\" '.packages.\"node_modules/streaming-view-sdk\".resolved = $NEXT_VERSION' | jq --arg \"NEXT_VERSION\" \"$PACKAGE\" '.dependencies.\"@applandstream/streaming-view-sdk\".version = $TAG' | jq --arg \"NEXT_VERSION\" \"PACKAGE\" '.dependencies.\"@applandstream/streaming-view-sdk\".resolved = $NEXT_VERSION' > package-lock.json.tmp"
        - mv package-lock.json.tmp package-lock.json
-       - "git commit -am \"Build System: Update of the Appland SDK version $TAG\""
+       - "git commit -am \"Build System: Update of the Appland SDK version v$TAG\""
        - "test \"$UPDATE_SDK_ON_ROB0_APPLAND_UI\" = 'true' && git push --set-upstream origin $CODEBUILD_SOURCE_VERSION_rob0ui || echo 'skip update of the Rob0 Appland UI'"
        - "echo \"Build successful, create GIT tag: $TAG\""
