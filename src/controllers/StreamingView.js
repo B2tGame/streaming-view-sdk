@@ -60,6 +60,7 @@ export default class StreamingView extends Component {
       width: PropTypes.string,
       pingInterval: PropTypes.number,
       measureTouchRtt: PropTypes.bool,
+      measurementScheduler: PropTypes.object.isRequired,
       playoutDelayHint: PropTypes.number,
       vp8MaxQuantization: PropTypes.number
     };
@@ -109,8 +110,17 @@ export default class StreamingView extends Component {
 
   componentDidMount() {
     this.isMountedInView = true;
-    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, onEvent, pingInterval } =
-      this.props;
+    const {
+      apiEndpoint,
+      edgeNodeId,
+      userId,
+      edgeNodeEndpoint,
+      internalSession,
+      turnEndpoint,
+      onEvent,
+      pingInterval,
+      measurementScheduler
+    } = this.props;
     if (!internalSession) {
       this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId, this.streamingViewId);
     }
@@ -147,18 +157,17 @@ export default class StreamingView extends Component {
     window.addEventListener('resize', this.onResize);
     window.addEventListener('error', this.onError);
 
-    let readyWasTriggered = false
-    
-    const handleEmulatorReady = (onUserInteractionCallback) => {
-      
-      console.info(`Ready was triggered for instance ${this.instanceID}. ${readyWasTriggered ? "Second trigger" : "First trigger" }` )
+    let readyWasTriggered = false;
 
-      if(readyWasTriggered) {
+    const handleEmulatorReady = (onUserInteractionCallback) => {
+      console.info(`Ready was triggered for instance ${this.instanceID}. ${readyWasTriggered ? 'Second trigger' : 'First trigger'}`);
+
+      if (readyWasTriggered) {
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_READY, onUserInteractionCallback);
       } else {
-        readyWasTriggered = true
+        readyWasTriggered = true;
       }
-    }
+    };
 
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
@@ -179,15 +188,16 @@ export default class StreamingView extends Component {
         });
       })
       .on(StreamingEvent.STREAM_WEBRTC_READY, (onUserInteractionCallback) => {
-        console.info(StreamingEvent.STREAM_WEBRTC_READY); 
+        console.info(StreamingEvent.STREAM_WEBRTC_READY);
         handleEmulatorReady(onUserInteractionCallback);
       })
       .on(StreamingEvent.STREAM_EMULATOR_READY, (onUserInteractionCallback) => {
-        console.info(StreamingEvent.STREAM_EMULATOR_READY); 
-        handleEmulatorReady(onUserInteractionCallback);}
-      );
+        console.info(StreamingEvent.STREAM_EMULATOR_READY);
+        handleEmulatorReady(onUserInteractionCallback);
+      });
 
     StreamingController({
+      measurementScheduler,
       apiEndpoint: apiEndpoint,
       edgeNodeId: edgeNodeId,
       internalSession: internalSession
@@ -218,8 +228,8 @@ export default class StreamingView extends Component {
           iceServers: iceServers
         });
 
-        StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_EMULATOR_READY, StreamingController.onGameReady);
-        StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_TERMINATED, StreamingController.onGameTerminated);
+        StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_EMULATOR_READY, measurementScheduler.stopMeasuring);
+        StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_TERMINATED, measurementScheduler.startMeasuring);
 
         this.registerUserEventsHandler();
       })
@@ -266,10 +276,16 @@ export default class StreamingView extends Component {
     }
 
     window.removeEventListener('resize', this.onResize);
-    window.removeEventListener('error', this.onError);   
+    window.removeEventListener('error', this.onError);
     StreamingEvent.destroyEdgeNode(this.props.edgeNodeId);
-    StreamingEvent.edgeNode(this.props.edgeNodeId).removeListener(StreamingEvent.STREAM_EMULATOR_READY, StreamingController.onGameReady);
-    StreamingEvent.edgeNode(this.props.edgeNodeId).removeListener(StreamingEvent.STREAM_TERMINATED, StreamingController.onGameTerminated);
+    StreamingEvent.edgeNode(this.props.edgeNodeId).removeListener(
+      StreamingEvent.STREAM_EMULATOR_READY,
+      this.props.measurementScheduler.stopMeasuring
+    );
+    StreamingEvent.edgeNode(this.props.edgeNodeId).removeListener(
+      StreamingEvent.STREAM_TERMINATED,
+      this.props.measurementScheduler.startMeasuring
+    );
   }
 
   /**

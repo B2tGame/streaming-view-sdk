@@ -8,7 +8,7 @@
     "url": "git+ssh://git@bitbucket.org:appland/streaming-view-sdk.git"
   },
   "scripts": {
-    "test": "mocha --timeout 10000 --require @babel/register --exit --recursive",
+    "test": "mocha --timeout 10000 --require @babel/register --exit --recursive 'src/**/*.tests.js'",
     "build": "rm -rf build && babel index.js -d build && babel src -d build/src --copy-files"
   },
   "author": "Appland",

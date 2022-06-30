@@ -1,11 +1,7 @@
 import axios from 'axios';
 import { getDeviceInfo } from './service/deviceInfo';
-import newMeasurementScheduler from './measurementScheduler';
 import StreamingEvent from './StreamingEvent';
 import buildInfo from './build-info.json';
-
-let measurementScheduler = null;
-let latestMeasurement = null;
 
 /**
  * StreamingController is responsible to poll and terminate the edge node.
@@ -39,30 +35,6 @@ class StreamingController {
     return 'endpoint';
   }
 
-  /*
-   * Streaming agent global
-   */
-  static startMeasurementScheduler({ apiEndpoint, interval }) {
-    measurementScheduler && measurementScheduler.stopMeasuring();
-
-    measurementScheduler = newMeasurementScheduler({
-      apiEndpoint,
-      interval: Math.max(5000, +interval || 0),
-      navigatorConnection: navigator.connection || navigator.mozConnection || navigator.webkitConnection || {},
-      onMeasures: (streamingAgentPayload) => (latestMeasurement = streamingAgentPayload)
-    });
-
-    measurementScheduler.startMeasuring();
-  }
-
-  static onGameReady() {
-    measurementScheduler && measurementScheduler.stopMeasuring();
-  }
-
-  static onGameTerminated() {
-    measurementScheduler && measurementScheduler.startMeasuring();
-  }
-
   /**
    *
    * @param {object} props
@@ -75,6 +47,10 @@ class StreamingController {
       throw new Error('StreamingController: Missing apiEndpoint');
     }
 
+    if (!props.measurementScheduler) {
+      throw new Error('StreamingController: Missing measurementScheduler');
+    }
+
     try {
       new URL(props.apiEndpoint);
     } catch (err) {
@@ -82,14 +58,11 @@ class StreamingController {
     }
 
     this.apiEndpoint = props.apiEndpoint;
+    this.measurementScheduler = props.measurementScheduler;
     this.edgeNodeId = props.edgeNodeId || undefined;
     this.internalSession = props.internalSession || false;
 
-    if (measurementScheduler) {
-      measurementScheduler.changeApiEndpoint(props.apiEndpoint);
-    } else {
-      this.constructor.startMeasurementScheduler({ apiEndpoint: props.apiEndpoint, interval: 30 * 1000 });
-    }
+    this.measurementScheduler.changeApiEndpoint(props.apiEndpoint);
   }
 
   /**
@@ -141,7 +114,8 @@ class StreamingController {
    * @returns {Promise<[{appId: number, score: number}]>}
    */
   getPredictedGameExperiences(pollingInterval = 500) {
-    const waitAndRetry = () => new Promise((resolve) => setTimeout(() => resolve(this.getPredictedGameExperiences(pollingInterval)), pollingInterval));
+    const waitAndRetry = () =>
+      new Promise((resolve) => setTimeout(() => resolve(this.getPredictedGameExperiences(pollingInterval)), pollingInterval));
 
     const goAhead = (connectivityInfo) => {
       return Promise.all([this.getApiEndpoint(), this.getDeviceInfo()])
@@ -155,10 +129,11 @@ class StreamingController {
         .then((result) => ({
           apps: (result.data || {}).apps || []
         }));
-    }
+    };
 
     // This is necessary because our endpoint does not deal well with `connectivityInfo === {}`
-    return latestMeasurement ? goAhead(latestMeasurement.connectivityInfo) : waitAndRetry();
+    const lastMeasure = this.measurementScheduler.getLastMeasure();
+    return lastMeasure ? goAhead(lastMeasure.connectivityInfo) : waitAndRetry();
   }
 
   /**
@@ -325,7 +300,8 @@ class StreamingController {
    * @returns {Promise<object>}
    */
   getDeviceInfo() {
-    return (latestMeasurement ? Promise.resolve(latestMeasurement.deviceInfo) : getDeviceInfo(this.apiEndpoint)).then((deviceInfo) => ({
+    const lastMeasure = this.measurementScheduler.getLastMeasure();
+    return (lastMeasure ? Promise.resolve(lastMeasure.deviceInfo) : getDeviceInfo(this.apiEndpoint)).then((deviceInfo) => ({
       deviceInfoId: deviceInfo.deviceInfoId,
       userId: deviceInfo.userId
     }));
@@ -336,9 +312,11 @@ class StreamingController {
    * @returns {Promise<{}>}
    */
   getConnectivityInfo() {
+    const lastMeasure = this.measurementScheduler.getLastMeasure();
+
     // Per API specification https://docs.google.com/document/d/1VhVZxo2FkoHCF3c90sP-IJJl7WsDP4wQA7OT7IWXauY/edit#heading=h.rbmzojf3dehw
     // this method needs to return a Promise
-    return Promise.resolve(latestMeasurement ? latestMeasurement.networkConnectivityInfo : {});
+    return Promise.resolve(lastMeasure ? lastMeasure.networkConnectivityInfo : {});
   }
 }
 
@@ -367,7 +345,5 @@ factory.EVENT_PREDICTED_GAME_EXPERIENCE = StreamingEvent.PREDICTED_GAME_EXPERIEN
 factory.EVENT_STREAM_TERMINATED = StreamingEvent.STREAM_TERMINATED;
 factory.WAIT_FOR_READY = StreamingController.WAIT_FOR_READY;
 factory.WAIT_FOR_ENDPOINT = StreamingController.WAIT_FOR_ENDPOINT;
-factory.onGameReady = StreamingController.onGameReady;
-factory.onGameTerminated = StreamingController.onGameTerminated;
 
 export default factory;

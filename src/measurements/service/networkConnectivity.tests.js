@@ -1,11 +1,11 @@
 import assert from 'assert';
 import axios from 'axios';
 import proxyquire from 'proxyquire';
-import StreamingEvent from '../../src/StreamingEvent';
-import StreamWebRtc from '../../src/service/StreamWebRtc';
+import StreamingEvent from '../StreamingEvent';
+import StreamWebRtc from './StreamWebRtc';
 
 // This makes copies of the module to be tested, each copy can be generated with different mocks
-const makeNetworkConnectivity = (mocks) => proxyquire.noCallThru()('../../src/service/networkConnectivity', mocks).default;
+const makeNetworkConnectivity = (mocks) => proxyquire.noCallThru()('./networkConnectivity', mocks).default;
 
 // Mock for axios.get
 const axiosGetMock = (urlToResponse) => (url, options) => new Promise((resolve) => setTimeout(() => resolve(urlToResponse(url)), 1));

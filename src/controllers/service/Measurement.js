@@ -1,5 +1,5 @@
 import StreamingEvent from '../StreamingEvent';
-import PredictGameExperience from './PredictGameExperience';
+import PredictGameExperience from '../../measurements/service/PredictGameExperience';
 import PredictGameExperienceWithNeuralNetwork from './PredictGameExperienceWithNeuralNetwork';
 import StreamWebRtc from './StreamWebRtc';
 import StreamSocket from './StreamSocket';
@@ -323,7 +323,7 @@ export default class Measurement {
       const currentPacketsLost = report.packetsLost - this.previousMeasurement.packetsLost;
       const currentPacketsReceived = report.packetsReceived - this.previousMeasurement.packetsReceived;
       const expectedPacketsReceived = currentPacketsLost + currentPacketsReceived;
-      this.measurement.packetsLostPercent = (currentPacketsLost * 100) / expectedPacketsReceived;
+      this.measurement.packetsLostPercent = (currentPacketsLost * 100) / (expectedPacketsReceived || 1);
       this.measurement.jitter = report.jitter;
       this.measurement.totalDecodeTimePerFramesDecodedInMs = Measurement.roundToDecimals(
         ((report.totalDecodeTime - this.previousMeasurement.totalDecodeTime) /

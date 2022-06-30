@@ -1,4 +1,3 @@
-import PredictGameExperienceBase from './PredictGameExperienceBase';
 
 /**
  * RisingEdgeDetector class
@@ -51,7 +50,7 @@ class RollingWindow {
 /**
  * PredictGameExperience class
  */
-export default class PredictGameExperience extends PredictGameExperienceBase {
+export default class PredictGameExperience {
   constructor(
     sampleSize = 10,
     risingEdgeThreshold = 2.8,
@@ -68,8 +67,6 @@ export default class PredictGameExperience extends PredictGameExperienceBase {
     risingEdgeCountPower = 1.25,
     finalGain = 1.1
   ) {
-    super();
-
     this.sampleSize = sampleSize;
     this.averageDetectionUpperRange = averageDetectionUpperRange;
     this.risingEdgeThreshold = risingEdgeThreshold;
