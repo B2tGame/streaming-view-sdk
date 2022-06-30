@@ -8,9 +8,9 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _StreamWebRtc = _interopRequireDefault(require("../../measurements/service/StreamWebRtc"));
 
-var _default = _StreamWebRtc.default;
-exports.default = _default;
+var _default = _StreamWebRtc["default"];
+exports["default"] = _default;

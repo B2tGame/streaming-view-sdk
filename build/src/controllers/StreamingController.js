@@ -8,7 +8,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _url = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/url"));
 
@@ -16,9 +16,13 @@ var _promise = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-st
 
 var _startsWith = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/starts-with"));
 
+var _setTimeout2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-timeout"));
+
 var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
 
 var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
+
+var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/date/now"));
 
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/slicedToArray"));
 
@@ -48,7 +52,7 @@ var StreamingController = /*#__PURE__*/function () {
    * @param {string} props.internalSession Optional parameter for flagging if the session is internal.
    */
   function StreamingController(props) {
-    (0, _classCallCheck2.default)(this, StreamingController);
+    (0, _classCallCheck2["default"])(this, StreamingController);
 
     if (!props.apiEndpoint) {
       throw new Error('StreamingController: Missing apiEndpoint');
@@ -59,7 +63,7 @@ var StreamingController = /*#__PURE__*/function () {
     }
 
     try {
-      new _url.default(props.apiEndpoint);
+      new _url["default"](props.apiEndpoint);
     } catch (err) {
       throw new Error("StreamingController: invalid apiEndpoint, got \"".concat(props.apiEndpoint, "\" as input"));
     }
@@ -76,10 +80,10 @@ var StreamingController = /*#__PURE__*/function () {
    */
 
 
-  (0, _createClass2.default)(StreamingController, [{
+  (0, _createClass2["default"])(StreamingController, [{
     key: "getEdgeNodeId",
     value: function getEdgeNodeId() {
-      return this.edgeNodeId !== undefined ? _promise.default.resolve(this.edgeNodeId) : _promise.default.reject(new Error('StreamingController: Missing edgeNodeId, API endpoint unsupported without Edge Node ID.'));
+      return this.edgeNodeId !== undefined ? _promise["default"].resolve(this.edgeNodeId) : _promise["default"].reject(new Error('StreamingController: Missing edgeNodeId, API endpoint unsupported without Edge Node ID.'));
     }
     /**
      * Terminate the instance
@@ -90,7 +94,7 @@ var StreamingController = /*#__PURE__*/function () {
     key: "terminate",
     value: function terminate() {
       return this.getStreamEndpoint().then(function (streamEndpoint) {
-        return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/terminate"));
+        return _axios["default"].get("".concat(streamEndpoint, "/emulator-commands/terminate"));
       });
     }
     /**
@@ -102,11 +106,11 @@ var StreamingController = /*#__PURE__*/function () {
     key: "backup",
     value: function backup() {
       return this.getStreamEndpoint().then(function (streamEndpoint) {
-        return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/backup"));
+        return _axios["default"].get("".concat(streamEndpoint, "/emulator-commands/backup"));
       }).then(function (resp) {
         var _context;
 
-        if ((0, _startsWith.default)(_context = resp.data.toString()).call(_context, 'FAIL')) {
+        if ((0, _startsWith["default"])(_context = resp.data.toString()).call(_context, 'FAIL')) {
           throw new Error(resp.data.toString());
         } else {
           return resp.data;
@@ -136,24 +140,24 @@ var StreamingController = /*#__PURE__*/function () {
       var pollingInterval = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 500;
 
       var waitAndRetry = function waitAndRetry() {
-        return new _promise.default(function (resolve) {
-          return setTimeout(function () {
+        return new _promise["default"](function (resolve) {
+          return (0, _setTimeout2["default"])(function () {
             return resolve(_this.getPredictedGameExperiences(pollingInterval));
           }, pollingInterval);
         });
       };
 
       var goAhead = function goAhead(connectivityInfo) {
-        return _promise.default.all([_this.getApiEndpoint(), _this.getDeviceInfo()]).then(function (_ref) {
+        return _promise["default"].all([_this.getApiEndpoint(), _this.getDeviceInfo()]).then(function (_ref) {
           var _context2, _context3;
 
-          var _ref2 = (0, _slicedToArray2.default)(_ref, 2),
+          var _ref2 = (0, _slicedToArray2["default"])(_ref, 2),
               apiEndpoint = _ref2[0],
               deviceInfo = _ref2[1];
 
-          var encodedConnectivityInfo = encodeURIComponent((0, _stringify.default)(connectivityInfo));
+          var encodedConnectivityInfo = encodeURIComponent((0, _stringify["default"])(connectivityInfo));
           var encodedDeviceInfoId = encodeURIComponent(deviceInfo.deviceInfoId);
-          return _axios.default.get((0, _concat.default)(_context2 = (0, _concat.default)(_context3 = "".concat(apiEndpoint, "/api/streaming-games/predicted-game-experience?connectivity-info=")).call(_context3, encodedConnectivityInfo, "&deviceInfoId=")).call(_context2, encodedDeviceInfoId));
+          return _axios["default"].get((0, _concat["default"])(_context2 = (0, _concat["default"])(_context3 = "".concat(apiEndpoint, "/api/streaming-games/predicted-game-experience?connectivity-info=")).call(_context3, encodedConnectivityInfo, "&deviceInfoId=")).call(_context2, encodedDeviceInfoId));
         }).then(function (result) {
           return {
             apps: (result.data || {}).apps || []
@@ -178,11 +182,11 @@ var StreamingController = /*#__PURE__*/function () {
     key: "save",
     value: function save() {
       return this.getStreamEndpoint().then(function (streamEndpoint) {
-        return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/save"));
+        return _axios["default"].get("".concat(streamEndpoint, "/emulator-commands/save"));
       }).then(function (resp) {
         var _context4;
 
-        if ((0, _startsWith.default)(_context4 = resp.data.toString()).call(_context4, 'FAIL')) {
+        if ((0, _startsWith["default"])(_context4 = resp.data.toString()).call(_context4, 'FAIL')) {
           throw new Error(resp.data.toString());
         } else {
           return resp.data;
@@ -198,17 +202,17 @@ var StreamingController = /*#__PURE__*/function () {
   }, {
     key: "pause",
     value: function pause() {
-      return _promise.default.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(function (_ref3) {
-        var _ref4 = (0, _slicedToArray2.default)(_ref3, 2),
+      return _promise["default"].all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(function (_ref3) {
+        var _ref4 = (0, _slicedToArray2["default"])(_ref3, 2),
             edgeNodeId = _ref4[0],
             streamEndpoint = _ref4[1];
 
-        _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.LOG, {
+        _StreamingEvent["default"].edgeNode(edgeNodeId).emit(_StreamingEvent["default"].LOG, {
           name: 'streaming-controller',
           action: 'pause'
         });
 
-        return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/pause"));
+        return _axios["default"].get("".concat(streamEndpoint, "/emulator-commands/pause"));
       });
     }
     /**
@@ -219,18 +223,18 @@ var StreamingController = /*#__PURE__*/function () {
   }, {
     key: "resetMoment",
     value: function resetMoment() {
-      return _promise.default.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(function (_ref5) {
-        var _ref6 = (0, _slicedToArray2.default)(_ref5, 2),
+      return _promise["default"].all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(function (_ref5) {
+        var _ref6 = (0, _slicedToArray2["default"])(_ref5, 2),
             edgeNodeId = _ref6[0],
             streamEndpoint = _ref6[1];
 
-        _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.LOG, {
+        _StreamingEvent["default"].edgeNode(edgeNodeId).emit(_StreamingEvent["default"].LOG, {
           name: 'streaming-controller',
           action: 'resetMoment'
         });
 
-        return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/reset")).then(function () {
-          _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.STREAM_READY);
+        return _axios["default"].get("".concat(streamEndpoint, "/emulator-commands/reset")).then(function () {
+          _StreamingEvent["default"].edgeNode(edgeNodeId).emit(_StreamingEvent["default"].STREAM_READY);
         });
       });
     }
@@ -243,17 +247,17 @@ var StreamingController = /*#__PURE__*/function () {
   }, {
     key: "resume",
     value: function resume() {
-      return _promise.default.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(function (_ref7) {
-        var _ref8 = (0, _slicedToArray2.default)(_ref7, 2),
+      return _promise["default"].all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(function (_ref7) {
+        var _ref8 = (0, _slicedToArray2["default"])(_ref7, 2),
             edgeNodeId = _ref8[0],
             streamEndpoint = _ref8[1];
 
-        _StreamingEvent.default.edgeNode(edgeNodeId).emit(_StreamingEvent.default.LOG, {
+        _StreamingEvent["default"].edgeNode(edgeNodeId).emit(_StreamingEvent["default"].LOG, {
           name: 'streaming-controller',
           action: 'resume'
         });
 
-        return _axios.default.get("".concat(streamEndpoint, "/emulator-commands/resume"));
+        return _axios["default"].get("".concat(streamEndpoint, "/emulator-commands/resume"));
       });
     }
     /**
@@ -268,7 +272,7 @@ var StreamingController = /*#__PURE__*/function () {
         if (status.endpoint !== undefined) {
           return status.endpoint;
         } else {
-          throw new Error("Can't resolve Stream Endpoint, got: " + (0, _stringify.default)(status));
+          throw new Error("Can't resolve Stream Endpoint, got: " + (0, _stringify["default"])(status));
         }
       });
     }
@@ -316,7 +320,7 @@ var StreamingController = /*#__PURE__*/function () {
        */
 
       var getStatus = function getStatus(uri, timeout) {
-        return _axios.default.get(uri, {
+        return _axios["default"].get(uri, {
           timeout: timeout
         }).then(function (result) {
           var stillWaiting = _waitFor === StreamingController.WAIT_FOR_READY && result.data.state === 'pending' || _waitFor === StreamingController.WAIT_FOR_ENDPOINT && result.data.endpoint === undefined;
@@ -326,7 +330,7 @@ var StreamingController = /*#__PURE__*/function () {
               isQueuedEventFire = true;
 
               if (_this2.edgeNodeId) {
-                _StreamingEvent.default.edgeNode(_this2.edgeNodeId).emit(_StreamingEvent.default.SERVER_OUT_OF_CAPACITY);
+                _StreamingEvent["default"].edgeNode(_this2.edgeNodeId).emit(_StreamingEvent["default"].SERVER_OUT_OF_CAPACITY);
               }
             }
 
@@ -345,16 +349,16 @@ var StreamingController = /*#__PURE__*/function () {
 
 
       var retry = function retry(callback, maxTimeout) {
-        var endTimestamp = Date.now() + maxTimeout;
-        return new _promise.default(function (resolve, reject) {
+        var endTimestamp = (0, _now["default"])() + maxTimeout;
+        return new _promise["default"](function (resolve, reject) {
           var fn = function fn() {
             callback().then(resolve, function (err) {
               var httpStatusCode = (err.response || {}).status || 500;
 
               if (httpStatusCode === 404) {
                 resolve((err.response || {}).data || {});
-              } else if (endTimestamp > Date.now()) {
-                setTimeout(fn, 10);
+              } else if (endTimestamp > (0, _now["default"])()) {
+                (0, _setTimeout2["default"])(fn, 10);
               } else {
                 reject(err);
               }
@@ -370,7 +374,7 @@ var StreamingController = /*#__PURE__*/function () {
         return retry(function () {
           var _context5, _context6;
 
-          return getStatus((0, _concat.default)(_context5 = (0, _concat.default)(_context6 = "".concat(_this2.getApiEndpoint(), "/api/streaming-games/status/")).call(_context6, edgeNodeId, "?wait=1")).call(_context5, internalSession), 5000);
+          return getStatus((0, _concat["default"])(_context5 = (0, _concat["default"])(_context6 = "".concat(_this2.getApiEndpoint(), "/api/streaming-games/status/")).call(_context6, edgeNodeId, "?wait=1")).call(_context5, internalSession), 5000);
         }, timeout);
       });
     }
@@ -383,7 +387,7 @@ var StreamingController = /*#__PURE__*/function () {
     key: "getDeviceInfo",
     value: function getDeviceInfo() {
       var lastMeasure = this.measurementScheduler.getLastMeasure();
-      return (lastMeasure ? _promise.default.resolve(lastMeasure.deviceInfo) : (0, _deviceInfo.getDeviceInfo)(this.apiEndpoint)).then(function (deviceInfo) {
+      return (lastMeasure ? _promise["default"].resolve(lastMeasure.deviceInfo) : (0, _deviceInfo.getDeviceInfo)(this.apiEndpoint)).then(function (deviceInfo) {
         return {
           deviceInfoId: deviceInfo.deviceInfoId,
           userId: deviceInfo.userId
@@ -401,7 +405,7 @@ var StreamingController = /*#__PURE__*/function () {
       var lastMeasure = this.measurementScheduler.getLastMeasure(); // Per API specification https://docs.google.com/document/d/1VhVZxo2FkoHCF3c90sP-IJJl7WsDP4wQA7OT7IWXauY/edit#heading=h.rbmzojf3dehw
       // this method needs to return a Promise
 
-      return _promise.default.resolve(lastMeasure ? lastMeasure.networkConnectivityInfo : {});
+      return _promise["default"].resolve(lastMeasure ? lastMeasure.networkConnectivityInfo : {});
     }
   }], [{
     key: "DEFAULT_TIMEOUT",
@@ -416,7 +420,7 @@ var StreamingController = /*#__PURE__*/function () {
   }, {
     key: "SDK_VERSION",
     get: function get() {
-      return _buildInfo.default.tag;
+      return _buildInfo["default"].tag;
     }
     /**
      * Wait until the edge node reach a ready state.
@@ -447,23 +451,23 @@ var StreamingController = /*#__PURE__*/function () {
 
 
 var factory = function factory(props) {
-  return _promise.default.resolve(new StreamingController(props));
+  return _promise["default"].resolve(new StreamingController(props));
 };
 
-factory.EVENT_STREAM_CONNECTED = _StreamingEvent.default.STREAM_CONNECTED;
-factory.EVENT_SERVER_OUT_OF_CAPACITY = _StreamingEvent.default.SERVER_OUT_OF_CAPACITY;
-factory.EVENT_EMULATOR_CONFIGURATION = _StreamingEvent.default.EMULATOR_CONFIGURATION;
-factory.EVENT_STREAM_UNREACHABLE = _StreamingEvent.default.STREAM_UNREACHABLE;
-factory.EVENT_STREAM_PAUSED = _StreamingEvent.default.STREAM_PAUSED;
-factory.EVENT_STREAM_RESUMED = _StreamingEvent.default.STREAM_RESUMED;
-factory.EVENT_EDGE_NODE_CRASHED = _StreamingEvent.default.EDGE_NODE_CRASHED;
-factory.EVENT_REQUIRE_USER_PLAY_INTERACTION = _StreamingEvent.default.REQUIRE_USER_PLAY_INTERACTION;
+factory.EVENT_STREAM_CONNECTED = _StreamingEvent["default"].STREAM_CONNECTED;
+factory.EVENT_SERVER_OUT_OF_CAPACITY = _StreamingEvent["default"].SERVER_OUT_OF_CAPACITY;
+factory.EVENT_EMULATOR_CONFIGURATION = _StreamingEvent["default"].EMULATOR_CONFIGURATION;
+factory.EVENT_STREAM_UNREACHABLE = _StreamingEvent["default"].STREAM_UNREACHABLE;
+factory.EVENT_STREAM_PAUSED = _StreamingEvent["default"].STREAM_PAUSED;
+factory.EVENT_STREAM_RESUMED = _StreamingEvent["default"].STREAM_RESUMED;
+factory.EVENT_EDGE_NODE_CRASHED = _StreamingEvent["default"].EDGE_NODE_CRASHED;
+factory.EVENT_REQUIRE_USER_PLAY_INTERACTION = _StreamingEvent["default"].REQUIRE_USER_PLAY_INTERACTION;
 factory.SDK_VERSION = StreamingController.SDK_VERSION;
-factory.EVENT_STREAM_READY = _StreamingEvent.default.STREAM_READY;
-factory.EVENT_MOMENT_DETECTOR_EVENT = _StreamingEvent.default.MOMENT_DETECTOR_EVENT;
-factory.EVENT_PREDICTED_GAME_EXPERIENCE = _StreamingEvent.default.PREDICTED_GAME_EXPERIENCE;
-factory.EVENT_STREAM_TERMINATED = _StreamingEvent.default.STREAM_TERMINATED;
+factory.EVENT_STREAM_READY = _StreamingEvent["default"].STREAM_READY;
+factory.EVENT_MOMENT_DETECTOR_EVENT = _StreamingEvent["default"].MOMENT_DETECTOR_EVENT;
+factory.EVENT_PREDICTED_GAME_EXPERIENCE = _StreamingEvent["default"].PREDICTED_GAME_EXPERIENCE;
+factory.EVENT_STREAM_TERMINATED = _StreamingEvent["default"].STREAM_TERMINATED;
 factory.WAIT_FOR_READY = StreamingController.WAIT_FOR_READY;
 factory.WAIT_FOR_ENDPOINT = StreamingController.WAIT_FOR_ENDPOINT;
 var _default = factory;
-exports.default = _default;
+exports["default"] = _default;

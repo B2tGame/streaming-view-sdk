@@ -12,6 +12,8 @@ var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpe
 
 var _promise = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/promise"));
 
+var _setTimeout2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-timeout"));
+
 var _assert = _interopRequireDefault(require("assert"));
 
 var _axios = _interopRequireDefault(require("axios"));
@@ -24,14 +26,14 @@ var _StreamWebRtc = _interopRequireDefault(require("./StreamWebRtc"));
 
 // This makes copies of the module to be tested, each copy can be generated with different mocks
 var makeNetworkConnectivity = function makeNetworkConnectivity(mocks) {
-  return _proxyquire.default.noCallThru()('./networkConnectivity', mocks).default;
+  return _proxyquire["default"].noCallThru()('./networkConnectivity', mocks)["default"];
 }; // Mock for axios.get
 
 
 var axiosGetMock = function axiosGetMock(urlToResponse) {
   return function (url, options) {
-    return new _promise.default(function (resolve) {
-      return setTimeout(function () {
+    return new _promise["default"](function (resolve) {
+      return (0, _setTimeout2["default"])(function () {
         return resolve(urlToResponse(url));
       }, 1);
     });
@@ -42,22 +44,22 @@ var axiosGetMock = function axiosGetMock(urlToResponse) {
 
 var StreamWebRtcMock = /*#__PURE__*/function () {
   function StreamWebRtcMock() {
-    (0, _classCallCheck2.default)(this, StreamWebRtcMock);
+    (0, _classCallCheck2["default"])(this, StreamWebRtcMock);
   }
 
-  (0, _createClass2.default)(StreamWebRtcMock, [{
+  (0, _createClass2["default"])(StreamWebRtcMock, [{
     key: "on",
     value: function on(eventName, callback) {
       switch (eventName) {
-        case _StreamingEvent.default.WEBRTC_CLIENT_CONNECTED:
-          setTimeout(callback, 10);
+        case _StreamingEvent["default"].WEBRTC_CLIENT_CONNECTED:
+          (0, _setTimeout2["default"])(callback, 10);
           break;
 
-        case _StreamingEvent.default.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT:
-          setTimeout(function () {
+        case _StreamingEvent["default"].WEBRTC_ROUND_TRIP_TIME_MEASUREMENT:
+          (0, _setTimeout2["default"])(function () {
             return callback(230);
           }, 30);
-          setTimeout(function () {
+          (0, _setTimeout2["default"])(function () {
             return callback(180);
           }, 100);
           break;
@@ -80,7 +82,7 @@ var StreamWebRtcMock = /*#__PURE__*/function () {
   return StreamWebRtcMock;
 }();
 
-StreamWebRtcMock.calculateRoundTripTimeStats = _StreamWebRtc.default.calculateRoundTripTimeStats;
+StreamWebRtcMock.calculateRoundTripTimeStats = _StreamWebRtc["default"].calculateRoundTripTimeStats;
 var mockEndpoint = 'mockEndpoint';
 var mockRecommendedEdges = [{
   edgeRegion: 'pa-papuasia-1',
@@ -92,9 +94,9 @@ var mockRecommendedEdges = [{
 describe('networkConnectivity', function () {
   describe('measure', function () {
     before(function () {});
-    it('measure', /*#__PURE__*/(0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee() {
+    it('measure', /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
       var networkConnectivity, expected, actual;
-      return _regenerator.default.wrap(function _callee$(_context) {
+      return _regenerator["default"].wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
@@ -140,7 +142,7 @@ describe('networkConnectivity', function () {
             case 4:
               actual = _context.sent;
 
-              _assert.default.deepStrictEqual(actual, expected);
+              _assert["default"].deepStrictEqual(actual, expected);
 
             case 6:
             case "end":
