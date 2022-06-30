@@ -1,7 +1,7 @@
-import StreamingView from './src/StreamingView';
-import StreamingController from './src/StreamingController';
-import StreamingEvent from './src/StreamingEvent';
-import buildInfo from './src/build-info.json';
+import StreamingView from './src/controllers/StreamingView';
+import StreamingController from './src/controllers/StreamingController';
+import StreamingEvent from './src/controllers/StreamingEvent';
+import buildInfo from './src/controllers/build-info.json';
 
 (window || {}).applandStreamingSdkVersion = buildInfo.tag;
 

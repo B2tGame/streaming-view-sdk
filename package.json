@@ -8,6 +8,7 @@
     "url": "git+ssh://git@bitbucket.org:appland/streaming-view-sdk.git"
   },
   "scripts": {
+    "test": "mocha --timeout 10000 --require @babel/register --exit --recursive 'src/**/*.tests.js'",
     "build": "rm -rf build && babel index.js -d build && babel src -d build/src --copy-files",
     "prepack": "mv README.md README-temp.md && echo '@applandstream/streaming-view-sdk' > README.md",
     "version": "echo \"{\\\"tag\\\": \\\"$(cat package.json | jq -r '.version')\\\"}\" > src/build-info.json && cp src/build-info.json build/src/build-info.json && git add src/build-info.json build/src/build-info.json",
@@ -45,6 +46,10 @@
     "@babel/plugin-transform-runtime": "^7.15.8",
     "@babel/preset-env": "^7.15.8",
     "@babel/preset-react": "^7.14.5",
-    "babel-cli": "^6.26.0"
+    "@babel/register": "^7.17.7",
+    "@ungap/event-target": "^0.2.3",
+    "babel-cli": "^6.26.0",
+    "mocha": "^10.0.0",
+    "proxyquire": "^2.1.3"
   }
 }

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import StreamingEvent from '../StreamingEvent';
 import StreamWebRtc from '../service/StreamWebRtc';
-import Measurement from '../service/Measurement';
+import PredictGameExperience from './PredictGameExperience';
 
 const MAX_RECOMMENDATION_COUNT = 3;
 const WEBRTC_TIME_TO_CONNECTED = 5000;
@@ -36,7 +36,6 @@ function getRTTMeasurements({ turnName, region, webRtcHost, iceCandidates }) {
     const rttMeasurements = [];
 
     const onConnected = () => {
-      console.info(`WebRtc connected to: ${region}, TURN: ${turnName}`);
       setTimeout(() => stopMeasurement(), ADVANCED_MEASUREMENT_TIMEOUT);
     };
 
@@ -119,6 +118,11 @@ function estimateSpeed(rtt, stdDev) {
 function measure(apiEndpoint, recommendedEdges) {
   const selectedEdges = recommendedEdges.filter((edge) => edge.measurementEndpoints.length).slice(0, MAX_RECOMMENDATION_COUNT);
 
+  // This should not happen but it's really nasty if it happens, so better guard against it.
+  if (selectedEdges.length === 0) {
+    return Promise.resolve({ rttStatsByRegionByTurn: {} });
+  }
+
   // This is used so that at each iteration we can select, for each selectedEdge, a different measurementEndpoint
   let iterationCounter = 0;
   return asyncDoWhile(
@@ -151,11 +155,9 @@ function measure(apiEndpoint, recommendedEdges) {
       }
     });
 
-    // calculatePredictedGameExperience needs to build up its internal state, so we need to call it several times.
-    // The value we want is the last it returns, all previous return values are discarded.
-    const predictedGameExperience = minRtts.reduce((rtt) => Measurement.calculatePredictedGameExperience(rtt, 0, minRegion))[
-      Measurement.PREDICTED_GAME_EXPERIENCE_DEFAULT
-    ];
+    const model = new PredictGameExperience();
+    const packetLostPercent = 0;
+    const predictedGameExperience = minRtts.reduce((rtt) => model.predict(rtt, packetLostPercent));
 
     return {
       predictedGameExperience,

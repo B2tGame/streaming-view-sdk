@@ -1,8 +1,10 @@
-import networkConnectivity from './stores/networkConnectivity';
-import { getDeviceInfo, updateDeviceInfo } from './stores/deviceInfo';
+import networkConnectivity from './service/networkConnectivity';
+import { getDeviceInfo, updateDeviceInfo } from './service/deviceInfo';
 import Logger from './Logger';
 
-export default function newMeasurementScheduler({ navigatorConnection, apiEndpoint, interval, onMeasures }) {
+const noop = () => null;
+
+export default function newMeasurementScheduler({ navigatorConnection, apiEndpoint, interval, onMeasures = noop }) {
   /*
 
    State modelling
@@ -28,6 +30,11 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
   let nextScheduledRun = null;
   let isStopped = false;
 
+  /*
+   * lastMeasure doesn't /need/ to be here, but it removes opportunities for the SDK user to do things wrong.
+   */
+  let lastMeasure = null;
+
   // State management
   const startMeasuring = () => {
     clearTimeout(nextScheduledRun);
@@ -40,8 +47,9 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
         if (!isStopped) {
           nextScheduledRun = setTimeout(run, interval);
         }
-        if (measures && onMeasures) {
-          // onMeasures might be heavy, so we schedule it in its own queue
+        if (measures) {
+          lastMeasure = measures;
+          // Just in case onMeasures is heavy, let's schedule it in its own queue
           setTimeout(() => onMeasures(measures), 0);
         }
       });
@@ -55,7 +63,7 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
     clearTimeout(nextScheduledRun);
     isStopped = true;
     nextScheduledRun = null;
-    navigatorConnection.onchange = () => null;
+    navigatorConnection.onchange = noop;
   };
 
   // Logging
@@ -87,5 +95,9 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
   // This function is used only by Creek
   const changeApiEndpoint = (newEndpoint) => (apiEndpoint = newEndpoint);
 
-  return { startMeasuring, stopMeasuring, changeApiEndpoint };
+  const getLastMeasure = () => lastMeasure;
+
+  startMeasuring();
+
+  return { startMeasuring, stopMeasuring, changeApiEndpoint, getLastMeasure };
 }

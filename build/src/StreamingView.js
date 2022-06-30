@@ -299,6 +299,8 @@ var StreamingView = /*#__PURE__*/function (_Component) {
         }
 
         _StreamingEvent["default"].edgeNode(_this2.props.edgeNodeId).emit(_StreamingEvent["default"].STREAM_UNREACHABLE, (0, _concat["default"])(_context3 = "Due to ".concat(err.message, ": ")).call(_context3, err));
+
+        console.warn(err);
       });
     }
   }, {
