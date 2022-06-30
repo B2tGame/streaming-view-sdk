@@ -8,9 +8,9 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _StreamingEvent = _interopRequireDefault(require("../measurements/StreamingEvent"));
 
-var _default = _StreamingEvent.default;
-exports.default = _default;
+var _default = _StreamingEvent["default"];
+exports["default"] = _default;

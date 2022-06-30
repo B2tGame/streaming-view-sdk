@@ -8,9 +8,9 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _WebRtcConnectionClient = _interopRequireDefault(require("../../measurements/service/WebRtcConnectionClient"));
 
-var _default = _WebRtcConnectionClient.default;
-exports.default = _default;
+var _default = _WebRtcConnectionClient["default"];
+exports["default"] = _default;

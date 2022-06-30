@@ -8,7 +8,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _concat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/concat"));
 
@@ -23,10 +23,10 @@ var _StreamingEvent = _interopRequireDefault(require("./StreamingEvent"));
  */
 var Logger = /*#__PURE__*/function () {
   function Logger() {
-    (0, _classCallCheck2.default)(this, Logger);
+    (0, _classCallCheck2["default"])(this, Logger);
   }
 
-  (0, _createClass2.default)(Logger, [{
+  (0, _createClass2["default"])(Logger, [{
     key: "logOutput",
     value:
     /**
@@ -42,10 +42,10 @@ var Logger = /*#__PURE__*/function () {
       if (type === 'error' || type === 'warn' || Logger.isVerboseEnabled()) {
         var _console, _context;
 
-        (_console = console)[type].apply(_console, (0, _concat.default)(_context = ['Streaming SDK:']).call(_context, args));
+        (_console = console)[type].apply(_console, (0, _concat["default"])(_context = ['Streaming SDK:']).call(_context, args));
       }
 
-      _StreamingEvent.default.emit(_StreamingEvent.default.LOG, {
+      _StreamingEvent["default"].emit(_StreamingEvent["default"].LOG, {
         type: type,
         data: args
       });
@@ -65,7 +65,7 @@ var Logger = /*#__PURE__*/function () {
         args[_key2 - 1] = arguments[_key2];
       }
 
-      this.logOutput.apply(this, (0, _concat.default)(_context2 = ['log', message]).call(_context2, args));
+      this.logOutput.apply(this, (0, _concat["default"])(_context2 = ['log', message]).call(_context2, args));
     }
     /**
      *
@@ -82,7 +82,7 @@ var Logger = /*#__PURE__*/function () {
         args[_key3 - 1] = arguments[_key3];
       }
 
-      this.logOutput.apply(this, (0, _concat.default)(_context3 = ['info', message]).call(_context3, args));
+      this.logOutput.apply(this, (0, _concat["default"])(_context3 = ['info', message]).call(_context3, args));
     }
     /**
      *
@@ -99,7 +99,7 @@ var Logger = /*#__PURE__*/function () {
         args[_key4 - 1] = arguments[_key4];
       }
 
-      this.logOutput.apply(this, (0, _concat.default)(_context4 = ['warn', message]).call(_context4, args));
+      this.logOutput.apply(this, (0, _concat["default"])(_context4 = ['warn', message]).call(_context4, args));
     }
     /**
      *
@@ -116,7 +116,7 @@ var Logger = /*#__PURE__*/function () {
         args[_key5 - 1] = arguments[_key5];
       }
 
-      this.logOutput.apply(this, (0, _concat.default)(_context5 = ['error', message]).call(_context5, args));
+      this.logOutput.apply(this, (0, _concat["default"])(_context5 = ['error', message]).call(_context5, args));
     }
   }], [{
     key: "isVerboseEnabled",
@@ -154,4 +154,4 @@ var Logger = /*#__PURE__*/function () {
   return Logger;
 }();
 
-exports.default = Logger;
+exports["default"] = Logger;

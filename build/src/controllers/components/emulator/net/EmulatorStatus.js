@@ -8,7 +8,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
 
@@ -25,7 +25,7 @@ var _emulator_web_client = require("../../../proto/emulator_web_client");
  * @export
  * @class EmulatorStatus
  */
-var EmulatorStatus = /*#__PURE__*/(0, _createClass2.default)(
+var EmulatorStatus = /*#__PURE__*/(0, _createClass2["default"])(
 /**
  * Creates an EmulatorStatus object that can retrieve the status of the running emulator.
  *
@@ -39,7 +39,7 @@ var EmulatorStatus = /*#__PURE__*/(0, _createClass2.default)(
 function EmulatorStatus(uriOrEmulator, auth) {
   var _this = this;
 
-  (0, _classCallCheck2.default)(this, EmulatorStatus);
+  (0, _classCallCheck2["default"])(this, EmulatorStatus);
 
   this.getStatus = function () {
     return _this.status;
@@ -99,4 +99,4 @@ function EmulatorStatus(uriOrEmulator, auth) {
  */
 );
 var _default = EmulatorStatus;
-exports.default = _default;
+exports["default"] = _default;

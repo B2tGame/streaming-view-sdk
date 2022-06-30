@@ -8,6 +8,8 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime-corejs3/
 
 var _promise = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/promise"));
 
+var _setTimeout2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-timeout"));
+
 var _assert = _interopRequireDefault(require("assert"));
 
 var _proxyquire = _interopRequireDefault(require("proxyquire"));
@@ -17,7 +19,7 @@ var moduleToBeTested = './StreamingController'; //
 //
 
 var makeModule = function makeModule(mocks) {
-  return _proxyquire.default.noCallThru()(moduleToBeTested, mocks).default;
+  return _proxyquire["default"].noCallThru()(moduleToBeTested, mocks)["default"];
 }; //
 // Mocks
 //
@@ -25,8 +27,8 @@ var makeModule = function makeModule(mocks) {
 
 var axiosGetMock = function axiosGetMock(urlToResponse) {
   return function (url, options) {
-    return new _promise.default(function (resolve) {
-      return setTimeout(function () {
+    return new _promise["default"](function (resolve) {
+      return (0, _setTimeout2["default"])(function () {
         return resolve(urlToResponse(url));
       }, 1);
     });
@@ -76,9 +78,9 @@ describe('StreamingController', function () {
       });
     };
 
-    it('responds quickly when connectivity measures are available', /*#__PURE__*/(0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee() {
+    it('responds quickly when connectivity measures are available', /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
       var sc, result;
-      return _regenerator.default.wrap(function _callee$(_context) {
+      return _regenerator["default"].wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
@@ -94,7 +96,7 @@ describe('StreamingController', function () {
             case 6:
               result = _context.sent;
 
-              _assert.default.deepEqual(result, {
+              _assert["default"].deepEqual(result, {
                 apps: ['app1', 'app2']
               });
 
@@ -105,9 +107,9 @@ describe('StreamingController', function () {
         }
       }, _callee);
     })));
-    it('polls when connectivity measures are NOT available', /*#__PURE__*/(0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee2() {
+    it('polls when connectivity measures are NOT available', /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2() {
       var sc, result;
-      return _regenerator.default.wrap(function _callee2$(_context2) {
+      return _regenerator["default"].wrap(function _callee2$(_context2) {
         while (1) {
           switch (_context2.prev = _context2.next) {
             case 0:
@@ -118,7 +120,7 @@ describe('StreamingController', function () {
             case 3:
               sc = _context2.sent;
               // lastMeasure will actually become available only after a while
-              setTimeout(function () {
+              (0, _setTimeout2["default"])(function () {
                 lastMeasure = measuresMock;
               }, 200); // This time we set a pollingTime much lower than the delay above
 
@@ -128,7 +130,7 @@ describe('StreamingController', function () {
             case 7:
               result = _context2.sent;
 
-              _assert.default.deepEqual(result, {
+              _assert["default"].deepEqual(result, {
                 apps: ['app1', 'app2']
               });
 
