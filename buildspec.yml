@@ -38,6 +38,7 @@ phases:
        - git push --set-upstream origin $CODEBUILD_SOURCE_VERSION
        - git push origin --tags
   post_build:
+    on-failure: ABORT
     commands:
        - cd $CODEBUILD_SRC_DIR_rob0ui
        - export PACKAGE="https://registry.npmjs.org/@applandstream/streaming-view-sdk/-/streaming-view-sdk-$TAG.tgz";
