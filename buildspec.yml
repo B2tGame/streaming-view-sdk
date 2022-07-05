@@ -19,19 +19,19 @@ phases:
     on-failure: ABORT
     commands:
        - npm run build
-       - git add -A
-       - git status
-       - "git commit -m \"Build System: Building new version\" || echo \"Nothing to commit, skipping\"" 
        - |-
             if [ "$IS_PREBUILD" = 'true' ]; then
               echo "Publishing release candidate"
               npm version pre$NPM_VERSION --preid=rc
+              cd build
               npm publish --access-public --tag=next
             else
               echo "Publishing release"
               npm version $NPM_VERSION
+              cd build
               npm publish --access-public --tag=latest
             fi
+            cd ..
        - export TAG=$(cat package.json | jq -r '.version')
        - git push --set-upstream origin $CODEBUILD_SOURCE_VERSION
        - git push origin --tags
