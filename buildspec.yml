@@ -19,9 +19,6 @@ phases:
     on-failure: ABORT
     commands:
        - npm run build
-       - git add -A
-       - git status
-       - "git commit -m \"Build System: Building new version\" || echo \"Nothing to commit, skipping\"" 
        - |-
             if [ "$IS_PREBUILD" = 'true' ]; then
               echo "Publishing release candidate"
