@@ -14,7 +14,8 @@ pipelines:
           # HACK if we don't set NPM_TOKEN npm complains
           - export NPM_TOKEN={fake_npm_token}
           - npm install
+          - npt run prettier-check
           - npm run lint
-          - npm test
           - npm run depcheck
+          - npm test
 
