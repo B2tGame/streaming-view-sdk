@@ -12,7 +12,7 @@
     "lint": "eslint index.js src/",
     "test": "mocha --timeout 10000 --require @babel/register --exit --recursive 'src/**/*.tests.js'",
     "build": "rm -rf build && babel index.js measurement.js -d build --source-maps && babel src -d build/src --copy-files --source-maps && echo '@applandstream/streaming-view-sdk' > build/README.md && cp package.json build/package.json",
-    "version": "echo \"{\\\"tag\\\": \\\"$(cat package.json | jq -r '.version')\\\"}\" > src/build-info.json && cp src/build-info.json build/src/build-info.json && git add src/build-info.json build/src/build-info.json",
+    "version": "echo \"{\\\"tag\\\": \\\"$(cat package.json | jq -r '.version')\\\"}\" > src/build-info.json && cp src/build-info.json build/src/build-info.json && git add src/build-info.json",
     "postversion": "cp package.json build/package.json && cp .npmrc build/.npmrc"
   },
   "author": "Appland",
