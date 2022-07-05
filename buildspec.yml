@@ -9,6 +9,7 @@ phases:
        - "git config --global user.email 'dev@appland.se'"
        - "git config --global user.name 'AWS CodeBuild'"
        - "git checkout $CODEBUILD_SOURCE_VERSION"
+       - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > .npmrc
        - npm install -g npm@8.5.2 node-pre-gyp
        - npm install --legacy-peer-deps
        - npm --version
@@ -19,6 +20,7 @@ phases:
     on-failure: ABORT
     commands:
        - npm run build
+       - cp .npmrc build/.npmrc
        - |-
             if [ "$IS_PREBUILD" = 'true' ]; then
               echo "Publishing release candidate"
