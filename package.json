@@ -13,9 +13,6 @@
     "version": "echo \"{\\\"tag\\\": \\\"$(cat package.json | jq -r '.version')\\\"}\" > src/build-info.json && cp src/build-info.json build/src/build-info.json && git add src/build-info.json build/src/build-info.json",
     "postversion": "cp package.json build/package.json"
   },
-  "files": [
-    "build/*"
-  ],
   "author": "Appland",
   "license": "ISC",
   "homepage": "https://bitbucket.org/appland/streaming-view-sdk#readme",
