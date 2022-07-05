@@ -1,5 +1,4 @@
 import assert from 'assert';
-import axios from 'axios';
 import proxyquire from 'proxyquire';
 import StreamingEvent from '../StreamingEvent';
 import StreamWebRtc from './StreamWebRtc';
