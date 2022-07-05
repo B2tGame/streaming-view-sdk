@@ -9,10 +9,9 @@
   },
   "scripts": {
     "test": "mocha --timeout 10000 --require @babel/register --exit --recursive 'src/**/*.tests.js'",
-    "build": "rm -rf build && babel index.js -d build && babel src -d build/src --copy-files",
-    "prepack": "mv README.md README-temp.md && echo '@applandstream/streaming-view-sdk' > README.md",
-    "version": "echo \"{\\\"tag\\\": \\\"$(cat package.json | jq -r '.version')\\\"}\" > src/build-info.json && cp src/build-info.json build/src/build-info.json && git add src/build-info.json build/src/build-info.json",
-    "postpack": "mv README-temp.md README.md"
+    "build": "rm -rf build && babel src -d build/src --copy-files && echo '@applandstream/streaming-view-sdk' > build/README.md && cp package.json build/package.json",
+    "prepack": "cp package.json build/package.json",
+    "version": "echo \"{\\\"tag\\\": \\\"$(cat package.json | jq -r '.version')\\\"}\" > src/build-info.json && cp src/build-info.json build/src/build-info.json && git add src/build-info.json build/src/build-info.json"
   },
   "files": [
     "build/*"
