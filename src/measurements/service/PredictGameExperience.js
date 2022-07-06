@@ -1,4 +1,3 @@
-
 /**
  * RisingEdgeDetector class
  */

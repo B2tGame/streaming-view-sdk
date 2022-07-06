@@ -34,7 +34,7 @@ function getDeviceInfo(apiEndpoint) {
     screenWidth: Math.round(DPI * window.screen.width),
     screenHeight: Math.round(DPI * window.screen.height),
     viewportWidth: Math.round(DPI * Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)),
-    viewportHeight: Math.round(DPI * Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0))
+    viewportHeight: Math.round(DPI * Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)),
   };
 
   // this is using the deviceInfo global as cache

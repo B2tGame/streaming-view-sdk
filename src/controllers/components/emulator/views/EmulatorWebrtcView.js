@@ -30,13 +30,13 @@ export default class EmulatorWebrtcView extends Component {
     emulatorHeight: PropTypes.number,
     emulatorVersion: PropTypes.string,
     /** Defines if touch rtt should be measured */
-    measureTouchRtt: PropTypes.bool
+    measureTouchRtt: PropTypes.bool,
   };
 
   state = {
     audio: false,
     video: false,
-    playing: false
+    playing: false,
   };
 
   constructor(props) {
@@ -188,7 +188,7 @@ export default class EmulatorWebrtcView extends Component {
       } else if (timestamp > startTime + rttMeasurementTimeout) {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_RTT_TIMEOUT, {
           timeout: true,
-          time: rttMeasurementTimeout
+          time: rttMeasurementTimeout,
         });
       } else {
         requestAnimationFrame(runTouchDetection);
@@ -318,7 +318,7 @@ export default class EmulatorWebrtcView extends Component {
       margin: '0 auto',
       visibility: this.state.playing ? 'visible' : 'hidden',
       width: '100%',
-      height: '100%'
+      height: '100%',
     };
 
     return (
@@ -329,13 +329,13 @@ export default class EmulatorWebrtcView extends Component {
           height: '100%',
           flexDirection: 'column',
           justifyContent: 'center',
-          alignItems: 'center'
+          alignItems: 'center',
         }}
       >
         <video
           ref={this.video}
           style={style}
-          className='video-webrtc'
+          className="video-webrtc"
           // Initial muted value, un-muting is done dynamically through ref on userInteraction
           // Known issue: https://github.com/facebook/react/issues/10389
           muted={true}
@@ -350,7 +350,7 @@ export default class EmulatorWebrtcView extends Component {
           height={emulatorHeight / StreamCaptureService.CANVAS_SCALE_FACTOR}
           width={emulatorWidth / StreamCaptureService.CANVAS_SCALE_FACTOR}
         />
-        <canvas style={{ display: 'none' }} ref={this.canvasTouch} height='23' width='23' />
+        <canvas style={{ display: 'none' }} ref={this.canvasTouch} height="23" width="23" />
       </div>
     );
   }

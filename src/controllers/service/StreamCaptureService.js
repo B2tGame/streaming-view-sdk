@@ -44,10 +44,10 @@ export default class StreamCaptureService {
 
   /**
    * Capture the stream <video> element and check if the there is a circle at x y.
-   * 
-   * Does this by using edgedetection to redraw only edges in a canvas, 
+   *
+   * Does this by using edgedetection to redraw only edges in a canvas,
    * then checks if the radius of the circle has colored pixels or not
-   * 
+   *
    * @param {int} x coordinate of first click
    * @param {int} y coordinate of first click
    * @returns {boolean}
@@ -60,13 +60,23 @@ export default class StreamCaptureService {
       const canvasHeight = this.canvasTouch.current.height;
 
       const ctx = this.canvasTouch.current.getContext('2d', {
-        alpha: false
+        alpha: false,
       });
-      ctx.drawImage(this.video.current, x + 1 - canvasWidth / 2, y + 1 - canvasHeight / 2, canvasWidth, canvasHeight, 0, 0, canvasWidth, canvasHeight);
+      ctx.drawImage(
+        this.video.current,
+        x + 1 - canvasWidth / 2,
+        y + 1 - canvasHeight / 2,
+        canvasWidth,
+        canvasHeight,
+        0,
+        0,
+        canvasWidth,
+        canvasHeight
+      );
 
-      let frame = ctx.getImageData(0, 0, canvasWidth, canvasHeight).data
-      let length = frame.length; 
-      
+      let frame = ctx.getImageData(0, 0, canvasWidth, canvasHeight).data;
+      let length = frame.length;
+
       for (let i = 0; i < length; i += 4) {
         // Greyscale the click areas red channel
         const red = frame[i + 0];
@@ -74,10 +84,9 @@ export default class StreamCaptureService {
         const blue = frame[i + 2];
 
         const indexX = Math.floor(((i / 4) % canvasWidth) + x + 1 - canvasWidth / 2);
-        const indexY = Math.floor(((i / 4) / canvasWidth) + y + 1 - canvasWidth / 2);
+        const indexY = Math.floor(i / 4 / canvasWidth + y + 1 - canvasWidth / 2);
 
-        if (indexX < 0 || emulatorWidth < indexX ||
-          indexY < 0 || emulatorHeight < indexY) {
+        if (indexX < 0 || emulatorWidth < indexX || indexY < 0 || emulatorHeight < indexY) {
           frame[i] = 0;
         } else {
           frame[i] = (red + green + blue) / 3;
@@ -91,13 +100,13 @@ export default class StreamCaptureService {
 
       const radius = 10.5;
       let hits = 0;
-      const points = new Set()
+      const points = new Set();
 
       for (let angle = 0; angle < 360; angle += 6) {
         // Sum up the points on the circle that is marked as having an edge
-        
-        let xa = Math.round(radius * Math.sin(Math.PI * 2 * angle / 360) + canvasWidth / 2 - 0.5);
-        let ya = Math.round(radius * Math.cos(Math.PI * 2 * angle / 360) + canvasWidth / 2 - 0.5);
+
+        let xa = Math.round(radius * Math.sin((Math.PI * 2 * angle) / 360) + canvasWidth / 2 - 0.5);
+        let ya = Math.round(radius * Math.cos((Math.PI * 2 * angle) / 360) + canvasWidth / 2 - 0.5);
 
         if (!points.has(xa + ya * canvasWidth)) {
           const value = frame[(xa + ya * canvasWidth) * 4];
@@ -111,12 +120,12 @@ export default class StreamCaptureService {
 
       return hits / points.size > requiredPixelRatio;
     }
-  }
+  };
 
   /**
    * Detects edges by checking each pixels surrounding pixels difference. And if an edge is detected draw
    * that edge in a canvas for later analysis.
-   * 
+   *
    * @param {*} ctx The canvas context on which to draw the edges that are detected
    * @param {*} canvasWidth The width of the canvas
    * @param {*} pixelData The pixel data to use to determine where edges are located
@@ -132,8 +141,8 @@ export default class StreamCaptureService {
 
         const left = pixelData[index - 4];
         const right = pixelData[index + 4];
-        const top = pixelData[index - (canvasWidth * 4)];
-        const bottom = pixelData[index + (canvasWidth * 4)];
+        const top = pixelData[index - canvasWidth * 4];
+        const bottom = pixelData[index + canvasWidth * 4];
 
         if (pixel > left + threshold) {
           this.plotPoint(ctx, x, y);
@@ -154,7 +163,7 @@ export default class StreamCaptureService {
         }
       }
     }
-  }
+  };
 
   /**
    * Draw a point at a given coordinate
@@ -198,7 +207,7 @@ export default class StreamCaptureService {
       }
 
       // Find and get the color of the middle pixel of the screen (center).
-      const centerPixelOffset = ((scaledHeight * scaledWidth / 2) + (scaledWidth / 2)) * 4;
+      const centerPixelOffset = ((scaledHeight * scaledWidth) / 2 + scaledWidth / 2) * 4;
       const centerPixelColor = this.rgbToHex(this.getPixel(rawImage, centerPixelOffset));
 
       const averagePixelColor = this.avgColor(pixels);
@@ -208,7 +217,7 @@ export default class StreamCaptureService {
         hasVideo: hasVideo,
         captureProcessingTime: Date.now() - captureVideoStreamStartTime,
         screenshot: this.canvas.current.toDataURL('image/jpeg'),
-        centerPixelColor: centerPixelColor
+        centerPixelColor: centerPixelColor,
       });
     }
   };
@@ -247,7 +256,7 @@ export default class StreamCaptureService {
     return {
       red: Math.round(pixels.reduce((sum, pixel) => sum + pixel.red, 0) / pixels.length),
       green: Math.round(pixels.reduce((sum, pixel) => sum + pixel.green, 0) / pixels.length),
-      blue: Math.round(pixels.reduce((sum, pixel) => sum + pixel.blue, 0) / pixels.length)
+      blue: Math.round(pixels.reduce((sum, pixel) => sum + pixel.blue, 0) / pixels.length),
     };
   }
 
@@ -261,7 +270,7 @@ export default class StreamCaptureService {
     return {
       red: image.data[offset],
       green: image.data[offset + 1],
-      blue: image.data[offset + 2]
+      blue: image.data[offset + 2],
     };
   }
 

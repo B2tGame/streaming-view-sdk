@@ -104,7 +104,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
   proto.android.emulation.control.VmRunState.toObject = function (includeInstance, msg) {
     var f,
       obj = {
-        state: jspb.Message.getFieldWithDefault(msg, 1, 0)
+        state: jspb.Message.getFieldWithDefault(msg, 1, 0),
       };
 
     if (includeInstance) {
@@ -188,7 +188,7 @@ proto.android.emulation.control.VmRunState.RunState = {
   SHUTDOWN: 5,
   TERMINATE: 7,
   RESET: 9,
-  INTERNAL_ERROR: 10
+  INTERNAL_ERROR: 10,
 };
 
 /**
@@ -255,7 +255,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
   proto.android.emulation.control.ParameterValue.toObject = function (includeInstance, msg) {
     var f,
       obj = {
-        dataList: jspb.Message.getRepeatedFloatingPointField(msg, 1)
+        dataList: jspb.Message.getRepeatedFloatingPointField(msg, 1),
       };
 
     if (includeInstance) {
@@ -399,7 +399,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
       obj = {
         target: jspb.Message.getFieldWithDefault(msg, 1, 0),
         status: jspb.Message.getFieldWithDefault(msg, 2, 0),
-        value: (f = msg.getValue()) && proto.android.emulation.control.ParameterValue.toObject(includeInstance, f)
+        value: (f = msg.getValue()) && proto.android.emulation.control.ParameterValue.toObject(includeInstance, f),
       };
 
     if (includeInstance) {
@@ -495,7 +495,7 @@ proto.android.emulation.control.PhysicalModelValue.State = {
   OK: 0,
   NO_SERVICE: -3,
   DISABLED: -2,
-  UNKNOWN: -1
+  UNKNOWN: -1,
 };
 
 /**
@@ -511,7 +511,7 @@ proto.android.emulation.control.PhysicalModelValue.PhysicalType = {
   PRESSURE: 6,
   HUMIDITY: 7,
   VELOCITY: 8,
-  AMBIENT_MOTION: 9
+  AMBIENT_MOTION: 9,
 };
 
 /**
@@ -545,11 +545,9 @@ proto.android.emulation.control.PhysicalModelValue.prototype.setStatus = functio
  * @return {?proto.android.emulation.control.ParameterValue}
  */
 proto.android.emulation.control.PhysicalModelValue.prototype.getValue = function () {
-  return /** @type{?proto.android.emulation.control.ParameterValue} */ (jspb.Message.getWrapperField(
-    this,
-    proto.android.emulation.control.ParameterValue,
-    3
-  ));
+  return /** @type{?proto.android.emulation.control.ParameterValue} */ (
+    jspb.Message.getWrapperField(this, proto.android.emulation.control.ParameterValue, 3)
+  );
 };
 
 /** @param {?proto.android.emulation.control.ParameterValue|undefined} value */
@@ -616,7 +614,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
       obj = {
         target: jspb.Message.getFieldWithDefault(msg, 1, 0),
         status: jspb.Message.getFieldWithDefault(msg, 2, 0),
-        value: (f = msg.getValue()) && proto.android.emulation.control.ParameterValue.toObject(includeInstance, f)
+        value: (f = msg.getValue()) && proto.android.emulation.control.ParameterValue.toObject(includeInstance, f),
       };
 
     if (includeInstance) {
@@ -712,7 +710,7 @@ proto.android.emulation.control.SensorValue.State = {
   OK: 0,
   NO_SERVICE: -3,
   DISABLED: -2,
-  UNKNOWN: -1
+  UNKNOWN: -1,
 };
 
 /**
@@ -729,7 +727,7 @@ proto.android.emulation.control.SensorValue.SensorType = {
   PRESSURE: 7,
   HUMIDITY: 8,
   MAGNETIC_FIELD_UNCALIBRATED: 9,
-  GYROSCOPE_UNCALIBRATED: 10
+  GYROSCOPE_UNCALIBRATED: 10,
 };
 
 /**
@@ -763,11 +761,9 @@ proto.android.emulation.control.SensorValue.prototype.setStatus = function (valu
  * @return {?proto.android.emulation.control.ParameterValue}
  */
 proto.android.emulation.control.SensorValue.prototype.getValue = function () {
-  return /** @type{?proto.android.emulation.control.ParameterValue} */ (jspb.Message.getWrapperField(
-    this,
-    proto.android.emulation.control.ParameterValue,
-    3
-  ));
+  return /** @type{?proto.android.emulation.control.ParameterValue} */ (
+    jspb.Message.getWrapperField(this, proto.android.emulation.control.ParameterValue, 3)
+  );
 };
 
 /** @param {?proto.android.emulation.control.ParameterValue|undefined} value */
@@ -842,7 +838,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
         start: jspb.Message.getFieldWithDefault(msg, 2, 0),
         next: jspb.Message.getFieldWithDefault(msg, 3, 0),
         sort: jspb.Message.getFieldWithDefault(msg, 4, 0),
-        entriesList: jspb.Message.toObjectList(msg.getEntriesList(), proto.android.emulation.control.LogcatEntry.toObject, includeInstance)
+        entriesList: jspb.Message.toObjectList(msg.getEntriesList(), proto.android.emulation.control.LogcatEntry.toObject, includeInstance),
       };
 
     if (includeInstance) {
@@ -952,7 +948,7 @@ proto.android.emulation.control.LogMessage.serializeBinaryToWriter = function (m
  */
 proto.android.emulation.control.LogMessage.LogType = {
   TEXT: 0,
-  PARSED: 1
+  PARSED: 1,
 };
 
 /**
@@ -1012,11 +1008,9 @@ proto.android.emulation.control.LogMessage.prototype.setSort = function (value) 
  * @return {!Array<!proto.android.emulation.control.LogcatEntry>}
  */
 proto.android.emulation.control.LogMessage.prototype.getEntriesList = function () {
-  return /** @type{!Array<!proto.android.emulation.control.LogcatEntry>} */ (jspb.Message.getRepeatedWrapperField(
-    this,
-    proto.android.emulation.control.LogcatEntry,
-    5
-  ));
+  return /** @type{!Array<!proto.android.emulation.control.LogcatEntry>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.android.emulation.control.LogcatEntry, 5)
+  );
 };
 
 /** @param {!Array<!proto.android.emulation.control.LogcatEntry>} value */
@@ -1087,7 +1081,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
         tid: jspb.Message.getFieldWithDefault(msg, 3, 0),
         level: jspb.Message.getFieldWithDefault(msg, 4, 0),
         tag: jspb.Message.getFieldWithDefault(msg, 5, ''),
-        msg: jspb.Message.getFieldWithDefault(msg, 6, '')
+        msg: jspb.Message.getFieldWithDefault(msg, 6, ''),
       };
 
     if (includeInstance) {
@@ -1211,7 +1205,7 @@ proto.android.emulation.control.LogcatEntry.LogLevel = {
   WARN: 5,
   ERR: 6,
   FATAL: 7,
-  SILENT: 8
+  SILENT: 8,
 };
 
 /**
@@ -1339,7 +1333,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
       obj = {
         hypervisortype: jspb.Message.getFieldWithDefault(msg, 1, 0),
         numberofcpucores: jspb.Message.getFieldWithDefault(msg, 2, 0),
-        ramsizebytes: jspb.Message.getFieldWithDefault(msg, 3, 0)
+        ramsizebytes: jspb.Message.getFieldWithDefault(msg, 3, 0),
       };
 
     if (includeInstance) {
@@ -1437,7 +1431,7 @@ proto.android.emulation.control.VmConfiguration.VmHypervisorType = {
   HAXM: 3,
   HVF: 4,
   WHPX: 5,
-  GVM: 6
+  GVM: 6,
 };
 
 /**
@@ -1524,7 +1518,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
   proto.android.emulation.control.ClipData.toObject = function (includeInstance, msg) {
     var f,
       obj = {
-        text: jspb.Message.getFieldWithDefault(msg, 1, '')
+        text: jspb.Message.getFieldWithDefault(msg, 1, ''),
       };
 
     if (includeInstance) {
@@ -1659,7 +1653,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
         identifier: jspb.Message.getFieldWithDefault(msg, 3, 0),
         pressure: jspb.Message.getFieldWithDefault(msg, 4, 0),
         touchMajor: jspb.Message.getFieldWithDefault(msg, 5, 0),
-        touchMinor: jspb.Message.getFieldWithDefault(msg, 6, 0)
+        touchMinor: jspb.Message.getFieldWithDefault(msg, 6, 0),
       };
 
     if (includeInstance) {
@@ -1901,7 +1895,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
     var f,
       obj = {
         touchesList: jspb.Message.toObjectList(msg.getTouchesList(), proto.android.emulation.control.Touch.toObject, includeInstance),
-        device: jspb.Message.getFieldWithDefault(msg, 2, 0)
+        device: jspb.Message.getFieldWithDefault(msg, 2, 0),
       };
 
     if (includeInstance) {
@@ -1987,11 +1981,9 @@ proto.android.emulation.control.TouchEvent.serializeBinaryToWriter = function (m
  * @return {!Array<!proto.android.emulation.control.Touch>}
  */
 proto.android.emulation.control.TouchEvent.prototype.getTouchesList = function () {
-  return /** @type{!Array<!proto.android.emulation.control.Touch>} */ (jspb.Message.getRepeatedWrapperField(
-    this,
-    proto.android.emulation.control.Touch,
-    1
-  ));
+  return /** @type{!Array<!proto.android.emulation.control.Touch>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.android.emulation.control.Touch, 1)
+  );
 };
 
 /** @param {!Array<!proto.android.emulation.control.Touch>} value */
@@ -2073,7 +2065,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
         x: jspb.Message.getFieldWithDefault(msg, 1, 0),
         y: jspb.Message.getFieldWithDefault(msg, 2, 0),
         buttons: jspb.Message.getFieldWithDefault(msg, 3, 0),
-        device: jspb.Message.getFieldWithDefault(msg, 4, 0)
+        device: jspb.Message.getFieldWithDefault(msg, 4, 0),
       };
 
     if (includeInstance) {
@@ -2270,7 +2262,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
         eventtype: jspb.Message.getFieldWithDefault(msg, 2, 0),
         keycode: jspb.Message.getFieldWithDefault(msg, 3, 0),
         key: jspb.Message.getFieldWithDefault(msg, 4, ''),
-        text: jspb.Message.getFieldWithDefault(msg, 5, '')
+        text: jspb.Message.getFieldWithDefault(msg, 5, ''),
       };
 
     if (includeInstance) {
@@ -2382,7 +2374,7 @@ proto.android.emulation.control.KeyboardEvent.KeyCodeType = {
   EVDEV: 1,
   XKB: 2,
   WIN: 3,
-  MAC: 4
+  MAC: 4,
 };
 
 /**
@@ -2391,7 +2383,7 @@ proto.android.emulation.control.KeyboardEvent.KeyCodeType = {
 proto.android.emulation.control.KeyboardEvent.KeyEventType = {
   KEYDOWN: 0,
   KEYUP: 1,
-  KEYPRESS: 2
+  KEYPRESS: 2,
 };
 
 /**
@@ -2505,7 +2497,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
     var f,
       obj = {
         istouching: jspb.Message.getFieldWithDefault(msg, 1, false),
-        touchid: jspb.Message.getFieldWithDefault(msg, 2, 0)
+        touchid: jspb.Message.getFieldWithDefault(msg, 2, 0),
       };
 
     if (includeInstance) {
@@ -2664,7 +2656,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
         speed: +jspb.Message.getFieldWithDefault(msg, 4, 0.0),
         bearing: +jspb.Message.getFieldWithDefault(msg, 5, 0.0),
         altitude: +jspb.Message.getFieldWithDefault(msg, 6, 0.0),
-        satellites: jspb.Message.getFieldWithDefault(msg, 7, 0)
+        satellites: jspb.Message.getFieldWithDefault(msg, 7, 0),
       };
 
     if (includeInstance) {
@@ -2927,7 +2919,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
         charger: jspb.Message.getFieldWithDefault(msg, 3, 0),
         chargelevel: jspb.Message.getFieldWithDefault(msg, 4, 0),
         health: jspb.Message.getFieldWithDefault(msg, 5, 0),
-        status: jspb.Message.getFieldWithDefault(msg, 6, 0)
+        status: jspb.Message.getFieldWithDefault(msg, 6, 0),
       };
 
     if (includeInstance) {
@@ -3047,7 +3039,7 @@ proto.android.emulation.control.BatteryState.BatteryStatus = {
   CHARGING: 1,
   DISCHARGING: 2,
   NOT_CHARGING: 3,
-  FULL: 4
+  FULL: 4,
 };
 
 /**
@@ -3057,7 +3049,7 @@ proto.android.emulation.control.BatteryState.BatteryCharger = {
   NONE: 0,
   AC: 1,
   USB: 2,
-  WIRELESS: 3
+  WIRELESS: 3,
 };
 
 /**
@@ -3068,7 +3060,7 @@ proto.android.emulation.control.BatteryState.BatteryHealth = {
   FAILED: 1,
   DEAD: 2,
   OVERVOLTAGE: 3,
-  OVERHEATED: 4
+  OVERHEATED: 4,
 };
 
 /**
@@ -3202,7 +3194,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
         rotation: (f = msg.getRotation()) && proto.android.emulation.control.Rotation.toObject(includeInstance, f),
         width: jspb.Message.getFieldWithDefault(msg, 3, 0),
         height: jspb.Message.getFieldWithDefault(msg, 4, 0),
-        display: jspb.Message.getFieldWithDefault(msg, 5, 0)
+        display: jspb.Message.getFieldWithDefault(msg, 5, 0),
       };
 
     if (includeInstance) {
@@ -3313,7 +3305,7 @@ proto.android.emulation.control.ImageFormat.serializeBinaryToWriter = function (
 proto.android.emulation.control.ImageFormat.ImgFormat = {
   PNG: 0,
   RGBA8888: 1,
-  RGB888: 2
+  RGB888: 2,
 };
 
 /**
@@ -3334,11 +3326,9 @@ proto.android.emulation.control.ImageFormat.prototype.setFormat = function (valu
  * @return {?proto.android.emulation.control.Rotation}
  */
 proto.android.emulation.control.ImageFormat.prototype.getRotation = function () {
-  return /** @type{?proto.android.emulation.control.Rotation} */ (jspb.Message.getWrapperField(
-    this,
-    proto.android.emulation.control.Rotation,
-    2
-  ));
+  return /** @type{?proto.android.emulation.control.Rotation} */ (
+    jspb.Message.getWrapperField(this, proto.android.emulation.control.Rotation, 2)
+  );
 };
 
 /** @param {?proto.android.emulation.control.Rotation|undefined} value */
@@ -3446,7 +3436,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
         width: jspb.Message.getFieldWithDefault(msg, 2, 0),
         height: jspb.Message.getFieldWithDefault(msg, 3, 0),
         image: msg.getImage_asB64(),
-        seq: jspb.Message.getFieldWithDefault(msg, 5, 0)
+        seq: jspb.Message.getFieldWithDefault(msg, 5, 0),
       };
 
     if (includeInstance) {
@@ -3556,11 +3546,9 @@ proto.android.emulation.control.Image.serializeBinaryToWriter = function (messag
  * @return {?proto.android.emulation.control.ImageFormat}
  */
 proto.android.emulation.control.Image.prototype.getFormat = function () {
-  return /** @type{?proto.android.emulation.control.ImageFormat} */ (jspb.Message.getWrapperField(
-    this,
-    proto.android.emulation.control.ImageFormat,
-    1
-  ));
+  return /** @type{?proto.android.emulation.control.ImageFormat} */ (
+    jspb.Message.getWrapperField(this, proto.android.emulation.control.ImageFormat, 1)
+  );
 };
 
 /** @param {?proto.android.emulation.control.ImageFormat|undefined} value */
@@ -3700,7 +3688,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
         rotation: jspb.Message.getFieldWithDefault(msg, 1, 0),
         xaxis: +jspb.Message.getFieldWithDefault(msg, 2, 0.0),
         yaxis: +jspb.Message.getFieldWithDefault(msg, 3, 0.0),
-        zaxis: +jspb.Message.getFieldWithDefault(msg, 4, 0.0)
+        zaxis: +jspb.Message.getFieldWithDefault(msg, 4, 0.0),
       };
 
     if (includeInstance) {
@@ -3803,7 +3791,7 @@ proto.android.emulation.control.Rotation.SkinRotation = {
   PORTRAIT: 0,
   LANDSCAPE: 1,
   REVERSE_PORTRAIT: 2,
-  REVERSE_LANDSCAPE: 3
+  REVERSE_LANDSCAPE: 3,
 };
 
 /**
@@ -3904,7 +3892,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
     var f,
       obj = {
         operation: jspb.Message.getFieldWithDefault(msg, 1, 0),
-        number: jspb.Message.getFieldWithDefault(msg, 2, '')
+        number: jspb.Message.getFieldWithDefault(msg, 2, ''),
       };
 
     if (includeInstance) {
@@ -3994,7 +3982,7 @@ proto.android.emulation.control.PhoneCall.Operation = {
   REJECTCALLBUSY: 3,
   DISCONNECTCALL: 4,
   PLACECALLONHOLD: 5,
-  TAKECALLOFFHOLD: 6
+  TAKECALLOFFHOLD: 6,
 };
 
 /**
@@ -4068,7 +4056,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
   proto.android.emulation.control.PhoneResponse.toObject = function (includeInstance, msg) {
     var f,
       obj = {
-        response: jspb.Message.getFieldWithDefault(msg, 1, 0)
+        response: jspb.Message.getFieldWithDefault(msg, 1, 0),
       };
 
     if (includeInstance) {
@@ -4149,7 +4137,7 @@ proto.android.emulation.control.PhoneResponse.Response = {
   BADNUMBER: 2,
   INVALIDACTION: 3,
   ACTIONFAILED: 4,
-  RADIOOFF: 5
+  RADIOOFF: 5,
 };
 
 /**
@@ -4211,7 +4199,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
     var f,
       obj = {
         key: jspb.Message.getFieldWithDefault(msg, 1, ''),
-        value: jspb.Message.getFieldWithDefault(msg, 2, '')
+        value: jspb.Message.getFieldWithDefault(msg, 2, ''),
       };
 
     if (includeInstance) {
@@ -4368,7 +4356,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
   proto.android.emulation.control.EntryList.toObject = function (includeInstance, msg) {
     var f,
       obj = {
-        entryList: jspb.Message.toObjectList(msg.getEntryList(), proto.android.emulation.control.Entry.toObject, includeInstance)
+        entryList: jspb.Message.toObjectList(msg.getEntryList(), proto.android.emulation.control.Entry.toObject, includeInstance),
       };
 
     if (includeInstance) {
@@ -4446,11 +4434,9 @@ proto.android.emulation.control.EntryList.serializeBinaryToWriter = function (me
  * @return {!Array<!proto.android.emulation.control.Entry>}
  */
 proto.android.emulation.control.EntryList.prototype.getEntryList = function () {
-  return /** @type{!Array<!proto.android.emulation.control.Entry>} */ (jspb.Message.getRepeatedWrapperField(
-    this,
-    proto.android.emulation.control.Entry,
-    1
-  ));
+  return /** @type{!Array<!proto.android.emulation.control.Entry>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.android.emulation.control.Entry, 1)
+  );
 };
 
 /** @param {!Array<!proto.android.emulation.control.Entry>} value */
@@ -4520,7 +4506,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
         uptime: jspb.Message.getFieldWithDefault(msg, 2, 0),
         booted: jspb.Message.getFieldWithDefault(msg, 3, false),
         vmconfig: (f = msg.getVmconfig()) && proto.android.emulation.control.VmConfiguration.toObject(includeInstance, f),
-        hardwareconfig: (f = msg.getHardwareconfig()) && proto.android.emulation.control.EntryList.toObject(includeInstance, f)
+        hardwareconfig: (f = msg.getHardwareconfig()) && proto.android.emulation.control.EntryList.toObject(includeInstance, f),
       };
 
     if (includeInstance) {
@@ -4672,11 +4658,9 @@ proto.android.emulation.control.EmulatorStatus.prototype.setBooted = function (v
  * @return {?proto.android.emulation.control.VmConfiguration}
  */
 proto.android.emulation.control.EmulatorStatus.prototype.getVmconfig = function () {
-  return /** @type{?proto.android.emulation.control.VmConfiguration} */ (jspb.Message.getWrapperField(
-    this,
-    proto.android.emulation.control.VmConfiguration,
-    4
-  ));
+  return /** @type{?proto.android.emulation.control.VmConfiguration} */ (
+    jspb.Message.getWrapperField(this, proto.android.emulation.control.VmConfiguration, 4)
+  );
 };
 
 /** @param {?proto.android.emulation.control.VmConfiguration|undefined} value */
@@ -4701,11 +4685,9 @@ proto.android.emulation.control.EmulatorStatus.prototype.hasVmconfig = function 
  * @return {?proto.android.emulation.control.EntryList}
  */
 proto.android.emulation.control.EmulatorStatus.prototype.getHardwareconfig = function () {
-  return /** @type{?proto.android.emulation.control.EntryList} */ (jspb.Message.getWrapperField(
-    this,
-    proto.android.emulation.control.EntryList,
-    5
-  ));
+  return /** @type{?proto.android.emulation.control.EntryList} */ (
+    jspb.Message.getWrapperField(this, proto.android.emulation.control.EntryList, 5)
+  );
 };
 
 /** @param {?proto.android.emulation.control.EntryList|undefined} value */
@@ -4772,7 +4754,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
       obj = {
         samplingrate: jspb.Message.getFieldWithDefault(msg, 1, 0),
         channels: jspb.Message.getFieldWithDefault(msg, 2, 0),
-        format: jspb.Message.getFieldWithDefault(msg, 3, 0)
+        format: jspb.Message.getFieldWithDefault(msg, 3, 0),
       };
 
     if (includeInstance) {
@@ -4865,7 +4847,7 @@ proto.android.emulation.control.AudioFormat.serializeBinaryToWriter = function (
  */
 proto.android.emulation.control.AudioFormat.SampleFormat = {
   AUD_FMT_U8: 0,
-  AUD_FMT_S16: 1
+  AUD_FMT_S16: 1,
 };
 
 /**
@@ -4873,7 +4855,7 @@ proto.android.emulation.control.AudioFormat.SampleFormat = {
  */
 proto.android.emulation.control.AudioFormat.Channels = {
   MONO: 0,
-  STEREO: 1
+  STEREO: 1,
 };
 
 /**
@@ -4962,7 +4944,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
       obj = {
         format: (f = msg.getFormat()) && proto.android.emulation.control.AudioFormat.toObject(includeInstance, f),
         timestamp: jspb.Message.getFieldWithDefault(msg, 2, 0),
-        audio: msg.getAudio_asB64()
+        audio: msg.getAudio_asB64(),
       };
 
     if (includeInstance) {
@@ -5056,11 +5038,9 @@ proto.android.emulation.control.AudioPacket.serializeBinaryToWriter = function (
  * @return {?proto.android.emulation.control.AudioFormat}
  */
 proto.android.emulation.control.AudioPacket.prototype.getFormat = function () {
-  return /** @type{?proto.android.emulation.control.AudioFormat} */ (jspb.Message.getWrapperField(
-    this,
-    proto.android.emulation.control.AudioFormat,
-    1
-  ));
+  return /** @type{?proto.android.emulation.control.AudioFormat} */ (
+    jspb.Message.getWrapperField(this, proto.android.emulation.control.AudioFormat, 1)
+  );
 };
 
 /** @param {?proto.android.emulation.control.AudioFormat|undefined} value */
@@ -5172,7 +5152,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
     var f,
       obj = {
         srcaddress: jspb.Message.getFieldWithDefault(msg, 1, ''),
-        text: jspb.Message.getFieldWithDefault(msg, 2, '')
+        text: jspb.Message.getFieldWithDefault(msg, 2, ''),
       };
 
     if (includeInstance) {

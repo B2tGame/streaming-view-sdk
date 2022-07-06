@@ -4,7 +4,6 @@ import StreamingEvent from './StreamingEvent';
  * Logger class for logging to browser console.
  */
 export default class Logger {
-
   /**
    * Get if global verbose mode is enable or disabled.
    * @return {boolean}

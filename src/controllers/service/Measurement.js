@@ -259,7 +259,7 @@ export default class Measurement {
       packetsLost: 0,
       packetsReceived: 0,
       jitter: null,
-      measureAt: Date.now()
+      measureAt: Date.now(),
     };
   }
 
@@ -293,7 +293,7 @@ export default class Measurement {
 
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REPORT_MEASUREMENT, {
       networkRoundTripTime: this.networkRoundTripTime,
-      extra: this.measurement
+      extra: this.measurement,
     });
     this.measurement = {};
     this.numberOfBlackScreens = 0;
@@ -328,7 +328,7 @@ export default class Measurement {
       this.measurement.totalDecodeTimePerFramesDecodedInMs = Measurement.roundToDecimals(
         ((report.totalDecodeTime - this.previousMeasurement.totalDecodeTime) /
           (report.framesDecoded - this.previousMeasurement.framesDecoded)) *
-        1000
+          1000
       );
       this.measurement.interFrameDelayStandardDeviationInMs = Measurement.roundToDecimals(
         Measurement.calculateStandardDeviation(report, this.previousMeasurement)

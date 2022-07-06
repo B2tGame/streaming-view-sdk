@@ -42,12 +42,12 @@ export default class EventHandler extends Component {
     edgeNodeId: PropTypes.string.isRequired, // report events during the streaming view.
     volume: PropTypes.number,
     muted: PropTypes.bool,
-    measureTouchRtt: PropTypes.bool
+    measureTouchRtt: PropTypes.bool,
   };
 
   static defaultProps = {
     emulatorHeight: 768,
-    emulatorWidth: 432
+    emulatorWidth: 432,
   };
 
   constructor(props) {
@@ -61,12 +61,12 @@ export default class EventHandler extends Component {
     this.touchHistory = [];
   }
 
-  touchHandler = function(type, allEvents, events, firstChangedEvent) {
+  touchHandler = function (type, allEvents, events, firstChangedEvent) {
     return this.sendMouse(firstChangedEvent, 0);
   };
 
   updateTouchHandler() {
-    this.touchHandler = function(type, allEvents, events) {
+    this.touchHandler = function (type, allEvents, events) {
       return this.sendMultiTouch(type, allEvents, events);
     };
   }
@@ -89,8 +89,7 @@ export default class EventHandler extends Component {
     window.removeEventListener('resize', this.handleResize);
     if (this.props.enableFullScreen && screenfull.isEnabled && screenfull.isFullscreen) {
       try {
-        window.screen.orientation.unlock().catch(() => {
-        });
+        window.screen.orientation.unlock().catch(() => {});
       } catch (e) {
         // We ignore if the system fails to perform unlock(), typical due to we were not in a locked mode previously,
         // or we are on iOS Safari, where the feature is not supported.
@@ -130,14 +129,8 @@ export default class EventHandler extends Component {
    * @returns {{x: number, y: number}}
    */
   calculateMouseEmulatorCoordinates = (event) => {
-    return this.calculateEmulatorCoordinates(
-      event.offsetX,
-      event.offsetY,
-      event.target.clientWidth,
-      event.target.clientHeight
-    );
+    return this.calculateEmulatorCoordinates(event.offsetX, event.offsetY, event.target.clientWidth, event.target.clientHeight);
   };
-
 
   /**
    *
@@ -153,7 +146,6 @@ export default class EventHandler extends Component {
       event.target.clientHeight
     );
   };
-
 
   /**
    *
@@ -183,7 +175,7 @@ export default class EventHandler extends Component {
     const { emulatorHeight, emulatorWidth } = this.props;
     const eventOffset = {
       x: this.withinInterval(0, offsetX / clientWidth, 1),
-      y: this.withinInterval(0, offsetY / clientHeight, 1)
+      y: this.withinInterval(0, offsetY / clientHeight, 1),
     };
     const emulatorIsUsingFullHeight = emulatorHeight / emulatorWidth > clientHeight / clientWidth;
     if (emulatorIsUsingFullHeight) {
@@ -191,14 +183,14 @@ export default class EventHandler extends Component {
       const scaledTo = Math.round(this.withinInterval(0, (eventOffset.x - 0.5) / scaleFactor + 0.5, 1) * emulatorWidth) || 0;
       return {
         x: this.withinInterval(1, scaledTo, emulatorWidth),
-        y: this.withinInterval(1, Math.round(eventOffset.y * emulatorHeight) || 0, emulatorHeight)
+        y: this.withinInterval(1, Math.round(eventOffset.y * emulatorHeight) || 0, emulatorHeight),
       };
     } else {
       const scaleFactor = (clientWidth * emulatorHeight) / (emulatorWidth * clientHeight);
       const scaledTo = Math.round(this.withinInterval(0, (eventOffset.y - 0.5) / scaleFactor + 0.5, 1) * emulatorHeight) || 0;
       return {
         x: this.withinInterval(1, Math.round(eventOffset.x * emulatorWidth) || 0, emulatorWidth),
-        y: this.withinInterval(1, scaledTo, emulatorHeight)
+        y: this.withinInterval(1, scaledTo, emulatorHeight),
       };
     }
   }
@@ -302,7 +294,10 @@ export default class EventHandler extends Component {
       event.preventDefault();
     }
     this.touchHandler(event.nativeEvent.type, event.nativeEvent.touches, event.nativeEvent.changedTouches, event.nativeEvent.touches[0]);
-    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_START, this.calculateTouchEmulatorCoordinates(event.nativeEvent.touches[0]));
+    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(
+      StreamingEvent.TOUCH_START,
+      this.calculateTouchEmulatorCoordinates(event.nativeEvent.touches[0])
+    );
   };
 
   handleTouchEnd = (event) => {
@@ -315,7 +310,10 @@ export default class EventHandler extends Component {
       event.nativeEvent.changedTouches,
       event.nativeEvent.changedTouches[0]
     );
-    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_END, this.calculateTouchEmulatorCoordinates(event.nativeEvent));
+    StreamingEvent.edgeNode(this.props.edgeNodeId).emit(
+      StreamingEvent.TOUCH_END,
+      this.calculateTouchEmulatorCoordinates(event.nativeEvent)
+    );
   };
 
   handleTouchMove = (event) => {
@@ -330,7 +328,10 @@ export default class EventHandler extends Component {
     if (!isMobile) {
       this.mouseDown = true;
       this.sendMouse(this.calculateMouseEmulatorCoordinates(event.nativeEvent), event.button);
-      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_START, this.calculateTouchEmulatorCoordinates(event.nativeEvent));
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(
+        StreamingEvent.TOUCH_START,
+        this.calculateTouchEmulatorCoordinates(event.nativeEvent)
+      );
     }
   };
 
@@ -339,7 +340,10 @@ export default class EventHandler extends Component {
     if (!isMobile && this.mouseDown) {
       this.mouseDown = false;
       this.sendMouse(this.calculateMouseEmulatorCoordinates(event.nativeEvent));
-      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.TOUCH_END, this.calculateTouchEmulatorCoordinates(event.nativeEvent));
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(
+        StreamingEvent.TOUCH_END,
+        this.calculateTouchEmulatorCoordinates(event.nativeEvent)
+      );
     }
   };
 
@@ -404,7 +408,7 @@ export default class EventHandler extends Component {
         onTouchEnd={this.handleTouchEnd}
         onTouchMove={this.handleTouchMove}
         onDragStart={this.preventDragHandler}
-        tabIndex='0'
+        tabIndex="0"
         ref={this.handler}
         style={{
           pointerEvents: 'all',
@@ -414,7 +418,7 @@ export default class EventHandler extends Component {
           border: '0',
           display: 'inline-block',
           width: '100%',
-          height: '100%'
+          height: '100%',
         }}
       >
         <View {...this.props} />

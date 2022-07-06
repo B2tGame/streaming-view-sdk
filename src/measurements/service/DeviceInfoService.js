@@ -62,7 +62,7 @@ export default class DeviceInfoService {
    */
   static updateDeviceInfo(apiEndpoint, body) {
     return axios.post(`${apiEndpoint}/api/streaming-games/edge-node/device-info/${DeviceInfoService.getStoredDeviceInfoId()}`, body, {
-      timeout: 3000
+      timeout: 3000,
     });
   }
 }

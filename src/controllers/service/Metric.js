@@ -9,7 +9,7 @@ export default class Metric {
       start: 0,
       end: 2000,
       mode: 'start',
-      requiredWindow: 1250
+      requiredWindow: 1250,
     };
   }
 
@@ -23,7 +23,7 @@ export default class Metric {
       start: 2000,
       end: 7000,
       mode: 'start',
-      requiredWindow: 4000
+      requiredWindow: 4000,
     };
   }
 
@@ -37,7 +37,7 @@ export default class Metric {
       start: 4500,
       end: 24 * 60 * 60 * 1000, // 24 hours
       mode: 'start',
-      requiredWindow: 4500
+      requiredWindow: 4500,
     };
   }
 
@@ -47,7 +47,7 @@ export default class Metric {
       start: -5000,
       end: 0,
       mode: 'end',
-      requiredWindow: 2500
+      requiredWindow: 2500,
     };
   }
 
@@ -113,7 +113,7 @@ export default class Metric {
         raw: [],
         ended: false,
         firstValueTime: undefined,
-        lastValueTime: undefined
+        lastValueTime: undefined,
       };
     }
   }

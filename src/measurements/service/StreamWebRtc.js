@@ -23,11 +23,7 @@ export default class StreamWebRtc extends EventEmitter {
    * @param {{name: string, candidates: []}} iceServers
    * @param {number} pingInterval
    */
-  constructor(
-    host,
-    iceServers = { name: 'default', candidates: [] },
-    pingInterval = StreamWebRtc.WEBRTC_PING_INTERVAL,
-  ) {
+  constructor(host, iceServers = { name: 'default', candidates: [] }, pingInterval = StreamWebRtc.WEBRTC_PING_INTERVAL) {
     super();
 
     this.iceServersName = iceServers.name;
@@ -40,7 +36,7 @@ export default class StreamWebRtc extends EventEmitter {
       beforeAnswer: this.beforeAnswer,
       host: this.host,
       iceServersName: this.iceServersName,
-      iceServersCandidates: this.iceServersCandidates
+      iceServersCandidates: this.iceServersCandidates,
     }).then((peerConnection) => {
       this.peerConnection = peerConnection;
     });
@@ -73,7 +69,7 @@ export default class StreamWebRtc extends EventEmitter {
             JSON.stringify({
               type: 'ping',
               timestamp: Date.now(),
-              sequenceId: sequenceId++ // incremental counter to be able to detect out of order or lost packages
+              sequenceId: sequenceId++, // incremental counter to be able to detect out of order or lost packages
             })
           );
         }

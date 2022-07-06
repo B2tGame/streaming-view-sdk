@@ -109,25 +109,25 @@ class Emulator extends Component {
     /** Ice Server Candidates */
     iceServers: PropTypes.object,
     /** Max quantization for VP8, max value is 63 */
-    vp8MaxQuantization: PropTypes.number
+    vp8MaxQuantization: PropTypes.number,
   };
 
   static defaultProps = {
     auth: null,
     poll: false,
     maxConnectionRetries: Emulator.RELOAD_FAILURE_THRESHOLD,
-    measureTouchRtt: true
+    measureTouchRtt: true,
   };
 
   components = {
     webrtc: EmulatorWebrtcView,
-    png: EmulatorPngView
+    png: EmulatorPngView,
   };
 
   state = {
     streamingConnectionId: Date.now(),
     width: undefined,
-    height: undefined
+    height: undefined,
   };
 
   constructor(props) {
@@ -253,7 +253,7 @@ class Emulator extends Component {
       emulatorVersion,
       logger,
       edgeNodeId,
-      measureTouchRtt
+      measureTouchRtt,
     } = this.props;
     return (
       <EventHandler

@@ -81,11 +81,11 @@ function getRTTMeasurementsForEdgeRegions(apiEndpoint, selectedEdges, iterationC
               webRtcHost: `${measurementEndpoints[iterationCounter % measurementEndpoints.length]}/webrtc`,
               region: edgeRegion,
               turnName,
-              iceCandidates
+              iceCandidates,
             }).then((rttMeasurements) => ({
               region: edgeRegion,
               turnName,
-              rttMeasurements
+              rttMeasurements,
             }))
           )
         )
@@ -162,7 +162,7 @@ function measure(apiEndpoint, recommendedEdges) {
     return {
       predictedGameExperience,
       recommendedRegion: minRegion,
-      rttStatsByRegionByTurn: statsByRegionByTurn
+      rttStatsByRegionByTurn: statsByRegionByTurn,
     };
   });
 }

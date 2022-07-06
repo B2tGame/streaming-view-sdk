@@ -5,7 +5,6 @@ import Logger from './Logger';
  * Extend Event Emitter with an emit that always send the event to 'event' target
  */
 class ExtendedEventEmitter extends EventEmitter {
-
   /**
    * @param {string} edgeNodeId
    */
@@ -112,12 +111,11 @@ export default class StreamingEvent {
     return 'error-browser';
   }
 
-
   /**
    * Event fired when a touch or click has started
    * @return {string}
    */
-   static get TOUCH_START() {
+  static get TOUCH_START() {
     return 'touch-start';
   }
 
@@ -125,7 +123,7 @@ export default class StreamingEvent {
    * Event fired when a new RTT value based on a touch has been detected
    * @return {string}
    */
-   static get TOUCH_RTT() {
+  static get TOUCH_RTT() {
     return 'touch-rtt';
   }
 
@@ -133,10 +131,10 @@ export default class StreamingEvent {
    * Event fired when a touch rtt times out
    * @return {string}
    */
-   static get TOUCH_RTT_TIMEOUT() {
+  static get TOUCH_RTT_TIMEOUT() {
     return 'touch-rtt-timeout';
   }
-  
+
   /**
    * Event that is fire when the SDK receiving the edge node are ready to accept a connection.
    * @return {string}
@@ -419,7 +417,6 @@ export default class StreamingEvent {
     return 'stream-webrtc-ready';
   }
 
-
   /**
    * Event fired when the emulator is ready and first input lag fix has been applied.
    * @return {string}
@@ -500,7 +497,6 @@ export default class StreamingEvent {
   static get CLASSIFICATION_REPORT() {
     return 'classification-report';
   }
-
 
   /**
    * Get EventEmitter for a specific Edge Node Id.

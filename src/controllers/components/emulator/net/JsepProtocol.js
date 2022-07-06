@@ -162,7 +162,7 @@ export default class JsepProtocol {
         }
         StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.PEER_CONNECTION_SELECTED, {
           connection: connection,
-          protocol: protocol
+          protocol: protocol,
         });
         break;
       }
@@ -207,7 +207,7 @@ export default class JsepProtocol {
     return {
       urls: [`${endpoint}?transport=udp`, `${endpoint}?transport=tcp`],
       username: 'webclient',
-      credential: 'webclient'
+      credential: 'webclient',
     };
   }
 
@@ -217,7 +217,7 @@ export default class JsepProtocol {
       //TODO-turn: use this.iceServers.candidates directly when the turn server related issues are fixed!
       //Replace iceServers in default turn case
       iceServers: this.iceServers.name === 'default' ? [this.getIceConfiguration()] : this.iceServers.candidates,
-      iceTransportPolicy: 'relay'
+      iceTransportPolicy: 'relay',
     };
     this.logger.log(`JsepProtocol._handleStart; iceServers.name: ${this.iceServers.name}`, signal);
 
@@ -235,8 +235,8 @@ export default class JsepProtocol {
       .getStats()
       .then((stats) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, stats))
       .catch((err) => {
-          StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err)
-          console.warn(err);
+        StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err);
+        console.warn(err);
       });
   };
 
