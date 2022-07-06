@@ -32,7 +32,7 @@ export default class StreamingView extends Component {
     shouldRandomlyMeasureRtt: undefined,
     height: window.innerHeight + 'px',
     width: window.innerWidth + 'px',
-    iceServers: {}
+    iceServers: {},
   };
 
   /**
@@ -62,7 +62,7 @@ export default class StreamingView extends Component {
       measureTouchRtt: PropTypes.bool,
       measurementScheduler: PropTypes.object.isRequired,
       playoutDelayHint: PropTypes.number,
-      vp8MaxQuantization: PropTypes.number
+      vp8MaxQuantization: PropTypes.number,
     };
   }
 
@@ -77,7 +77,7 @@ export default class StreamingView extends Component {
     pingInterval: StreamWebRtc.WEBRTC_PING_INTERVAL,
     measureTouchRtt: true,
     playoutDelayHint: 0,
-    vp8MaxQuantization: 63
+    vp8MaxQuantization: 63,
   };
 
   /**
@@ -119,7 +119,7 @@ export default class StreamingView extends Component {
       turnEndpoint,
       onEvent,
       pingInterval,
-      measurementScheduler
+      measurementScheduler,
     } = this.props;
     if (!internalSession) {
       this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId, this.streamingViewId);
@@ -137,7 +137,7 @@ export default class StreamingView extends Component {
     if (this.props.measureTouchRtt === undefined) {
       // Run coinflip to in 50% of cases measure rtt
       this.setState({
-        shouldRandomlyMeasureRtt: Math.random() < 0.5
+        shouldRandomlyMeasureRtt: Math.random() < 0.5,
       });
     }
 
@@ -184,7 +184,7 @@ export default class StreamingView extends Component {
         this.setState({
           emulatorWidth: configuration.emulatorWidth,
           emulatorHeight: configuration.emulatorHeight,
-          emulatorVersion: configuration.emulatorVersion
+          emulatorVersion: configuration.emulatorVersion,
         });
       })
       .on(StreamingEvent.STREAM_WEBRTC_READY, (onUserInteractionCallback) => {
@@ -200,7 +200,7 @@ export default class StreamingView extends Component {
       measurementScheduler,
       apiEndpoint: apiEndpoint,
       edgeNodeId: edgeNodeId,
-      internalSession: internalSession
+      internalSession: internalSession,
     })
       .then((controller) => controller.waitFor(StreamingController.WAIT_FOR_ENDPOINT))
       .then((state) => state.endpoint)
@@ -225,7 +225,7 @@ export default class StreamingView extends Component {
           isReadyStream: true,
           streamEndpoint: streamEndpoint,
           turnEndpoint: internalSession && turnEndpoint ? turnEndpoint : undefined,
-          iceServers: iceServers
+          iceServers: iceServers,
         });
 
         StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_EMULATOR_READY, measurementScheduler.stopMeasuring);
@@ -248,7 +248,7 @@ export default class StreamingView extends Component {
     if (this.props.measureTouchRtt === undefined && this.state.shouldRandomlyMeasureRtt === undefined) {
       // Run coinflip to in 50% of cases measure rtt
       this.setState({
-        shouldRandomlyMeasureRtt: Math.random() < 0.5
+        shouldRandomlyMeasureRtt: Math.random() < 0.5,
       });
     }
   }
@@ -258,7 +258,7 @@ export default class StreamingView extends Component {
       measurement: this.measurement ? 'should-be-destroy' : 'skip',
       websocket: this.streamSocket ? 'should-be-destroy' : 'skip',
       blackScreenDetector: this.blackScreenDetector ? 'should-be-destroy' : 'skip',
-      logQueueService: this.LogQueueService ? 'should-be-destroy' : 'skip'
+      logQueueService: this.LogQueueService ? 'should-be-destroy' : 'skip',
     });
     this.isMountedInView = false;
 
@@ -299,7 +299,7 @@ export default class StreamingView extends Component {
       if (this.isMountedInView) {
         this.setState({
           height: window.innerHeight + 'px',
-          width: window.innerWidth + 'px'
+          width: window.innerWidth + 'px',
         });
       }
     }, 50);
@@ -312,7 +312,7 @@ export default class StreamingView extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.ERROR_BROWSER, {
       message: error.message,
       filename: error.filename,
-      stack: error.stack
+      stack: error.stack,
     });
     return false;
   };
@@ -322,7 +322,7 @@ export default class StreamingView extends Component {
     const whiteListedFields = ['streamQualityRating', 'onEvent'];
     if (nextProps.streamQualityRating !== this.props.streamQualityRating) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_QUALITY_RATING, {
-        streamQualityRating: nextProps.streamQualityRating
+        streamQualityRating: nextProps.streamQualityRating,
       });
     }
 
@@ -358,7 +358,7 @@ export default class StreamingView extends Component {
           role: role,
           eventType: StreamingEvent.STREAM_LOADING_TIME,
           value: streamLoadingTime,
-          message: `User event - ${StreamingEvent.STREAM_LOADING_TIME}: ${streamLoadingTime} ms.`
+          message: `User event - ${StreamingEvent.STREAM_LOADING_TIME}: ${streamLoadingTime} ms.`,
         };
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.USER_EVENT_REPORT, userEventPayload);
       }
@@ -368,7 +368,7 @@ export default class StreamingView extends Component {
         role: role,
         eventType: StreamingEvent.USER_STARTS_PLAYING,
         value: 1,
-        message: `User event - ${StreamingEvent.USER_STARTS_PLAYING}: Video is playing.`
+        message: `User event - ${StreamingEvent.USER_STARTS_PLAYING}: Video is playing.`,
       });
 
       StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.STREAM_AUDIO_CODEC, (codec) => {
@@ -376,7 +376,7 @@ export default class StreamingView extends Component {
           role: role,
           eventType: StreamingEvent.STREAM_AUDIO_CODEC,
           value: codec,
-          message: `User event - ${StreamingEvent.STREAM_AUDIO_CODEC}: ${codec}`
+          message: `User event - ${StreamingEvent.STREAM_AUDIO_CODEC}: ${codec}`,
         });
       });
 
@@ -385,7 +385,7 @@ export default class StreamingView extends Component {
           role: role,
           eventType: StreamingEvent.STREAM_VIDEO_CODEC,
           value: codec,
-          message: `User event - ${StreamingEvent.STREAM_VIDEO_CODEC}: ${codec}.`
+          message: `User event - ${StreamingEvent.STREAM_VIDEO_CODEC}: ${codec}.`,
         });
       });
     });
@@ -402,7 +402,7 @@ export default class StreamingView extends Component {
       height: propsHeight,
       width: propsWidth,
       playoutDelayHint,
-      vp8MaxQuantization
+      vp8MaxQuantization,
     } = this.props;
     const { height: stateHeight, width: stateWidth, iceServers } = this.state;
 

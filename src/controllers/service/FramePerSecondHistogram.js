@@ -1,5 +1,4 @@
 export default class FramePerSecondHistogram {
-
   constructor() {
     this.data = '';
   }
@@ -14,9 +13,8 @@ export default class FramePerSecondHistogram {
     }
   }
 
-
   addSeparator() {
-    this.data += "|";
+    this.data += '|';
   }
 
   getMetric() {
@@ -40,13 +38,9 @@ export default class FramePerSecondHistogram {
     } else if (fps < 75) {
       return '›'; // 65 to 75
     } else if (fps < 85) {
-      return '»';  // 75 to 85
+      return '»'; // 75 to 85
     } else {
       return '>'; // more then 85
     }
   }
-
 }
-
-
-

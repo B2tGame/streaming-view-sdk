@@ -44,12 +44,12 @@ const mockEndpoint = 'mockEndpoint';
 const mockRecommendedEdges = [
   {
     edgeRegion: 'pa-papuasia-1',
-    measurementEndpoints: ['papuasia-host-1', 'papuasia-host-2', 'papuasia-host-3']
+    measurementEndpoints: ['papuasia-host-1', 'papuasia-host-2', 'papuasia-host-3'],
   },
   {
     edgeRegion: 'mo-cornwall-0',
-    measurementEndpoints: ['cornwall-host-1', 'cornwall-host-2']
-  }
+    measurementEndpoints: ['cornwall-host-1', 'cornwall-host-2'],
+  },
 ];
 
 describe('networkConnectivity', () => {
@@ -59,7 +59,7 @@ describe('networkConnectivity', () => {
     it('measure', async () => {
       const networkConnectivity = makeNetworkConnectivity({
         axios: { get: axiosGetMock((url) => ({ data: mockRecommendedEdges })) },
-        '../service/StreamWebRtc': StreamWebRtcMock
+        '../service/StreamWebRtc': StreamWebRtcMock,
       });
 
       const expected = {
@@ -69,24 +69,24 @@ describe('networkConnectivity', () => {
           'pa-papuasia-1': {
             0: {
               rtt: 205,
-              stdDev: 25
+              stdDev: 25,
             },
             1: {
               rtt: 205,
-              stdDev: 25
-            }
+              stdDev: 25,
+            },
           },
           'mo-cornwall-0': {
             0: {
               rtt: 205,
-              stdDev: 25
+              stdDev: 25,
             },
             1: {
               rtt: 205,
-              stdDev: 25
-            }
-          }
-        }
+              stdDev: 25,
+            },
+          },
+        },
       };
 
       const actual = await networkConnectivity.measure(mockEndpoint, mockRecommendedEdges);

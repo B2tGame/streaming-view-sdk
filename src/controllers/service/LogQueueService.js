@@ -28,7 +28,7 @@ export default class LogQueueService {
         name: 'sdk',
         timestamp: new Date().toISOString(),
         type: 'log',
-        message: JSON.stringify(payload)
+        message: JSON.stringify(payload),
       });
       if (this.logQueue.length > 25) {
         this.sendQueue();

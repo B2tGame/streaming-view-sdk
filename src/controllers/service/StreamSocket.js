@@ -31,7 +31,7 @@ export default class StreamSocket {
     this.userId = userId;
     this.socket = io(`${endpoint.protocol}//${endpoint.host}`, {
       path: `${endpoint.pathname}/emulator-commands/socket.io`,
-      query: `userId=${userId}&internal=${internalSession ? '1' : '0'}`
+      query: `userId=${userId}&internal=${internalSession ? '1' : '0'}`,
     });
     this.reportCache = [];
     this.reportTimer = setInterval(this.emitReports, StreamSocket.WEBSOCKET_EMIT_REPORTS_INTERVAL);
@@ -106,7 +106,7 @@ export default class StreamSocket {
         JSON.stringify({
           type: 'report-bundle',
           timestamp: Date.now(),
-          reports: Array.from(pako.deflate(JSON.stringify([...this.reportCache])))
+          reports: Array.from(pako.deflate(JSON.stringify([...this.reportCache]))),
         })
       );
       this.reportCache = [];
