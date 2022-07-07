@@ -61,7 +61,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
   proto.android.emulation.control.RtcId.toObject = function (includeInstance, msg) {
     var f,
       obj = {
-        guid: jspb.Message.getFieldWithDefault(msg, 1, '')
+        guid: jspb.Message.getFieldWithDefault(msg, 1, ''),
       };
 
     if (includeInstance) {
@@ -192,7 +192,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
     var f,
       obj = {
         id: (f = msg.getId()) && proto.android.emulation.control.RtcId.toObject(includeInstance, f),
-        message: jspb.Message.getFieldWithDefault(msg, 2, '')
+        message: jspb.Message.getFieldWithDefault(msg, 2, ''),
       };
 
     if (includeInstance) {
@@ -278,11 +278,9 @@ proto.android.emulation.control.JsepMsg.serializeBinaryToWriter = function (mess
  * @return {?proto.android.emulation.control.RtcId}
  */
 proto.android.emulation.control.JsepMsg.prototype.getId = function () {
-  return /** @type{?proto.android.emulation.control.RtcId} */ (jspb.Message.getWrapperField(
-    this,
-    proto.android.emulation.control.RtcId,
-    1
-  ));
+  return /** @type{?proto.android.emulation.control.RtcId} */ (
+    jspb.Message.getWrapperField(this, proto.android.emulation.control.RtcId, 1)
+  );
 };
 
 /** @param {?proto.android.emulation.control.RtcId|undefined} value */

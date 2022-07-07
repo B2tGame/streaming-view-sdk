@@ -127,7 +127,7 @@ class StreamingController {
           );
         })
         .then((result) => ({
-          apps: (result.data || {}).apps || []
+          apps: (result.data || {}).apps || [],
         }));
     };
 
@@ -178,7 +178,7 @@ class StreamingController {
     return Promise.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(([edgeNodeId, streamEndpoint]) => {
       StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.LOG, {
         name: 'streaming-controller',
-        action: 'resetMoment'
+        action: 'resetMoment',
       });
       return axios.get(`${streamEndpoint}/emulator-commands/reset`).then(() => {
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_READY);
@@ -303,7 +303,7 @@ class StreamingController {
     const lastMeasure = this.measurementScheduler.getLastMeasure();
     return (lastMeasure ? Promise.resolve(lastMeasure.deviceInfo) : getDeviceInfo(this.apiEndpoint)).then((deviceInfo) => ({
       deviceInfoId: deviceInfo.deviceInfoId,
-      userId: deviceInfo.userId
+      userId: deviceInfo.userId,
     }));
   }
 

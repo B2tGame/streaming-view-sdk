@@ -15,7 +15,7 @@ export default class WebRtcConnectionClient {
     const options = {
       sdpSemantics: 'unified-plan',
       iceServers: iceServers,
-      iceTransportPolicy: 'relay'
+      iceTransportPolicy: 'relay',
     };
     const peerConnection = new RTCPeerConnection(options);
 
@@ -34,9 +34,9 @@ export default class WebRtcConnectionClient {
 
   static createConnection = (options = {}) => {
     const createOptions = {
-      beforeAnswer() { },
+      beforeAnswer() {},
       stereo: false,
-      ...options
+      ...options,
     };
     const { host, iceServersCandidates, beforeAnswer } = createOptions;
     let remotePeerConnectionId = undefined;
@@ -79,7 +79,7 @@ export default class WebRtcConnectionClient {
         return peerConnection.setLocalDescription(
           new RTCSessionDescription({
             type: 'answer',
-            sdp: createOptions.stereo ? originalAnswer.sdp.replace(/a=fmtp:111/, 'a=fmtp:111 stereo=1\r\na=fmtp:111') : originalAnswer.sdp
+            sdp: createOptions.stereo ? originalAnswer.sdp.replace(/a=fmtp:111/, 'a=fmtp:111 stereo=1\r\na=fmtp:111') : originalAnswer.sdp,
           })
         );
       })
@@ -89,8 +89,8 @@ export default class WebRtcConnectionClient {
           method: 'POST',
           data: JSON.stringify(peerConnection.localDescription),
           headers: {
-            'Content-Type': 'application/json'
-          }
+            'Content-Type': 'application/json',
+          },
         });
       })
       .then(() => {

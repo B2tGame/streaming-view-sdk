@@ -231,14 +231,14 @@ export default class Classification {
         beginning: Measurement.roundToDecimals(framesDecodedPerSecondBeginning),
         overall: Measurement.roundToDecimals(framesDecodedPerSecondOverall),
         current: Measurement.roundToDecimals(framesDecodedPerSecondCurrent),
-        histogram: this.framesDecodedPerSecondHistogram.getMetric()
+        histogram: this.framesDecodedPerSecondHistogram.getMetric(),
       },
       interFrameDelayStandardDeviation: {
         start: Measurement.roundToDecimals(interFrameDelayStandardDeviationStart),
         beginning: Measurement.roundToDecimals(interFrameDelayStandardDeviationBeginning),
         overall: Measurement.roundToDecimals(interFrameDelayStandardDeviationOverall),
-        current: Measurement.roundToDecimals(interFrameDelayStandardDeviationCurrent)
-      }
+        current: Measurement.roundToDecimals(interFrameDelayStandardDeviationCurrent),
+      },
     };
   }
 }

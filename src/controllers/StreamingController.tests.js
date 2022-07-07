@@ -15,7 +15,7 @@ const axiosGetMock = (urlToResponse) => (url, options) => new Promise((resolve) 
 
 const measuresMock = {
   connectivityInfo: 'FakeConnectivityInfoPayload',
-  deviceInfo: 'FakeDeviceInfoPayload'
+  deviceInfo: 'FakeDeviceInfoPayload',
 };
 
 //
@@ -31,16 +31,16 @@ describe('StreamingController', () => {
     const buildStreamingController = () =>
       makeModule({
         axios: {
-          get: axiosGetMock((url) => ({ data: { apps: ['app1', 'app2'] } }))
-        }
+          get: axiosGetMock((url) => ({ data: { apps: ['app1', 'app2'] } })),
+        },
       })({
         apiEndpoint: 'https://fake.meh',
         measurementScheduler: {
           getLastMeasure: () => lastMeasure,
           changeApiEndpoint: () => null,
           startMeasuring: () => null,
-          stopMeasuring: () => null
-        }
+          stopMeasuring: () => null,
+        },
       });
 
     it('responds quickly when connectivity measures are available', async () => {
@@ -60,7 +60,9 @@ describe('StreamingController', () => {
       const sc = await buildStreamingController();
 
       // lastMeasure will actually become available only after a while
-      setTimeout(() => { lastMeasure = measuresMock; }, 200);
+      setTimeout(() => {
+        lastMeasure = measuresMock;
+      }, 200);
 
       // This time we set a pollingTime much lower than the delay above
       const result = await sc.getPredictedGameExperiences(10);

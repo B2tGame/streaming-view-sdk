@@ -34,7 +34,7 @@ export default class BlackScreenDetector {
       StreamingEvent.REPORT_MEASUREMENT,
       StreamingEvent.STREAM_BLACK_SCREEN,
       StreamingEvent.STREAM_VIDEO_SCREENSHOT,
-      StreamingEvent.MOMENT_DETECTOR_EVENT
+      StreamingEvent.MOMENT_DETECTOR_EVENT,
     ];
   }
 
@@ -59,7 +59,7 @@ export default class BlackScreenDetector {
       if (this.browserTabIsVisible() && this.streamVisibleOnViewport()) {
         if (this.workingStreamLatestTimestamp < Date.now() - BlackScreenDetector.THRESHOLD && this.notVisibleHoldOffPeriod < Date.now()) {
           StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_BLACK_SCREEN, {
-            cause: JSON.stringify(this.recentEvents)
+            cause: JSON.stringify(this.recentEvents),
           });
         }
       } else {
