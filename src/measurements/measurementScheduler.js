@@ -92,6 +92,17 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
         callback(null);
       });
 
+  // HACK: this also shouldn't be here, this module is feature creeping a bit...
+  const getPredictedGameExperiences = (pollingInterval = 500) => {
+    const waitAndRetry = () =>
+      new Promise((resolve) => setTimeout(() => resolve(getPredictedGameExperiences(pollingInterval)), pollingInterval));
+
+    const goAhead = () =>
+      networkConnectivity.getPredictedGameExperiences(apiEndpoint, lastMeasure.deviceInfo.deviceInfoId, lastMeasure.connectivityInfo);
+
+    return lastMeasure ? goAhead() : waitAndRetry();
+  };
+
   // This function is used only by Creek
   const changeApiEndpoint = (newEndpoint) => (apiEndpoint = newEndpoint);
 
@@ -99,5 +110,5 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
 
   startMeasuring();
 
-  return { startMeasuring, stopMeasuring, changeApiEndpoint, getLastMeasure };
+  return { startMeasuring, stopMeasuring, changeApiEndpoint, getLastMeasure, getPredictedGameExperiences };
 }

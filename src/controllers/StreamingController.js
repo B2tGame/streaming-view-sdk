@@ -113,27 +113,8 @@ class StreamingController {
    * Get a list of predicted game experiences for all apps based on the current usage connectivity.
    * @returns {Promise<[{appId: number, score: number}]>}
    */
-  getPredictedGameExperiences(pollingInterval = 500) {
-    const waitAndRetry = () =>
-      new Promise((resolve) => setTimeout(() => resolve(this.getPredictedGameExperiences(pollingInterval)), pollingInterval));
-
-    const goAhead = (connectivityInfo) => {
-      return Promise.all([this.getApiEndpoint(), this.getDeviceInfo()])
-        .then(([apiEndpoint, deviceInfo]) => {
-          const encodedConnectivityInfo = encodeURIComponent(JSON.stringify(connectivityInfo));
-          const encodedDeviceInfoId = encodeURIComponent(deviceInfo.deviceInfoId);
-          return axios.get(
-            `${apiEndpoint}/api/streaming-games/predicted-game-experience?connectivity-info=${encodedConnectivityInfo}&deviceInfoId=${encodedDeviceInfoId}`
-          );
-        })
-        .then((result) => ({
-          apps: (result.data || {}).apps || [],
-        }));
-    };
-
-    // This is necessary because our endpoint does not deal well with `connectivityInfo === {}`
-    const lastMeasure = this.measurementScheduler.getLastMeasure();
-    return lastMeasure ? goAhead(lastMeasure.connectivityInfo) : waitAndRetry();
+  getPredictedGameExperiences(pollingInterval) {
+    return this.measurementScheduler.getPredictedGameExperiences(pollingInterval);
   }
 
   /**
