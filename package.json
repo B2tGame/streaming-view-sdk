@@ -16,7 +16,7 @@
     "postversion": "cp package.json build/package.json && cp .npmrc build/.npmrc  && cp src/build-info.json build/src/build-info.json",
     "prettier-write": "prettier --write src/",
     "prettier-check": "prettier --check src/",
-    "prepare": "husky install"
+    "prepare": "husky install || exit 0"
   },
   "author": "Appland",
   "license": "ISC",
