@@ -10,7 +10,7 @@ browser.
 You can connect to the remote stream as follows:
 
 ```js
-import { StreamingView } from 'streaming-view-sdk';
+import { StreamingView } from '@applandstream/streaming-view-sdk';
 
 class App extends React.Component {
   render() {
@@ -36,7 +36,7 @@ class App extends React.Component {
 You can shut down an edge node with the StreamingController
 
 ```js
-import { StreamingController } from 'streaming-view-sdk';
+import { StreamingController } from '@applandstream/streaming-view-sdk';
 
 StreamingController({
   apiEndpoint: 'https://exampe.com/api/streaming-service',
