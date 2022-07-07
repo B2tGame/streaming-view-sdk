@@ -167,4 +167,17 @@ function measure(apiEndpoint, recommendedEdges) {
   });
 }
 
-export default { measure };
+function getPredictedGameExperiences(apiEndpoint, deviceInfoId, connectivityInfo) {
+  const encodedConnectivityInfo = encodeURIComponent(JSON.stringify(connectivityInfo));
+  const encodedDeviceInfoId = encodeURIComponent(deviceInfoId);
+
+  return axios
+    .get(
+      `${apiEndpoint}/api/streaming-games/predicted-game-experience?connectivity-info=${encodedConnectivityInfo}&deviceInfoId=${encodedDeviceInfoId}`
+    )
+    .then((result) => ({
+      apps: (result.data || {}).apps || [],
+    }));
+}
+
+export default { measure, getPredictedGameExperiences };
