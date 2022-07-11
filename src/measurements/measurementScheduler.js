@@ -83,7 +83,7 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
           .then((networkConnectivityInfo) => ({ networkConnectivityInfo, deviceInfo }))
       )
       .then(({ networkConnectivityInfo, deviceInfo }) => {
-        console.info('networkConnectivityInfo', networkConnectivityInfo);
+        logger.info('networkConnectivityInfo', networkConnectivityInfo);
         updateDeviceInfo(apiEndpoint, { rttRegionMeasurements: networkConnectivityInfo.rttStatsByRegionByTurn });
         callback({ networkConnectivityInfo, deviceInfo });
       })
@@ -98,7 +98,11 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
       new Promise((resolve) => setTimeout(() => resolve(getPredictedGameExperiences(pollingInterval)), pollingInterval));
 
     const goAhead = () =>
-      networkConnectivity.getPredictedGameExperiences(apiEndpoint, lastMeasure.deviceInfo.deviceInfoId, lastMeasure.connectivityInfo);
+      networkConnectivity.getPredictedGameExperiences(
+        apiEndpoint,
+        lastMeasure.deviceInfo.deviceInfoId,
+        lastMeasure.networkConnectivityInfo
+      );
 
     return lastMeasure ? goAhead() : waitAndRetry();
   };
