@@ -180,4 +180,12 @@ function getPredictedGameExperiences(apiEndpoint, deviceInfoId, connectivityInfo
     }));
 }
 
-export default { measure, getPredictedGameExperiences };
+function getGameAvailability(apiEndpoint, deviceInfoId) {
+  const encodedDeviceInfoId = encodeURIComponent(deviceInfoId);
+
+  return axios.get(`${apiEndpoint}/api/streaming-games/game-availability?deviceInfoId=${encodedDeviceInfoId}`).then((result) => ({
+    apps: (result.data || {}).apps || [],
+  }));
+}
+
+export default { measure, getPredictedGameExperiences, getGameAvailability };

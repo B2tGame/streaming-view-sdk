@@ -24,35 +24,35 @@ const makeModule = (stubs) =>
 // Tests
 //
 describe('measurementScheduler', () => {
-  describe('getPredictedGameExperiences', () => {
-    // These are needed by deviceInfo
-    global.window = {
-      screen: {
-        width: 123,
-        height: 321,
-      },
-    };
-    global.document = {
-      documentElement: {
-        clientWidth: 100,
-        clientHeight: 200,
-      },
-    };
+  // These are needed by deviceInfo
+  global.window = {
+    screen: {
+      width: 123,
+      height: 321,
+    },
+  };
+  global.document = {
+    documentElement: {
+      clientWidth: 100,
+      clientHeight: 200,
+    },
+  };
 
-    const newMeasurementScheduler = ({ axiosGet }) =>
-      makeModule({
-        networkConnectivity: {
-          axios: {
-            get: axiosGet,
-          },
+  const newMeasurementScheduler = ({ axiosGet }) =>
+    makeModule({
+      networkConnectivity: {
+        axios: {
+          get: axiosGet,
         },
-      })({
-        navigatorConnection: {},
-        apiEndpoint: 'https://fakeApiEndpoint',
-        interval: 10,
-        onMeasures: () => null,
-      });
+      },
+    })({
+      navigatorConnection: {},
+      apiEndpoint: 'https://fakeApiEndpoint',
+      interval: 10,
+      onMeasures: () => null,
+    });
 
+  describe('getPredictedGameExperiences', () => {
     it('responds when a measurement is immediately available', async () => {
       const s = newMeasurementScheduler({
         axiosGet: (url) => {
@@ -83,6 +83,31 @@ describe('measurementScheduler', () => {
       const result = await s.getPredictedGameExperiences(10);
 
       assert.deepEqual(result, { apps: ['someApp'] });
+    });
+  });
+
+  describe('getGameAvailability', () => {
+    it('game availability api exists', async () => {
+      const apps = [
+        {
+          appId: 123,
+          available: true,
+        },
+        {
+          appId: 321,
+          available: false,
+        },
+      ];
+      const s = newMeasurementScheduler({
+        axiosGet: (url) => {
+          assert.equal(url, 'https://fakeApiEndpoint/api/streaming-games/game-availability?deviceInfoId=fakeDeviceInfoId');
+          return Promise.resolve({ data: { apps } });
+        },
+      });
+
+      const result = await s.getGameAvailability();
+
+      assert.deepEqual(result, { apps });
     });
   });
 });

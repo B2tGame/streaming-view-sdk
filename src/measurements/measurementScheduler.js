@@ -107,6 +107,12 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
     return lastMeasure ? goAhead() : waitAndRetry();
   };
 
+  const getGameAvailability = () => {
+    return Promise.resolve(lastMeasure ? lastMeasure.deviceInfo : getDeviceInfo(apiEndpoint)).then((deviceInfo) =>
+      networkConnectivity.getGameAvailability(apiEndpoint, deviceInfo.deviceInfoId)
+    );
+  };
+
   // This function is used only by Creek
   const changeApiEndpoint = (newEndpoint) => (apiEndpoint = newEndpoint);
 
@@ -114,5 +120,5 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
 
   startMeasuring();
 
-  return { startMeasuring, stopMeasuring, changeApiEndpoint, getLastMeasure, getPredictedGameExperiences };
+  return { startMeasuring, stopMeasuring, changeApiEndpoint, getLastMeasure, getPredictedGameExperiences, getGameAvailability };
 }

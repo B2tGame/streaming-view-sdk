@@ -111,10 +111,18 @@ class StreamingController {
 
   /**
    * Get a list of predicted game experiences for all apps based on the current usage connectivity.
-   * @returns {Promise<[{appId: number, score: number}]>}
+   * @returns {Promise<[{appId: number, score: number, available: boolean}]>}
    */
   getPredictedGameExperiences(pollingInterval) {
     return this.measurementScheduler.getPredictedGameExperiences(pollingInterval);
+  }
+
+  /**
+   * Get a list of apps with availability flag.
+   * @returns {Promise<[{appId: number, available: boolean}]>}
+   */
+  getGameAvailability() {
+    return this.measurementScheduler.getGameAvailability();
   }
 
   /**
