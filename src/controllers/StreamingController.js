@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { getDeviceInfo } from './service/deviceInfo';
 import StreamingEvent from './StreamingEvent';
 import buildInfo from './build-info.json';
 
@@ -288,12 +287,12 @@ class StreamingController {
    * Get device info from the device including geolocation, screen configuration etc.
    * @returns {Promise<object>}
    */
-  getDeviceInfo() {
-    const lastMeasure = this.measurementScheduler.getLastMeasure();
-    return (lastMeasure ? Promise.resolve(lastMeasure.deviceInfo) : getDeviceInfo(this.apiEndpoint)).then((deviceInfo) => ({
+  async getDeviceInfo() {
+    const deviceInfo = await this.measurementScheduler.getDeviceInfo();
+    return {
       deviceInfoId: deviceInfo.deviceInfoId,
       userId: deviceInfo.userId,
-    }));
+    };
   }
 
   /**

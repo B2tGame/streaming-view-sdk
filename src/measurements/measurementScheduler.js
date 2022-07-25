@@ -126,5 +126,17 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
 
   startMeasuring();
 
-  return { startMeasuring, stopMeasuring, changeApiEndpoint, getLastMeasure, getPredictedGameExperiences, getGameAvailability };
+  return {
+    startMeasuring,
+    stopMeasuring,
+    changeApiEndpoint,
+    getLastMeasure,
+
+    // I'm not too happy about these functions being here, it feels like this module is doing too much,
+    // but they make the interface more difficult to use wrong.
+    // TODO maybe find a way to pull them out?
+    getPredictedGameExperiences,
+    getGameAvailability,
+    getDeviceInfo,
+  };
 }
