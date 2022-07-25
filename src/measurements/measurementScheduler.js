@@ -1,4 +1,4 @@
-import deviceInfo from './service/deviceInfo';
+import deviceInfoService from './service/deviceInfo';
 import networkConnectivity from './service/networkConnectivity';
 import Logger from './Logger';
 
@@ -77,7 +77,7 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
   // Actually take the measurement
   const takeOneMeasurement = (callback) =>
     // TODO use the cached value if available
-    deviceInfo
+    deviceInfoService
       .get(apiEndpoint)
       .then((deviceInfo) =>
         networkConnectivity
@@ -86,7 +86,7 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
       )
       .then(({ networkConnectivityInfo, deviceInfo }) => {
         logger.info('networkConnectivityInfo', networkConnectivityInfo);
-        deviceInfo.update(apiEndpoint, deviceInfo.deviceInfoId, {
+        deviceInfoService.update(apiEndpoint, deviceInfo.deviceInfoId, {
           rttRegionMeasurements: networkConnectivityInfo.rttStatsByRegionByTurn,
         });
         callback({ networkConnectivityInfo, deviceInfo });
@@ -112,7 +112,7 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
   };
 
   const getGameAvailability = () => {
-    return Promise.resolve(lastMeasure ? lastMeasure.deviceInfo : deviceInfo.get(apiEndpoint)).then((deviceInfo) =>
+    return Promise.resolve(lastMeasure ? lastMeasure.deviceInfo : deviceInfoService.get(apiEndpoint)).then((deviceInfo) =>
       networkConnectivity.getGameAvailability(apiEndpoint, deviceInfo.deviceInfoId)
     );
   };

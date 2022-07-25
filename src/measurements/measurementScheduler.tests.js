@@ -8,9 +8,8 @@ const moduleToBeTested = './measurementScheduler';
 //
 
 const deviceInfoStub = {
-  '../service/DeviceInfoService': {
-    createDeviceInfo: () => Promise.resolve({ recommendation: [], deviceInfoId: 'fakeDeviceInfoId' }),
-    updateDeviceInfo: () => null,
+  axios: {
+    post: () => Promise.resolve({ data: { recommendation: [], deviceInfoId: 'fakeDeviceInfoId' } }),
   },
 };
 
@@ -31,11 +30,17 @@ describe('measurementScheduler', () => {
       height: 321,
     },
   };
+
   global.document = {
     documentElement: {
       clientWidth: 100,
       clientHeight: 200,
     },
+  };
+
+  global.localStorage = {
+    getItem: () => null,
+    setItem: () => null,
   };
 
   const newMeasurementScheduler = ({ axiosGet }) =>

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Logger from './../Logger';
-import uuid from 'uuid';
+import { v4 as uuid } from 'uuid';
 
 const USER_ID_KEY = 'streaming-appland-user-id';
 
@@ -20,7 +20,7 @@ function get(apiEndpoint) {
     viewportHeight: Math.round(DPI * Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)),
   };
 
-  const userId = localStorage.getItem(USER_ID_KEY) || uuid.v4();
+  const userId = localStorage.getItem(USER_ID_KEY) || uuid();
 
   localStorage.setItem(USER_ID_KEY, userId);
 
@@ -43,10 +43,10 @@ function get(apiEndpoint) {
  * @param {string} apiEndpoint
  * @returns {Promise<{*}>}
  */
-function updateDeviceInfo(apiEndpoint, deviceInfoId, body) {
+function update(apiEndpoint, deviceInfoId, body) {
   return axios.post(`${apiEndpoint}/api/streaming-games/edge-node/device-info/${deviceInfoId}`, body, {
     timeout: 3000,
   });
 }
 
-export { get, update };
+export default { get, update };
