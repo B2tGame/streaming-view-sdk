@@ -30,6 +30,12 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
   let nextScheduledRun = null;
   let isStopped = false;
 
+  // No point in requesting deviceInfo more than once
+  let cachedDeviceInfo = null;
+
+  const getDeviceInfo = () =>
+    Promise.resolve(cachedDeviceInfo || deviceInfoService.get(apiEndpoint).then((deviceInfo) => (cachedDeviceInfo = deviceInfo)));
+
   /*
    * lastMeasure doesn't /need/ to be here, but it removes opportunities for the SDK user to do things wrong.
    */
@@ -41,18 +47,23 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
     isStopped = false;
     nextScheduledRun = null;
 
-    const run = () => {
+    const run = async () => {
       clearTimeout(nextScheduledRun);
-      takeOneMeasurement((measures) => {
-        if (!isStopped) {
-          nextScheduledRun = setTimeout(run, interval);
-        }
-        if (measures) {
-          lastMeasure = measures;
-          // Just in case onMeasures is heavy, let's schedule it in its own queue
-          setTimeout(() => onMeasures(measures), 0);
-        }
+
+      const measures = await takeOneMeasurement().catch((err) => {
+        logError(err);
+        return null;
       });
+
+      if (!isStopped) {
+        nextScheduledRun = setTimeout(run, interval);
+      }
+
+      if (measures) {
+        lastMeasure = measures;
+        // Just in case onMeasures is heavy, let's schedule it in its own queue
+        setTimeout(() => onMeasures(measures), 0);
+      }
     };
 
     navigatorConnection.onchange = run;
@@ -75,26 +86,19 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
   };
 
   // Actually take the measurement
-  const takeOneMeasurement = (callback) =>
-    // TODO use the cached value if available
-    deviceInfoService
-      .get(apiEndpoint)
-      .then((deviceInfo) =>
-        networkConnectivity
-          .measure(apiEndpoint, deviceInfo.recommendation)
-          .then((networkConnectivityInfo) => ({ networkConnectivityInfo, deviceInfo }))
-      )
-      .then(({ networkConnectivityInfo, deviceInfo }) => {
-        logger.info('networkConnectivityInfo', networkConnectivityInfo);
-        deviceInfoService.update(apiEndpoint, deviceInfo.deviceInfoId, {
-          rttRegionMeasurements: networkConnectivityInfo.rttStatsByRegionByTurn,
-        });
-        callback({ networkConnectivityInfo, deviceInfo });
-      })
-      .catch((err) => {
-        logError(err);
-        callback(null);
-      });
+  const takeOneMeasurement = async (callback) => {
+    const deviceInfo = await getDeviceInfo();
+
+    const networkConnectivityInfo = await networkConnectivity.measure(apiEndpoint, deviceInfo.recommendation);
+
+    logger.info('networkConnectivityInfo', networkConnectivityInfo);
+
+    deviceInfoService.update(apiEndpoint, deviceInfo.deviceInfoId, {
+      rttRegionMeasurements: networkConnectivityInfo.rttStatsByRegionByTurn,
+    });
+
+    return { networkConnectivityInfo, deviceInfo };
+  };
 
   // HACK: this also shouldn't be here, this module is feature creeping a bit...
   const getPredictedGameExperiences = (pollingInterval = 500) => {
@@ -112,9 +116,7 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
   };
 
   const getGameAvailability = () => {
-    return Promise.resolve(lastMeasure ? lastMeasure.deviceInfo : deviceInfoService.get(apiEndpoint)).then((deviceInfo) =>
-      networkConnectivity.getGameAvailability(apiEndpoint, deviceInfo.deviceInfoId)
-    );
+    return getDeviceInfo().then((deviceInfo) => networkConnectivity.getGameAvailability(apiEndpoint, deviceInfo.deviceInfoId));
   };
 
   // This function is used only by Creek
