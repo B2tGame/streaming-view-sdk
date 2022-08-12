@@ -36,6 +36,12 @@ export default class StreamSocket {
     this.reportCache = [];
     this.reportTimer = setInterval(this.emitReports, StreamSocket.WEBSOCKET_EMIT_REPORTS_INTERVAL);
 
+    setTimeout(() => {
+      if (!this.socket.connected) {
+        console.error('Websocket not connected. Check that socket.io client and server versions match.');
+      }
+    }, 500);
+
     // Web Socket errors
     this.socket.on('error', (err) => StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ERROR, err));
     // Preforming and emit RTT to the streaming event bus.
