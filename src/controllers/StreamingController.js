@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { getDeviceInfo } from './service/deviceInfo';
 import StreamingEvent from './StreamingEvent';
 import buildInfo from './build-info.json';
 
@@ -111,10 +110,18 @@ class StreamingController {
 
   /**
    * Get a list of predicted game experiences for all apps based on the current usage connectivity.
-   * @returns {Promise<[{appId: number, score: number}]>}
+   * @returns {Promise<[{appId: number, score: number, available: boolean}]>}
    */
   getPredictedGameExperiences(pollingInterval) {
     return this.measurementScheduler.getPredictedGameExperiences(pollingInterval);
+  }
+
+  /**
+   * Get a list of apps with availability flag.
+   * @returns {Promise<[{appId: number, available: boolean}]>}
+   */
+  getGameAvailability() {
+    return this.measurementScheduler.getGameAvailability();
   }
 
   /**
@@ -280,12 +287,12 @@ class StreamingController {
    * Get device info from the device including geolocation, screen configuration etc.
    * @returns {Promise<object>}
    */
-  getDeviceInfo() {
-    const lastMeasure = this.measurementScheduler.getLastMeasure();
-    return (lastMeasure ? Promise.resolve(lastMeasure.deviceInfo) : getDeviceInfo(this.apiEndpoint)).then((deviceInfo) => ({
+  async getDeviceInfo() {
+    const deviceInfo = await this.measurementScheduler.getDeviceInfo();
+    return {
       deviceInfoId: deviceInfo.deviceInfoId,
       userId: deviceInfo.userId,
-    }));
+    };
   }
 
   /**

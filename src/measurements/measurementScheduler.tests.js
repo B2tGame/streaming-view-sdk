@@ -6,54 +6,119 @@ const moduleToBeTested = './measurementScheduler';
 //
 // This makes copies of the module to be tested, each copy can be generated with different mocks
 //
-const makeModule = (mocks) => proxyquire.noCallThru()(moduleToBeTested, mocks).default;
 
-//
-// Mocks
-//
+const deviceInfoStub = {
+  axios: {
+    post: () => Promise.resolve({ data: { recommendation: [], deviceInfoId: 'fakeDeviceInfoId' } }),
+  },
+};
 
-const delayBy = (milliseconds, value) => new Promise((resolve) => setTimeout(() => resolve(value), milliseconds));
-
-const networkConnectivityMock = () => ({
-  measure: (apiEndpoint, recommendation) => delayBy(1, {}),
-  getPredictedGameExperiences: () => delayBy(1, 'fakePredictedGameExperiencesResult'),
-});
-
-const deviceInfoMock = (delay) => ({
-  getDeviceInfo: (apiEndpoint) => delayBy(delay, {}),
-  updateDeviceInfo: () => null,
-});
+const makeModule = (stubs) =>
+  proxyquire(moduleToBeTested, {
+    './service/networkConnectivity': proxyquire.noCallThru()('./service/networkConnectivity', stubs.networkConnectivity),
+    './service/deviceInfo': proxyquire.noCallThru()('./service/deviceInfo', deviceInfoStub),
+  }).default;
 
 //
 // Tests
 //
 describe('measurementScheduler', () => {
-  describe('getPredictedGameExperiences', () => {
-    const newMeasurementScheduler = (delay) =>
-      makeModule({
-        './service/networkConnectivity': networkConnectivityMock(),
-        './service/deviceInfo': deviceInfoMock(delay),
-      })({
-        navigatorConnection: {},
-        apiEndpoint: '',
-        interval: 10,
-        onMeasures: () => null,
-      });
+  // These are needed by deviceInfo
+  global.window = {
+    screen: {
+      width: 123,
+      height: 321,
+    },
+  };
 
-    it('responds when a measurement is immediately available', async () => {
-      const s = newMeasurementScheduler(0);
+  global.document = {
+    documentElement: {
+      clientWidth: 100,
+      clientHeight: 200,
+    },
+  };
 
-      const result = await s.getPredictedGameExperiences();
+  global.localStorage = {
+    getItem: () => null,
+    setItem: () => null,
+  };
 
-      assert.deepEqual(result, 'fakePredictedGameExperiencesResult');
+  const newMeasurementScheduler = ({ axiosGet }) =>
+    makeModule({
+      networkConnectivity: {
+        axios: {
+          get: axiosGet,
+        },
+      },
+    })({
+      navigatorConnection: {},
+      apiEndpoint: 'https://fakeApiEndpoint',
+      interval: 10,
+      onMeasures: () => null,
     });
 
-    it('polls when connectivity measures take a while to arrive', async () => {
-      const s = newMeasurementScheduler(100);
+  describe.only('getPredictedGameExperiences', () => {
+    it('polls only when a measurement is not available', async () => {
+      // How does this test work:
+      //
+      // 1. Create a new scheduler
+      // 2. The first time we call getPredictedGameExperiences, it must poll, because it doesn't have any measurement
+      // 3. The second time we call getPredictedGameExperiences, it must **NOT** poll, and instead use immediately the available measurement
+      //
 
-      const result = await s.getPredictedGameExperiences(10);
+      const expectedCallUrl =
+        'https://fakeApiEndpoint/api/streaming-games/predicted-game-experience?connectivity-info=%7B%22rttStatsByRegionByTurn%22%3A%7B%7D%7D&deviceInfoId=fakeDeviceInfoId';
 
-      assert.deepEqual(result, 'fakePredictedGameExperiencesResult');
+      const axiosGet = (url) => {
+        assert.equal(url, expectedCallUrl);
+        return Promise.resolve({ data: { apps: ['someApp'] } });
+      };
+
+      let result;
+
+      // 1. Create a new scheduler, with no measurement available
+      const s = newMeasurementScheduler({ axiosGet });
+
+      // lastMeasure should NOT be available
+      assert(!s.getLastMeasure());
+
+      // 2. Call getPredictedGameExperiences to get the measure
+      result = await s.getPredictedGameExperiences(50);
+
+      assert.deepEqual(result, { apps: ['someApp'] });
+
+      // lastMeasure SHOULD be available
+      assert(!!s.getLastMeasure());
+
+      // 3. Call getPredictedGameExperiences again with a pollingInterval guaranteed to send the test in timeout
+      result = await s.getPredictedGameExperiences(99999999);
+
+      assert.deepEqual(result, { apps: ['someApp'] });
+    });
+  });
+
+  describe('getGameAvailability', () => {
+    it('game availability api exists', async () => {
+      const apps = [
+        {
+          appId: 123,
+          available: true,
+        },
+        {
+          appId: 321,
+          available: false,
+        },
+      ];
+      const s = newMeasurementScheduler({
+        axiosGet: (url) => {
+          assert.equal(url, 'https://fakeApiEndpoint/api/streaming-games/game-availability?deviceInfoId=fakeDeviceInfoId');
+          return Promise.resolve({ data: { apps } });
+        },
+      });
+
+      const result = await s.getGameAvailability();
+
+      assert.deepEqual(result, { apps });
     });
   });
 });
