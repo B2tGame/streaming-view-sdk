@@ -63,6 +63,7 @@ export default class StreamingView extends Component {
       measurementScheduler: PropTypes.object.isRequired,
       playoutDelayHint: PropTypes.number,
       vp8MaxQuantization: PropTypes.number,
+      preferH264: PropTypes.bool,
     };
   }
 
@@ -78,6 +79,7 @@ export default class StreamingView extends Component {
     measureTouchRtt: true,
     playoutDelayHint: 0,
     vp8MaxQuantization: 63,
+    preferH264: false,
   };
 
   /**
@@ -403,6 +405,7 @@ export default class StreamingView extends Component {
       width: propsWidth,
       playoutDelayHint,
       vp8MaxQuantization,
+      preferH264,
     } = this.props;
     const { height: stateHeight, width: stateWidth, iceServers } = this.state;
 
@@ -429,6 +432,7 @@ export default class StreamingView extends Component {
               playoutDelayHint={playoutDelayHint}
               iceServers={iceServers}
               vp8MaxQuantization={vp8MaxQuantization}
+              preferH264={preferH264}
             />
           </div>
         );

@@ -34,7 +34,7 @@ export default class SdpModifier {
 
   /**
    * Restrict what video codec can be used.
-   * @param {string[]} approvedList, List of approved video codec to be used.
+   * @param {string[]} approvedList List of approved video codec to be used.
    */
   restrictVideoCodec(approvedList) {
     const video = this.sdp.media.find((media) => media.type === 'video');
@@ -43,6 +43,22 @@ export default class SdpModifier {
     video.rtp = approvedRTP;
     video.fmtp = video.fmtp.filter((fmtp) => ids.includes(fmtp.payload));
     video.rtcpFb = video.rtcpFb.filter((fmtp) => ids.includes(fmtp.payload));
+    video.payloads = ids.join(' ');
+  }
+
+  /**
+   * Give some video codecs higher priority when negotiating with the backend.
+   *
+   * Other codecs may still be used if the other side does not support the
+   * preferred ones.
+   *
+   * @param {string[]} preferredCodecs The preferred video codecs, in order.
+   */
+  preferVideoCodec(preferredCodecs) {
+    const video = this.sdp.media.find((media) => media.type === 'video');
+    const preferredRTP = preferredCodecs.reduce((acc, codec) => [...acc, ...video.rtp.filter((rtp) => rtp.codec === codec)], []);
+    const otherRTP = video.rtp.filter((rtp) => !preferredCodecs.includes(rtp.codec));
+    const ids = [...preferredRTP, ...otherRTP].map((rtp) => rtp.payload);
     video.payloads = ids.join(' ');
   }
 
