@@ -79,7 +79,7 @@ export default class StreamingView extends Component {
     measureTouchRtt: true,
     playoutDelayHint: 0,
     vp8MaxQuantization: 63,
-    preferH264: false,
+    preferH264: true,
   };
 
   /**
