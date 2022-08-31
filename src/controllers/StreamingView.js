@@ -124,9 +124,14 @@ export default class StreamingView extends Component {
       measurementScheduler,
     } = this.props;
 
+    this.logger = new Logger();
     const { userClickedPlayAt } = this.props;
     if (!(userClickedPlayAt > 0)) {
-      throw new Error('StreamingView: userClickedPlayAt must be a valid number');
+      // TODO: Change this back to an error once it doesn't happen in the PWA and CMS
+      console.error(
+        'StreamingView: userClickedPlayAt must be a valid number. This will cause a crash in a later version of the streaming SDK.'
+      );
+      // throw new Error('StreamingView: userClickedPlayAt must be a valid number');
     }
 
     if (!internalSession) {
@@ -135,7 +140,6 @@ export default class StreamingView extends Component {
 
     this.blackScreenDetector = new BlackScreenDetector(edgeNodeId, this.streamingViewId);
 
-    this.logger = new Logger();
     this.measurement = new Measurement(edgeNodeId, this.streamingViewId, this.logger);
 
     if (onEvent) {
