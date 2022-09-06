@@ -267,7 +267,7 @@ export default class Measurement {
    * Process reports from the browser and send report measurements to the StreamSocket by REPORT_MEASUREMENT event
    * @param {RTCPeerConnection.getStats} stats
    */
-  reportWebRtcMeasurement(stats) {
+  reportWebRtcMeasurement({ stats, synchronizationSources }) {
     this.measurement.measureAt = Date.now();
     this.measurement.measureDuration = (this.measurement.measureAt - this.previousMeasurement.measureAt) / 1000;
     // Process all reports and collect measurement data
@@ -293,6 +293,7 @@ export default class Measurement {
 
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REPORT_MEASUREMENT, {
       networkRoundTripTime: this.networkRoundTripTime,
+      synchronizationSources,
       extra: this.measurement,
     });
     this.measurement = {};
