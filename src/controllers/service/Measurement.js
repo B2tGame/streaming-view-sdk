@@ -282,6 +282,7 @@ export default class Measurement {
     this.previousMeasurement.measureAt = this.measurement.measureAt;
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
     this.measurement.numberOfBlackScreens = this.numberOfBlackScreens || 0;
+    this.measurement.synchronizationSources = synchronizationSources || [];
 
     // If predictedGameExperience is defined, report it as a float with 1 decimal
     if (this.measurement.predictedGameExperience) {
@@ -293,7 +294,6 @@ export default class Measurement {
 
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REPORT_MEASUREMENT, {
       networkRoundTripTime: this.networkRoundTripTime,
-      synchronizationSources,
       extra: this.measurement,
     });
     this.measurement = {};
