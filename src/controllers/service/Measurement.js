@@ -265,7 +265,7 @@ export default class Measurement {
 
   /**
    * Process reports from the browser and send report measurements to the StreamSocket by REPORT_MEASUREMENT event
-   * @param {RTCPeerConnection.getStats} stats
+   * @param {{ stats: RTCPeerConnection.getStats, synchronizationSource: RTCRtpContributingSource | null }}
    */
   reportWebRtcMeasurement({ stats, synchronizationSource }) {
     this.measurement.measureAt = Date.now();
