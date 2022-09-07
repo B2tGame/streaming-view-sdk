@@ -267,7 +267,7 @@ export default class Measurement {
    * Process reports from the browser and send report measurements to the StreamSocket by REPORT_MEASUREMENT event
    * @param {RTCPeerConnection.getStats} stats
    */
-  reportWebRtcMeasurement({ stats, synchronizationSources }) {
+  reportWebRtcMeasurement({ stats, synchronizationSource }) {
     this.measurement.measureAt = Date.now();
     this.measurement.measureDuration = (this.measurement.measureAt - this.previousMeasurement.measureAt) / 1000;
     // Process all reports and collect measurement data
@@ -282,7 +282,8 @@ export default class Measurement {
     this.previousMeasurement.measureAt = this.measurement.measureAt;
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
     this.measurement.numberOfBlackScreens = this.numberOfBlackScreens || 0;
-    this.measurement.synchronizationSources = synchronizationSources || [];
+    this.measurement.latestFrameClientTimestamp = (synchronizationSource || {}).timestamp || 0;
+    this.measurement.latestFrameRtpTimestamp = (synchronizationSource || {}).rtpTimestamp || 0;
 
     // If predictedGameExperience is defined, report it as a float with 1 decimal
     if (this.measurement.predictedGameExperience) {
