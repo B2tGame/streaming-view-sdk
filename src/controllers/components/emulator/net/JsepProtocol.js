@@ -236,7 +236,18 @@ export default class JsepProtocol {
   onRequestWebRtcMeasurement = () => {
     this.peerConnection
       .getStats()
-      .then((stats) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, stats))
+      .then((stats) => {
+        let synchronizationSource = null;
+        this.peerConnection.getReceivers().forEach((r) => {
+          if (r.track.kind === 'video') {
+            r.getSynchronizationSources().forEach((s) => {
+              synchronizationSource = s;
+            });
+          }
+        });
+
+        return StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, { stats, synchronizationSource });
+      })
       .catch((err) => {
         StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err);
         console.warn(err);
