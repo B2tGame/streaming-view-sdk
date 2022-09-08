@@ -40,8 +40,7 @@
     "socket.io-client": "^2.3.0",
     "ua-parser-js": "^1.0.2",
     "url-parse": "^1.5.10",
-    "uuid": "^8.3.2",
-    "wrtc": "^0.4.7"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.18.6",
