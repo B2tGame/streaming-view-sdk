@@ -44,10 +44,17 @@ export default class StreamSocket {
 
     // Web Socket errors
     this.socket.on('error', (err) => StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ERROR, err));
-    // Preforming and emit RTT to the streaming event bus.
-    this.socket.on('pong', (networkRoundTripTime) => {
-      StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, networkRoundTripTime);
-    });
+
+    // https://socket.io/docs/v4/migrating-from-2-x-to-3-0/#no-more-pong-event-for-retrieving-latency
+    const pingIntervalId = setInterval(() => {
+      const start = Date.now();
+
+      // volatile, so the packet will be discarded if the socket is not connected
+      this.socket.volatile.emit('get-server-time', (serverTimestamp) => {
+        const latency = Date.now() - start;
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, latency);
+      });
+    }, 250);
 
     this.socket.on('message', (data) => {
       const message = JSON.parse(data);
@@ -66,6 +73,7 @@ export default class StreamSocket {
           case 'terminated': {
             StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, 'Edge node status change: terminated');
             StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_TERMINATED);
+            clearInterval(pingIntervalId);
             break;
           }
           case 'edge-node-crashed': {
