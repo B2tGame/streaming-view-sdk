@@ -168,6 +168,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * time offset
+   * @return {string}
+   */
+  static get TIME_OFFSET_MEASUREMENT() {
+    return 'time-offset-measurement';
+  }
+
+  /**
    * Event of webrtc client connected
    * @return {string}
    */
