@@ -22,6 +22,7 @@ export default class JsepProtocol {
    * @param {string|undefined} turnEndpoint Override the default uri for turn servers
    * @param {number|0} playoutDelayHint Custom playoutDelayHint value
    * @param {number|undefined} vp8MaxQuantization Max quantization for VP8, max value is 63
+   * @param {bool} preferH264 Whether to prefer H.264 encoding over VP8
    */
   constructor(
     emulator,
@@ -32,7 +33,8 @@ export default class JsepProtocol {
     turnEndpoint = undefined,
     playoutDelayHint = 0,
     iceServers = [],
-    vp8MaxQuantization = undefined
+    vp8MaxQuantization = undefined,
+    preferH264 = false
   ) {
     this.emulator = emulator;
     this.rtc = rtc;
@@ -45,6 +47,7 @@ export default class JsepProtocol {
     this.playoutDelayHint = playoutDelayHint;
     this.iceServers = iceServers;
     this.vp8MaxQuantization = vp8MaxQuantization;
+    this.preferH264 = preferH264;
     this.logger = logger;
   }
 
@@ -233,7 +236,18 @@ export default class JsepProtocol {
   onRequestWebRtcMeasurement = () => {
     this.peerConnection
       .getStats()
-      .then((stats) => StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, stats))
+      .then((stats) => {
+        let synchronizationSource = null;
+        this.peerConnection.getReceivers().forEach((r) => {
+          if (r.track.kind === 'video') {
+            r.getSynchronizationSources().forEach((s) => {
+              synchronizationSource = s;
+            });
+          }
+        });
+
+        return StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, { stats, synchronizationSource });
+      })
       .catch((err) => {
         StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err);
         console.warn(err);
@@ -255,6 +269,10 @@ export default class JsepProtocol {
     // which we prefer instead of decreasing FPS.
     if (this.vp8MaxQuantization !== undefined) {
       sdp.setVP8MaxQuantization(this.vp8MaxQuantization);
+    }
+
+    if (this.preferH264) {
+      sdp.preferVideoCodec(['H264']);
     }
 
     answer.sdp = sdp.toString();

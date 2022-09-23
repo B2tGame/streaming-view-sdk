@@ -54,7 +54,7 @@ export default class StreamingView extends Component {
       onEvent: PropTypes.func, // Can't be changed after creation
       streamQualityRating: PropTypes.number, // Can be changed dynamically
       internalSession: PropTypes.bool, // Can't be changed after creation
-      userClickedPlayAt: PropTypes.number, // Can't be changed after creation
+      userClickedPlayAt: PropTypes.number.isRequired, // Can't be changed after creation
       maxConnectionRetries: PropTypes.number, // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
       height: PropTypes.string,
       width: PropTypes.string,
@@ -63,6 +63,7 @@ export default class StreamingView extends Component {
       measurementScheduler: PropTypes.object.isRequired,
       playoutDelayHint: PropTypes.number,
       vp8MaxQuantization: PropTypes.number,
+      preferH264: PropTypes.bool,
     };
   }
 
@@ -78,6 +79,7 @@ export default class StreamingView extends Component {
     measureTouchRtt: true,
     playoutDelayHint: 0,
     vp8MaxQuantization: 63,
+    preferH264: true,
   };
 
   /**
@@ -121,13 +123,23 @@ export default class StreamingView extends Component {
       pingInterval,
       measurementScheduler,
     } = this.props;
+
+    this.logger = new Logger();
+    const { userClickedPlayAt } = this.props;
+    if (!(userClickedPlayAt > 0)) {
+      // TODO: Change this back to an error once it doesn't happen in the PWA and CMS
+      console.error(
+        'StreamingView: userClickedPlayAt must be a valid number. This will cause a crash in a later version of the streaming SDK.'
+      );
+      // throw new Error('StreamingView: userClickedPlayAt must be a valid number');
+    }
+
     if (!internalSession) {
       this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId, this.streamingViewId);
     }
 
     this.blackScreenDetector = new BlackScreenDetector(edgeNodeId, this.streamingViewId);
 
-    this.logger = new Logger();
     this.measurement = new Measurement(edgeNodeId, this.streamingViewId, this.logger);
 
     if (onEvent) {
@@ -231,7 +243,7 @@ export default class StreamingView extends Component {
         StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_EMULATOR_READY, measurementScheduler.stopMeasuring);
         StreamingEvent.edgeNode(edgeNodeId).on(StreamingEvent.STREAM_TERMINATED, measurementScheduler.startMeasuring);
 
-        this.registerUserEventsHandler();
+        this.registerUserEventsHandler(userClickedPlayAt);
       })
       .catch((err) => {
         if (!this.isMountedInView) {
@@ -347,21 +359,20 @@ export default class StreamingView extends Component {
   /**
    * Register user event handler reporting different user events through Stream Socket into Supervisor
    */
-  registerUserEventsHandler() {
+  registerUserEventsHandler(userClickedPlayAt) {
     // Report user event - stream-loading-time
     StreamingEvent.edgeNode(this.props.edgeNodeId).once(StreamingEvent.STREAM_READY, () => {
       const role = this.props.enableControl ? StreamingView.ROLE_PLAYER : StreamingView.ROLE_WATCHER;
-      if (this.props.userClickedPlayAt > 0) {
-        // Send the stream loading time if we have a user clicked play at props.
-        const streamLoadingTime = Date.now() - this.props.userClickedPlayAt;
-        const userEventPayload = {
-          role: role,
-          eventType: StreamingEvent.STREAM_LOADING_TIME,
-          value: streamLoadingTime,
-          message: `User event - ${StreamingEvent.STREAM_LOADING_TIME}: ${streamLoadingTime} ms.`,
-        };
-        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.USER_EVENT_REPORT, userEventPayload);
-      }
+
+      // Send the stream loading time if we have a user clicked play at props.
+      const streamLoadingTime = Date.now() - userClickedPlayAt;
+      const userEventPayload = {
+        role: role,
+        eventType: StreamingEvent.STREAM_LOADING_TIME,
+        value: streamLoadingTime,
+        message: `User event - ${StreamingEvent.STREAM_LOADING_TIME}: ${streamLoadingTime} ms.`,
+      };
+      StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.USER_EVENT_REPORT, userEventPayload);
 
       // Send the video playing event when user can see the stream.
       StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.USER_EVENT_REPORT, {
@@ -403,6 +414,7 @@ export default class StreamingView extends Component {
       width: propsWidth,
       playoutDelayHint,
       vp8MaxQuantization,
+      preferH264,
     } = this.props;
     const { height: stateHeight, width: stateWidth, iceServers } = this.state;
 
@@ -429,6 +441,7 @@ export default class StreamingView extends Component {
               playoutDelayHint={playoutDelayHint}
               iceServers={iceServers}
               vp8MaxQuantization={vp8MaxQuantization}
+              preferH264={preferH264}
             />
           </div>
         );

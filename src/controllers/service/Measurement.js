@@ -35,6 +35,7 @@ export default class Measurement {
 
     StreamingEvent.edgeNode(edgeNodeId)
       .on(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
+      .on(StreamingEvent.TIME_OFFSET_MEASUREMENT, this.onTimeOffsetMeasurement)
       .on(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
       .on(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
       .on(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
@@ -152,6 +153,7 @@ export default class Measurement {
     this.logger.info('measurement module is destroyed');
     StreamingEvent.edgeNode(this.edgeNodeId)
       .off(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
+      .off(StreamingEvent.TIME_OFFSET_MEASUREMENT, this.onTimeOffsetMeasurement)
       .off(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
       .off(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
       .off(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
@@ -183,6 +185,10 @@ export default class Measurement {
 
   onRoundTripTimeMeasurement = (networkRoundTripTime) => {
     this.networkRoundTripTime = networkRoundTripTime;
+  };
+
+  onTimeOffsetMeasurement = (estimatedTimeOffset) => {
+    this.estimatedTimeOffset = estimatedTimeOffset;
   };
 
   onWebRtcRoundTripTimeMeasurement = (webrtcRoundTripTime) => {
@@ -265,9 +271,9 @@ export default class Measurement {
 
   /**
    * Process reports from the browser and send report measurements to the StreamSocket by REPORT_MEASUREMENT event
-   * @param {RTCPeerConnection.getStats} stats
+   * @param {{ stats: RTCPeerConnection.getStats, synchronizationSource: RTCRtpContributingSource | null }}
    */
-  reportWebRtcMeasurement(stats) {
+  reportWebRtcMeasurement({ stats, synchronizationSource }) {
     this.measurement.measureAt = Date.now();
     this.measurement.measureDuration = (this.measurement.measureAt - this.previousMeasurement.measureAt) / 1000;
     // Process all reports and collect measurement data
@@ -282,6 +288,9 @@ export default class Measurement {
     this.previousMeasurement.measureAt = this.measurement.measureAt;
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
     this.measurement.numberOfBlackScreens = this.numberOfBlackScreens || 0;
+    this.measurement.latestFrameClientTimestamp = (synchronizationSource || {}).timestamp;
+    this.measurement.latestFrameRtpTimestamp = (synchronizationSource || {}).rtpTimestamp;
+    this.measurement.estimatedTimeOffset = this.estimatedTimeOffset;
 
     // If predictedGameExperience is defined, report it as a float with 1 decimal
     if (this.measurement.predictedGameExperience) {
@@ -333,6 +342,13 @@ export default class Measurement {
       this.measurement.interFrameDelayStandardDeviationInMs = Measurement.roundToDecimals(
         Measurement.calculateStandardDeviation(report, this.previousMeasurement)
       );
+
+      if (report.estimatedPlayoutTimestamp) {
+        // report.estimatedPlayoutTimestamp is in NTP time, i.e. the number of ms since 1900-01-01 00:00:00 (UTC).
+        // We convert it to the number of ms since 1970-01-01 00:00:00 (UTC) to match report.timestamp.
+        // There were 17 leap years between those dates, so we add 17 to the number of days.
+        this.measurement.estimatedPlayoutTimestamp = report.estimatedPlayoutTimestamp - (70 * 365 + 17) * 24 * 60 * 60 * 1000;
+      }
 
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;

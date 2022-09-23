@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { RTCSessionDescription, RTCPeerConnection } from 'wrtc';
 
 /**
  * WebRtcConnectionClient class to handle Web RTC client connections
