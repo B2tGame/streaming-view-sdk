@@ -4,7 +4,7 @@ import Logger from './Logger';
 
 const noop = () => null;
 
-export default function newMeasurementScheduler({ navigatorConnection, apiEndpoint, interval, onMeasures = noop }) {
+export default function newMeasurementScheduler({ navigatorConnection, apiEndpoint, interval, onMeasures = noop, userConfiguration }) {
   /*
 
    State modelling
@@ -34,7 +34,9 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
   let cachedDeviceInfo = null;
 
   const getDeviceInfo = () =>
-    Promise.resolve(cachedDeviceInfo || deviceInfoService.get(apiEndpoint).then((deviceInfo) => (cachedDeviceInfo = deviceInfo)));
+    Promise.resolve(
+      cachedDeviceInfo || deviceInfoService.get(apiEndpoint, userConfiguration).then((deviceInfo) => (cachedDeviceInfo = deviceInfo))
+    );
 
   /*
    * lastMeasure doesn't /need/ to be here, but it removes opportunities for the SDK user to do things wrong.
