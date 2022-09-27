@@ -209,7 +209,6 @@ export default class StreamingView extends Component {
       });
 
     StreamingController({
-      measurementScheduler,
       apiEndpoint: apiEndpoint,
       edgeNodeId: edgeNodeId,
       internalSession: internalSession,

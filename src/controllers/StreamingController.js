@@ -46,10 +46,6 @@ class StreamingController {
       throw new Error('StreamingController: Missing apiEndpoint');
     }
 
-    if (!props.measurementScheduler) {
-      throw new Error('StreamingController: Missing measurementScheduler');
-    }
-
     try {
       new URL(props.apiEndpoint);
     } catch (err) {
@@ -57,11 +53,8 @@ class StreamingController {
     }
 
     this.apiEndpoint = props.apiEndpoint;
-    this.measurementScheduler = props.measurementScheduler;
     this.edgeNodeId = props.edgeNodeId || undefined;
     this.internalSession = props.internalSession || false;
-
-    this.measurementScheduler.changeApiEndpoint(props.apiEndpoint);
   }
 
   /**
@@ -106,22 +99,6 @@ class StreamingController {
    */
   createGameSnapshot() {
     return this.save();
-  }
-
-  /**
-   * Get a list of predicted game experiences for all apps based on the current usage connectivity.
-   * @returns {Promise<[{appId: number, score: number, available: boolean}]>}
-   */
-  getPredictedGameExperiences(pollingInterval) {
-    return this.measurementScheduler.getPredictedGameExperiences(pollingInterval);
-  }
-
-  /**
-   * Get a list of apps with availability flag.
-   * @returns {Promise<[{appId: number, available: boolean}]>}
-   */
-  getGameAvailability() {
-    return this.measurementScheduler.getGameAvailability();
   }
 
   /**
@@ -281,30 +258,6 @@ class StreamingController {
         timeout
       );
     });
-  }
-
-  /**
-   * Get device info from the device including geolocation, screen configuration etc.
-   * @returns {Promise<object>}
-   */
-  async getDeviceInfo() {
-    const deviceInfo = await this.measurementScheduler.getDeviceInfo();
-    return {
-      deviceInfoId: deviceInfo.deviceInfoId,
-      userId: deviceInfo.userId,
-    };
-  }
-
-  /**
-   * Get connectivity info
-   * @returns {Promise<{}>}
-   */
-  getConnectivityInfo() {
-    const lastMeasure = this.measurementScheduler.getLastMeasure();
-
-    // Per API specification https://docs.google.com/document/d/1VhVZxo2FkoHCF3c90sP-IJJl7WsDP4wQA7OT7IWXauY/edit#heading=h.rbmzojf3dehw
-    // this method needs to return a Promise
-    return Promise.resolve(lastMeasure ? lastMeasure.networkConnectivityInfo : {});
   }
 }
 

@@ -42,7 +42,7 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
   let lastMeasure = null;
 
   // State management
-  const startMeasuring = () => {
+  function startMeasuring() {
     clearTimeout(nextScheduledRun);
     isStopped = false;
     nextScheduledRun = null;
@@ -68,14 +68,14 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
 
     navigatorConnection.onchange = run;
     run();
-  };
+  }
 
-  const stopMeasuring = () => {
+  function stopMeasuring() {
     clearTimeout(nextScheduledRun);
     isStopped = true;
     nextScheduledRun = null;
     navigatorConnection.onchange = noop;
-  };
+  }
 
   // Logging
   const logger = new Logger();
@@ -100,8 +100,15 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
     return { networkConnectivityInfo, deviceInfo };
   };
 
-  // HACK: this also shouldn't be here, this module is feature creeping a bit...
-  const getPredictedGameExperiences = (pollingInterval = 500) => {
+  //
+  // Start!
+  //
+  startMeasuring();
+
+  //
+  // API Functions
+  //
+  function getPredictedGameExperiences(pollingInterval = 500) {
     const waitAndRetry = () =>
       new Promise((resolve) => setTimeout(() => resolve(getPredictedGameExperiences(pollingInterval)), pollingInterval));
 
@@ -113,30 +120,26 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
       );
 
     return lastMeasure ? goAhead() : waitAndRetry();
-  };
+  }
 
-  const getGameAvailability = () => {
+  function getGameAvailability() {
     return getDeviceInfo().then((deviceInfo) => networkConnectivity.getGameAvailability(apiEndpoint, deviceInfo.deviceInfoId));
-  };
+  }
 
-  // This function is used only by Creek
-  const changeApiEndpoint = (newEndpoint) => (apiEndpoint = newEndpoint);
-
-  const getLastMeasure = () => lastMeasure;
-
-  startMeasuring();
+  function getConnectivityInfo() {
+    return Promise.resolve(lastMeasure ? lastMeasure.networkConnectivityInfo : {});
+  }
 
   return {
     startMeasuring,
     stopMeasuring,
-    changeApiEndpoint,
-    getLastMeasure,
 
-    // I'm not too happy about these functions being here, it feels like this module is doing too much,
-    // but they make the interface more difficult to use wrong.
-    // TODO maybe find a way to pull them out?
-    getPredictedGameExperiences,
+    // API
+    getConnectivityInfo,
+    getDeviceInfo: function () {
+      return getDeviceInfo().then(({ deviceInfoId, userId }) => ({ deviceInfoId, userId }));
+    },
     getGameAvailability,
-    getDeviceInfo,
+    getPredictedGameExperiences,
   };
 }

@@ -57,8 +57,8 @@ describe('measurementScheduler', () => {
       onMeasures: () => null,
     });
 
-  describe.only('getPredictedGameExperiences', () => {
-    it('polls only when a measurement is not available', async () => {
+  describe('getPredictedGameExperiences', () => {
+    it.skip('polls only when a measurement is not available', async () => {
       // How does this test work:
       //
       // 1. Create a new scheduler
