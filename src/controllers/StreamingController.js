@@ -164,6 +164,17 @@ class StreamingController {
   }
 
   /**
+   * Requests a screenshot from the emulator.
+   * @returns {Promise<ArrayBuffer>}
+   */
+  screenshot() {
+    return Promise.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(([edgeNodeId, streamEndpoint]) => {
+      StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.LOG, { name: 'streaming-controller', action: 'screenshot' });
+      return axios.get(`${streamEndpoint}/emulator-commands/screenshot`, { responseType: 'arraybuffer' }).then((response) => response.data);
+    });
+  }
+
+  /**
    * Get the streaming endpoint
    * @return {Promise<string>}
    */
