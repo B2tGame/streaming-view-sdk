@@ -47,7 +47,7 @@ export default class StreamSocket {
 
     // Adapted from:
     // https://socket.io/docs/v4/migrating-from-2-x-to-3-0/#no-more-pong-event-for-retrieving-latency
-    const pingIntervalId = setInterval(() => {
+    this.pingIntervalId = setInterval(() => {
       const start = Date.now();
 
       // volatile, so the packet will be discarded if the socket is not connected
@@ -80,7 +80,7 @@ export default class StreamSocket {
           case 'terminated': {
             StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, 'Edge node status change: terminated');
             StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_TERMINATED);
-            clearInterval(pingIntervalId);
+            clearInterval(this.pingIntervalId);
             break;
           }
           case 'edge-node-crashed': {
@@ -155,6 +155,7 @@ export default class StreamSocket {
         .off(StreamingEvent.REPORT_MEASUREMENT, this.onReportMeasurement)
         .off(StreamingEvent.USER_EVENT_REPORT, this.onUserEventReport)
         .off(StreamingEvent.STREAM_UNREACHABLE, this.close);
+      clearInterval(this.pingIntervalId);
       this.socket = undefined;
     }
   };
