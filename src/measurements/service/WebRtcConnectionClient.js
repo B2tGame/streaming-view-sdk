@@ -13,8 +13,8 @@ export default class WebRtcConnectionClient {
   static createPeerConnection = (host, iceServers, id) => {
     const options = {
       sdpSemantics: 'unified-plan',
-      iceServers: iceServers,
-      iceTransportPolicy: 'relay',
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+      //iceTransportPolicy: 'relay',
     };
     const peerConnection = new RTCPeerConnection(options);
 

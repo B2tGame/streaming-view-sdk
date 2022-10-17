@@ -219,8 +219,8 @@ export default class JsepProtocol {
       sdpSemantics: 'unified-plan',
       //TODO-turn: use this.iceServers.candidates directly when the turn server related issues are fixed!
       //Replace iceServers in default turn case
-      iceServers: this.iceServers.name === 'default' ? [this.getIceConfiguration()] : this.iceServers.candidates,
-      iceTransportPolicy: 'relay',
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+      //iceTransportPolicy: 'relay',
     };
     this.logger.log(`JsepProtocol._handleStart; iceServers.name: ${this.iceServers.name}`, signal);
 
