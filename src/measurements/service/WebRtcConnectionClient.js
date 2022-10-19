@@ -11,9 +11,10 @@ export default class WebRtcConnectionClient {
    * @param {string} id
    */
   static createPeerConnection = (host, iceServers, id) => {
+    iceServers.push({ urls: 'stun:stun.l.google.com:19302' });
     const options = {
       sdpSemantics: 'unified-plan',
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+      iceServers: iceServers,
       //iceTransportPolicy: 'relay',
     };
     const peerConnection = new RTCPeerConnection(options);

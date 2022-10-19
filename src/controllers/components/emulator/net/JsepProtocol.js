@@ -215,11 +215,14 @@ export default class JsepProtocol {
   }
 
   _handleStart = (signal) => {
+    const iceServers = this.iceServers.name === 'default' ? [this.getIceConfiguration()] : this.iceServers.candidates;
+    iceServers.push({ urls: 'stun:stun.l.google.com:19302' });
+    console.log(' ICE SERVERS: ', iceServers);
     signal.start = {
       sdpSemantics: 'unified-plan',
       //TODO-turn: use this.iceServers.candidates directly when the turn server related issues are fixed!
       //Replace iceServers in default turn case
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+      iceServers: iceServers,
       //iceTransportPolicy: 'relay',
     };
     this.logger.log(`JsepProtocol._handleStart; iceServers.name: ${this.iceServers.name}`, signal);
