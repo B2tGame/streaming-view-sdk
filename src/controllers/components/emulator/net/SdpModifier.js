@@ -74,6 +74,36 @@ export default class SdpModifier {
   }
 
   /**
+   * Set the start bitrate in Kbps
+   * @param {number} startBitrate
+   */
+  setStartBitrate(startBitrate) {
+    const video = this.sdp.media.find((media) => media.type === 'video');
+    const ids = video.rtp.map((rtp) => rtp.payload);
+    video.fmtp = [...ids.map((id) => ({ payload: id, config: `x-google-start-bitrate=${startBitrate}` })), ...video.fmtp];
+  }
+
+  /**
+   * Set the min bitrate in Kbps
+   * @param {number} minBitrate
+   */
+  setMinBitrate(minBitrate) {
+    const video = this.sdp.media.find((media) => media.type === 'video');
+    const ids = video.rtp.map((rtp) => rtp.payload);
+    video.fmtp = [...ids.map((id) => ({ payload: id, config: `x-google-min-bitrate=${minBitrate}` })), ...video.fmtp];
+  }
+
+  /**
+   * Set the max bitrate in Kbps
+   * @param {number} maxBitrate
+   */
+  setMaxBitrate(maxBitrate) {
+    const video = this.sdp.media.find((media) => media.type === 'video');
+    const ids = video.rtp.map((rtp) => rtp.payload);
+    video.fmtp = [...ids.map((id) => ({ payload: id, config: `x-google-max-bitrate=${maxBitrate}` })), ...video.fmtp];
+  }
+
+  /**
    * Get a SDP in plain text format.
    * @return {string}
    */
