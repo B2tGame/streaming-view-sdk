@@ -23,6 +23,9 @@ export default class JsepProtocol {
    * @param {number|0} playoutDelayHint Custom playoutDelayHint value
    * @param {number|undefined} vp8MaxQuantization Max quantization for VP8, max value is 63
    * @param {bool} preferH264 Whether to prefer H.264 encoding over VP8
+   * @param {number|undefined} startBitrate Start Bitrate value in Kbps
+   * @param {number|undefined} minBitrate Min Bitrate value in Kbps
+   * @param {number|undefined} maxBitrate Max Bitrate value in Kbps
    */
   constructor(
     emulator,
@@ -34,7 +37,10 @@ export default class JsepProtocol {
     playoutDelayHint = 0,
     iceServers = [],
     vp8MaxQuantization = undefined,
-    preferH264 = false
+    preferH264 = false,
+    startBitrate = 5000,
+    minBitrate = 5000,
+    maxBitrate = 5000
   ) {
     this.emulator = emulator;
     this.rtc = rtc;
@@ -48,6 +54,9 @@ export default class JsepProtocol {
     this.iceServers = iceServers;
     this.vp8MaxQuantization = vp8MaxQuantization;
     this.preferH264 = preferH264;
+    this.startBitrate = startBitrate;
+    this.minBitrate = minBitrate;
+    this.maxBitrate = maxBitrate;
     this.logger = logger;
   }
 
@@ -269,6 +278,18 @@ export default class JsepProtocol {
     // which we prefer instead of decreasing FPS.
     if (this.vp8MaxQuantization !== undefined) {
       sdp.setVP8MaxQuantization(this.vp8MaxQuantization);
+    }
+
+    if (this.startBitrate !== undefined) {
+      sdp.setStartBitrate(this.startBitrate);
+    }
+
+    if (this.minBitrate !== undefined) {
+      sdp.setMinBitrate(this.minBitrate);
+    }
+
+    if (this.maxBitrate !== undefined) {
+      sdp.setMaxBitrate(this.maxBitrate);
     }
 
     if (this.preferH264) {

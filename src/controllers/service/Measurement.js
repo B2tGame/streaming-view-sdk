@@ -343,13 +343,6 @@ export default class Measurement {
         Measurement.calculateStandardDeviation(report, this.previousMeasurement)
       );
 
-      if (report.estimatedPlayoutTimestamp) {
-        // report.estimatedPlayoutTimestamp is in NTP time, i.e. the number of ms since 1900-01-01 00:00:00 (UTC).
-        // We convert it to the number of ms since 1970-01-01 00:00:00 (UTC) to match report.timestamp.
-        // There were 17 leap years between those dates, so we add 17 to the number of days.
-        this.measurement.estimatedPlayoutTimestamp = report.estimatedPlayoutTimestamp - (70 * 365 + 17) * 24 * 60 * 60 * 1000;
-      }
-
       this.previousMeasurement.framesDecoded = report.framesDecoded;
       this.previousMeasurement.bytesReceived = report.bytesReceived;
       this.previousMeasurement.totalDecodeTime = report.totalDecodeTime;
