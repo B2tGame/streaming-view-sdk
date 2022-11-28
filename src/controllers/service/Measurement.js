@@ -1,7 +1,7 @@
 import StreamingEvent from '../StreamingEvent';
 import PredictGameExperience from '../../measurements/service/PredictGameExperience';
 import PredictGameExperienceWithNeuralNetwork from './PredictGameExperienceWithNeuralNetwork';
-import StreamWebRtc from './StreamWebRtc';
+import StreamWebRtc from '../../measurements/service/StreamWebRtc';
 import StreamSocket from './StreamSocket';
 
 import Classification from './Classification';
@@ -48,14 +48,18 @@ export default class Measurement {
 
   /**
    * @param {string} webRtcHost
-   * @param {number} pingInterval
    * @param {{ name: string, candidates: [{*}] }} iceServers
    */
-  initWebRtc(webRtcHost, pingInterval, iceServers = { name: 'default', candidates: [] }) {
+  async initWebRtc(webRtcHost, iceServers = { name: 'default', candidates: [] }) {
     this.webRtcHost = webRtcHost;
-    this.streamWebRtc = new StreamWebRtc(this.webRtcHost, iceServers, pingInterval);
-    this.streamWebRtc.on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
-    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
+
+    this.closeStreamWebRtc = await StreamWebRtc.initRttMeasurement({
+      host: `${webRtcHost}/${iceServers.name}`,
+      iceServerCandidates: iceServers.candidates,
+      onRttMeasure: (rtt) => this.onWebRtcRoundTripTimeMeasurement(rtt),
+    });
+
+    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.closeStreamWebRtc);
     this.webRtcIntervalHandler = setInterval(() => {
       StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
     }, StreamSocket.WEBSOCKET_PING_INTERVAL);
@@ -168,11 +172,8 @@ export default class Measurement {
       clearInterval(this.webRtcIntervalHandler);
       this.webRtcIntervalHandler = undefined;
     }
-    if (this.streamWebRtc) {
-      StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
-      this.streamWebRtc.off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
-      this.streamWebRtc.close();
-    }
+
+    this.closeStreamWebRtc && this.closeStreamWebRtc();
   }
 
   onStreamQualityRating = (rating) => {

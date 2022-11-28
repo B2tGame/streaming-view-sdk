@@ -10,7 +10,6 @@ import StreamSocket from './service/StreamSocket';
 import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
 import BlackScreenDetector from './service/BlackScreenDetector';
-import StreamWebRtc from './service/StreamWebRtc';
 import urlParse from 'url-parse';
 import { requestIceServers } from './service/IceServer';
 
@@ -58,7 +57,6 @@ export default class StreamingView extends Component {
       maxConnectionRetries: PropTypes.number, // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
       height: PropTypes.string,
       width: PropTypes.string,
-      pingInterval: PropTypes.number,
       measureTouchRtt: PropTypes.bool,
       measurementScheduler: PropTypes.object.isRequired,
       playoutDelayHint: PropTypes.number,
@@ -76,7 +74,6 @@ export default class StreamingView extends Component {
     enableControl: true,
     volume: 1.0,
     muted: false,
-    pingInterval: StreamWebRtc.WEBRTC_PING_INTERVAL,
     measureTouchRtt: true,
     playoutDelayHint: 0,
     vp8MaxQuantization: 63,
@@ -116,17 +113,7 @@ export default class StreamingView extends Component {
 
   componentDidMount() {
     this.isMountedInView = true;
-    const {
-      apiEndpoint,
-      edgeNodeId,
-      userId,
-      edgeNodeEndpoint,
-      internalSession,
-      turnEndpoint,
-      onEvent,
-      pingInterval,
-      measurementScheduler,
-    } = this.props;
+    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, onEvent, measurementScheduler } = this.props;
 
     this.logger = new Logger();
     const { userClickedPlayAt } = this.props;
@@ -227,7 +214,7 @@ export default class StreamingView extends Component {
       .then((streamEndpoint) => requestIceServers(apiEndpoint, edgeNodeId).then((iceServers) => [streamEndpoint, iceServers]))
       .then(([streamEndpoint, iceServers]) => {
         if (this.measurement) {
-          this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, pingInterval, iceServers);
+          this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, iceServers);
         }
         if (!this.isMountedInView) {
           this.logger.log('Cancel action due to view is not mounted.');
