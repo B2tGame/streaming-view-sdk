@@ -10,7 +10,6 @@ import StreamSocket from './service/StreamSocket';
 import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
 import BlackScreenDetector from './service/BlackScreenDetector';
-import urlParse from 'url-parse';
 import { requestIceServers } from './service/IceServer';
 
 let instanceID = 0;
@@ -213,9 +212,6 @@ export default class StreamingView extends Component {
       })
       .then((streamEndpoint) => requestIceServers(apiEndpoint, edgeNodeId).then((iceServers) => [streamEndpoint, iceServers]))
       .then(([streamEndpoint, iceServers]) => {
-        if (this.measurement) {
-          this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, iceServers);
-        }
         if (!this.isMountedInView) {
           this.logger.log('Cancel action due to view is not mounted.');
           return; // Cancel any action if we not longer are mounted.

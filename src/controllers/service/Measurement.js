@@ -1,8 +1,4 @@
 import StreamingEvent from '../StreamingEvent';
-import PredictGameExperience from '../../measurements/service/PredictGameExperience';
-import PredictGameExperienceWithNeuralNetwork from './PredictGameExperienceWithNeuralNetwork';
-import StreamWebRtc from '../../measurements/service/StreamWebRtc';
-import StreamSocket from './StreamSocket';
 
 import Classification from './Classification';
 
@@ -20,15 +16,11 @@ export default class Measurement {
     this.streamingViewId = streamingViewId;
     this.logger = logger;
     this.networkRoundTripTime = 0;
-    this.webrtcRoundTripTime = 0;
-    this.webrtcRoundTripTimeValues = [];
     this.didStreamResume = false;
     this.streamQualityRating = 0;
     this.numberOfBlackScreens = 0;
     this.previousMeasurement = this.defaultPreviousMeasurement();
     this.measurement = {};
-    this.webRtcHost = undefined;
-    this.webRtcIntervalHandler = undefined;
     this.classification = new Classification(streamingViewId, logger);
 
     this.isClassificationReportCreated = false;
@@ -44,25 +36,6 @@ export default class Measurement {
       .on(StreamingEvent.STREAM_RESUMED, this.onStreamResumed)
       .on(StreamingEvent.STREAM_PAUSED, this.onStreamPaused)
       .on(StreamingEvent.EMULATOR_CONFIGURATION, this.onEmulatorConfiguration);
-  }
-
-  /**
-   * @param {string} webRtcHost
-   * @param {{ name: string, candidates: [{*}] }} iceServers
-   */
-  async initWebRtc(webRtcHost, iceServers = { name: 'default', candidates: [] }) {
-    this.webRtcHost = webRtcHost;
-
-    this.closeStreamWebRtc = await StreamWebRtc.initRttMeasurement({
-      host: `${webRtcHost}/${iceServers.name}`,
-      iceServerCandidates: iceServers.candidates,
-      onRttMeasure: (rtt) => this.onWebRtcRoundTripTimeMeasurement(rtt),
-    });
-
-    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.closeStreamWebRtc);
-    this.webRtcIntervalHandler = setInterval(() => {
-      StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
-    }, StreamSocket.WEBSOCKET_PING_INTERVAL);
   }
 
   /**
@@ -121,38 +94,6 @@ export default class Measurement {
     return 'touch';
   }
 
-  /**
-   *
-   * @return {string}
-   */
-  static get PREDICTED_GAME_EXPERIENCE_ALPHA() {
-    return 'alpha';
-  }
-
-  /**
-   *
-   * @return {string}
-   */
-  static get PREDICTED_GAME_EXPERIENCE_NEURAL1() {
-    return 'neural1';
-  }
-
-  /**
-   *
-   * @return {string}
-   */
-  static get PREDICTED_GAME_EXPERIENCE_DEFAULT() {
-    return Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA;
-  }
-
-  /**
-   *
-   * @return {string[]}
-   */
-  static get PREDICTED_GAME_EXPERIENCE_ALGORITHMS() {
-    return [Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA, Measurement.PREDICTED_GAME_EXPERIENCE_NEURAL1];
-  }
-
   destroy() {
     this.logger.info('measurement module is destroyed');
     StreamingEvent.edgeNode(this.edgeNodeId)
@@ -167,13 +108,6 @@ export default class Measurement {
       .off(StreamingEvent.STREAM_TERMINATED, this.onStreamTerminated);
 
     this.createClassificationReport('destructor-called');
-
-    if (this.webRtcIntervalHandler) {
-      clearInterval(this.webRtcIntervalHandler);
-      this.webRtcIntervalHandler = undefined;
-    }
-
-    this.closeStreamWebRtc && this.closeStreamWebRtc();
   }
 
   onStreamQualityRating = (rating) => {
@@ -190,10 +124,6 @@ export default class Measurement {
 
   onTimeOffsetMeasurement = (estimatedTimeOffset) => {
     this.estimatedTimeOffset = estimatedTimeOffset;
-  };
-
-  onWebRtcRoundTripTimeMeasurement = (webrtcRoundTripTime) => {
-    this.webrtcRoundTripTimeValues.push(webrtcRoundTripTime);
   };
 
   onWebRtcMeasurement = (stats) => {
@@ -285,21 +215,12 @@ export default class Measurement {
       this.processDataChannelTouchReport(report);
       this.processCandidatePairReport(report);
     });
-    this.processWebRtcRoundTripTimeStats();
     this.previousMeasurement.measureAt = this.measurement.measureAt;
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
     this.measurement.numberOfBlackScreens = this.numberOfBlackScreens || 0;
     this.measurement.latestFrameClientTimestamp = (synchronizationSource || {}).timestamp;
     this.measurement.latestFrameRtpTimestamp = (synchronizationSource || {}).rtpTimestamp;
     this.measurement.estimatedTimeOffset = this.estimatedTimeOffset;
-
-    // If predictedGameExperience is defined, report it as a float with 1 decimal
-    if (this.measurement.predictedGameExperience) {
-      StreamingEvent.edgeNode(this.edgeNodeId).emit(
-        StreamingEvent.PREDICTED_GAME_EXPERIENCE,
-        Measurement.roundToDecimals(this.measurement.predictedGameExperience[Measurement.PREDICTED_GAME_EXPERIENCE_DEFAULT], 1)
-      );
-    }
 
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REPORT_MEASUREMENT, {
       networkRoundTripTime: this.networkRoundTripTime,
@@ -391,16 +312,6 @@ export default class Measurement {
     }
   };
 
-  processWebRtcRoundTripTimeStats() {
-    this.webrtcRoundTripTime = StreamWebRtc.calculateRoundTripTimeStats(this.webrtcRoundTripTimeValues).rtt;
-    this.webrtcRoundTripTimeValues = [];
-    this.measurement.predictedGameExperience = Measurement.calculatePredictedGameExperience(
-      this.networkRoundTripTime,
-      this.measurement.packetsLostPercent
-    );
-    this.measurement.webrtcRoundTripTime = this.webrtcRoundTripTime;
-  }
-
   /**
    * Process candidate-pair report to fetch currentRoundTripTime
    * @param report
@@ -409,31 +320,6 @@ export default class Measurement {
     if (report.type === Measurement.REPORT_TYPE_CANDIDATE_PAIR && report.writable === true) {
       this.measurement.webrtcCurrentRoundTripTime = report.currentRoundTripTime * 1000;
     }
-  }
-
-  /**
-   * Calculates a predicted game experience value based on rtt and packet lost percent
-   * @param {number} rtt
-   * @param {number} packetLostPercent
-   * @param {string} region
-   * @return {{Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA: undefined|number, Measurement.PREDICTED_GAME_EXPERIENCE_NEURAL1: undefined|number}}
-   */
-  static calculatePredictedGameExperience(rtt, packetLostPercent, region = 'default') {
-    if (Measurement.predictGameExperience === undefined) {
-      Measurement.predictGameExperience = {};
-    }
-    if (Measurement.predictGameExperience[region] === undefined) {
-      Measurement.predictGameExperience[region] = {};
-      Measurement.predictGameExperience[region][Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA] = new PredictGameExperience();
-      Measurement.predictGameExperience[region][Measurement.PREDICTED_GAME_EXPERIENCE_NEURAL1] = new PredictGameExperienceWithNeuralNetwork(
-        require('./neural-network-models/b540f780-9367-427c-8b05-232cebb9ec49')
-      );
-    }
-
-    return Measurement.PREDICTED_GAME_EXPERIENCE_ALGORITHMS.reduce((result, algorithm) => {
-      result[algorithm] = Measurement.predictGameExperience[region][algorithm].predict(rtt, packetLostPercent);
-      return result;
-    }, {});
   }
 
   /**
