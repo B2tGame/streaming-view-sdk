@@ -100,7 +100,6 @@ class StreamingController {
    diskSnapshot() {
     return this.getStreamEndpoint()
       .then((streamEndpoint) => {
-        console.log('streamEndpoint:', streamEndpoint)
         return axios.get(`${streamEndpoint}/emulator-commands/disk-snapshot`);
       })
       .then((resp) => {
