@@ -94,6 +94,25 @@ class StreamingController {
   }
 
   /**
+   * Save disk image the current state
+   * @returns {Promise<*>}
+   */
+   diskSnapshot() {
+    return this.getStreamEndpoint()
+      .then((streamEndpoint) => {
+        console.log('streamEndpoint:', streamEndpoint)
+        return axios.get(`${streamEndpoint}/emulator-commands/disk-snapshot`);
+      })
+      .then((resp) => {
+        if (resp.data.toString().startsWith('FAIL')) {
+          throw new Error(resp.data.toString());
+        } else {
+          return resp.data;
+        }
+      });
+  }
+
+  /**
    * Creates a game snapshot
    * @returns {Promise<string>}
    */
