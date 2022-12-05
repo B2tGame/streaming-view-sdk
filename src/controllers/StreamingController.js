@@ -204,6 +204,12 @@ class StreamingController {
     return this.internalSession;
   }
 
+  async getEdgeNodeState() {
+    const edgeNodeId = await this.getEdgeNodeId();
+    const response = await axios.get(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}`);
+    return response.data.state;
+  }
+
   /**
    * Wait for the edge node to be ready before the promise will resolve.
    * @param {StreamingController.WAIT_FOR_READY|StreamingController.WAIT_FOR_ENDPOINT} waitFor Define the exit criteria for what to wait for.
