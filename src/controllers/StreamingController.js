@@ -95,7 +95,7 @@ class StreamingController {
 
   /**
    * Save disk image the current state
-   * @returns {Promise<*>}
+   * @returns {Promise<string>}
    */
    diskSnapshot() {
     return this.getStreamEndpoint()
