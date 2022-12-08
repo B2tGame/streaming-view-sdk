@@ -38,9 +38,9 @@ export default class JsepProtocol {
     iceServers = [],
     vp8MaxQuantization = undefined,
     preferH264 = false,
-    startBitrate = 5000,
-    minBitrate = 5000,
-    maxBitrate = 5000
+    startBitrate = 300,
+    minBitrate = 30,
+    maxBitrate = 2000
   ) {
     this.emulator = emulator;
     this.rtc = rtc;

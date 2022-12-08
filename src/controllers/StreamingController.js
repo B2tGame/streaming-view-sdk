@@ -97,7 +97,7 @@ class StreamingController {
    * Save disk image the current state
    * @returns {Promise<string>}
    */
-   diskSnapshot() {
+  diskSnapshot() {
     return this.getStreamEndpoint()
       .then((streamEndpoint) => {
         return axios.get(`${streamEndpoint}/emulator-commands/disk-snapshot`);
