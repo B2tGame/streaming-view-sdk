@@ -2,6 +2,7 @@ import StreamingEvent from '../StreamingEvent';
 import io from 'socket.io-client';
 import parseUrl from 'url-parse';
 import pako from 'pako';
+import Logger from '../Logger';
 
 /**
  * Websocket connection and communicate with the backend
@@ -43,7 +44,10 @@ export default class StreamSocket {
     }, 500);
 
     // Web Socket errors
-    this.socket.on('error', (err) => StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ERROR, err));
+    this.socket.on('error', (err) => {
+      new Logger().error(err);
+      StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ERROR, err);
+    });
 
     // Adapted from:
     // https://socket.io/docs/v4/migrating-from-2-x-to-3-0/#no-more-pong-event-for-retrieving-latency
