@@ -467,6 +467,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * Event fired many times during a game session after (re)evaluation of the predicted game experience.
+   * @return {string}
+   */
+  static get PREDICTED_GAME_EXPERIENCE() {
+    return 'predicted-game-experience';
+  }
+
+  /**
    * Event fired when the new edgeWorker is detected by StreamingEvent handler.
    * @return {string}
    */
