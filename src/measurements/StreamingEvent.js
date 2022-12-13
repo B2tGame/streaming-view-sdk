@@ -104,6 +104,14 @@ export default class StreamingEvent {
   }
 
   /**
+   * StreamSocket error
+   * @return {string}
+   */
+  static get SOCKET_ERROR() {
+    return 'socket-error';
+  }
+
+  /**
    * Event fired when browser error occurs
    * @return {string}
    */

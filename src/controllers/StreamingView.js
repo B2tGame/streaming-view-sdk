@@ -224,6 +224,7 @@ export default class StreamingView extends Component {
 
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.EDGE_NODE_READY_TO_ACCEPT_CONNECTION);
         this.streamSocket = new StreamSocket(edgeNodeId, streamEndpoint, userId, internalSession);
+
         this.setState({
           isReadyStream: true,
           streamEndpoint: streamEndpoint,

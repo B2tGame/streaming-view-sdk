@@ -44,10 +44,15 @@ export default class StreamSocket {
     }, 500);
 
     // Web Socket errors
-    this.socket.on('error', (err) => {
-      new Logger().error(err);
-      StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ERROR, err);
-    });
+    this.socket
+      .on('error', (err) => {
+        new Logger().error(err);
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.SOCKET_ERROR, err);
+      })
+      .on('reconnect_failed', (err) => {
+        new Logger().error(err);
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.SOCKET_ERROR, err);
+      });
 
     // Adapted from:
     // https://socket.io/docs/v4/migrating-from-2-x-to-3-0/#no-more-pong-event-for-retrieving-latency
