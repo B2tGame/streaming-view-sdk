@@ -175,12 +175,8 @@ export default class StreamingView extends Component {
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
       .once(StreamingEvent.STREAM_TERMINATED, () => {
-        if (this.measurement) {
-          this.measurement.destroy();
-        }
-        if (this.streamSocket) {
-          this.streamSocket.close();
-        }
+        this.measurement && this.measurement.destroy();
+        this.streamSocket && this.streamSocket.close();
         this.setState({ isReadyStream: false });
       })
       .on(StreamingEvent.EMULATOR_CONFIGURATION, (configuration) => {
@@ -199,13 +195,18 @@ export default class StreamingView extends Component {
         handleEmulatorReady(onUserInteractionCallback);
       });
 
-    StreamingController({
+    const controller = new StreamingController.StreamingController({
       apiEndpoint: apiEndpoint,
       edgeNodeId: edgeNodeId,
       internalSession: internalSession,
-    })
-      .then((controller) => controller.waitFor(StreamingController.WAIT_FOR_ENDPOINT))
-      .then((state) => state.endpoint)
+    });
+
+    controller
+      .waitWhile((data) => data.endpoint === undefined)
+      .then((data) => {
+        if (data.state === 'terminated') throw new Error('Edge Node is terminated');
+        return data.endpoint;
+      })
       .then((streamEndpoint) => {
         // if the SDK are in internal session mode and a value has been pass to edge node endpoint use that value instead of the
         // public endpoint received from Service Coordinator.
