@@ -78,9 +78,9 @@ export default class StreamingView extends Component {
     playoutDelayHint: 0,
     vp8MaxQuantization: 63,
     preferH264: true,
-    startBitrate: 5000, // Kbps
-    minBitrate: 5000, // Kbps
-    maxBitrate: 5000, // Kbps
+    startBitrate: 300, // Kbps
+    minBitrate: 30, // Kbps
+    maxBitrate: 2000, // Kbps
   };
 
   /**
