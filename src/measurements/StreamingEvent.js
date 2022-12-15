@@ -1,5 +1,4 @@
 import EventEmitter from 'eventemitter3';
-import Logger from './Logger';
 
 /**
  * Extend Event Emitter with an emit that always send the event to 'event' target
@@ -37,10 +36,6 @@ class ExtendedEventEmitter extends EventEmitter {
    * @return {ExtendedEventEmitter}
    */
   emit(event, data) {
-    if (Logger.isVerboseEnabled() && event !== StreamingEvent.LOG) {
-      // Emit all events except for StreamingEvent.LOG since that has been logged out already.
-      console.info('Streaming SDK:', event, data);
-    }
     this.invokeTestFrameworkRawEventCallback(event, data);
     return this._emit(event, data);
   }

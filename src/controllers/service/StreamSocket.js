@@ -2,7 +2,7 @@ import StreamingEvent from '../StreamingEvent';
 import io from 'socket.io-client';
 import parseUrl from 'url-parse';
 import pako from 'pako';
-import Logger from '../Logger';
+import log from '../../measurements/Logger';
 
 /**
  * Websocket connection and communicate with the backend
@@ -46,11 +46,11 @@ export default class StreamSocket {
     // Web Socket errors
     this.socket
       .on('error', (err) => {
-        new Logger().error(err);
+        log.error(err);
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.SOCKET_ERROR, err);
       })
       .on('reconnect_failed', (err) => {
-        new Logger().error(err);
+        log.error(err);
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.SOCKET_ERROR, err);
       });
 

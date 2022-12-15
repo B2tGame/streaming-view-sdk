@@ -1,6 +1,6 @@
 import deviceInfoService from './service/deviceInfo';
 import networkConnectivity from './service/networkConnectivity';
-import Logger from './Logger';
+import log from './Logger';
 
 const noop = () => null;
 
@@ -80,11 +80,8 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
   }
 
   // Logging
-  const logger = new Logger();
-
   const logError = (error) => {
-    console.warn('Streaming Agent', error);
-    logger.error('Streaming Agent', error);
+    log.error('Streaming Agent', error);
   };
 
   // Actually take the measurement
@@ -93,7 +90,7 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
 
     const networkConnectivityInfo = await networkConnectivity.measure(apiEndpoint, deviceInfo.recommendation);
 
-    logger.info('networkConnectivityInfo', networkConnectivityInfo);
+    log.info('networkConnectivityInfo', networkConnectivityInfo);
 
     deviceInfoService.update(apiEndpoint, deviceInfo.deviceInfoId, {
       rttRegionMeasurements: networkConnectivityInfo.rttStatsByRegionByTurn,

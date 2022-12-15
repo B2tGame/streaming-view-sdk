@@ -83,7 +83,7 @@ export default class JsepProtocol {
     }
     this.active = false;
     if (this.rtcEventTrigger) {
-      this.logger.log('Unregister RTC event trigger:', this.rtcEventTrigger);
+      this.logger.info('Unregister RTC event trigger:', this.rtcEventTrigger);
       clearInterval(this.rtcEventTrigger);
       this.rtcEventTrigger = null;
     }
@@ -185,7 +185,7 @@ export default class JsepProtocol {
   };
 
   _handleDataChannelStatusChange = (e) => {
-    this.logger.log('Data channel status change ' + e);
+    this.logger.info('Data channel status change ' + e);
   };
 
   send(label, msg) {
@@ -231,7 +231,7 @@ export default class JsepProtocol {
       iceServers: this.iceServers.name === 'default' ? [this.getIceConfiguration()] : this.iceServers.candidates,
       iceTransportPolicy: 'relay',
     };
-    this.logger.log(`JsepProtocol._handleStart; iceServers.name: ${this.iceServers.name}`, signal);
+    this.logger.info(`JsepProtocol._handleStart; iceServers.name: ${this.iceServers.name}`, signal);
 
     this.peerConnection = new RTCPeerConnection(signal.start);
     StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
