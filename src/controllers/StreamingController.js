@@ -95,9 +95,9 @@ class StreamingController {
   }
 
   /**
-  * Soft Terminate the instance (pause and send the soft-terminate event)
-  * @returns {Promise<*>}
-  */
+   * Soft Terminate the instance (pause and send the soft-terminate event)
+   * @returns {Promise<*>}
+   */
 
   softTerminate() {
     return this.getStreamEndpoint().then((streamEndpoint) => axios.get(`${streamEndpoint}/emulator-commands/soft-terminate`));
