@@ -2,6 +2,7 @@ import StreamingEvent from '../StreamingEvent';
 import io from 'socket.io-client';
 import parseUrl from 'url-parse';
 import pako from 'pako';
+import log from '../../measurements/Logger';
 
 /**
  * Websocket connection and communicate with the backend
@@ -43,11 +44,33 @@ export default class StreamSocket {
     }, 500);
 
     // Web Socket errors
-    this.socket.on('error', (err) => StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ERROR, err));
-    // Preforming and emit RTT to the streaming event bus.
-    this.socket.on('pong', (networkRoundTripTime) => {
-      StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, networkRoundTripTime);
-    });
+    this.socket
+      .on('error', (err) => {
+        log.error(err);
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.SOCKET_ERROR, err);
+      })
+      .on('reconnect_failed', (err) => {
+        log.error(err);
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.SOCKET_ERROR, err);
+      });
+
+    // Adapted from:
+    // https://socket.io/docs/v4/migrating-from-2-x-to-3-0/#no-more-pong-event-for-retrieving-latency
+    this.pingIntervalId = setInterval(() => {
+      const start = Date.now();
+
+      // volatile, so the packet will be discarded if the socket is not connected
+      this.socket.volatile.emit('get-server-time', (serverTimestamp) => {
+        const end = Date.now();
+        const latency = end - start;
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, latency);
+        // We estimate the difference between our clock and the server's, in the same way NTP does.
+        // This assumes the latency is the same in both directions. If this is not true, the error is half the
+        // difference between uplink and downlink latencies.
+        const timeOffset = serverTimestamp - (start + end) / 2;
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.TIME_OFFSET_MEASUREMENT, timeOffset);
+      });
+    }, 250);
 
     this.socket.on('message', (data) => {
       const message = JSON.parse(data);
@@ -66,6 +89,7 @@ export default class StreamSocket {
           case 'terminated': {
             StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, 'Edge node status change: terminated');
             StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_TERMINATED);
+            clearInterval(this.pingIntervalId);
             break;
           }
           case 'edge-node-crashed': {
@@ -140,6 +164,7 @@ export default class StreamSocket {
         .off(StreamingEvent.REPORT_MEASUREMENT, this.onReportMeasurement)
         .off(StreamingEvent.USER_EVENT_REPORT, this.onUserEventReport)
         .off(StreamingEvent.STREAM_UNREACHABLE, this.close);
+      clearInterval(this.pingIntervalId);
       this.socket = undefined;
     }
   };

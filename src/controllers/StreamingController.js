@@ -3,6 +3,39 @@ import StreamingEvent from './StreamingEvent';
 import buildInfo from './build-info.json';
 
 /**
+ * Repeat an httpRequest function until
+ *  - It succeeds
+ *  - It fails with 404
+ *  - It times out
+ * @param {number} timeout
+ * @param {function: Promise<*>} httpRequest
+ */
+const retryWithTimeout = (timeout, httpRequest) => {
+  let timeoutElapsed = false;
+  setTimeout(() => (timeoutElapsed = true), timeout);
+
+  const repeat = (resolve, reject) => {
+    // resolve on success
+    httpRequest().then(resolve, (err) => {
+      // resolve on 404
+      if (err.response?.status === 404) {
+        return resolve(err.response?.data || {});
+      }
+
+      // reject if timed out
+      if (timeoutElapsed) {
+        return reject(err);
+      }
+
+      // retry on error
+      return setTimeout(() => repeat(resolve, reject), 10);
+    });
+  };
+
+  return new Promise(repeat);
+};
+
+/**
  * StreamingController is responsible to poll and terminate the edge node.
  *
  * @class StreamingController
@@ -21,20 +54,6 @@ class StreamingController {
   }
 
   /**
-   * Wait until the edge node reach a ready state.
-   */
-  static get WAIT_FOR_READY() {
-    return 'ready';
-  }
-
-  /**
-   * Wait until the edge node receiving an endpoint independent of the ready state.
-   */
-  static get WAIT_FOR_ENDPOINT() {
-    return 'endpoint';
-  }
-
-  /**
    *
    * @param {object} props
    * @param {string} props.apiEndpoint
@@ -46,10 +65,6 @@ class StreamingController {
       throw new Error('StreamingController: Missing apiEndpoint');
     }
 
-    if (!props.measurementScheduler) {
-      throw new Error('StreamingController: Missing measurementScheduler');
-    }
-
     try {
       new URL(props.apiEndpoint);
     } catch (err) {
@@ -57,11 +72,8 @@ class StreamingController {
     }
 
     this.apiEndpoint = props.apiEndpoint;
-    this.measurementScheduler = props.measurementScheduler;
     this.edgeNodeId = props.edgeNodeId || undefined;
     this.internalSession = props.internalSession || false;
-
-    this.measurementScheduler.changeApiEndpoint(props.apiEndpoint);
   }
 
   /**
@@ -101,27 +113,29 @@ class StreamingController {
   }
 
   /**
+   * Save disk image the current state
+   * @returns {Promise<string>}
+   */
+  diskSnapshot() {
+    return this.getStreamEndpoint()
+      .then((streamEndpoint) => {
+        return axios.get(`${streamEndpoint}/emulator-commands/disk-snapshot`);
+      })
+      .then((resp) => {
+        if (resp.data.toString().startsWith('FAIL')) {
+          throw new Error(resp.data.toString());
+        } else {
+          return resp.data;
+        }
+      });
+  }
+
+  /**
    * Creates a game snapshot
    * @returns {Promise<string>}
    */
   createGameSnapshot() {
     return this.save();
-  }
-
-  /**
-   * Get a list of predicted game experiences for all apps based on the current usage connectivity.
-   * @returns {Promise<[{appId: number, score: number, available: boolean}]>}
-   */
-  getPredictedGameExperiences(pollingInterval) {
-    return this.measurementScheduler.getPredictedGameExperiences(pollingInterval);
-  }
-
-  /**
-   * Get a list of apps with availability flag.
-   * @returns {Promise<[{appId: number, available: boolean}]>}
-   */
-  getGameAvailability() {
-    return this.measurementScheduler.getGameAvailability();
   }
 
   /**
@@ -168,8 +182,9 @@ class StreamingController {
         name: 'streaming-controller',
         action: 'resetMoment',
       });
-      return axios.get(`${streamEndpoint}/emulator-commands/reset`).then(() => {
+      return axios.get(`${streamEndpoint}/emulator-commands/reset`).then((response) => {
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_READY);
+        return response.data;
       });
     });
   }
@@ -187,11 +202,22 @@ class StreamingController {
   }
 
   /**
+   * Requests a screenshot from the emulator.
+   * @returns {Promise<ArrayBuffer>}
+   */
+  screenshot() {
+    return Promise.all([this.getEdgeNodeId(), this.getStreamEndpoint()]).then(([edgeNodeId, streamEndpoint]) => {
+      StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.LOG, { name: 'streaming-controller', action: 'screenshot' });
+      return axios.get(`${streamEndpoint}/emulator-commands/screenshot`, { responseType: 'arraybuffer' }).then((response) => response.data);
+    });
+  }
+
+  /**
    * Get the streaming endpoint
    * @return {Promise<string>}
    */
   getStreamEndpoint() {
-    return this.waitFor().then((status) => {
+    return this.waitWhile((data) => data.state === 'pending').then((status) => {
       if (status.endpoint !== undefined) {
         return status.endpoint;
       } else {
@@ -216,95 +242,47 @@ class StreamingController {
     return this.internalSession;
   }
 
+  async getEdgeNodeState() {
+    const edgeNodeId = await this.getEdgeNodeId();
+    const response = await axios.get(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}`);
+    return response.data.state;
+  }
+
   /**
    * Wait for the edge node to be ready before the promise will resolve.
-   * @param {StreamingController.WAIT_FOR_READY|StreamingController.WAIT_FOR_ENDPOINT} waitFor Define the exit criteria for what to wait for.
+   * @param {function} stillWaiting Given the status data, return true if waitWhile should wait longer.
    * @param {number} timeout Max duration the waitFor should wait before reject with an timeout exception.
-   * @returns {Promise<{status: string, endpoint: string}>}
+   * @returns {Promise<{state: string, endpoint: string}>}
    */
-  waitFor(waitFor = StreamingController.WAIT_FOR_READY, timeout = StreamingController.DEFAULT_TIMEOUT) {
+  async waitWhile(stillWaiting, timeout = StreamingController.DEFAULT_TIMEOUT) {
+    const internalSession = this.isInternalSession() ? '&internal=1' : '';
+
+    const edgeNodeId = await this.getEdgeNodeId();
+
     let isQueuedEventFire = false;
-    /**
-     * Get the status of the edge node.
-     * @param {string} uri
-     * @param {number} timeout
-     * @returns {Promise<*>}
-     */
-    const getStatus = (uri, timeout) => {
-      return axios.get(uri, { timeout: timeout }).then((result) => {
-        const stillWaiting =
-          (waitFor === StreamingController.WAIT_FOR_READY && result.data.state === 'pending') ||
-          (waitFor === StreamingController.WAIT_FOR_ENDPOINT && result.data.endpoint === undefined);
-        if (stillWaiting) {
-          if (result.data.queued && !isQueuedEventFire) {
-            isQueuedEventFire = true;
-            if (this.edgeNodeId) {
-              StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.SERVER_OUT_OF_CAPACITY);
-            }
-          }
-          throw new Error('pending');
-        } else {
-          return result.data;
+
+    return retryWithTimeout(timeout, async () => {
+      const { data } = await axios.get(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}?wait=1${internalSession}`, {
+        timeout: 5000,
+      });
+
+      if (data.state === 'terminated') {
+        return data;
+      }
+
+      if (!stillWaiting(data)) {
+        return data;
+      }
+
+      if (data.queued && !isQueuedEventFire) {
+        isQueuedEventFire = true;
+        if (this.edgeNodeId) {
+          StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.SERVER_OUT_OF_CAPACITY);
         }
-      });
-    };
+      }
 
-    /**
-     * Retry will try to execute the promise that the callback function returns
-     * until resolved or runs out of maxRetry
-     * @param {function: Promise<*>} callback
-     * @param {number} maxTimeout
-     */
-    const retry = (callback, maxTimeout) => {
-      const endTimestamp = Date.now() + maxTimeout;
-      return new Promise((resolve, reject) => {
-        const fn = () => {
-          callback().then(resolve, (err) => {
-            const httpStatusCode = (err.response || {}).status || 500;
-            if (httpStatusCode === 404) {
-              resolve((err.response || {}).data || {});
-            } else if (endTimestamp > Date.now()) {
-              setTimeout(fn, 10);
-            } else {
-              reject(err);
-            }
-          });
-        };
-        fn();
-      });
-    };
-
-    return this.getEdgeNodeId().then((edgeNodeId) => {
-      const internalSession = this.isInternalSession() ? '&internal=1' : '';
-      return retry(
-        () => getStatus(`${this.getApiEndpoint()}/api/streaming-games/status/${edgeNodeId}?wait=1${internalSession}`, 5000),
-        timeout
-      );
+      throw new Error('pending');
     });
-  }
-
-  /**
-   * Get device info from the device including geolocation, screen configuration etc.
-   * @returns {Promise<object>}
-   */
-  async getDeviceInfo() {
-    const deviceInfo = await this.measurementScheduler.getDeviceInfo();
-    return {
-      deviceInfoId: deviceInfo.deviceInfoId,
-      userId: deviceInfo.userId,
-    };
-  }
-
-  /**
-   * Get connectivity info
-   * @returns {Promise<{}>}
-   */
-  getConnectivityInfo() {
-    const lastMeasure = this.measurementScheduler.getLastMeasure();
-
-    // Per API specification https://docs.google.com/document/d/1VhVZxo2FkoHCF3c90sP-IJJl7WsDP4wQA7OT7IWXauY/edit#heading=h.rbmzojf3dehw
-    // this method needs to return a Promise
-    return Promise.resolve(lastMeasure ? lastMeasure.networkConnectivityInfo : {});
   }
 }
 
@@ -318,20 +296,21 @@ const factory = (props) => {
   return Promise.resolve(new StreamingController(props));
 };
 
-factory.EVENT_STREAM_CONNECTED = StreamingEvent.STREAM_CONNECTED;
-factory.EVENT_SERVER_OUT_OF_CAPACITY = StreamingEvent.SERVER_OUT_OF_CAPACITY;
-factory.EVENT_EMULATOR_CONFIGURATION = StreamingEvent.EMULATOR_CONFIGURATION;
-factory.EVENT_STREAM_UNREACHABLE = StreamingEvent.STREAM_UNREACHABLE;
-factory.EVENT_STREAM_PAUSED = StreamingEvent.STREAM_PAUSED;
-factory.EVENT_STREAM_RESUMED = StreamingEvent.STREAM_RESUMED;
 factory.EVENT_EDGE_NODE_CRASHED = StreamingEvent.EDGE_NODE_CRASHED;
-factory.EVENT_REQUIRE_USER_PLAY_INTERACTION = StreamingEvent.REQUIRE_USER_PLAY_INTERACTION;
-factory.SDK_VERSION = StreamingController.SDK_VERSION;
-factory.EVENT_STREAM_READY = StreamingEvent.STREAM_READY;
+factory.EVENT_EMULATOR_CONFIGURATION = StreamingEvent.EMULATOR_CONFIGURATION;
 factory.EVENT_MOMENT_DETECTOR_EVENT = StreamingEvent.MOMENT_DETECTOR_EVENT;
-factory.EVENT_PREDICTED_GAME_EXPERIENCE = StreamingEvent.PREDICTED_GAME_EXPERIENCE;
+factory.EVENT_REQUIRE_USER_PLAY_INTERACTION = StreamingEvent.REQUIRE_USER_PLAY_INTERACTION;
+factory.EVENT_SERVER_OUT_OF_CAPACITY = StreamingEvent.SERVER_OUT_OF_CAPACITY;
+factory.EVENT_SOCKET_ERROR = StreamingEvent.SOCKET_ERROR;
+factory.EVENT_STREAM_CONNECTED = StreamingEvent.STREAM_CONNECTED;
+factory.EVENT_STREAM_PAUSED = StreamingEvent.STREAM_PAUSED;
+factory.EVENT_STREAM_READY = StreamingEvent.STREAM_READY;
+factory.EVENT_STREAM_RESUMED = StreamingEvent.STREAM_RESUMED;
 factory.EVENT_STREAM_TERMINATED = StreamingEvent.STREAM_TERMINATED;
-factory.WAIT_FOR_READY = StreamingController.WAIT_FOR_READY;
-factory.WAIT_FOR_ENDPOINT = StreamingController.WAIT_FOR_ENDPOINT;
+factory.EVENT_STREAM_UNREACHABLE = StreamingEvent.STREAM_UNREACHABLE;
+factory.EVENT_STREAM_VIDEO_CAN_PLAY = StreamingEvent.STREAM_VIDEO_CAN_PLAY;
+
+factory.SDK_VERSION = StreamingController.SDK_VERSION;
+factory.StreamingController = StreamingController;
 
 export default factory;

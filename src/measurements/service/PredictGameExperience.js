@@ -131,7 +131,7 @@ export default class PredictGameExperience {
 
     return this.count < this.sampleSize
       ? undefined
-      : Math.min(Math.max(this.averageRange(this.predictGameExperience.getValues(), 0, this.stabilizationThreshold), 1), 5);
+      : this.averageRange(this.predictGameExperience.getValues(), 0, this.stabilizationThreshold);
   }
 
   averageRange(dataset, lowerBound = 0, upperBound = 1) {

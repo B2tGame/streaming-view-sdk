@@ -1,5 +1,4 @@
 import EventEmitter from 'eventemitter3';
-import Logger from './Logger';
 
 /**
  * Extend Event Emitter with an emit that always send the event to 'event' target
@@ -37,10 +36,6 @@ class ExtendedEventEmitter extends EventEmitter {
    * @return {ExtendedEventEmitter}
    */
   emit(event, data) {
-    if (Logger.isVerboseEnabled() && event !== StreamingEvent.LOG) {
-      // Emit all events except for StreamingEvent.LOG since that has been logged out already.
-      console.info('Streaming SDK:', event, data);
-    }
     this.invokeTestFrameworkRawEventCallback(event, data);
     return this._emit(event, data);
   }
@@ -101,6 +96,14 @@ export default class StreamingEvent {
    */
   static get ERROR() {
     return 'error';
+  }
+
+  /**
+   * StreamSocket error
+   * @return {string}
+   */
+  static get SOCKET_ERROR() {
+    return 'socket-error';
   }
 
   /**
@@ -165,6 +168,14 @@ export default class StreamingEvent {
    */
   static get ROUND_TRIP_TIME_MEASUREMENT() {
     return 'round-trip-time-measurement';
+  }
+
+  /**
+   * time offset
+   * @return {string}
+   */
+  static get TIME_OFFSET_MEASUREMENT() {
+    return 'time-offset-measurement';
   }
 
   /**

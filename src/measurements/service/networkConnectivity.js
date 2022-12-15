@@ -1,6 +1,5 @@
 import axios from 'axios';
-import StreamingEvent from '../StreamingEvent';
-import StreamWebRtc from '../service/StreamWebRtc';
+import StreamWebRtc from './StreamWebRtc';
 import PredictGameExperience from './PredictGameExperience';
 
 const MAX_RECOMMENDATION_COUNT = 3;
@@ -31,36 +30,35 @@ const requestIceServers = (apiEndpoint, region) => {
  */
 function getRTTMeasurements({ turnName, region, webRtcHost, iceCandidates }) {
   return new Promise((resolve) => {
-    const streamWebRtc = new StreamWebRtc(webRtcHost, { name: turnName, candidates: iceCandidates });
-
     const rttMeasurements = [];
+
+    let stopMeasurement;
 
     const onConnected = () => {
       setTimeout(() => stopMeasurement(), ADVANCED_MEASUREMENT_TIMEOUT);
     };
 
-    const onMeasurement = (rtt) => {
+    const onRttMeasure = (rtt) => {
       rttMeasurements.push(rtt);
     };
 
-    const stopMeasurement = () => {
-      // This function will likely be called multiple times:
-      //  * Closing the same streamWebRtc object multiple times should be fine
-      //  * Calling resolve() multiple times should also be safe https://stackoverflow.com/questions/20328073/is-it-safe-to-resolve-a-promise-multiple-times
+    StreamWebRtc.initRttMeasurement({
+      host: `${webRtcHost}/${turnName}`,
+      iceServerCandidates: iceCandidates,
+      onConnected,
+      onRttMeasure,
+    }).then((closeStreamWebRtc) => {
+      stopMeasurement = () => {
+        // This function will likely be called multiple times:
+        //  * Closing the same streamWebRtc object multiple times should be fine
+        //  * Calling resolve() multiple times should also be safe https://stackoverflow.com/questions/20328073/is-it-safe-to-resolve-a-promise-multiple-times
 
-      streamWebRtc
-        .off(StreamingEvent.WEBRTC_CLIENT_CONNECTED, onConnected)
-        .off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onMeasurement)
-        .close();
+        closeStreamWebRtc();
+        resolve(rttMeasurements);
+      };
 
-      resolve(rttMeasurements);
-    };
-
-    streamWebRtc
-      .on(StreamingEvent.WEBRTC_CLIENT_CONNECTED, onConnected)
-      .on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, onMeasurement);
-
-    setTimeout(() => stopMeasurement(), WEBRTC_TIME_TO_CONNECTED);
+      setTimeout(() => stopMeasurement(), WEBRTC_TIME_TO_CONNECTED);
+    });
   });
 }
 

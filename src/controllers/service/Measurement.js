@@ -1,7 +1,7 @@
 import StreamingEvent from '../StreamingEvent';
 import PredictGameExperience from '../../measurements/service/PredictGameExperience';
 import PredictGameExperienceWithNeuralNetwork from './PredictGameExperienceWithNeuralNetwork';
-import StreamWebRtc from './StreamWebRtc';
+import StreamWebRtc from '../../measurements/service/StreamWebRtc';
 import StreamSocket from './StreamSocket';
 
 import Classification from './Classification';
@@ -35,6 +35,7 @@ export default class Measurement {
 
     StreamingEvent.edgeNode(edgeNodeId)
       .on(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
+      .on(StreamingEvent.TIME_OFFSET_MEASUREMENT, this.onTimeOffsetMeasurement)
       .on(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
       .on(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
       .on(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
@@ -47,14 +48,18 @@ export default class Measurement {
 
   /**
    * @param {string} webRtcHost
-   * @param {number} pingInterval
    * @param {{ name: string, candidates: [{*}] }} iceServers
    */
-  initWebRtc(webRtcHost, pingInterval, iceServers = { name: 'default', candidates: [] }) {
+  async initWebRtc(webRtcHost, iceServers = { name: 'default', candidates: [] }) {
     this.webRtcHost = webRtcHost;
-    this.streamWebRtc = new StreamWebRtc(this.webRtcHost, iceServers, pingInterval);
-    this.streamWebRtc.on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
-    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
+
+    this.closeStreamWebRtc = await StreamWebRtc.initRttMeasurement({
+      host: `${webRtcHost}/${iceServers.name}`,
+      iceServerCandidates: iceServers.candidates,
+      onRttMeasure: (rtt) => this.onWebRtcRoundTripTimeMeasurement(rtt),
+    });
+
+    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.closeStreamWebRtc);
     this.webRtcIntervalHandler = setInterval(() => {
       StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
     }, StreamSocket.WEBSOCKET_PING_INTERVAL);
@@ -152,6 +157,7 @@ export default class Measurement {
     this.logger.info('measurement module is destroyed');
     StreamingEvent.edgeNode(this.edgeNodeId)
       .off(StreamingEvent.ROUND_TRIP_TIME_MEASUREMENT, this.onRoundTripTimeMeasurement)
+      .off(StreamingEvent.TIME_OFFSET_MEASUREMENT, this.onTimeOffsetMeasurement)
       .off(StreamingEvent.WEB_RTC_MEASUREMENT, this.onWebRtcMeasurement)
       .off(StreamingEvent.STREAM_QUALITY_RATING, this.onStreamQualityRating)
       .off(StreamingEvent.STREAM_BLACK_SCREEN, this.onStreamBlackScreen)
@@ -166,11 +172,8 @@ export default class Measurement {
       clearInterval(this.webRtcIntervalHandler);
       this.webRtcIntervalHandler = undefined;
     }
-    if (this.streamWebRtc) {
-      StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
-      this.streamWebRtc.off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
-      this.streamWebRtc.close();
-    }
+
+    this.closeStreamWebRtc && this.closeStreamWebRtc();
   }
 
   onStreamQualityRating = (rating) => {
@@ -183,6 +186,10 @@ export default class Measurement {
 
   onRoundTripTimeMeasurement = (networkRoundTripTime) => {
     this.networkRoundTripTime = networkRoundTripTime;
+  };
+
+  onTimeOffsetMeasurement = (estimatedTimeOffset) => {
+    this.estimatedTimeOffset = estimatedTimeOffset;
   };
 
   onWebRtcRoundTripTimeMeasurement = (webrtcRoundTripTime) => {
@@ -265,9 +272,9 @@ export default class Measurement {
 
   /**
    * Process reports from the browser and send report measurements to the StreamSocket by REPORT_MEASUREMENT event
-   * @param {RTCPeerConnection.getStats} stats
+   * @param {{ stats: RTCPeerConnection.getStats, synchronizationSource: RTCRtpContributingSource | null }}
    */
-  reportWebRtcMeasurement(stats) {
+  reportWebRtcMeasurement({ stats, synchronizationSource }) {
     this.measurement.measureAt = Date.now();
     this.measurement.measureDuration = (this.measurement.measureAt - this.previousMeasurement.measureAt) / 1000;
     // Process all reports and collect measurement data
@@ -282,6 +289,9 @@ export default class Measurement {
     this.previousMeasurement.measureAt = this.measurement.measureAt;
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
     this.measurement.numberOfBlackScreens = this.numberOfBlackScreens || 0;
+    this.measurement.latestFrameClientTimestamp = (synchronizationSource || {}).timestamp;
+    this.measurement.latestFrameRtpTimestamp = (synchronizationSource || {}).rtpTimestamp;
+    this.measurement.estimatedTimeOffset = this.estimatedTimeOffset;
 
     // If predictedGameExperience is defined, report it as a float with 1 decimal
     if (this.measurement.predictedGameExperience) {

@@ -1,10 +1,10 @@
 import deviceInfoService from './service/deviceInfo';
 import networkConnectivity from './service/networkConnectivity';
-import Logger from './Logger';
+import log from './Logger';
 
 const noop = () => null;
 
-export default function newMeasurementScheduler({ navigatorConnection, apiEndpoint, interval, onMeasures = noop }) {
+export default function newMeasurementScheduler({ navigatorConnection, apiEndpoint, interval, onMeasures = noop, userConfiguration }) {
   /*
 
    State modelling
@@ -34,7 +34,9 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
   let cachedDeviceInfo = null;
 
   const getDeviceInfo = () =>
-    Promise.resolve(cachedDeviceInfo || deviceInfoService.get(apiEndpoint).then((deviceInfo) => (cachedDeviceInfo = deviceInfo)));
+    Promise.resolve(
+      cachedDeviceInfo || deviceInfoService.get(apiEndpoint, userConfiguration).then((deviceInfo) => (cachedDeviceInfo = deviceInfo))
+    );
 
   /*
    * lastMeasure doesn't /need/ to be here, but it removes opportunities for the SDK user to do things wrong.
@@ -42,7 +44,7 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
   let lastMeasure = null;
 
   // State management
-  const startMeasuring = () => {
+  function startMeasuring() {
     clearTimeout(nextScheduledRun);
     isStopped = false;
     nextScheduledRun = null;
@@ -68,21 +70,18 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
 
     navigatorConnection.onchange = run;
     run();
-  };
+  }
 
-  const stopMeasuring = () => {
+  function stopMeasuring() {
     clearTimeout(nextScheduledRun);
     isStopped = true;
     nextScheduledRun = null;
     navigatorConnection.onchange = noop;
-  };
+  }
 
   // Logging
-  const logger = new Logger();
-
   const logError = (error) => {
-    console.warn('Streaming Agent', error);
-    logger.error('Streaming Agent', error);
+    log.error('Streaming Agent', error);
   };
 
   // Actually take the measurement
@@ -91,7 +90,7 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
 
     const networkConnectivityInfo = await networkConnectivity.measure(apiEndpoint, deviceInfo.recommendation);
 
-    logger.info('networkConnectivityInfo', networkConnectivityInfo);
+    log.info('networkConnectivityInfo', networkConnectivityInfo);
 
     deviceInfoService.update(apiEndpoint, deviceInfo.deviceInfoId, {
       rttRegionMeasurements: networkConnectivityInfo.rttStatsByRegionByTurn,
@@ -100,8 +99,15 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
     return { networkConnectivityInfo, deviceInfo };
   };
 
-  // HACK: this also shouldn't be here, this module is feature creeping a bit...
-  const getPredictedGameExperiences = (pollingInterval = 500) => {
+  //
+  // Start!
+  //
+  startMeasuring();
+
+  //
+  // API Functions
+  //
+  function getPredictedGameExperiences(pollingInterval = 500) {
     const waitAndRetry = () =>
       new Promise((resolve) => setTimeout(() => resolve(getPredictedGameExperiences(pollingInterval)), pollingInterval));
 
@@ -113,30 +119,26 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
       );
 
     return lastMeasure ? goAhead() : waitAndRetry();
-  };
+  }
 
-  const getGameAvailability = () => {
+  function getGameAvailability() {
     return getDeviceInfo().then((deviceInfo) => networkConnectivity.getGameAvailability(apiEndpoint, deviceInfo.deviceInfoId));
-  };
+  }
 
-  // This function is used only by Creek
-  const changeApiEndpoint = (newEndpoint) => (apiEndpoint = newEndpoint);
-
-  const getLastMeasure = () => lastMeasure;
-
-  startMeasuring();
+  function getConnectivityInfo() {
+    return Promise.resolve(lastMeasure ? lastMeasure.networkConnectivityInfo : {});
+  }
 
   return {
     startMeasuring,
     stopMeasuring,
-    changeApiEndpoint,
-    getLastMeasure,
 
-    // I'm not too happy about these functions being here, it feels like this module is doing too much,
-    // but they make the interface more difficult to use wrong.
-    // TODO maybe find a way to pull them out?
-    getPredictedGameExperiences,
+    // API
+    getConnectivityInfo,
+    getDeviceInfo: function () {
+      return getDeviceInfo().then(({ deviceInfoId, userId }) => ({ deviceInfoId, userId }));
+    },
     getGameAvailability,
-    getDeviceInfo,
+    getPredictedGameExperiences,
   };
 }
