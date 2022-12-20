@@ -1,5 +1,6 @@
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import StreamingEvent from '../../../StreamingEvent';
+import defaults from '../../../../measurements/defaults';
 import parseUrl from 'url-parse';
 import SdpModifier from './SdpModifier';
 
@@ -37,10 +38,10 @@ export default class JsepProtocol {
     playoutDelayHint = 0,
     iceServers = [],
     vp8MaxQuantization = undefined,
-    preferH264 = false,
-    startBitrate = 300,
-    minBitrate = 30,
-    maxBitrate = 2000
+    preferH264 = defaults.preferH264,
+    startBitrate = defaults.startBitrate,
+    minBitrate = defaults.minBitrate,
+    maxBitrate = defaults.maxBitrate
   ) {
     this.emulator = emulator;
     this.rtc = rtc;

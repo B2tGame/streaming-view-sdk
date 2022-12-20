@@ -39,7 +39,7 @@ export default class StreamSocket {
 
     setTimeout(() => {
       if (!this.socket.connected) {
-        console.error('Websocket not connected. Check that socket.io client and server versions match.');
+        console.warn(`Websocket to ${endpoint.host} is taking long to connect. Check that socket.io client and server versions match.`);
       }
     }, 500);
 
