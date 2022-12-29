@@ -1,5 +1,6 @@
 import assert from 'assert';
 import proxyquire from 'proxyquire';
+import 'mocha';
 
 const moduleToBeTested = './measurementScheduler';
 
@@ -29,19 +30,19 @@ describe('measurementScheduler', () => {
       width: 123,
       height: 321,
     },
-  };
+  } as Window & typeof globalThis;
 
   global.document = {
     documentElement: {
       clientWidth: 100,
       clientHeight: 200,
     },
-  };
+  } as Document;
 
   global.localStorage = {
     getItem: () => null,
     setItem: () => null,
-  };
+  } as unknown as Storage;
 
   const newMeasurementScheduler = ({ axiosGet }) =>
     makeModule({

@@ -2,22 +2,20 @@
   "name": "@applandstream/streaming-view-sdk",
   "version": "3.2.0",
   "description": "React component for Streaming Project to interact with the Edge Node Stream",
-  "main": "index.js",
+  "main": "index.ts",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@bitbucket.org:appland/streaming-view-sdk.git"
   },
   "scripts": {
-    "depcheck": "depcheck --ignores '@babel/runtime-corejs3'",
-    "lint": "eslint index.js src/",
-    "test": "mocha --timeout 10000 --require @babel/register --exit --recursive 'src/**/*.tests.js'",
-    "build": "rm -rf build && babel index.js measurement.js -d build --source-maps && babel src -d build/src --copy-files --source-maps && echo '@applandstream/streaming-view-sdk' > build/README.md && cp package.json build/package.json",
+    "depcheck": "depcheck --ignore-bin-package",
+    "lint": "eslint src/",
+    "test": "mocha  --timeout 10000 --exit --recursive 'src/**/*.tests.ts'",
+    "build": "scripts/build.sh",
     "version": "echo \"{\\\"tag\\\": \\\"$(cat package.json | jq -r '.version')\\\"}\" > src/controllers/build-info.json && git add src/controllers/build-info.json ",
     "style-write": "appland-style --browser --write src/",
     "style-check": "appland-style --browser --check src/",
     "postversion": "cp package.json build/package.json && (cp .npmrc build/.npmrc 2>/dev/null || true) && cp src/controllers/build-info.json build/src/controllers/build-info.json",
-    "prettier-write": "prettier --write src/",
-    "prettier-check": "prettier --check src/",
     "prepare": "husky install || exit 0"
   },
   "author": "Appland",
@@ -27,7 +25,7 @@
   },
   "homepage": "https://bitbucket.org/appland/streaming-view-sdk#readme",
   "dependencies": {
-    "@babel/runtime-corejs3": "^7.18.6",
+    "@types/node": "^18.11.18",
     "axios": "^0.27.2",
     "eventemitter3": "^4.0.7",
     "google-protobuf": "^3.20.1",
@@ -46,20 +44,18 @@
   },
   "devDependencies": {
     "@applandstream/appland-style": "^1.0.4",
-    "@babel/cli": "^7.18.6",
-    "@babel/core": "^7.18.6",
-    "@babel/eslint-parser": "^7.18.2",
-    "@babel/plugin-transform-react-jsx": "^7.18.6",
-    "@babel/plugin-transform-runtime": "^7.18.6",
-    "@babel/preset-env": "^7.18.6",
-    "@babel/register": "^7.18.6",
+    "@types/mocha": "^10.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.47.1",
+    "@typescript-eslint/parser": "^5.47.1",
     "depcheck": "^1.4.3",
-    "eslint": "^8.19.0",
+    "eslint": "^8.30.0",
     "eslint-plugin-react": "^7.30.1",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
     "mocha": "^10.0.0",
     "prettier": "2.7.1",
-    "proxyquire": "^2.1.3"
+    "proxyquire": "^2.1.3",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4"
   }
 }

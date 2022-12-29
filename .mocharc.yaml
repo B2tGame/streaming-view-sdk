@@ -1,2 +1,3 @@
-require:
-  - '@babel/register'
+loader:
+  - 'ts-node/esm'
+extensions: ['js', 'ts']

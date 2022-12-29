@@ -426,7 +426,7 @@ export default class Measurement {
       Measurement.predictGameExperience[region] = {};
       Measurement.predictGameExperience[region][Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA] = new PredictGameExperience();
       Measurement.predictGameExperience[region][Measurement.PREDICTED_GAME_EXPERIENCE_NEURAL1] = new PredictGameExperienceWithNeuralNetwork(
-        require('./neural-network-models/b540f780-9367-427c-8b05-232cebb9ec49')
+        require('./neural-network-models/b540f780-9367-427c-8b05-232cebb9ec49.json')
       );
     }
 
