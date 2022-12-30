@@ -20,7 +20,6 @@ phases:
     on-failure: ABORT
     commands:
        - npm run build
-       - cp .npmrc build/.npmrc
        - |-
             if [ "$IS_PREBUILD" = 'true' ]; then
               echo "Publishing release candidate"
