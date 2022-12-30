@@ -12,10 +12,10 @@
     "lint": "eslint src/",
     "test": "mocha  --timeout 10000 --exit --recursive 'src/**/*.tests.ts'",
     "build": "scripts/build.sh",
-    "version": "echo \"{\\\"tag\\\": \\\"$(cat package.json | jq -r '.version')\\\"}\" > src/controllers/build-info.json && git add src/controllers/build-info.json ",
+    "version": "scripts/sync-build-info.sh",
     "style-write": "appland-style --browser --write src/",
     "style-check": "appland-style --browser --check src/",
-    "postversion": "cp package.json build/package.json && (cp .npmrc build/.npmrc 2>/dev/null || true) && cp src/controllers/build-info.json build/src/controllers/build-info.json",
+    "postversion": "scripts/postversion_hook.sh",
     "prepare": "husky install || exit 0"
   },
   "author": "Appland",

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "outDir": "./build/",
-    "sourceMap": true,
+    "inlineSourceMap": true,
     "strictNullChecks": true,
     "skipLibCheck": true,
     "module": "CommonJS",
