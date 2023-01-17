@@ -218,14 +218,26 @@ export default class EmulatorWebrtcView extends Component {
       video.srcObject = new MediaStream();
     }
 
-    video.srcObject.addTrack(track);
     if (track.kind === 'video') {
+      const trackProcessor = new MediaStreamTrackProcessor({ track });
+      const trackGenerator = new MediaStreamTrackGenerator({ kind: 'video' });
+
+      const transformer = new TransformStream({
+        async transform(videoFrame, controller) {
+          console.log(`Current timestamp: ${new Date().getTime()}`);
+          console.log(`Encoded timestamp (unit?): ${videoFrame.timestamp}`);
+          controller.enqueue(videoFrame);
+        },
+      });
+      trackProcessor.readable.pipeThrough(transformer).pipeTo(trackGenerator.writable);
+      video.srcObject.addTrack(trackGenerator);
       this.setState({ video: true }, () => {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_AVAILABLE);
       });
     }
 
     if (track.kind === 'audio') {
+      video.srcObject.addTrack(track);
       this.setState({ audio: true }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_AVAILABLE));
     }
   };
