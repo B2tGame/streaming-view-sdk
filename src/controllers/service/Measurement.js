@@ -309,7 +309,7 @@ export default class Measurement {
   }
 
   /**
-   * Process inbound-rtp video report to fetch framesDecodedPerSecond, bytesReceivedPerSecond and videoProcessing
+   * Process inbound-rtp video report to fetch its metrics
    * @param report
    */
   processInboundRtpVideoReport(report) {
