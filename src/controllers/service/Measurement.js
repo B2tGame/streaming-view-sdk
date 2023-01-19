@@ -280,7 +280,6 @@ export default class Measurement {
     // Process all reports and collect measurement data
     stats.forEach((report) => {
       this.processInboundRtpVideoReport(report);
-      this.processTrackVideoReport(report);
       this.processDataChannelMouseReport(report);
       this.processDataChannelTouchReport(report);
       this.processCandidatePairReport(report);
@@ -315,6 +314,14 @@ export default class Measurement {
    */
   processInboundRtpVideoReport(report) {
     if (report.type === Measurement.REPORT_TYPE_INBOUND_RTP && report.kind === Measurement.REPORT_KIND_VIDEO) {
+      this.measurement.framesReceivedPerSecond =
+        (report.framesReceived - this.previousMeasurement.framesReceived) / this.measurement.measureDuration;
+      this.measurement.framesDropped = report.framesDropped - this.previousMeasurement.framesDropped;
+      this.measurement.jitterBufferDelay = report.jitterBufferDelay * 1000;
+      this.measurement.jitterBufferEmittedCount = report.jitterBufferEmittedCount;
+
+      this.previousMeasurement.framesReceived = report.framesReceived;
+      this.previousMeasurement.framesDropped = report.framesDropped;
       this.measurement.framesDecodedPerSecond =
         (report.framesDecoded - this.previousMeasurement.framesDecoded) / this.measurement.measureDuration;
       this.measurement.bytesReceivedPerSecond =
@@ -434,23 +441,6 @@ export default class Measurement {
       result[algorithm] = Measurement.predictGameExperience[region][algorithm].predict(rtt, packetLostPercent);
       return result;
     }, {});
-  }
-
-  /**
-   * Process track video report to fetch framesReceivedPerSecond and framesDropped
-   * @param report
-   */
-  processTrackVideoReport(report) {
-    if (report.type === Measurement.REPORT_TYPE_TRACK && report.kind === Measurement.REPORT_KIND_VIDEO) {
-      this.measurement.framesReceivedPerSecond =
-        (report.framesReceived - this.previousMeasurement.framesReceived) / this.measurement.measureDuration;
-      this.measurement.framesDropped = report.framesDropped - this.previousMeasurement.framesDropped;
-      this.measurement.jitterBufferDelay = report.jitterBufferDelay * 1000;
-      this.measurement.jitterBufferEmittedCount = report.jitterBufferEmittedCount;
-
-      this.previousMeasurement.framesReceived = report.framesReceived;
-      this.previousMeasurement.framesDropped = report.framesDropped;
-    }
   }
 
   /**
