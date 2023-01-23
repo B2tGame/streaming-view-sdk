@@ -87,16 +87,13 @@ class StreamingController {
   }
 
   /**
-   * Terminate the instance (optionally provide a reason for logging purposes)
-   * Uses the legacy GET endpoint if no reason is provided
+   * Terminate the instance (optionally provide a termination reason for logging purposes)
    * @param {string} reason
    * @returns {Promise<*>}
    */
   terminate(reason) {
-    if (!reason) return this.getStreamEndpoint().then((streamEndpoint) => axios.get(`${streamEndpoint}/emulator-commands/terminate`));
-
     const body = {
-      reason,
+      reason: reason || '',
     };
     return this.getStreamEndpoint().then((streamEndpoint) => axios.post(`${streamEndpoint}/emulator-commands/terminate`, body));
   }
