@@ -266,6 +266,7 @@ export default class Measurement {
       packetsLost: 0,
       packetsReceived: 0,
       jitter: null,
+      lastFrameShownTimestamp: null,
       measureAt: Date.now(),
     };
   }
@@ -274,7 +275,7 @@ export default class Measurement {
    * Process reports from the browser and send report measurements to the StreamSocket by REPORT_MEASUREMENT event
    * @param {{ stats: RTCPeerConnection.getStats, synchronizationSource: RTCRtpContributingSource | null }}
    */
-  reportWebRtcMeasurement({ stats, synchronizationSource }) {
+  reportWebRtcMeasurement({ stats, synchronizationSource, frameTimestamps }) {
     this.measurement.measureAt = Date.now();
     this.measurement.measureDuration = (this.measurement.measureAt - this.previousMeasurement.measureAt) / 1000;
     // Process all reports and collect measurement data
@@ -285,6 +286,7 @@ export default class Measurement {
       this.processCandidatePairReport(report);
     });
     this.processWebRtcRoundTripTimeStats();
+    this.processFrameTimestamps(frameTimestamps);
     this.previousMeasurement.measureAt = this.measurement.measureAt;
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
     this.measurement.numberOfBlackScreens = this.numberOfBlackScreens || 0;
@@ -467,5 +469,26 @@ export default class Measurement {
         (report.messagesSent - this.previousMeasurement.messagesSentTouch) / this.measurement.measureDuration;
       this.previousMeasurement.messagesSentTouch = report.messagesSent;
     }
+  }
+
+  /**
+   * Convert frame timestamps into a shorter (and more useful) form
+   * @param {{
+   *   encodedTimestamp: number,
+   *   shownTimestamp: number
+   * }[]} frameTimestamps The timestamps for each frame since the last measurement
+   */
+  processFrameTimestamps(frameTimestamps) {
+    this.measurement.firstShownFrameUnixTimestampMs = frameTimestamps[0];
+    this.measurement.shownFrameDeltasMs = frameTimestamps.map((shownTimestamp, i) => {
+      if (i === 0) {
+        return this.previousMeasurement.lastFrameShownTimestamp !== null
+          ? shownTimestamp - this.previousMeasurement.lastFrameShownTimestamp
+          : 0; // Set the interframe delay for the very first frame to 0, just to have a number
+      }
+
+      return shownTimestamp - frameTimestamps[i - 1];
+    });
+    this.previousMeasurement.lastFrameShownTimestamp = frameTimestamps[frameTimestamps.length - 1];
   }
 }

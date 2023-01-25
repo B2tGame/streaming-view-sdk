@@ -59,6 +59,7 @@ export default class JsepProtocol {
     this.minBitrate = minBitrate;
     this.maxBitrate = maxBitrate;
     this.logger = logger;
+    this.peerConnection = null;
   }
 
   /**
@@ -89,7 +90,6 @@ export default class JsepProtocol {
       this.rtcEventTrigger = null;
     }
 
-    StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_DISCONNECTED);
   };
 
@@ -235,7 +235,6 @@ export default class JsepProtocol {
     this.logger.info(`JsepProtocol._handleStart; iceServers.name: ${this.iceServers.name}`, signal);
 
     this.peerConnection = new RTCPeerConnection(signal.start);
-    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
 
     this.peerConnection.addEventListener('track', this._handlePeerConnectionTrack, false);
     this.peerConnection.addEventListener('icecandidate', this._handlePeerIceCandidate, false);
@@ -243,26 +242,24 @@ export default class JsepProtocol {
     this.peerConnection.ondatachannel = (e) => this._handleDataChannel(e);
   };
 
-  onRequestWebRtcMeasurement = () => {
-    this.peerConnection
-      .getStats()
-      .then((stats) => {
-        let synchronizationSource = null;
-        this.peerConnection.getReceivers().forEach((r) => {
-          if (r.track.kind === 'video') {
-            r.getSynchronizationSources().forEach((s) => {
-              synchronizationSource = s;
-            });
-          }
-        });
+  peerConnectionInitialized() {
+    return this.peerConnection !== null;
+  }
 
-        return StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, { stats, synchronizationSource });
-      })
-      .catch((err) => {
-        StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err);
-        console.warn(err);
-      });
-  };
+  async getWebRtcStats() {
+    const stats = await this.peerConnection.getStats();
+    let synchronizationSource = null;
+    // Here we are assuming that we only receive one video track
+    this.peerConnection.getReceivers().forEach((r) => {
+      if (r.track.kind === 'video') {
+        r.getSynchronizationSources().forEach((s) => {
+          synchronizationSource = s;
+        });
+      }
+    });
+
+    return { stats, synchronizationSource };
+  }
 
   _handleSDP = async (signal) => {
     await this.peerConnection.setRemoteDescription(new RTCSessionDescription(signal));

@@ -48,6 +48,7 @@ export default class EmulatorWebrtcView extends Component {
     this.captureScreenMetaData = [];
     this.requireUserInteractionToPlay = false;
     this.streamCaptureService = new StreamCaptureService(this.props.edgeNodeId, this.video, this.canvas, this.canvasTouch);
+    this.frameTimestamps = [];
   }
 
   componentDidMount() {
@@ -55,7 +56,8 @@ export default class EmulatorWebrtcView extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .on(StreamingEvent.STREAM_CONNECTED, this.onConnect)
       .on(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
-      .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
+      .on(StreamingEvent.USER_INTERACTION, this.onUserInteraction)
+      .on(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
 
     if (this.props.measureTouchRtt) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).on(StreamingEvent.TOUCH_START, this.onTouchStart);
@@ -85,7 +87,8 @@ export default class EmulatorWebrtcView extends Component {
     StreamingEvent.edgeNode(this.props.edgeNodeId)
       .off(StreamingEvent.STREAM_CONNECTED, this.onConnect)
       .off(StreamingEvent.STREAM_DISCONNECTED, this.onDisconnect)
-      .off(StreamingEvent.USER_INTERACTION, this.onUserInteraction);
+      .off(StreamingEvent.USER_INTERACTION, this.onUserInteraction)
+      .off(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
 
     if (this.props.measureTouchRtt) {
       StreamingEvent.edgeNode(this.props.edgeNodeId).off(StreamingEvent.TOUCH_START, this.onTouchStart);
@@ -218,14 +221,33 @@ export default class EmulatorWebrtcView extends Component {
       video.srcObject = new MediaStream();
     }
 
-    video.srcObject.addTrack(track);
     if (track.kind === 'video') {
+      // If the browser has the capability, we insert a "transform" that will get
+      // the timestamp of each frame for later processing.
+      // This API is (as of 2023-01-19) only available in Chrome, and
+      // MediaStreamTrackGenerator will at some point be renamed VideoTrackGenerator
+      if (window.MediaStreamTrackProcessor && window.MediaStreamTrackGenerator) {
+        const trackProcessor = new window.MediaStreamTrackProcessor({ track });
+        const trackGenerator = new window.MediaStreamTrackGenerator({ kind: 'video' });
+
+        const transformer = new TransformStream({
+          transform: async (videoFrame, controller) => {
+            this.frameTimestamps.push(new Date().getTime());
+            controller.enqueue(videoFrame);
+          },
+        });
+        trackProcessor.readable.pipeThrough(transformer).pipeTo(trackGenerator.writable);
+        video.srcObject.addTrack(trackGenerator);
+      } else {
+        video.srcObject.addTrack(track);
+      }
       this.setState({ video: true }, () => {
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_VIDEO_AVAILABLE);
       });
     }
 
     if (track.kind === 'audio') {
+      video.srcObject.addTrack(track);
       this.setState({ audio: true }, () => StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_AUDIO_AVAILABLE));
     }
   };
@@ -310,6 +332,24 @@ export default class EmulatorWebrtcView extends Component {
 
   onContextMenu = (e) => {
     e.preventDefault();
+  };
+
+  onRequestWebRtcMeasurement = async () => {
+    if (this.props.jsep.peerConnectionInitialized()) {
+      try {
+        const { stats, synchronizationSource } = await this.props.jsep.getWebRtcStats();
+        const frameTimestamps = this.frameTimestamps;
+        this.frameTimestamps = [];
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, {
+          stats,
+          synchronizationSource,
+          frameTimestamps,
+        });
+      } catch (err) {
+        StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.ERROR, err);
+        console.warn(err);
+      }
+    }
   };
 
   render() {
