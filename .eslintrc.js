@@ -4,23 +4,23 @@ module.exports = {
     browser: true,
     es2020: true,
     node: true,
-    mocha: true
+    mocha: true,
   },
   extends: ['eslint:recommended', 'plugin:react/recommended'],
-  parser: '@babel/eslint-parser',
+  parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 12,
-    jsx: true
+    jsx: true,
   },
-  plugins: ['react'],
+  plugins: ['react', '@typescript-eslint'],
   rules: {
     'no-unused-vars': [
       'error',
       {
         // Unused arguments still give information about how a function is called.
         // This is particularly useful for mocks.
-        args: 'none'
-      }
-    ]
-  }
+        args: 'none',
+      },
+    ],
+  },
 };

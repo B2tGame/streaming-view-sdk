@@ -5,12 +5,11 @@ import StreamingEvent from './StreamingEvent';
 import StreamingController from './StreamingController';
 import { v4 as uuid } from 'uuid';
 import buildInfo from './build-info.json';
-import Logger from './Logger';
+import log from '../measurements/Logger';
 import StreamSocket from './service/StreamSocket';
 import Measurement from './service/Measurement';
 import LogQueueService from './service/LogQueueService';
 import BlackScreenDetector from './service/BlackScreenDetector';
-import StreamWebRtc from './service/StreamWebRtc';
 import urlParse from 'url-parse';
 import { requestIceServers } from './service/IceServer';
 
@@ -58,7 +57,6 @@ export default class StreamingView extends Component {
       maxConnectionRetries: PropTypes.number, // Can't be change after creation, Override the default threshold for now many time the SDK will try to reconnect to the stream
       height: PropTypes.string,
       width: PropTypes.string,
-      pingInterval: PropTypes.number,
       measureTouchRtt: PropTypes.bool,
       measurementScheduler: PropTypes.object.isRequired,
       playoutDelayHint: PropTypes.number,
@@ -76,14 +74,9 @@ export default class StreamingView extends Component {
     enableControl: true,
     volume: 1.0,
     muted: false,
-    pingInterval: StreamWebRtc.WEBRTC_PING_INTERVAL,
     measureTouchRtt: true,
     playoutDelayHint: 0,
     vp8MaxQuantization: 63,
-    preferH264: true,
-    startBitrate: 5000, // Kbps
-    minBitrate: 5000, // Kbps
-    maxBitrate: 5000, // Kbps
   };
 
   /**
@@ -116,19 +109,8 @@ export default class StreamingView extends Component {
 
   componentDidMount() {
     this.isMountedInView = true;
-    const {
-      apiEndpoint,
-      edgeNodeId,
-      userId,
-      edgeNodeEndpoint,
-      internalSession,
-      turnEndpoint,
-      onEvent,
-      pingInterval,
-      measurementScheduler,
-    } = this.props;
+    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, onEvent, measurementScheduler } = this.props;
 
-    this.logger = new Logger();
     const { userClickedPlayAt } = this.props;
     if (!(userClickedPlayAt > 0)) {
       // TODO: Change this back to an error once it doesn't happen in the PWA and CMS
@@ -144,7 +126,7 @@ export default class StreamingView extends Component {
 
     this.blackScreenDetector = new BlackScreenDetector(edgeNodeId, this.streamingViewId);
 
-    this.measurement = new Measurement(edgeNodeId, this.streamingViewId, this.logger);
+    this.measurement = new Measurement(edgeNodeId, this.streamingViewId, log);
 
     if (onEvent) {
       StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
@@ -157,7 +139,7 @@ export default class StreamingView extends Component {
       });
     }
 
-    this.logger.info(
+    log.info(
       'StreamingView was mounted',
       Object.keys(this.props).reduce((propObj, propName) => {
         const propValue = this.props[propName];
@@ -169,7 +151,7 @@ export default class StreamingView extends Component {
       }, {})
     );
 
-    this.logger.log(`SDK Version: ${buildInfo.tag}`);
+    log.info(`SDK Version: ${buildInfo.tag}`);
     window.addEventListener('resize', this.onResize);
     window.addEventListener('error', this.onError);
 
@@ -188,12 +170,8 @@ export default class StreamingView extends Component {
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
       .once(StreamingEvent.STREAM_TERMINATED, () => {
-        if (this.measurement) {
-          this.measurement.destroy();
-        }
-        if (this.streamSocket) {
-          this.streamSocket.close();
-        }
+        this.measurement && this.measurement.destroy();
+        this.streamSocket && this.streamSocket.close();
         this.setState({ isReadyStream: false });
       })
       .on(StreamingEvent.EMULATOR_CONFIGURATION, (configuration) => {
@@ -212,13 +190,18 @@ export default class StreamingView extends Component {
         handleEmulatorReady(onUserInteractionCallback);
       });
 
-    StreamingController({
+    const controller = new StreamingController.StreamingController({
       apiEndpoint: apiEndpoint,
       edgeNodeId: edgeNodeId,
       internalSession: internalSession,
-    })
-      .then((controller) => controller.waitFor(StreamingController.WAIT_FOR_ENDPOINT))
-      .then((state) => state.endpoint)
+    });
+
+    controller
+      .waitWhile((data) => data.endpoint === undefined)
+      .then((data) => {
+        if (data.state === 'terminated') throw new Error('Edge Node is terminated');
+        return data.endpoint;
+      })
       .then((streamEndpoint) => {
         // if the SDK are in internal session mode and a value has been pass to edge node endpoint use that value instead of the
         // public endpoint received from Service Coordinator.
@@ -227,15 +210,16 @@ export default class StreamingView extends Component {
       .then((streamEndpoint) => requestIceServers(apiEndpoint, edgeNodeId).then((iceServers) => [streamEndpoint, iceServers]))
       .then(([streamEndpoint, iceServers]) => {
         if (this.measurement) {
-          this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, pingInterval, iceServers);
+          this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, iceServers);
         }
         if (!this.isMountedInView) {
-          this.logger.log('Cancel action due to view is not mounted.');
+          log.info('Canceling action because the view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
         }
 
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.EDGE_NODE_READY_TO_ACCEPT_CONNECTION);
         this.streamSocket = new StreamSocket(edgeNodeId, streamEndpoint, userId, internalSession);
+
         this.setState({
           isReadyStream: true,
           streamEndpoint: streamEndpoint,
@@ -250,7 +234,7 @@ export default class StreamingView extends Component {
       })
       .catch((err) => {
         if (!this.isMountedInView) {
-          this.logger.log('Cancel action due to view is not mounted.');
+          log.info('Canceling action because the view is not mounted.');
           return; // Cancel any action if we not longer are mounted.
         }
         StreamingEvent.edgeNode(this.props.edgeNodeId).emit(StreamingEvent.STREAM_UNREACHABLE, `Due to ${err.message}: ${err}`);
@@ -269,7 +253,7 @@ export default class StreamingView extends Component {
   }
 
   componentWillUnmount() {
-    this.logger.info('StreamingView component will unmount', {
+    log.info('StreamingView component will unmount', {
       measurement: this.measurement ? 'should-be-destroy' : 'skip',
       websocket: this.streamSocket ? 'should-be-destroy' : 'skip',
       blackScreenDetector: this.blackScreenDetector ? 'should-be-destroy' : 'skip',
@@ -440,7 +424,7 @@ export default class StreamingView extends Component {
               emulatorWidth={this.state.emulatorWidth}
               emulatorHeight={this.state.emulatorHeight}
               emulatorVersion={this.state.emulatorVersion}
-              logger={this.logger}
+              logger={log}
               edgeNodeId={edgeNodeId}
               maxConnectionRetries={this.props.maxConnectionRetries}
               measureTouchRtt={this.props.measureTouchRtt ?? this.state.shouldRandomlyMeasureRtt}

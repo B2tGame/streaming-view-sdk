@@ -1,124 +1,172 @@
-import EventEmitter from 'eventemitter3';
-import StreamingEvent from '../StreamingEvent';
-import WebRtcConnectionClient from './WebRtcConnectionClient';
+import axios from 'axios';
+
+const DATA_CHANNEL_NAME = 'streaming-webrtc-server';
+const PING_INTERVAL = 25;
+
+const waitIceGatheringCompletion = (peerConnection) =>
+  new Promise((resolve) => {
+    const onStateChange = () => {
+      if (peerConnection.iceGatheringState === 'complete') {
+        done();
+      }
+    };
+
+    const done = () => {
+      peerConnection.removeEventListener('icegatheringstatechange', onStateChange);
+      resolve();
+    };
+
+    peerConnection.addEventListener('icegatheringstatechange', onStateChange);
+
+    setTimeout(() => {
+      if (peerConnection.iceGatheringState !== 'complete') {
+        console.warn('Timed out waiting for host candidates');
+        done();
+      }
+    }, 10000);
+  });
+
+const onConnectionStateChange = (config, state) => (event) => {
+  switch (state.peerConnection.connectionState) {
+    case 'connected':
+      config.onConnected && config.onConnected();
+      break;
+
+    case 'disconnected':
+      axios.delete(`${config.host}/connections/${state.remotePeerConnection.id}`).catch(console.error);
+
+      state.peerConnection.removeEventListener('connectionstatechange', state.onConnectionStateChange);
+
+      state.dataChannel?.removeEventListener('message', state.onMessage);
+
+      clearInterval(state.pingIntervalId);
+
+      break;
+
+    default:
+      break;
+  }
+};
+
+const onMessage = (config) => (event) => {
+  const { type, timestamp } = JSON.parse(event.data);
+  if (type === 'pong') {
+    const sendTime = Math.trunc(timestamp);
+    const rtt = Date.now() - sendTime;
+    config.onRttMeasure && config.onRttMeasure(rtt);
+  }
+};
+
+const onDataChannel = (config, state) => (event) => {
+  if (event.channel.label !== DATA_CHANNEL_NAME) {
+    return;
+  }
+
+  state.packageSequenceId = 0;
+
+  // Can it happen that we have already an onMessage?
+  state.onMessage = onMessage(config);
+
+  state.dataChannel = event.channel;
+  state.dataChannel.addEventListener('message', state.onMessage);
+
+  const sendPing = () => {
+    if (state.dataChannel.readyState === 'open') {
+      state.dataChannel.send(
+        JSON.stringify({
+          type: 'ping',
+          timestamp: Date.now(),
+          sequenceId: state.packageSequenceId++, // incremental counter to be able to detect out of order or lost packages
+        })
+      );
+    }
+  };
+
+  state.pingIntervalId = setInterval(sendPing, PING_INTERVAL);
+};
+
+const closeEverything = (state) => () => {
+  state.dataChannel?.removeEventListener('message', state.onMessage);
+  state.peerConnection.removeEventListener('connectionstatechange', state.onConnectionStateChange);
+  state.peerConnection.removeEventListener('datachannel', state.onDataChannel);
+  state.peerConnection.close();
+};
 
 /**
- * StreamWebRtc is a WebRtc connection class to communicate with the backend
+ * @param {{
+ *    host: string,
+ *    iceServerCandidates: <array *>,
+ *    onConnected: function,
+ *    onRttMeasure: function,
+ * } config
+ * @returns {function} to close and tear down the connection.
  */
-export default class StreamWebRtc extends EventEmitter {
-  static get DATA_CHANNEL_NAME() {
-    return 'streaming-webrtc-server';
-  }
+async function initRttMeasurement(config) {
+  const state = {};
 
-  /**
-   * Returns WebRtc ping interval number in ms.
-   * @return {number}
-   */
-  static get WEBRTC_PING_INTERVAL() {
-    return 25;
-  }
+  state.remotePeerConnection = (await axios.post(`${config.host}/connections`)).data;
 
-  /**
-   * @param {string} host
-   * @param {{name: string, candidates: []}} iceServers
-   * @param {number} pingInterval
-   */
-  constructor(host, iceServers = { name: 'default', candidates: [] }, pingInterval = StreamWebRtc.WEBRTC_PING_INTERVAL) {
-    super();
+  // Instantiate
+  state.peerConnection = new RTCPeerConnection({
+    sdpSemantics: 'unified-plan',
+    iceServers: config.iceServerCandidates,
+    iceTransportPolicy: 'relay',
+  });
 
-    this.iceServersName = iceServers.name;
-    this.iceServersCandidates = iceServers.candidates;
-    this.host = `${host}/${this.iceServersName}`;
-    this.pingInterval = pingInterval;
-    this.peerConnection = undefined;
+  // Add event listeners
+  state.onConnectionStateChange = onConnectionStateChange(config, state);
+  state.peerConnection.addEventListener('connectionstatechange', state.onConnectionStateChange);
 
-    WebRtcConnectionClient.createConnection({
-      beforeAnswer: this.beforeAnswer,
-      host: this.host,
-      iceServersName: this.iceServersName,
-      iceServersCandidates: this.iceServersCandidates,
-    }).then((peerConnection) => {
-      this.peerConnection = peerConnection;
+  state.onDataChannel = onDataChannel(config, state);
+  state.peerConnection.addEventListener('datachannel', state.onDataChannel);
+
+  // We're starting this now and awaiting for it later, because it could be completed at any time.
+  const iceGatheringComplete = waitIceGatheringCompletion(state.peerConnection);
+
+  const close = closeEverything(state);
+
+  try {
+    await state.peerConnection.setRemoteDescription(state.remotePeerConnection.localDescription);
+
+    const answer = await state.peerConnection.createAnswer();
+    await state.peerConnection.setLocalDescription(answer);
+
+    await iceGatheringComplete;
+
+    await axios(`${config.host}/connections/${state.remotePeerConnection.id}/remote-description`, {
+      method: 'POST',
+      data: JSON.stringify(state.peerConnection.localDescription),
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
+  } catch (e) {
+    close();
+    throw e;
   }
 
-  beforeAnswer = (peerConnection) => {
-    let dataChannel = undefined;
-    let interval = undefined;
-    let sequenceId = 0;
-    const pingInterval = this.pingInterval;
-
-    const onMessage = ({ data }) => {
-      const { type, timestamp } = JSON.parse(data);
-      if (type === 'pong') {
-        const sendTime = Math.trunc(timestamp);
-        const rtt = Date.now() - sendTime;
-        this.emit(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, rtt);
-      }
-    };
-
-    const onDataChannel = ({ channel }) => {
-      if (channel.label !== StreamWebRtc.DATA_CHANNEL_NAME) {
-        return;
-      }
-      dataChannel = channel;
-      dataChannel.addEventListener('message', onMessage);
-      interval = setInterval(() => {
-        if (dataChannel.readyState === 'open') {
-          dataChannel.send(
-            JSON.stringify({
-              type: 'ping',
-              timestamp: Date.now(),
-              sequenceId: sequenceId++, // incremental counter to be able to detect out of order or lost packages
-            })
-          );
-        }
-      }, pingInterval);
-    };
-
-    const onConnectionStateChange = () => {
-      switch (peerConnection.connectionState) {
-        case 'disconnected':
-          if (dataChannel) {
-            dataChannel.removeEventListener('message', onMessage);
-          }
-          if (interval) {
-            clearInterval(interval);
-          }
-          peerConnection.removeEventListener('connectionstatechange', onConnectionStateChange);
-          break;
-        case 'connected':
-          this.emit(StreamingEvent.WEBRTC_CLIENT_CONNECTED);
-          break;
-        default:
-      }
-    };
-
-    peerConnection.addEventListener('datachannel', onDataChannel);
-    peerConnection.addEventListener('connectionstatechange', onConnectionStateChange);
-  };
-
-  /**
-   * Calculates mean rtt and standard deviation values for the given input
-   * @param {number[]} values
-   * @return {{rtt: number, stdDev: number}}
-   */
-  static calculateRoundTripTimeStats = (values) => {
-    const stats = { rtt: 0, stdDev: 0 };
-    const n = values.length;
-    if (n < 1) {
-      return stats;
-    }
-    stats.rtt = Math.round(values.reduce((a, b) => a + b, 0) / n);
-    stats.stdDev = Math.round(Math.sqrt(values.reduce((cum, item) => cum + Math.pow(item - stats.rtt, 2), 0) / n));
-
-    return stats;
-  };
-
-  close = () => {
-    if (this.peerConnection) {
-      this.peerConnection.close();
-      this.peerConnection = null;
-    }
-  };
+  return close;
 }
+
+/**
+ * Calculates mean rtt and standard deviation values for the given input
+ * @param {number[]} values
+ * @return {{rtt: number, stdDev: number}}
+ *
+ * TODO: rename rtt to avg
+ */
+function calculateRoundTripTimeStats(rttValues) {
+  const n = rttValues.length;
+
+  if (n < 1) {
+    return { rtt: 0, stdDev: 0 };
+  }
+
+  // TODO The output values should NOT be rounded here, but only right before actually needed, such as when showing them to the user.
+  const avg = Math.round(rttValues.reduce((acc, rtt) => acc + rtt, 0) / n);
+  const stdDev = Math.round(Math.sqrt(rttValues.reduce((acc, rtt) => acc + (rtt - avg) * (rtt - avg), 0) / n));
+
+  return { rtt: avg, stdDev };
+}
+
+export default { initRttMeasurement, calculateRoundTripTimeStats };

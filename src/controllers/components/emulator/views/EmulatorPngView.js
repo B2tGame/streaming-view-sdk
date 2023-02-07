@@ -14,7 +14,7 @@ export default class EmulatorPngView extends Component {
     emulator: PropTypes.object,
     /** Streaming Edge node ID */
     edgeNodeId: PropTypes.string.isRequired,
-    /** Event Logger */
+    /** TODO: this is not used, remove */
     logger: PropTypes.object.isRequired,
     /** The width of the component */
     width: PropTypes.number,

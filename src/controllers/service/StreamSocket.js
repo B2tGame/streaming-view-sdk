@@ -2,6 +2,7 @@ import StreamingEvent from '../StreamingEvent';
 import io from 'socket.io-client';
 import parseUrl from 'url-parse';
 import pako from 'pako';
+import log from '../../measurements/Logger';
 
 /**
  * Websocket connection and communicate with the backend
@@ -38,12 +39,20 @@ export default class StreamSocket {
 
     setTimeout(() => {
       if (!this.socket.connected) {
-        console.error('Websocket not connected. Check that socket.io client and server versions match.');
+        console.warn(`Websocket to ${endpoint.host} is taking long to connect. Check that socket.io client and server versions match.`);
       }
     }, 500);
 
     // Web Socket errors
-    this.socket.on('error', (err) => StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.ERROR, err));
+    this.socket
+      .on('error', (err) => {
+        log.error(err);
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.SOCKET_ERROR, err);
+      })
+      .on('reconnect_failed', (err) => {
+        log.error(err);
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.SOCKET_ERROR, err);
+      });
 
     // Adapted from:
     // https://socket.io/docs/v4/migrating-from-2-x-to-3-0/#no-more-pong-event-for-retrieving-latency

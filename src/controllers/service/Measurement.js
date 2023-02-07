@@ -1,7 +1,7 @@
 import StreamingEvent from '../StreamingEvent';
 import PredictGameExperience from '../../measurements/service/PredictGameExperience';
 import PredictGameExperienceWithNeuralNetwork from './PredictGameExperienceWithNeuralNetwork';
-import StreamWebRtc from './StreamWebRtc';
+import StreamWebRtc from '../../measurements/service/StreamWebRtc';
 import StreamSocket from './StreamSocket';
 
 import Classification from './Classification';
@@ -48,14 +48,18 @@ export default class Measurement {
 
   /**
    * @param {string} webRtcHost
-   * @param {number} pingInterval
    * @param {{ name: string, candidates: [{*}] }} iceServers
    */
-  initWebRtc(webRtcHost, pingInterval, iceServers = { name: 'default', candidates: [] }) {
+  async initWebRtc(webRtcHost, iceServers = { name: 'default', candidates: [] }) {
     this.webRtcHost = webRtcHost;
-    this.streamWebRtc = new StreamWebRtc(this.webRtcHost, iceServers, pingInterval);
-    this.streamWebRtc.on(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
-    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
+
+    this.closeStreamWebRtc = await StreamWebRtc.initRttMeasurement({
+      host: `${webRtcHost}/${iceServers.name}`,
+      iceServerCandidates: iceServers.candidates,
+      onRttMeasure: (rtt) => this.onWebRtcRoundTripTimeMeasurement(rtt),
+    });
+
+    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.STREAM_UNREACHABLE, this.closeStreamWebRtc);
     this.webRtcIntervalHandler = setInterval(() => {
       StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT);
     }, StreamSocket.WEBSOCKET_PING_INTERVAL);
@@ -168,11 +172,8 @@ export default class Measurement {
       clearInterval(this.webRtcIntervalHandler);
       this.webRtcIntervalHandler = undefined;
     }
-    if (this.streamWebRtc) {
-      StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.STREAM_UNREACHABLE, this.streamWebRtc.close);
-      this.streamWebRtc.off(StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT, this.onWebRtcRoundTripTimeMeasurement);
-      this.streamWebRtc.close();
-    }
+
+    this.closeStreamWebRtc && this.closeStreamWebRtc();
   }
 
   onStreamQualityRating = (rating) => {
@@ -265,6 +266,7 @@ export default class Measurement {
       packetsLost: 0,
       packetsReceived: 0,
       jitter: null,
+      lastFrameShownTimestamp: null,
       measureAt: Date.now(),
     };
   }
@@ -273,18 +275,18 @@ export default class Measurement {
    * Process reports from the browser and send report measurements to the StreamSocket by REPORT_MEASUREMENT event
    * @param {{ stats: RTCPeerConnection.getStats, synchronizationSource: RTCRtpContributingSource | null }}
    */
-  reportWebRtcMeasurement({ stats, synchronizationSource }) {
+  reportWebRtcMeasurement({ stats, synchronizationSource, frameTimestamps }) {
     this.measurement.measureAt = Date.now();
     this.measurement.measureDuration = (this.measurement.measureAt - this.previousMeasurement.measureAt) / 1000;
     // Process all reports and collect measurement data
     stats.forEach((report) => {
       this.processInboundRtpVideoReport(report);
-      this.processTrackVideoReport(report);
       this.processDataChannelMouseReport(report);
       this.processDataChannelTouchReport(report);
       this.processCandidatePairReport(report);
     });
     this.processWebRtcRoundTripTimeStats();
+    this.processFrameTimestamps(frameTimestamps);
     this.previousMeasurement.measureAt = this.measurement.measureAt;
     this.measurement.streamQualityRating = this.streamQualityRating || 0;
     this.measurement.numberOfBlackScreens = this.numberOfBlackScreens || 0;
@@ -309,11 +311,19 @@ export default class Measurement {
   }
 
   /**
-   * Process inbound-rtp video report to fetch framesDecodedPerSecond, bytesReceivedPerSecond and videoProcessing
+   * Process inbound-rtp video report to fetch its metrics
    * @param report
    */
   processInboundRtpVideoReport(report) {
     if (report.type === Measurement.REPORT_TYPE_INBOUND_RTP && report.kind === Measurement.REPORT_KIND_VIDEO) {
+      this.measurement.framesReceivedPerSecond =
+        (report.framesReceived - this.previousMeasurement.framesReceived) / this.measurement.measureDuration;
+      this.measurement.framesDropped = report.framesDropped - this.previousMeasurement.framesDropped;
+      this.measurement.jitterBufferDelay = report.jitterBufferDelay * 1000;
+      this.measurement.jitterBufferEmittedCount = report.jitterBufferEmittedCount;
+
+      this.previousMeasurement.framesReceived = report.framesReceived;
+      this.previousMeasurement.framesDropped = report.framesDropped;
       this.measurement.framesDecodedPerSecond =
         (report.framesDecoded - this.previousMeasurement.framesDecoded) / this.measurement.measureDuration;
       this.measurement.bytesReceivedPerSecond =
@@ -425,7 +435,7 @@ export default class Measurement {
       Measurement.predictGameExperience[region] = {};
       Measurement.predictGameExperience[region][Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA] = new PredictGameExperience();
       Measurement.predictGameExperience[region][Measurement.PREDICTED_GAME_EXPERIENCE_NEURAL1] = new PredictGameExperienceWithNeuralNetwork(
-        require('./neural-network-models/b540f780-9367-427c-8b05-232cebb9ec49')
+        require('./neural-network-models/b540f780-9367-427c-8b05-232cebb9ec49.json')
       );
     }
 
@@ -433,23 +443,6 @@ export default class Measurement {
       result[algorithm] = Measurement.predictGameExperience[region][algorithm].predict(rtt, packetLostPercent);
       return result;
     }, {});
-  }
-
-  /**
-   * Process track video report to fetch framesReceivedPerSecond and framesDropped
-   * @param report
-   */
-  processTrackVideoReport(report) {
-    if (report.type === Measurement.REPORT_TYPE_TRACK && report.kind === Measurement.REPORT_KIND_VIDEO) {
-      this.measurement.framesReceivedPerSecond =
-        (report.framesReceived - this.previousMeasurement.framesReceived) / this.measurement.measureDuration;
-      this.measurement.framesDropped = report.framesDropped - this.previousMeasurement.framesDropped;
-      this.measurement.jitterBufferDelay = report.jitterBufferDelay * 1000;
-      this.measurement.jitterBufferEmittedCount = report.jitterBufferEmittedCount;
-
-      this.previousMeasurement.framesReceived = report.framesReceived;
-      this.previousMeasurement.framesDropped = report.framesDropped;
-    }
   }
 
   /**
@@ -476,5 +469,26 @@ export default class Measurement {
         (report.messagesSent - this.previousMeasurement.messagesSentTouch) / this.measurement.measureDuration;
       this.previousMeasurement.messagesSentTouch = report.messagesSent;
     }
+  }
+
+  /**
+   * Convert frame timestamps into a shorter (and more useful) form
+   * @param {{
+   *   encodedTimestamp: number,
+   *   shownTimestamp: number
+   * }[]} frameTimestamps The timestamps for each frame since the last measurement
+   */
+  processFrameTimestamps(frameTimestamps) {
+    this.measurement.firstShownFrameUnixTimestampMs = frameTimestamps[0];
+    this.measurement.shownFrameDeltasMs = frameTimestamps.map((shownTimestamp, i) => {
+      if (i === 0) {
+        return this.previousMeasurement.lastFrameShownTimestamp !== null
+          ? shownTimestamp - this.previousMeasurement.lastFrameShownTimestamp
+          : 0; // Set the interframe delay for the very first frame to 0, just to have a number
+      }
+
+      return shownTimestamp - frameTimestamps[i - 1];
+    });
+    this.previousMeasurement.lastFrameShownTimestamp = frameTimestamps[frameTimestamps.length - 1];
   }
 }

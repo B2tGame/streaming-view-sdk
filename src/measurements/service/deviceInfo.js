@@ -1,5 +1,5 @@
 import axios from 'axios';
-import Logger from './../Logger';
+import log from '../Logger';
 import { v4 as uuid } from 'uuid';
 
 const USER_ID_KEY = 'streaming-appland-user-id';
@@ -33,7 +33,7 @@ function get(apiEndpoint, userConfiguration) {
   return axios.post(`${apiEndpoint}/api/streaming-games/edge-node/device-info`, body, { timeout: 3000 }).then((result) => {
     const deviceInfo = { ...result.data, ...browserDeviceInfo };
 
-    new Logger().info('deviceInfo is ready', deviceInfo);
+    log.info('deviceInfo is ready', deviceInfo);
 
     return deviceInfo;
   });

@@ -1,5 +1,6 @@
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import StreamingEvent from '../../../StreamingEvent';
+import defaults from '../../../../measurements/defaults';
 import parseUrl from 'url-parse';
 import SdpModifier from './SdpModifier';
 
@@ -37,10 +38,10 @@ export default class JsepProtocol {
     playoutDelayHint = 0,
     iceServers = [],
     vp8MaxQuantization = undefined,
-    preferH264 = false,
-    startBitrate = 5000,
-    minBitrate = 5000,
-    maxBitrate = 5000
+    preferH264 = defaults.preferH264,
+    startBitrate = defaults.startBitrate,
+    minBitrate = defaults.minBitrate,
+    maxBitrate = defaults.maxBitrate
   ) {
     this.emulator = emulator;
     this.rtc = rtc;
@@ -58,6 +59,7 @@ export default class JsepProtocol {
     this.minBitrate = minBitrate;
     this.maxBitrate = maxBitrate;
     this.logger = logger;
+    this.peerConnection = null;
   }
 
   /**
@@ -83,12 +85,11 @@ export default class JsepProtocol {
     }
     this.active = false;
     if (this.rtcEventTrigger) {
-      this.logger.log('Unregister RTC event trigger:', this.rtcEventTrigger);
+      this.logger.info('Unregister RTC event trigger:', this.rtcEventTrigger);
       clearInterval(this.rtcEventTrigger);
       this.rtcEventTrigger = null;
     }
 
-    StreamingEvent.edgeNode(this.edgeNodeId).off(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
     StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.STREAM_DISCONNECTED);
   };
 
@@ -185,7 +186,7 @@ export default class JsepProtocol {
   };
 
   _handleDataChannelStatusChange = (e) => {
-    this.logger.log('Data channel status change ' + e);
+    this.logger.info('Data channel status change ' + e);
   };
 
   send(label, msg) {
@@ -231,10 +232,9 @@ export default class JsepProtocol {
       iceServers: this.iceServers.name === 'default' ? [this.getIceConfiguration()] : this.iceServers.candidates,
       iceTransportPolicy: 'relay',
     };
-    this.logger.log(`JsepProtocol._handleStart; iceServers.name: ${this.iceServers.name}`, signal);
+    this.logger.info(`JsepProtocol._handleStart; iceServers.name: ${this.iceServers.name}`, signal);
 
     this.peerConnection = new RTCPeerConnection(signal.start);
-    StreamingEvent.edgeNode(this.edgeNodeId).on(StreamingEvent.REQUEST_WEB_RTC_MEASUREMENT, this.onRequestWebRtcMeasurement);
 
     this.peerConnection.addEventListener('track', this._handlePeerConnectionTrack, false);
     this.peerConnection.addEventListener('icecandidate', this._handlePeerIceCandidate, false);
@@ -242,26 +242,24 @@ export default class JsepProtocol {
     this.peerConnection.ondatachannel = (e) => this._handleDataChannel(e);
   };
 
-  onRequestWebRtcMeasurement = () => {
-    this.peerConnection
-      .getStats()
-      .then((stats) => {
-        let synchronizationSource = null;
-        this.peerConnection.getReceivers().forEach((r) => {
-          if (r.track.kind === 'video') {
-            r.getSynchronizationSources().forEach((s) => {
-              synchronizationSource = s;
-            });
-          }
-        });
+  peerConnectionInitialized() {
+    return this.peerConnection !== null;
+  }
 
-        return StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.WEB_RTC_MEASUREMENT, { stats, synchronizationSource });
-      })
-      .catch((err) => {
-        StreamingEvent.edgeNode(this.edgeNodeId).emit(StreamingEvent.ERROR, err);
-        console.warn(err);
-      });
-  };
+  async getWebRtcStats() {
+    const stats = await this.peerConnection.getStats();
+    let synchronizationSource = null;
+    // Here we are assuming that we only receive one video track
+    this.peerConnection.getReceivers().forEach((r) => {
+      if (r.track.kind === 'video') {
+        r.getSynchronizationSources().forEach((s) => {
+          synchronizationSource = s;
+        });
+      }
+    });
+
+    return { stats, synchronizationSource };
+  }
 
   _handleSDP = async (signal) => {
     await this.peerConnection.setRemoteDescription(new RTCSessionDescription(signal));

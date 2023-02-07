@@ -385,11 +385,11 @@ export default class EventHandler extends Component {
         .then(() => {
           const orientation = this.props.emulatorWidth > this.props.emulatorHeight ? ORIENTATION_LANDSCAPE : ORIENTATION_PORTRAIT;
           window.screen.orientation.lock(orientation).catch((error) => {
-            this.props.logger.log('Failed to lock screen orientation to: ' + error);
+            this.props.logger.info('Failed to lock screen orientation to: ' + error);
           });
         })
         .catch((error) => {
-          this.props.logger.log('Failed to request fullscreen: ' + error);
+          this.props.logger.info('Failed to request fullscreen: ' + error);
         });
     }
   };

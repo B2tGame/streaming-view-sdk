@@ -1,6 +1,5 @@
 import assert from 'assert';
 import proxyquire from 'proxyquire';
-import StreamingEvent from '../StreamingEvent';
 import StreamWebRtc from './StreamWebRtc';
 
 // This makes copies of the module to be tested, each copy can be generated with different mocks
@@ -11,33 +10,16 @@ const axiosGetMock = (urlToResponse) => (url, options) => new Promise((resolve) 
 
 // Mock for StreamWebRtc
 // (we don't want to extend the original StreamWebRtc class, otherwise we risk unwittingly executing non-mocked methods)
-class StreamWebRtcMock {
-  constructor() {}
-
-  on(eventName, callback) {
-    switch (eventName) {
-      case StreamingEvent.WEBRTC_CLIENT_CONNECTED:
-        setTimeout(callback, 10);
-        break;
-      case StreamingEvent.WEBRTC_ROUND_TRIP_TIME_MEASUREMENT:
-        setTimeout(() => callback(230), 30);
-        setTimeout(() => callback(180), 100);
-        break;
-      default:
-        throw new Error(`Unknown event name: ${eventName}`);
-    }
-
-    return this;
-  }
-
-  off(eventName, callback) {
-    return this;
-  }
-
-  close() {}
-
-  static calculateRoundTripTimeStats = StreamWebRtc.calculateRoundTripTimeStats;
-}
+const StreamWebRtcMock = {
+  calculateRoundTripTimeStats: StreamWebRtc.calculateRoundTripTimeStats,
+  initRttMeasurement: ({ onConnected, onRttMeasure }) =>
+    new Promise((resolve) => {
+      setTimeout(onConnected, 10);
+      setTimeout(() => onRttMeasure(230), 30);
+      setTimeout(() => onRttMeasure(180), 100);
+      setTimeout(() => resolve(() => {}), 1);
+    }),
+};
 
 const mockEndpoint = 'mockEndpoint';
 
