@@ -50,6 +50,14 @@ class RollingWindow {
  * PredictGameExperience class
  */
 export default class PredictGameExperience {
+  /**
+   *
+   * @return {string}
+   */
+  static get ALGORITHM_NAME() {
+    return 'alpha';
+  }
+
   constructor(
     sampleSize = 10,
     risingEdgeThreshold = 2.8,

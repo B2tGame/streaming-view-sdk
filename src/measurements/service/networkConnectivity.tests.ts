@@ -46,6 +46,15 @@ describe('networkConnectivity', () => {
 
       const expected = {
         predictedGameExperience: undefined,
+        predictedGameExperienceStats: {
+          alpha: {
+            input: {
+              packetLostPercent: 0,
+              rtt: [230, 180],
+            },
+            prediction: undefined,
+          },
+        },
         recommendedRegion: 'pa-papuasia-1',
         rttStatsByRegionByTurn: {
           'pa-papuasia-1': {

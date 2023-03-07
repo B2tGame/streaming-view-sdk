@@ -111,7 +111,7 @@ function estimateSpeed(rtt, stdDev) {
  *
  * @params {*}
  * @params {Array<*>}
- * @return {{predictedGameExperience: number, recommendedRegion: string, rttRegionMeasurements: *}}
+ * @return {{predictedGameExperience: number, predictedGameExperienceStats: {*}, recommendedRegion: string, rttRegionMeasurements: *}}
  */
 function measure(apiEndpoint, recommendedEdges) {
   const selectedEdges = recommendedEdges.filter((edge) => edge.measurementEndpoints.length).slice(0, MAX_RECOMMENDATION_COUNT);
@@ -159,6 +159,15 @@ function measure(apiEndpoint, recommendedEdges) {
 
     return {
       predictedGameExperience,
+      predictedGameExperienceStats: {
+        [PredictGameExperience.ALGORITHM_NAME]: {
+          prediction: predictedGameExperience,
+          input: {
+            packetLostPercent,
+            rtt: minRtts,
+          },
+        },
+      },
       recommendedRegion: minRegion,
       rttStatsByRegionByTurn: statsByRegionByTurn,
     };

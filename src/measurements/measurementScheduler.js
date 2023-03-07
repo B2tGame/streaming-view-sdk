@@ -94,6 +94,7 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
 
     deviceInfoService.update(apiEndpoint, deviceInfo.deviceInfoId, {
       rttRegionMeasurements: networkConnectivityInfo.rttStatsByRegionByTurn,
+      predictedGameExperience: networkConnectivityInfo.predictedGameExperienceStats,
     });
 
     return { networkConnectivityInfo, deviceInfo };
