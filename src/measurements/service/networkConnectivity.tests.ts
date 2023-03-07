@@ -50,7 +50,7 @@ describe('networkConnectivity', () => {
           alpha: {
             input: {
               packetLostPercent: 0,
-              rtt: [230, 180],
+              rtt: '[230,180]',
             },
             prediction: undefined,
           },

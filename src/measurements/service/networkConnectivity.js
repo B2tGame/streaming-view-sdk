@@ -164,7 +164,7 @@ function measure(apiEndpoint, recommendedEdges) {
           prediction: predictedGameExperience,
           input: {
             packetLostPercent,
-            rtt: minRtts,
+            rtt: JSON.stringify(minRtts),
           },
         },
       },
