@@ -45,6 +45,7 @@ export default class StreamingView extends Component {
       edgeNodeEndpoint: PropTypes.string, // Can't be changed after creation
       turnEndpoint: PropTypes.string, // Can't be changed after creation
       userId: PropTypes.string, // Can't be changed after creation
+      userAuthToken: PropTypes.string.isRequired,
       enableControl: PropTypes.bool, // Can be changed dynamically
       enableFullScreen: PropTypes.bool, // Can be changed dynamically
       view: PropTypes.oneOf(['webrtc', 'png']), // Can't be changed after creation
@@ -109,7 +110,17 @@ export default class StreamingView extends Component {
 
   componentDidMount() {
     this.isMountedInView = true;
-    const { apiEndpoint, edgeNodeId, userId, edgeNodeEndpoint, internalSession, turnEndpoint, onEvent, measurementScheduler } = this.props;
+    const {
+      apiEndpoint,
+      edgeNodeId,
+      userId,
+      userAuthToken,
+      edgeNodeEndpoint,
+      internalSession,
+      turnEndpoint,
+      onEvent,
+      measurementScheduler,
+    } = this.props;
 
     const { userClickedPlayAt } = this.props;
     if (!(userClickedPlayAt > 0)) {
@@ -121,7 +132,7 @@ export default class StreamingView extends Component {
     }
 
     if (!internalSession) {
-      this.LogQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId, this.streamingViewId);
+      this.logQueueService = new LogQueueService(edgeNodeId, apiEndpoint, userId, userAuthToken, this.streamingViewId);
     }
 
     this.blackScreenDetector = new BlackScreenDetector(edgeNodeId, this.streamingViewId);
@@ -257,22 +268,14 @@ export default class StreamingView extends Component {
       measurement: this.measurement ? 'should-be-destroy' : 'skip',
       websocket: this.streamSocket ? 'should-be-destroy' : 'skip',
       blackScreenDetector: this.blackScreenDetector ? 'should-be-destroy' : 'skip',
-      logQueueService: this.LogQueueService ? 'should-be-destroy' : 'skip',
+      logQueueService: this.logQueueService ? 'should-be-destroy' : 'skip',
     });
     this.isMountedInView = false;
 
-    if (this.measurement) {
-      this.measurement.destroy();
-    }
-    if (this.streamSocket) {
-      this.streamSocket.close();
-    }
-    if (this.blackScreenDetector) {
-      this.blackScreenDetector.destroy();
-    }
-    if (this.LogQueueService) {
-      this.LogQueueService.destroy();
-    }
+    this.measurement?.destroy();
+    this.streamSocket?.close();
+    this.blackScreenDetector?.destroy();
+    this.logQueueService?.destroy();
 
     window.removeEventListener('resize', this.onResize);
     window.removeEventListener('error', this.onError);

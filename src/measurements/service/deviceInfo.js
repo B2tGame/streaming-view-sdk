@@ -10,7 +10,7 @@ const USER_ID_KEY = 'streaming-appland-user-id';
  * @param {{vip: boolean, vendor: string, overflowToPublicDataCenters: boolean}} userConfiguration
  * @returns {Promise<{}>}
  */
-function get(apiEndpoint, userConfiguration) {
+function get(apiEndpoint, userConfiguration, userAuthToken) {
   const DPI = window.devicePixelRatio || 1;
 
   const browserDeviceInfo = {
@@ -30,24 +30,32 @@ function get(apiEndpoint, userConfiguration) {
     userConfiguration,
   };
 
-  return axios.post(`${apiEndpoint}/api/streaming-games/edge-node/device-info`, body, { timeout: 3000 }).then((result) => {
-    const deviceInfo = { ...result.data, ...browserDeviceInfo };
+  return axios
+    .post(`${apiEndpoint}/api/streaming-games/edge-node/device-info`, body, {
+      timeout: 3000,
+      headers: { Authorization: `Bearer ${userAuthToken}` },
+    })
+    .then((result) => {
+      const deviceInfo = { ...result.data, ...browserDeviceInfo };
 
-    log.info('deviceInfo is ready', deviceInfo);
+      log.info('deviceInfo is ready', deviceInfo);
 
-    return deviceInfo;
-  });
+      return deviceInfo;
+    });
 }
 
 /**
  * Update the last created device-info
- * @param {{*}} body
  * @param {string} apiEndpoint
+ * @param {string} deviceInfoId
+ * @param {string} userAuthToken
+ * @param {{*}} body
  * @returns {Promise<{*}>}
  */
-function update(apiEndpoint, deviceInfoId, body) {
+function update(apiEndpoint, deviceInfoId, userAuthToken, body) {
   return axios.post(`${apiEndpoint}/api/streaming-games/edge-node/device-info/${deviceInfoId}`, body, {
     timeout: 3000,
+    headers: { Authorization: `Bearer ${userAuthToken}` },
   });
 }
 

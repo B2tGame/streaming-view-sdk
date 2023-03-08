@@ -4,7 +4,14 @@ import log from './Logger';
 
 const noop = () => null;
 
-export default function newMeasurementScheduler({ navigatorConnection, apiEndpoint, interval, onMeasures = noop, userConfiguration }) {
+export default function newMeasurementScheduler({
+  navigatorConnection,
+  apiEndpoint,
+  interval,
+  onMeasures = noop,
+  userConfiguration,
+  userAuthToken,
+}) {
   /*
 
    State modelling
@@ -35,7 +42,8 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
 
   const getDeviceInfo = () =>
     Promise.resolve(
-      cachedDeviceInfo || deviceInfoService.get(apiEndpoint, userConfiguration).then((deviceInfo) => (cachedDeviceInfo = deviceInfo))
+      cachedDeviceInfo ||
+        deviceInfoService.get(apiEndpoint, userConfiguration, userAuthToken).then((deviceInfo) => (cachedDeviceInfo = deviceInfo))
     );
 
   /*
@@ -92,7 +100,7 @@ export default function newMeasurementScheduler({ navigatorConnection, apiEndpoi
 
     log.info('networkConnectivityInfo', networkConnectivityInfo);
 
-    deviceInfoService.update(apiEndpoint, deviceInfo.deviceInfoId, {
+    deviceInfoService.update(apiEndpoint, deviceInfo.deviceInfoId, userAuthToken, {
       rttRegionMeasurements: networkConnectivityInfo.rttStatsByRegionByTurn,
       predictedGameExperience: networkConnectivityInfo.predictedGameExperienceStats,
     });

@@ -3,66 +3,78 @@ import axios from 'axios';
 
 /**
  * Collect and send logs from SDK directly to the Service Coordinator.
+ *
+ * @param {string} edgeNodeId
+ * @param {string} apiEndpoint
+ * @param {string} userId
+ * @param {string} userAuthToken
+ * @param {string} streamingViewId
+ *
  */
-export default class LogQueueService {
-  /**
-   * @param {string} edgeNodeId
-   * @param {string} apiEndpoint
-   * @param {string} userId
-   * @param {string} streamingViewId
-   */
-  constructor(edgeNodeId, apiEndpoint, userId, streamingViewId) {
-    this.logQueue = [];
-    this.endpoint = `${apiEndpoint}/api/streaming-games/edge-node/log`;
-    this.seqId = 0;
-    this.streamingViewId = streamingViewId;
+export default function LogQueueService(edgeNodeId, apiEndpoint, userId, userAuthToken, streamingViewId) {
+  const endpoint = `${apiEndpoint}/api/streaming-games/edge-node/log`;
 
-    StreamingEvent.edgeNode(edgeNodeId).on('event', (eventType, payload) => {
-      payload = typeof payload === 'object' ? payload : { data: payload };
-      payload.streamingViewId = this.streamingViewId;
-      payload.event = eventType;
-      payload.seqId = this.seqId++;
-      payload.userId = userId;
-      this.logQueue.push({
-        edgeNodeId: edgeNodeId,
-        name: 'sdk',
-        timestamp: new Date().toISOString(),
-        type: 'log',
-        message: JSON.stringify(payload),
-      });
-      if (this.logQueue.length > 25) {
-        this.sendQueue();
-      }
+  let logQueue = [];
+  let seqId = 0;
+
+  /*
+   */
+  function onEvent(eventType, payload) {
+    payload = typeof payload === 'object' ? payload : { data: payload };
+    payload.streamingViewId = streamingViewId;
+    payload.event = eventType;
+    payload.seqId = seqId++;
+    payload.userId = userId;
+
+    logQueue.push({
+      edgeNodeId: edgeNodeId,
+      name: 'sdk',
+      timestamp: new Date().toISOString(),
+      type: 'log',
+      message: JSON.stringify(payload),
     });
 
-    this.unloadListener = () => this.sendQueue();
-    window.addEventListener('unload', this.unloadListener);
-    this.timer = setInterval(() => this.sendQueue(), 10000);
-  }
-
-  /**
-   * Destroy the LogQueueService and send any message in the queue
-   */
-  destroy() {
-    clearInterval(this.timer);
-    window.removeEventListener('unload', this.unloadListener);
-    this.sendQueue();
-  }
-
-  /**
-   * Send the queue as it is now to the backend.
-   */
-  sendQueue() {
-    if (this.logQueue.length) {
-      const logQueue = this.logQueue;
-      this.logQueue = [];
-      if (navigator && navigator.sendBeacon) {
-        // Send request if supported via beacon
-        navigator.sendBeacon(this.endpoint, JSON.stringify(logQueue));
-      } else {
-        // otherwise with axios
-        axios.post(this.endpoint, logQueue).catch(() => {});
-      }
+    if (logQueue.length > 25) {
+      sendQueue();
     }
   }
+
+  /*
+   */
+  function sendQueue() {
+    if (!logQueue.length) return;
+
+    const payload = {
+      userAuthToken,
+      logQueue,
+    };
+
+    /*
+     * https://xgwang.me/posts/you-may-not-know-beacon/
+     */
+    if (navigator && navigator.sendBeacon) {
+      navigator.sendBeacon(endpoint, JSON.stringify(payload));
+    } else {
+      axios.post(endpoint, payload).catch(console.error);
+    }
+
+    logQueue = [];
+  }
+
+  StreamingEvent.edgeNode(edgeNodeId).on('event', onEvent);
+
+  window.addEventListener('beforeunload', sendQueue);
+  window.addEventListener('visibilitychange', sendQueue);
+  const timer = setInterval(sendQueue, 10000);
+
+  /*
+   */
+  function destroy() {
+    clearInterval(timer);
+    window.removeEventListener('beforeunload', sendQueue);
+    window.removeEventListener('visibilitychange', sendQueue);
+    sendQueue();
+  }
+
+  return { destroy };
 }
