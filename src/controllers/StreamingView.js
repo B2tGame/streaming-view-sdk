@@ -63,7 +63,6 @@ export default class StreamingView extends Component {
       playoutDelayHint: PropTypes.number,
       vp8MaxQuantization: PropTypes.number,
       preferH264: PropTypes.bool,
-      maxBitrate: PropTypes.number,
     };
   }
 
@@ -405,9 +404,6 @@ export default class StreamingView extends Component {
       playoutDelayHint,
       vp8MaxQuantization,
       preferH264,
-      startBitrate,
-      minBitrate,
-      maxBitrate,
     } = this.props;
     const { height: stateHeight, width: stateWidth, iceServers } = this.state;
 
@@ -435,9 +431,6 @@ export default class StreamingView extends Component {
               iceServers={iceServers}
               vp8MaxQuantization={vp8MaxQuantization}
               preferH264={preferH264}
-              startBitrate={startBitrate}
-              minBitrate={minBitrate}
-              maxBitrate={maxBitrate}
             />
           </div>
         );
