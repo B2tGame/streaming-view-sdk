@@ -12,3 +12,4 @@ tsc --build
 # Generate/copy all other files
 echo '@applandstream/streaming-view-sdk' > build/README.md
 cp package.json build/
+cp -R src build/src

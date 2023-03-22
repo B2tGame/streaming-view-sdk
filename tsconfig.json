@@ -12,7 +12,8 @@
     "jsx": "react",
     "lib": ["es2016", "dom"],
     "target": "es5",
-    "allowJs": true
+    "allowJs": true,
+    "baseUrl": "build"
   },
   "include": ["src"]
 }
