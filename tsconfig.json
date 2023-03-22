@@ -2,9 +2,7 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "outDir": "./build/",
-    "inlineSourceMap": false,
-    "sourceMap": true,
-    "sourceRoot": "./build/src",
+    "inlineSourceMap": true,
     "strictNullChecks": true,
     "skipLibCheck": true,
     "module": "CommonJS",
@@ -14,7 +12,8 @@
     "jsx": "react",
     "lib": ["es2016", "dom"],
     "target": "es5",
-    "allowJs": true
+    "allowJs": true,
+    "baseUrl": "build"
   },
   "include": ["src"]
 }
