@@ -1,6 +1,6 @@
 {
   "name": "@applandstream/streaming-view-sdk",
-  "version": "3.4.6-rc.0",
+  "version": "3.4.6",
   "description": "React component for Streaming Project to interact with the Edge Node Stream",
   "main": "index.ts",
   "repository": {
