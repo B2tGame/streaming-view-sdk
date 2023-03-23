@@ -1,0 +1,8 @@
+//
+// This is the tsconfig used at build time.
+// We need it because otherwise the source maps will end up referencing the wrong file path
+//
+{
+  "extends": "./tsconfig.json",
+  "include": ["build/src"]
+}
