@@ -1,3 +1,9 @@
+//
+// This extended file is run at build time
+// with an overriden "include" to make sure
+// generated sourcemaps referencing project root (../src/bla)
+// but from the root of build dir (src/bla)
+//
 {
   "extends": "./tsconfig.json",
   "include": ["build/src"]
