@@ -1,8 +1,6 @@
 //
-// This extended file is run at build time
-// with an overriden "include" to make sure
-// generated sourcemaps referencing project root (../src/bla)
-// but from the root of build dir (src/bla)
+// This is the tsconfig used at build time.
+// We need it because otherwise the source maps will end up referencing the wrong file path
 //
 {
   "extends": "./tsconfig.json",
