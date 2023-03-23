@@ -4,12 +4,16 @@
 #
 set -e
 
-rm -rf build/*
+rm -rf build
+
+mkdir build
+
+# Move over relevant files
+cp package.json build/
+cp -R src build/src
 
 # Generate JS files and source maps
-tsc --build
+tsc --project tsconfig.build.json
 
 # Generate/copy all other files
 echo '@applandstream/streaming-view-sdk' > build/README.md
-cp package.json build/
-cp -R src build/src
