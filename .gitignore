@@ -3,3 +3,4 @@ package-lock.json
 README-temp.md
 build/
 .npmrc
+.DS_Store
