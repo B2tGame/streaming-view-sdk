@@ -106,6 +106,10 @@ export default class StreamSocket {
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.MOMENT_DETECTOR_EVENT, message.payload || {});
       } else if (message.name === 'emulator-stream' && message.ready) {
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.STREAM_EMULATOR_READY);
+      } else if (message.name === 'emulator-loading-progress') {
+        // TODO: remove debug log one we decide that this is the final form of the events
+        console.log('[emulator-loading-progress]', message);
+        StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.EMULATOR_LOADING_PROGRESS, message);
       }
     });
     // Send measurement report to the backend.
