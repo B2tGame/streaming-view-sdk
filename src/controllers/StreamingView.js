@@ -215,7 +215,9 @@ export default class StreamingView extends Component {
       .then((streamEndpoint) => {
         // if the SDK are in internal session mode and a value has been pass to edge node endpoint use that value instead of the
         // public endpoint received from Service Coordinator.
-        return internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
+        streamEndpoint = internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
+        this.streamSocket = new StreamSocket(edgeNodeId, streamEndpoint, userId, internalSession);
+        return streamEndpoint;
       })
       .then((streamEndpoint) => requestIceServers(apiEndpoint, edgeNodeId).then((iceServers) => [streamEndpoint, iceServers]))
       .then(([streamEndpoint, iceServers]) => {
@@ -228,7 +230,6 @@ export default class StreamingView extends Component {
         }
 
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.EDGE_NODE_READY_TO_ACCEPT_CONNECTION);
-        this.streamSocket = new StreamSocket(edgeNodeId, streamEndpoint, userId, internalSession);
 
         this.setState({
           isReadyStream: true,

@@ -192,6 +192,9 @@ const StreamingEvent = {
   // Event fired when receiving emulator configuration during initialization of P2P connection
   EMULATOR_CONFIGURATION: 'emulator-configuration',
 
+  // Event fired for every emulator stage completion.
+  EMULATOR_LOADING_PROGRESS: 'emulator-loading-progress',
+
   // Event fired when the stream quality rating has been updated.
   STREAM_QUALITY_RATING: 'stream-quality-rating',
 
