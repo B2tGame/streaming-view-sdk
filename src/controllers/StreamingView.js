@@ -12,6 +12,11 @@ import LogQueueService from './service/LogQueueService';
 import BlackScreenDetector from './service/BlackScreenDetector';
 import urlParse from 'url-parse';
 import { requestIceServers } from './service/IceServer';
+import watchRTC from '@testrtc/watchrtc-sdk';
+
+watchRTC.init({
+  rtcApiKey: '432515f4-5896-4335-b967-2e4b16cbabbf',
+});
 
 let instanceID = 0;
 /**
@@ -120,6 +125,11 @@ export default class StreamingView extends Component {
       onEvent,
       measurementScheduler,
     } = this.props;
+    watchRTC.setConfig({
+      rtcPeerId: userId,
+      rtcRoomId: edgeNodeId,
+    });
+    watchRTC.connect();
 
     const { userClickedPlayAt } = this.props;
     if (!(userClickedPlayAt > 0)) {
@@ -180,6 +190,7 @@ export default class StreamingView extends Component {
     StreamingEvent.edgeNode(edgeNodeId)
       .once(StreamingEvent.STREAM_UNREACHABLE, () => this.setState({ isReadyStream: false }))
       .once(StreamingEvent.STREAM_TERMINATED, () => {
+        watchRTC.disconnect();
         this.measurement && this.measurement.destroy();
         this.streamSocket && this.streamSocket.close();
         this.setState({ isReadyStream: false });
@@ -264,6 +275,7 @@ export default class StreamingView extends Component {
   }
 
   componentWillUnmount() {
+    watchRTC.disconnect();
     log.info('StreamingView component will unmount', {
       measurement: this.measurement ? 'should-be-destroy' : 'skip',
       websocket: this.streamSocket ? 'should-be-destroy' : 'skip',
