@@ -235,9 +235,9 @@ export default class StreamingView extends Component {
         // public endpoint received from Service Coordinator.
         streamEndpoint = internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
         this.streamSocket = new StreamSocket(edgeNodeId, streamEndpoint, userId, internalSession);
-        return streamEndpoint;
+        return Promise.all([streamEndpoint, controller.waitWhile((data) => !data.isReadyToAcceptConnection)]);
       })
-      .then((streamEndpoint) => requestIceServers(apiEndpoint, edgeNodeId).then((iceServers) => [streamEndpoint, iceServers]))
+      .then(([streamEndpoint, _]) => requestIceServers(apiEndpoint, edgeNodeId).then((iceServers) => [streamEndpoint, iceServers]))
       .then(([streamEndpoint, iceServers]) => {
         if (this.measurement) {
           this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, iceServers);
