@@ -230,7 +230,7 @@ class StreamingController {
    * @return {Promise<string>}
    */
   getStreamEndpoint() {
-    return this.waitWhile((data) => data.state === 'pending').then((status) => {
+    return this.waitWhile((data) => !data.isReadyToAcceptConnection && data.state === 'pending').then((status) => {
       if (status.endpoint !== undefined) {
         return status.endpoint;
       } else {
