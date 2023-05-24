@@ -74,6 +74,7 @@ export default class StreamSocket {
 
     this.socket.on('message', (data) => {
       const message = JSON.parse(data);
+      console.log('[SOCKET-MESSAGE]', message.name, { message });
       if (message.name === 'emulator-configuration') {
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.EMULATOR_CONFIGURATION, message.configuration);
       } else if (message.name === 'emulator-event') {

@@ -200,9 +200,11 @@ export default class StreamingView extends Component {
         }
         this.measurement && this.measurement.destroy();
         this.streamSocket && this.streamSocket.close();
+        this.progressSocket?.close();
         this.setState({ isReadyStream: false });
       })
       .on(StreamingEvent.EMULATOR_CONFIGURATION, (configuration) => {
+        console.log('EMULATOR_CONFIGURATION', { configuration });
         this.setState({
           emulatorWidth: configuration.emulatorWidth,
           emulatorHeight: configuration.emulatorHeight,
@@ -225,19 +227,30 @@ export default class StreamingView extends Component {
     });
 
     controller
-      .waitWhile((data) => data.endpoint === undefined)
+      .waitWhile((data) => data.socketEndpoint === undefined)
       .then((data) => {
         if (data.state === 'terminated') throw new Error('Edge Node is terminated');
-        return data.endpoint;
+        return data.socketEndpoint;
       })
       .then((streamEndpoint) => {
         // if the SDK are in internal session mode and a value has been pass to edge node endpoint use that value instead of the
         // public endpoint received from Service Coordinator.
         streamEndpoint = internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
-        this.streamSocket = new StreamSocket(edgeNodeId, streamEndpoint, userId, internalSession);
-        return Promise.all([streamEndpoint, controller.waitWhile((data) => !data.isReadyToAcceptConnection)]);
+        this.progressSocket = new StreamSocket(edgeNodeId, streamEndpoint, userId, internalSession);
+
+        return controller.waitWhile((data) => data.endpoint === undefined);
       })
-      .then(([streamEndpoint, _]) => requestIceServers(apiEndpoint, edgeNodeId).then((iceServers) => [streamEndpoint, iceServers]))
+      .then((data) => {
+        if (data.state === 'terminated') throw new Error('Edge Node is terminated');
+        return data.socketEndpoint;
+      })
+      .then((streamEndpoint) => {
+        // if the SDK are in internal session mode and a value has been pass to edge node endpoint use that value instead of the
+        // public endpoint received from Service Coordinator.
+        return internalSession && edgeNodeEndpoint ? edgeNodeEndpoint : streamEndpoint;
+      })
+      // .then((streamEndpoint) => requestIceServers(apiEndpoint, edgeNodeId).then((iceServers) => [streamEndpoint, iceServers]))
+      .then((streamEndpoint) => Promise.all([streamEndpoint, requestIceServers(apiEndpoint, edgeNodeId)]))
       .then(([streamEndpoint, iceServers]) => {
         if (this.measurement) {
           this.measurement.initWebRtc(`${urlParse(streamEndpoint).origin}/measurement/webrtc`, iceServers);
@@ -248,6 +261,8 @@ export default class StreamingView extends Component {
         }
 
         StreamingEvent.edgeNode(edgeNodeId).emit(StreamingEvent.EDGE_NODE_READY_TO_ACCEPT_CONNECTION);
+        this.progressSocket?.close();
+        this.streamSocket = new StreamSocket(edgeNodeId, streamEndpoint, userId, internalSession);
 
         this.setState({
           isReadyStream: true,
@@ -295,6 +310,7 @@ export default class StreamingView extends Component {
 
     this.measurement?.destroy();
     this.streamSocket?.close();
+    this.progressSocket?.close();
     this.blackScreenDetector?.destroy();
     this.logQueueService?.destroy();
 
