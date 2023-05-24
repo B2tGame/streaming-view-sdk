@@ -240,6 +240,7 @@ export default class StreamingView extends Component {
 
         return controller.waitWhile((data) => data.endpoint === undefined);
       })
+      // controller.waitWhile((data) => data.endpoint === undefined)
       .then((data) => {
         if (data.state === 'terminated') throw new Error('Edge Node is terminated');
         return data.socketEndpoint;
