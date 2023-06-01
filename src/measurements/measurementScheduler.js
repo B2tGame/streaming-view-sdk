@@ -39,12 +39,27 @@ export default function newMeasurementScheduler({
 
   // No point in requesting deviceInfo more than once
   let cachedDeviceInfo = null;
+  let cacheFetchInProgress = false;
 
-  const getDeviceInfo = () =>
-    Promise.resolve(
-      cachedDeviceInfo ||
-        deviceInfoService.get(apiEndpoint, userConfiguration, userAuthToken).then((deviceInfo) => (cachedDeviceInfo = deviceInfo))
-    );
+  const getDeviceInfo = async () => {
+    const waitAndRetry = () => {
+      return new Promise((resolve) => setTimeout(() => resolve(getDeviceInfo()), 200));
+    };
+
+    if (cacheFetchInProgress) return waitAndRetry();
+
+    if (!cachedDeviceInfo) {
+      cacheFetchInProgress = true;
+      try {
+        cachedDeviceInfo = await deviceInfoService.get(apiEndpoint, userConfiguration, userAuthToken);
+      } catch (err) {
+        logError(err);
+      }
+    }
+
+    cacheFetchInProgress = false;
+    return cachedDeviceInfo;
+  };
 
   /*
    * lastMeasure doesn't /need/ to be here, but it removes opportunities for the SDK user to do things wrong.
