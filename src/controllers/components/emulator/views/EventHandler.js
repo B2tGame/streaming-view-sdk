@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import * as Proto from '../../../proto/emulator_controller_pb';
 import EmulatorStatus from '../net/EmulatorStatus';
 import { isMobile } from 'react-device-detect';
-import screenfull from 'screenfull';
+import screenfull from '../lib/screenful';
 import StreamingEvent from '../../../StreamingEvent';
 
 const ORIENTATION_PORTRAIT = 'portrait';
