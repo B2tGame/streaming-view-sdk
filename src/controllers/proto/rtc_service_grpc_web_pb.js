@@ -1,3 +1,6 @@
+import grpc_web from 'grpc-web';
+import google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty_pb.js';
+import rtc_service_pb from './rtc_service_pb.js';
 /**
  * @fileoverview gRPC-Web generated client stub for android.emulation.control
  * @enhanceable
@@ -10,13 +13,12 @@
 // @ts-nocheck
 
 const grpc = {};
-grpc.web = require('grpc-web');
+grpc.web = grpc_web;
 
-var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js');
 const proto = {};
 proto.android = {};
 proto.android.emulation = {};
-proto.android.emulation.control = require('./rtc_service_pb.js');
+proto.android.emulation.control = rtc_service_pb;
 
 /**
  * @param {string} hostname
@@ -363,4 +365,8 @@ proto.android.emulation.control.RtcPromiseClient.prototype.receiveJsepMessage = 
   );
 };
 
-module.exports = proto.android.emulation.control;
+export const RtcClient = proto.android.emulation.control.RtcClient;
+
+export default {
+  ...proto.android.emulation.control,
+};

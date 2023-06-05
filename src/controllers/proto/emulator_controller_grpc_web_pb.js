@@ -1,3 +1,6 @@
+import grpc_web from 'grpc-web';
+import google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty_pb.js';
+import emulator_controller_pb from './emulator_controller_pb.js';
 /**
  * @fileoverview gRPC-Web generated client stub for android.emulation.control
  * @enhanceable
@@ -10,13 +13,12 @@
 // @ts-nocheck
 
 const grpc = {};
-grpc.web = require('grpc-web');
+grpc.web = grpc_web;
 
-var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js');
 const proto = {};
 proto.android = {};
 proto.android.emulation = {};
-proto.android.emulation.control = require('./emulator_controller_pb.js');
+proto.android.emulation.control = emulator_controller_pb;
 
 /**
  * @param {string} hostname
@@ -2086,4 +2088,8 @@ proto.android.emulation.control.EmulatorControllerPromiseClient.prototype.getVmS
   );
 };
 
-module.exports = proto.android.emulation.control;
+export const EmulatorControllerClient = proto.android.emulation.control.EmulatorControllerClient;
+
+export default {
+  ...proto.android.emulation.control,
+};
