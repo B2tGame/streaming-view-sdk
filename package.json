@@ -5,7 +5,7 @@
   "main": "index.ts",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org:appland/streaming-view-sdk.git"
+    "url": "git+ssh://git@github.com:B2tGame/streaming-view-sdk.git"
   },
   "scripts": {
     "depcheck": "depcheck --ignore-bin-package",
