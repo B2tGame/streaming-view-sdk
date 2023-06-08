@@ -1,0 +1,45 @@
+name: Pre-release Workflow
+
+on:
+  push:
+    branches:
+      - SG-2853-sdk-cicd
+
+permissions:
+  contents: read # for checkout
+
+jobs:
+  pre-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to be able to publish a GitHub release
+      issues: write # to be able to comment on released issues
+      pull-requests: write # to be able to comment on released pull requests
+      id-token: write # to enable use of OIDC for npm provenance
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: |
+          echo "//registry.npmjs.org/:_authToken={ { secrets.NPM_TOKEN } }" > ~/.npmrc
+          npm install -g npm@8.5.2 node-pre-gyp
+          npm install --legacy-peer-deps
+          npm --version
+          node --version
+          cat ~/.npmrc
+
+      - name: Build
+        run: npm run build
+
+      - name: Pre-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
