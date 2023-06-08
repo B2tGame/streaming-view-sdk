@@ -30,6 +30,8 @@ jobs:
         run: |
           npm install -g npm@8.5.2 node-pre-gyp
           npm install --legacy-peer-deps
+          npm --version
+          node --version
 
       - name: Build
         run: npm run build
