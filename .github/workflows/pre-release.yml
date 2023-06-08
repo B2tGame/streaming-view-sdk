@@ -28,12 +28,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          echo "//registry.npmjs.org/:_authToken={ { secrets.NPM_TOKEN } }" > ~/.npmrc
           npm install -g npm@8.5.2 node-pre-gyp
-          npm install --legacy-peer-deps
+          npm ci --legacy-peer-deps
           npm --version
           node --version
-          cat ~/.npmrc
 
       - name: Build
         run: npm run build
