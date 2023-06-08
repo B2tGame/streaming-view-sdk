@@ -1,6 +1,6 @@
 {
   "name": "@applandstream/streaming-view-sdk",
-  "version": "3.4.10-SG-2853-sdk-cicd.1",
+  "version": "v3.4.11-rc.0",
   "description": "React component for Streaming Project to interact with the Edge Node Stream",
   "main": "index.ts",
   "repository": {
@@ -25,7 +25,7 @@
       {
         "name": "SG-2853-sdk-cicd",
         "channel": "next",
-        "prerelease": true
+        "prerelease": "rc"
       }
     ],
     "plugins": [
