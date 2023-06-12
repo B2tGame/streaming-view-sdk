@@ -427,7 +427,7 @@ export default class Measurement {
    * @param {string} region
    * @return {{Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA: undefined|number, Measurement.PREDICTED_GAME_EXPERIENCE_NEURAL1: undefined|number}}
    */
-  static calculatePredictedGameExperience(rtt, packetLostPercent, region = 'default') {
+  static async calculatePredictedGameExperience(rtt, packetLostPercent, region = 'default') {
     if (Measurement.predictGameExperience === undefined) {
       Measurement.predictGameExperience = {};
     }
@@ -435,7 +435,7 @@ export default class Measurement {
       Measurement.predictGameExperience[region] = {};
       Measurement.predictGameExperience[region][Measurement.PREDICTED_GAME_EXPERIENCE_ALPHA] = new PredictGameExperience();
       Measurement.predictGameExperience[region][Measurement.PREDICTED_GAME_EXPERIENCE_NEURAL1] = new PredictGameExperienceWithNeuralNetwork(
-        require('./neural-network-models/b540f780-9367-427c-8b05-232cebb9ec49.json')
+        await import('./neural-network-models/b540f780-9367-427c-8b05-232cebb9ec49.json')
       );
     }
 

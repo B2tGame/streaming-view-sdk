@@ -4,7 +4,7 @@ import EmulatorPngView from './views/EmulatorPngView.js';
 import EmulatorWebrtcView from './views/EmulatorWebrtcView.js';
 import EventHandler from './views/EventHandler';
 import JsepProtocol from './net/JsepProtocol.js';
-import * as Proto from '../../proto/emulator_controller_pb';
+import Proto from '../../proto/emulator_controller_pb';
 import { RtcService, EmulatorControllerService } from '../../proto/emulator_web_client';
 import StreamingEvent from '../../StreamingEvent';
 

@@ -1,8 +1,8 @@
 {
   "name": "@applandstream/streaming-view-sdk",
-  "version": "3.4.9",
+  "version": "3.4.11-rc.0",
   "description": "React component for Streaming Project to interact with the Edge Node Stream",
-  "main": "index.ts",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@bitbucket.org:appland/streaming-view-sdk.git"
@@ -29,6 +29,7 @@
     "@types/node": "^18.11.18",
     "axios": "^0.27.2",
     "eventemitter3": "^4.0.7",
+    "events": "^3.3.0",
     "google-protobuf": "^3.20.1",
     "grpc-web": "1.0.7",
     "pako": "^2.0.4",

@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import * as Proto from '../../../proto/emulator_controller_pb';
+import Proto from '../../../proto/emulator_controller_pb';
 import EmulatorStatus from '../net/EmulatorStatus';
 import { isMobile } from 'react-device-detect';
 import screenfull from '../lib/screenful';

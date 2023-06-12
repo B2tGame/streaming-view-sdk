@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import * as Proto from '../../../proto/emulator_controller_pb';
+import Proto from '../../../proto/emulator_controller_pb';
 import ResizeObserver from 'react-resize-observer';
 
 /**
