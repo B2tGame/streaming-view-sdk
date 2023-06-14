@@ -322,6 +322,7 @@ factory.EVENT_STREAM_RESUMED = StreamingEvent.STREAM_RESUMED;
 factory.EVENT_STREAM_TERMINATED = StreamingEvent.STREAM_TERMINATED;
 factory.EVENT_STREAM_UNREACHABLE = StreamingEvent.STREAM_UNREACHABLE;
 factory.EVENT_STREAM_VIDEO_CAN_PLAY = StreamingEvent.STREAM_VIDEO_CAN_PLAY;
+factory.EVENT_EMULATOR_LOADING_PROGRESS = StreamingEvent.EMULATOR_LOADING_PROGRESS;
 
 factory.SDK_VERSION = StreamingController.SDK_VERSION;
 factory.StreamingController = StreamingController;
