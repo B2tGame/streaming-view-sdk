@@ -50,11 +50,7 @@ export default function newMeasurementScheduler({
 
     if (!cachedDeviceInfo) {
       cacheFetchInProgress = true;
-      try {
-        cachedDeviceInfo = await deviceInfoService.get(apiEndpoint, userConfiguration, userAuthToken);
-      } catch (err) {
-        logError(err);
-      }
+      cachedDeviceInfo = await deviceInfoService.get(apiEndpoint, userConfiguration, userAuthToken);
     }
 
     cacheFetchInProgress = false;
