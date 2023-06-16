@@ -1,3 +1,4 @@
+import jspb from 'google-protobuf';
 /* eslint-disable */
 /**
  * @fileoverview
@@ -8,11 +9,9 @@
  */
 // GENERATED CODE -- DO NOT EDIT!
 
-var jspb = require('google-protobuf');
 var goog = jspb;
 var global = Function('return this')();
 
-var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js');
 goog.exportSymbol('proto.android.emulation.control.AudioFormat', null, global);
 goog.exportSymbol('proto.android.emulation.control.AudioFormat.Channels', null, global);
 goog.exportSymbol('proto.android.emulation.control.AudioFormat.SampleFormat', null, global);
@@ -5258,4 +5257,4 @@ proto.android.emulation.control.SmsMessage.prototype.setText = function (value) 
   jspb.Message.setProto3StringField(this, 2, value);
 };
 
-goog.object.extend(exports, proto.android.emulation.control);
+export default proto.android.emulation.control;
