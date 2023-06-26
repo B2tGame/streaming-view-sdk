@@ -1,4 +1,4 @@
-name: Pre-release Workflow
+name: Post-Merge Workflow to perform a pre-release
 
 on:
   push:
