@@ -3,7 +3,7 @@ name: Pre-release Workflow
 on:
   push:
     branches:
-      - develop
+      - SG-2853-sdk-cicd
 
 permissions:
   contents: read # for checkout
@@ -25,8 +25,7 @@ jobs:
           node-version: 18
       - name: Install dependencies
         run: |
-          npm install -g npm@8.5.2 node-pre-gyp
-          npm install --legacy-peer-deps
+          npm install
           npm --version
           node --version
       - name: Build
