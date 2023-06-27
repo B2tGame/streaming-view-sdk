@@ -3,16 +3,20 @@
     "allowSyntheticDefaultImports": true,
     "outDir": "./build/",
     "inlineSourceMap": true,
+    "noImplicitAny": true,
     "strictNullChecks": true,
-    "skipLibCheck": true,
     "module": "ESNext",
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "jsx": "react",
-    "lib": ["es2016", "dom"],
-    "target": "es5",
-    "allowJs": true
+    "typeRoots": ["node_modules/@types", "src/types"],
+    "types": ["../network-information-types"],
+    "lib": ["ESNext", "dom"],
+    "target": "ES2021",
+    "declaration": true,
+    "allowJs": false
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["**/*.tests.ts"]
 }

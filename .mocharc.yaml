@@ -1,3 +1,4 @@
 loader:
-  - 'ts-node/esm'
-extensions: ['js', 'ts']
+  - ts-node/esm
+  - 'mock-import'
+extensions: ['ts', 'cts', 'tsx', 'json']

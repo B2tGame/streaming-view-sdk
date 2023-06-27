@@ -40,7 +40,7 @@ import { StreamingController } from '@applandstream/streaming-view-sdk';
 
 StreamingController({
   apiEndpoint: 'https://exampe.com/api/streaming-service',
-  edgeNodeId: 'a8a363c7-7104-4a40-9908-c4122d15f902'
+  edgeNodeId: 'a8a363c7-7104-4a40-9908-c4122d15f902',
 })
   .then((streamingController) => streamingController.terminate())
   .then(console.log)
@@ -55,18 +55,19 @@ A React component that displays and controls a remote stream from the android em
 
 #### Supported properties
 
-| prop                 | type      | default | required           | description                                                                                                                             |
-|----------------------|-----------|---------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| prop | type | default | required | description |
+| ---- | ---- | ------- | -------- | ----------- |
+
 | **
-apiEndpoint**      | `String`  |         | :white_check_mark: | API endpoint the component should use to connect to the Streaming Service API.                                                          |
+apiEndpoint** | `String` | | :white_check_mark: | API endpoint the component should use to connect to the Streaming Service API. |
 | **
-edgeNodeId**       | `String`  |         | :white_check_mark: | Edge Node Id received from GET: Create API endpoint, and can't bedynamically changed during runtime.                                    |
+edgeNodeId** | `String` | | :white_check_mark: | Edge Node Id received from GET: Create API endpoint, and can't bedynamically changed during runtime. |
 | **
-enableControl**    | `Boolean` | `true`  | :x:                | Enable/disable user interactions with the game, can be dynamically changed during runtime.                                              |
+enableControl** | `Boolean` | `true` | :x: | Enable/disable user interactions with the game, can be dynamically changed during runtime. |
 | **
-enableFullScreen** | `Boolean` | `true`  | :x:                | The app will put the stream in full-screen mode after the first user interaction.                                                       |
+enableFullScreen** | `Boolean` | `true` | :x: | The app will put the stream in full-screen mode after the first user interaction. |
 | **
-volume**           | `Number`  | `1.0`   | :x:                | Volume has the following range: [0.0...1.0]. Volume 0.0 means audio is muted, volume 1.0 is maximum volume and 0.5 means 50% of volume. |
+volume** | `Number` | `1.0` | :x: | Volume has the following range: [0.0...1.0]. Volume 0.0 means audio is muted, volume 1.0 is maximum volume and 0.5 means 50% of volume. |
 
 ### Streaming controller
 
@@ -74,12 +75,13 @@ A class that controls the stream
 
 #### Supported properties
 
-| prop            | type     | default | required           | description                                                                                           |
-|-----------------|----------|---------|--------------------|-------------------------------------------------------------------------------------------------------|
+| prop | type | default | required | description |
+| ---- | ---- | ------- | -------- | ----------- |
+
 | **
-apiEndpoint** | `String` |         | :white_check_mark: | API endpoint the component should use to connect to the Streaming Service API.                        |
+apiEndpoint** | `String` | | :white_check_mark: | API endpoint the component should use to connect to the Streaming Service API. |
 | **
-edgeNodeId**  | `String` |         | :white_check_mark: | Edge Node Id received from GET: Create API endpoint, and can't be dynamically changed during runtime. |
+edgeNodeId** | `String` | | :white_check_mark: | Edge Node Id received from GET: Create API endpoint, and can't be dynamically changed during runtime. |
 
 #### Functions
 
@@ -97,12 +99,21 @@ following steps:
 
 ### How to generate proto files
 
+#### Prerequesites
+
+- Install libprotoc-dev
+
+```
+sudo apt update
+sudo apt install libprotoc-dev protobuf-compiler
+```
+
 Run shell script:
 
 ```
-./build-sdk.sh
+./scripts/build-protobuf.sh
 ```
-   
+
 ### Last Commit Id of merged Google repository
 
 [d9aa985ab40790050dd8c28ce34d8e05cb386750](https://github.com/google/android-emulator-webrtc/commit/d9aa985ab40790050dd8c28ce34d8e05cb386750)

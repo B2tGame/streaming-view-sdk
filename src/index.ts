@@ -1,10 +1,12 @@
-import StreamingView from './controllers/StreamingView';
-import StreamingController from './controllers/StreamingController';
-import StreamingEvent from './controllers/StreamingEvent';
+import StreamingView from './controllers/StreamingView.js';
+import StreamingController from './controllers/StreamingController.js';
+import * as StreamingEvent from './controllers/StreamingEvent.js';
 import buildInfo from './controllers/build-info.json';
-import defaults from './measurements/defaults';
+import defaults from './measurements/defaults.js';
 
-window && ((window as any).applandStreamingSdkVersion = buildInfo.tag);
+if (typeof window !== 'undefined') {
+  window.applandStreamingSdkVersion = buildInfo.tag;
+}
 
 /**
  * Streaming View SDK
