@@ -23,7 +23,7 @@
     "branches": [
       "main",
       {
-        "name": "SG-2853-sdk-cicd",
+        "name": "develop",
         "channel": "next",
         "prerelease": "rc"
       }

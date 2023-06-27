@@ -3,7 +3,7 @@ name: Post-Merge Workflow to perform a pre-release
 on:
   push:
     branches:
-      - SG-2853-sdk-cicd
+      - develop
 
 permissions:
   contents: read # for checkout
