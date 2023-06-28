@@ -1,7 +1,8 @@
 name: Notify SDK update
 on:
-  release:
-    types: [published]
+  create:
+    tags:
+      - v*
 
 jobs:
   sdk_update:
@@ -13,4 +14,4 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           repository: B2tGame/streaming-games
           event-type: sdk_update
-          client-payload: '{"version": "${{ github.event.release.tag_name }}"}'
+          client-payload: '{"version": "${{ github.ref }}"}'
