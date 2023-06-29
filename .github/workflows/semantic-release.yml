@@ -1,9 +1,10 @@
-name: Post-Merge Workflow to perform a pre-release
+name: Semantic Release and Notify
 
 on:
   push:
     branches:
-      - develop
+      - develop # for pre-releases
+      - main # for releases
 
 permissions:
   contents: read # for checkout
@@ -30,8 +31,23 @@ jobs:
           node --version
       - name: Build
         run: npm run build
-      - name: Pre-release
+      - name: Semantic release
+        uses: codfish/semantic-release-action@v2
+        id: semantic
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx semantic-release
+      - name: Notify SDK update
+        if: steps.semantic.outputs.new-release-published == 'true'
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GH_PAT }}
+          repository: B2tGame/streaming-games
+          event-type: sdk_update
+          client-payload: >-
+            {
+              "version": "${{ steps.semantic.outputs.release-version }}",
+              "sha": "${{ github.sha }}",
+              "release_notes": "${{ steps.semantic.outputs.release-notes }}",
+              "release_type": "${{ steps.semantic.outputs.release-type }}"
+            }
