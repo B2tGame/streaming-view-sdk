@@ -1,4 +1,4 @@
-name: Semantic Release and Notify
+name: Semantic Release and Notify SDK Update
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: read # for checkout
 
 jobs:
-  pre-release:
+  semantic-release-and-notify-sdk-update:
     runs-on: ubuntu-latest
     permissions:
       contents: write # to be able to publish a GitHub release
@@ -29,6 +29,8 @@ jobs:
           npm install
           npm --version
           node --version
+      - name: Install jq
+        run: sudo apt-get install jq
       - name: Build
         run: npm run build
       - name: Semantic release
