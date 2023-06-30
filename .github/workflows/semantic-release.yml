@@ -5,7 +5,6 @@ on:
     branches:
       - develop # for pre-releases
       - main # for releases
-      - install-jq-in-the-workflow
 
 permissions:
   contents: read # for checkout
@@ -40,8 +39,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        with:
-          dry_run: true
       - name: Notify SDK update
         if: steps.semantic.outputs.new-release-published == 'true'
         uses: peter-evans/repository-dispatch@v2
