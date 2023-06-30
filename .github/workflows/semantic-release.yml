@@ -26,7 +26,8 @@ jobs:
           node-version: 18
       - name: Install dependencies
         run: |
-          npm install
+          npm install -g npm@8.5.2 node-pre-gyp
+          npm install --legacy-peer-deps
           npm --version
           node --version
       - name: Build
