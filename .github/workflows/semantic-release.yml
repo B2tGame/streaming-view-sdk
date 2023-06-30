@@ -29,8 +29,6 @@ jobs:
           npm install
           npm --version
           node --version
-      - name: Install jq
-        run: sudo apt-get install jq
       - name: Build
         run: npm run build
       - name: Semantic release

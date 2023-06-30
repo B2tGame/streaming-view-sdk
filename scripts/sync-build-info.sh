@@ -1,7 +1,8 @@
 #!/bin/sh
 set -e
 
-VERSION=$(cat package.json | jq -r '.version')
+VERSION=$(node -pe "require('./package.json').version")
+echo "Syncing build info for version $VERSION"
 
 echo "{ \"tag\": \"$VERSION\" }" > src/controllers/build-info.json
 
