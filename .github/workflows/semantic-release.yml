@@ -20,35 +20,57 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
+
       - name: Install dependencies
         run: |
           npm install -g npm@8.5.2 node-pre-gyp
           npm install --legacy-peer-deps
           npm --version
           node --version
+
       - name: Build
         run: npm run build
+
       - name: Semantic release
         uses: codfish/semantic-release-action@v2
         id: semantic
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Notify SDK update
+
+      # This step is only for testing purposes to simulate the outputs of the semantic-release action
+      # comment out the semantic-release action above and uncomment this step to test
+      # - name: Populate dummy outputs for testing
+      #   id: semantic
+      #   run: |
+      #     echo "::set-output name=new-release-published::true"
+      #     echo "::set-output name=release-version::3.5.1"
+      #     echo "::set-output name=release-notes:: Added new feature X\n- Fixed bug Y\n- Improved performance of Z"
+      #     echo "::set-output name=release-type::minor"
+
+      - name: Construct event payload
+        id: construct-event-payload
+        if: steps.semantic.outputs.new-release-published == 'true'
+        run: |
+          PAYLOAD=$(node -pe "JSON.stringify({
+            version: '${{ steps.semantic.outputs.release-version }}',
+            sha: '${{ github.sha }}',
+            release_notes: '${{ steps.semantic.outputs.release-notes }}'.replace(/\n/g, '\\\\n'),
+            release_type: '${{ steps.semantic.outputs.release-type }}'
+          })")
+
+          echo "::set-output name=event-payload-json::$PAYLOAD"
+
+      - name: Notify SDK Update using repository dispatch
         if: steps.semantic.outputs.new-release-published == 'true'
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.GH_PAT }}
           repository: B2tGame/streaming-games
           event-type: sdk_update
-          client-payload: >-
-            {
-              "version": "${{ steps.semantic.outputs.release-version }}",
-              "sha": "${{ github.sha }}",
-              "release_notes": "${{ steps.semantic.outputs.release-notes }}",
-              "release_type": "${{ steps.semantic.outputs.release-type }}"
-            }
+          client-payload: ${{ steps.construct-event-payload.outputs.event-payload-json }}
