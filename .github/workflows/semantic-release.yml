@@ -60,7 +60,7 @@ jobs:
           PAYLOAD=$(node -pe "JSON.stringify({
             version: '${{ steps.semantic.outputs.release-version }}',
             sha: '${{ github.sha }}',
-            release_notes: '${{ steps.semantic.outputs.release-notes }}'.replace(/\n/g, '\\\\n'),
+            release_notes: Buffer.from('${{ steps.semantic.outputs.release-notes }}').toString('base64'),
             release_type: '${{ steps.semantic.outputs.release-type }}'
           })")
 
