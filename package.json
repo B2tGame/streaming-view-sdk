@@ -31,11 +31,26 @@
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
-      "@semantic-release/npm",
-      "@semantic-release/github",
-      "@semantic-release/git"
+      "@semantic-release/git",
+      [
+        "@semantic-release/npm",
+        {
+          "tarballDir": "build"
+        }
+      ],
+      [
+        "@semantic-release/github",
+        {
+          "assets": [
+            "build/*.tgz"
+          ]
+        }
+      ]
     ]
   },
+  "files": [
+    "build/**/*"
+  ],
   "author": "Appland",
   "license": "ISC",
   "lint-staged": {
