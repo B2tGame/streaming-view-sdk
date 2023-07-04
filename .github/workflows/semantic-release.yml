@@ -57,10 +57,11 @@ jobs:
         id: construct-event-payload
         if: steps.semantic.outputs.new-release-published == 'true'
         run: |
+          RELEASE_NOTES=$(echo -n "${{ steps.semantic.outputs.release-notes }}" | base64) 
           PAYLOAD=$(node -pe "JSON.stringify({
             version: '${{ steps.semantic.outputs.release-version }}',
             sha: '${{ github.sha }}',
-            release_notes: Buffer.from('${{ steps.semantic.outputs.release-notes }}').toString('base64'),
+            release_notes: \`$RELEASE_NOTES\`,
             release_type: '${{ steps.semantic.outputs.release-type }}'
           })")
 
