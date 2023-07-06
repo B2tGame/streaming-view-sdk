@@ -12,10 +12,10 @@
     "lint": "eslint src/",
     "test": "mocha  --timeout 10000 --exit --recursive 'src/**/*.tests.ts'",
     "build": "scripts/build.sh",
-    "version": "cd .. && ./scripts/sync-build-info.sh",
+    "version": "cp -r package.json .. && cd .. && ./scripts/sync-build-info.sh",
     "style-write": "appland-style --browser --write src/",
     "style-check": "appland-style --browser --check src/",
-    "postversion": "cd .. && ./scripts/postversion_hook.sh",
+    "postversion": "cp -r package.json .. && cd .. && ./scripts/postversion_hook.sh",
     "prepare": "husky install || exit 0",
     "semantic-release": "semantic-release"
   },
