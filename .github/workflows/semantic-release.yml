@@ -42,9 +42,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        ## Uncomment for local testing
+        # with:
+        #   dry_run: true
 
-      # This step is only for testing purposes to simulate the outputs of the semantic-release action
-      # comment out the semantic-release action above and uncomment this step to test
+      ## This step is only for testing purposes to simulate the outputs of the semantic-release action
+      ## comment out the semantic-release action above and uncomment this step to test
       # - name: Populate dummy outputs for testing
       #   id: semantic
       #   run: |
