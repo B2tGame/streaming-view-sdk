@@ -12,10 +12,10 @@
     "lint": "eslint src/",
     "test": "mocha  --timeout 10000 --exit --recursive 'src/**/*.tests.ts'",
     "build": "scripts/build.sh",
-    "version": "scripts/sync-build-info.sh",
+    "version": "cd .. && ./scripts/sync-build-info.sh",
     "style-write": "appland-style --browser --write src/",
     "style-check": "appland-style --browser --check src/",
-    "postversion": "scripts/postversion_hook.sh",
+    "postversion": "cd .. && ./scripts/postversion_hook.sh",
     "prepare": "husky install || exit 0",
     "semantic-release": "semantic-release"
   },
@@ -31,7 +31,14 @@
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
-      "@semantic-release/git",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "package.json"
+          ]
+        }
+      ],
       [
         "@semantic-release/npm",
         {
