@@ -35,22 +35,20 @@
       [
         "@semantic-release/npm",
         {
-          "tarballDir": "build"
+          "tarballDir": ".github",
+          "pkgRoot": "build"
         }
       ],
       [
         "@semantic-release/github",
         {
           "assets": [
-            "build/*.tgz"
+            ".github/*.tgz"
           ]
         }
       ]
     ]
   },
-  "files": [
-    "build/**/*"
-  ],
   "author": "Appland",
   "license": "ISC",
   "lint-staged": {
