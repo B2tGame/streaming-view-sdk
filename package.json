@@ -32,18 +32,19 @@
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
       [
-        "@semantic-release/git",
-        {
-          "assets": [
-            "package.json"
-          ]
-        }
-      ],
-      [
         "@semantic-release/npm",
         {
           "tarballDir": ".github",
           "pkgRoot": "build"
+        }
+      ],
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "package.json",
+            "src/controllers/build-info.json"
+          ]
         }
       ],
       [
